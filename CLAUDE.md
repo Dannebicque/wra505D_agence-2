@@ -38,7 +38,7 @@ Aucun autre framework, aucune librairie UI lourde. Les composants sont écrits �
 
 GitFlow. `main` et `develop` sont protégées.
 
-- Toute branche part de `develop` : `feature/<slug>`, `release/x.y.z`, `hotfix/<slug>`.
+- Toute branche part de `develop` : `feature/<slug>`, `release/x.y.z`. Les branches `hotfix/<slug>` partent de `main`.
 - Une tâche, une branche, une PR. PR courte et relisable.
 - PR vers `develop` : validée par le PO. PR vers `main` : validée par le QA.
 - Commits en anglais, format Conventional Commits : `type(scope): subject`.
