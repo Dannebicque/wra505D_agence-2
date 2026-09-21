@@ -381,8 +381,8 @@ Ces règles s'appliquent dès le premier commit, sur les deux volets du projet.
 
 - **Framework** : Nuxt (rendu universel par défaut, SSG via `nuxt generate`, ou rendu hybride par route via `routeRules`), bundler Vite intégré.
 - **Bibliothèque UI** : Vue 3 (Composition API), sur l'ensemble du projet (site agence et projet client).
-- **Langage** : TypeScript recommandé (cohérent avec la rigueur déjà en place côté backend réel : PHPStan/Rector côté PHP — on garde le même niveau d'exigence côté front avec un typage strict).
-- **Gestion d'état** : Pinia recommandé pour l'état partagé (session utilisateur simulée, préférences, favoris de documents).
+- **Langage** : TypeScript en mode strict, obligatoire.
+- **Gestion d'état** : Pinia, obligatoire pour l'état partagé (session utilisateur simulée, préférences, favoris de documents).
 
 ### 5.2 Support : GitFlow
 
