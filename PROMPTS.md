@@ -5,23 +5,16 @@
 
 ---
 
-## 1. Première session du projet — initialisation
+## 1. Première session — mettre la base en marche
 
-> Lis `CLAUDE.md` et rien d'autre pour l'instant.
->
-> Tâche : initialiser le projet Nuxt 4 du volet 2 (espace étudiant), sur une branche
-> `feature/0-project-setup` créée depuis `develop`.
->
-> Ce que je veux en sortie :
-> - projet Nuxt 4 + TypeScript strict + Pinia + ESLint `@nuxt/eslint` + Prettier + Vitest, configuré et fonctionnel ;
-> - scripts `lint`, `lint:fix`, `typecheck`, `test`, `build`, `dev` dans `package.json` ;
-> - arborescence vide mais posée : `components/`, `composables/`, `pages/`, `server/api/`, `types/`, `assets/styles/` ;
-> - `assets/styles/tokens.css` avec les variables CSS des jetons de DA listés dans `CLAUDE.md`, en clair et en sombre ;
-> - `composables/useApi.ts` : couche d'accès unique, aujourd'hui branchée sur `server/api/`, avec un point de bascule commenté pour la future API réelle ;
-> - `types/domain.ts` : types du domaine (`Etudiant`, `Groupe`, `Semestre`, `Matiere`, `Note`, `Absence`, `Document`, `Evenement`), sans inventer de champ non nécessaire.
->
-> Pas de page de démonstration, pas de composant d'exemple, pas de README. Quand tout passe,
-> ouvre la PR vers `develop`.
+Le projet ne s'initialise pas : on reprend la base du client, déjà dans `uniservices/`. La
+procédure complète est dans le `README.md` à la racine.
+
+> Lis `README.md` et fais tourner la base en local : conteneurs, dépendances back et front,
+> clés JWT, schéma, fixtures. Quand l'API répond et que l'application s'affiche, dis-le-moi
+> et attends ma tâche.
+
+Compte de travail : `etudiant` / `test`, dans le bloc « Compte invité ».
 
 ---
 
