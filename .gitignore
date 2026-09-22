@@ -1,20 +1,32 @@
-node_modules
-.nuxt
-.output
-.nitro
-.cache
-dist
-.env
-.env.*
-!.env.example
-*.log
-npm-debug.log*
-coverage
-.vitest
-cypress/videos
-cypress/screenshots
+# Regles communes aux deux sous-projets.
 .DS_Store
+**/.DS_Store
 .idea
 .vscode/*
 !.vscode/extensions.json
 .claude/settings.local.json
+*.log
+
+# Front Nuxt. Les regles sont limitees a front/ pour ne pas masquer des fichiers
+# de uniservices/, dont le .gitignore gouverne deja son propre sous-arbre.
+/front/node_modules
+/front/.nuxt
+/front/.output
+/front/.nitro
+/front/.cache
+/front/dist
+/front/coverage
+/front/.vitest
+/front/.env
+/front/.env.*
+!/front/.env.example
+/front/cypress/videos
+/front/cypress/screenshots
+
+# Backend Symfony repris de uniServices.
+/uniservices/vendor
+/uniservices/back/vendor
+/uniservices/back/var
+/uniservices/back/config/jwt/*.pem
+/uniservices/node_modules
+/uniservices/**/node_modules

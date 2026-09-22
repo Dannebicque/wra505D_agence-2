@@ -1,0 +1,339 @@
+<?php
+
+namespace App\Entity\Structure;
+
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use App\Entity\Apc\ApcParcours;
+use App\Entity\Edt\EdtEvent;
+use App\Entity\Etudiant\EtudiantScolariteSemestre;
+use App\Entity\Traits\ApogeeTrait;
+use App\Entity\Traits\EduSignTrait;
+use App\Entity\Traits\OldIdTrait;
+use App\Entity\Users\Etudiant;
+use App\Enum\TypeGroupeEnum;
+use App\Filter\GroupeFilter;
+use App\Repository\Structure\StructureGroupeRepository;
+use App\State\Processor\Groupe\GroupeDeletefromSemestreProcessor;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+
+#[ORM\Entity(repositoryClass: StructureGroupeRepository::class)]
+#[ApiFilter(GroupeFilter::class)]
+#[ApiResource(
+    operations: [
+        new Get(normalizationContext: ['groups' => ['groupe:detail', 'diplome:read', 'diplome:read:full']]),
+        new Get(
+            uriTemplate: '/mini/structure_groupes/{id}',
+            normalizationContext: ['groups' => ['groupe:light']],
+        ),
+        new Get(
+            uriTemplate: '/maxi/structure_groupes/{id}',
+            normalizationContext: ['groups' => ['groupe:detail']],
+        ),
+        new GetCollection(normalizationContext: ['groups' => ['groupe:detail']]),
+        new GetCollection(
+            uriTemplate: '/mini/structure_groupes',
+            normalizationContext: ['groups' => ['groupe:light']],
+        ),
+        new GetCollection(
+            uriTemplate: '/maxi/structure_groupes',
+            normalizationContext: ['groups' => ['groupe:detail']],
+        ),
+        new GetCollection(
+            uriTemplate: '/structure/structure_groupes',
+            normalizationContext: ['groups' => ['groupe:structure']],
+        ),
+        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_GROUPE', object)"),
+        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_GROUPE', object)"),
+        new Patch(
+            uriTemplate: '/semestre/structure_groupes/{id}',
+            securityPostDenormalize: "is_granted('CAN_EDIT_GROUPE_STRUCTURE')",
+            normalizationContext: ['groups' => ['groupe:structure']],
+            denormalizationContext: ['groups' => ['groupe:structure']],
+            processor: GroupeDeletefromSemestreProcessor::class,
+        ),
+        new Delete(security: "is_granted('CAN_DELETE_GROUPE', object)"),
+    ]
+)]
+class StructureGroupe
+{
+    use ApogeeTrait;
+    use EduSignTrait;
+    use OldIdTrait;
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups(['groupe:detail', 'groupe:light', 'scolarite:read', 'edt_event:read:agenda', 'scolarite-semestre:manage-groupes', 'groupe:structure', 'groupe:structure'])]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['groupe:detail', 'groupe:light', 'scolarite:read', 'edt_event:read:agenda', 'scolarite-semestre:manage-groupes', 'groupe:structure', 'groupe:structure'])]
+    private string $libelle;
+
+    #[ORM\Column(length: 10, enumType: TypeGroupeEnum::class)]
+    #[Groups(['groupe:detail', 'groupe:light', 'scolarite:read', 'edt_event:read:agenda', 'groupe:structure', 'groupe:structure'])]
+    private TypeGroupeEnum $type;
+
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'enfants')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[Groups(['groupe:detail', 'groupe:light', 'edt_event:read:agenda', 'groupe:structure'])]
+    private ?self $parent = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['groupe:detail', 'groupe:structure'])]
+    private ?int $ordre = null;
+
+    #[ORM\ManyToMany(targetEntity: StructureSemestre::class, inversedBy: 'groupes')]
+    #[Groups(['groupe:structure'])]
+    private Collection $semestres;
+
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
+    #[Groups(['groupe:detail', 'edt_event:read:agenda', 'groupe:structure'])]
+    private ?Collection $enfants;
+
+    #[ORM\ManyToOne(targetEntity: ApcParcours::class, inversedBy: 'groupes')]
+    #[Groups(['groupe:detail', 'groupe:structure'])]
+    private ?ApcParcours $parcours = null;
+
+    /**
+     * @var Collection<int, EdtEvent>
+     */
+    #[ORM\OneToMany(targetEntity: EdtEvent::class, mappedBy: 'groupe')]
+    #[Groups(['groupe:detail'])]
+    private Collection $edtEvents;
+
+    /**
+     * @var Collection<int, EtudiantScolariteSemestre>
+     */
+    #[ORM\ManyToMany(targetEntity: EtudiantScolariteSemestre::class, mappedBy: 'groupes')]
+    #[Groups(['groupe:detail'])]
+    private Collection $scolariteSemestres;
+
+    /**
+     * @var Collection<int, Etudiant>
+     */
+    #[ORM\ManyToMany(targetEntity: Etudiant::class, mappedBy: 'groupes')]
+    #[Groups(['groupe:detail', 'scolarite:read', 'edt_event:read:agenda'])]
+    private Collection $etudiants;
+
+    public function __construct()
+    {
+        $this->semestres = new ArrayCollection();
+        $this->enfants = new ArrayCollection();
+        $this->edtEvents = new ArrayCollection();
+        $this->scolariteSemestres = new ArrayCollection();
+        $this->etudiants = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getLibelle(): ?string
+    {
+        return $this->libelle;
+    }
+
+    public function setLibelle(string $libelle): static
+    {
+        $this->libelle = $libelle;
+
+        return $this;
+    }
+
+    public function getType(): TypeGroupeEnum
+    {
+        return $this->type;
+    }
+
+    public function setType(TypeGroupeEnum $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): static
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
+    public function getOrdre(): ?int
+    {
+        return $this->ordre;
+    }
+
+    public function setOrdre(?int $ordre): static
+    {
+        $this->ordre = $ordre;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, StructureSemestre>
+     */
+    public function getSemestres(): Collection
+    {
+        return $this->semestres;
+    }
+
+    public function addSemestre(StructureSemestre $semestre): static
+    {
+        if (!$this->semestres->contains($semestre)) {
+            $this->semestres->add($semestre);
+        }
+
+        return $this;
+    }
+
+    public function removeSemestre(StructureSemestre $semestre): static
+    {
+        $this->semestres->removeElement($semestre);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public function getEnfants(): Collection
+    {
+        return $this->enfants;
+    }
+
+    public function addEnfant(?self $enfant): static
+    {
+        if (!$this->enfants->contains($enfant)) {
+            $this->enfants->add($enfant);
+            $enfant?->setParent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEnfant(self $enfant): static
+    {
+        if ($this->enfants->removeElement($enfant)) {
+            // set the owning side to null (unless already changed)
+            if ($enfant->getParent() === $this) {
+                $enfant->setParent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getParcours(): ?ApcParcours
+    {
+        return $this->parcours;
+    }
+
+    public function setParcours(?ApcParcours $parcours): static
+    {
+        $this->parcours = $parcours;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EdtEvent>
+     */
+    public function getEdtEvents(): Collection
+    {
+        return $this->edtEvents;
+    }
+
+    public function addEdtEvent(EdtEvent $edtEvent): static
+    {
+        if (!$this->edtEvents->contains($edtEvent)) {
+            $this->edtEvents->add($edtEvent);
+            $edtEvent->setGroupe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEdtEvent(EdtEvent $edtEvent): static
+    {
+        if ($this->edtEvents->removeElement($edtEvent)) {
+            // set the owning side to null (unless already changed)
+            if ($edtEvent->getGroupe() === $this) {
+                $edtEvent->setGroupe(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EtudiantScolariteSemestre>
+     */
+    public function getScolariteSemestres(): Collection
+    {
+        return $this->scolariteSemestres;
+    }
+
+    public function addScolariteSemestre(EtudiantScolariteSemestre $scolariteSemestre): static
+    {
+        if (!$this->scolariteSemestres->contains($scolariteSemestre)) {
+            $this->scolariteSemestres->add($scolariteSemestre);
+            $scolariteSemestre->addGroupe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeScolariteSemestre(EtudiantScolariteSemestre $scolariteSemestre): static
+    {
+        if ($this->scolariteSemestres->removeElement($scolariteSemestre)) {
+            $scolariteSemestre->removeGroupe($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Etudiant>
+     */
+    public function getEtudiants(): Collection
+    {
+        return $this->etudiants;
+    }
+
+    public function addEtudiant(Etudiant $etudiant): static
+    {
+        if (!$this->etudiants->contains($etudiant)) {
+            $this->etudiants->add($etudiant);
+            $etudiant->addGroupe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEtudiant(Etudiant $etudiant): static
+    {
+        if ($this->etudiants->removeElement($etudiant)) {
+            $etudiant->removeGroupe($this);
+        }
+
+        return $this;
+    }
+}

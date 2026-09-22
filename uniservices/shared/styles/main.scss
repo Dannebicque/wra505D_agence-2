@@ -1,0 +1,82 @@
+@use "demo/demo.scss";
+@use "layout/layout.scss";
+@use "_apc.scss";
+@import 'primeicons/primeicons.css';
+
+
+.row {
+  @apply flex flex-wrap;
+}
+
+.col-1 {
+  @apply w-1/12;
+}
+
+.col-2 {
+  @apply w-1/6;
+}
+
+.col-3 {
+  @apply w-1/4;
+}
+
+.col-4 {
+  @apply w-1/3;
+}
+
+.col-6 {
+  @apply w-full md:w-1/2 sm:w-full;
+}
+
+.col-12 {
+  @apply w-full;
+}
+
+#loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+}
+
+.loader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loader .spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #ccc;
+  border-top: 5px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loader p {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+
+
+

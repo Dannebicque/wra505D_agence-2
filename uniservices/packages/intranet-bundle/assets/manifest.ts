@@ -1,0 +1,79 @@
+import dashboardRoutes from './router/modules/dashboardRoutes.js';
+import agendaRoutes from './router/modules/agendaRoutes.js';
+import trombinoscopeRoutes from './router/modules/trombinoscopeRoutes.js';
+import scolariteRoutes from './router/modules/scolariteRoutes.js';
+import cahierDeTexteRoutes from './router/modules/cahierDeTexteRoutes.js';
+import profilRoutes from './router/modules/profilRoutes.js';
+import administrationRoutes from './router/modules/administrationRoutes.js';
+import superAdministrationRoutes from './router/modules/superAdministrationRoutes.js';
+import Logo from "@images/logo/logo_intranet_iut_troyes.svg";
+import LayoutComponent from '@components/components/layout/AppLayout.vue';
+import { registerWidgets } from './components/Personnel/dashboard/registerWidgets';
+
+const intranetMenu = {
+  label: 'Intranet',
+  icon: 'pi pi-fw pi-desktop',
+  items: [
+    { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/intranet/' },
+    { label: 'Agenda', icon: 'pi pi-fw pi-calendar', to: '/intranet/agenda' },
+    { label: 'Trombinoscope',
+      icon: 'pi pi-fw pi-users',
+      to: '/intranet/trombinoscope',
+      permission: 'isPersonnel'
+    },
+    {
+      label: 'Scolarité',
+      icon: 'pi pi-fw pi-graduation-cap',
+      to: '/intranet/scolarite',
+      permission: 'isEtudiant'
+    },
+    {
+      label: 'Cahier de texte',
+      icon: 'pi pi-fw pi-book',
+      to: '/intranet/cahier-de-texte',
+      permission: 'isEtudiant'
+    },
+    {
+      label: 'Administration',
+      icon: 'pi pi-fw pi-wrench',
+      to: '/intranet/administration',
+      permission: 'canViewAdministration'
+    },
+    {
+      label: 'Super Admin',
+      icon: 'pi pi-fw pi-cog',
+      to: '/intranet/super-administration',
+      permission: 'SUPER_ADMIN'
+    }
+  ]
+};
+
+export default {
+  name: 'intranet',
+  primaryColor: 'violet',
+  registerWidgets,
+  routes: [
+    {
+      path: '/intranet',
+      component: LayoutComponent,
+      props: route => ({
+        logoUrl: Logo,
+        appName: 'Intranet',
+        breadcrumbItems: typeof route.meta.breadcrumb === 'function'
+          ? route.meta.breadcrumb(route)
+          : (route.meta.breadcrumb || [])
+      }),
+      children: [
+        ...dashboardRoutes,
+        ...agendaRoutes,
+        ...trombinoscopeRoutes,
+        ...scolariteRoutes,
+        ...cahierDeTexteRoutes,
+        ...profilRoutes,
+        ...administrationRoutes,
+        ...superAdministrationRoutes,
+      ]
+    }
+  ],
+  menu: intranetMenu
+};

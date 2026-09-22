@@ -1,0 +1,403 @@
+<script setup>
+import {ref, onMounted, computed, watch} from 'vue';
+import {PermissionGuard, ValidatedInput, validationRules, ButtonDelete} from '@components';
+import {createActuService, deleteActuService} from '@requests';
+import {formatDateCourt} from '@helpers/date.js'
+import {useToast} from "primevue/usetoast";
+import {useUsersStore} from '@stores'
+
+const showNewActuForm = ref(false);
+const showActuDialog = ref(false);
+const showActuDetailsDialog = ref(false);
+const hasError = ref(false);
+const formValid = ref(true);
+const formErrors = ref({});
+const userStore = useUsersStore();
+const departement = userStore.departementDefaut;
+const selectedActus = ref([]);
+const selectedActuDetails = ref(null);
+const toast = useToast();
+
+// Formulaire de création
+const newActuForm = ref({
+  libelle: '',
+  description: '',
+  public: [],
+  departement: departement ? `/api/structure_departements/${departement.id}` : null,
+  actif: true,
+  dateDebut: null,
+  dateFin: null,
+  link: '',
+  created: null,
+});
+
+// Options possibles pour le champ "public"
+const publicOptions = ref([
+  {label: 'Étudiant', value: 'etudiant'},
+  {label: 'Personnel', value: 'personnel'},
+]);
+
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => ({items: []}),
+  },
+});
+const emit = defineEmits(['actu-created']);
+
+// Local reactive copy of items (do not mutate props directly)
+const items = ref(props.data.items ? [...props.data.items] : []);
+watch(() => props.data.items, (v) => { items.value = v ? [...v] : []; });
+
+onMounted(() => {
+  console.log(props.data);
+});
+
+// Pagination for Timeline (client-side)
+const rowsPerPage = 4;
+const first = ref(0); // index of first item on current page
+const totalItems = computed(() => items.value?.length || 0);
+const pagedItems = computed(() => {
+  return items.value.slice(first.value, first.value + rowsPerPage);
+});
+
+const onPage = (event) => {
+  // PrimeVue Paginator returns an event with `first` index
+  first.value = event.first ?? 0;
+};
+
+const openActuDetails = (actu) => {
+  selectedActuDetails.value = actu;
+  showActuDetailsDialog.value = true;
+};
+
+const handleValidation = (field, result) => {
+  formErrors.value = {
+    ...formErrors.value,
+    [field]: result.isValid ? null : result.errorMessage
+  };
+  formValid.value = Object.values(formErrors.value).every(error => error === null);
+};
+
+const formatDateForApi = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toISOString(); // toujours format complet, ex: 2026-09-02T00:00:00.000Z
+};
+
+const resetForm = () => {
+  newActuForm.value = {
+    libelle: '',
+    description: '',
+    public: [],
+    departement: departement ? `/api/structure_departements/${departement.id}` : null,
+    actif: true,
+    dateDebut: null,
+    dateFin: null,
+    link: '',
+  };
+  formErrors.value = {};
+  showNewActuForm.value = false;
+};
+
+const createActu = async () => {
+  if (!formValid.value) {
+    hasError.value = true;
+    return;
+  }
+
+  const payload = {
+    libelle: newActuForm.value.libelle,
+    description: newActuForm.value.description,
+    public: newActuForm.value.public,
+    departement: newActuForm.value.departement,
+    actif: newActuForm.value.actif,
+    dateDebut: formatDateForApi(newActuForm.value.dateDebut),
+    dateFin: formatDateForApi(newActuForm.value.dateFin),
+    link: newActuForm.value.link,
+  };
+
+  try {
+    console.log('Payload for API:', payload);
+    const response = await createActuService(payload, '', true);
+
+    // Mettre à jour la liste des Actus
+    if (response) {
+      // update local list for immediate UI feedback
+      items.value.unshift(response);
+      // inform parent so it can update its data source if needed
+      emit('actu-created', response);
+      console.log('Actu created successfully:', response);
+    } else {
+      console.error('Unexpected response format:', response);
+    }
+  } catch (error) {
+    console.error('Error creating actu:', error);
+  }
+
+  resetForm();
+};
+
+const deleteActus = async (actus) => {
+  try {
+    const actusToDelete = Array.isArray(actus)
+      ? actus
+      : actus
+        ? [actus]
+        : selectedActus.value || [];
+
+    if (!actusToDelete.length) {
+      return;
+    }
+
+    for (const actu of actusToDelete) {
+      await deleteActuService(actu.id, '');
+    }
+
+    // Remove the deleted actu from the local list
+    items.value = items.value.filter(item => !actusToDelete.some(actu => actu.id === item.id));
+    selectedActus.value = selectedActus.value.filter(item => !actusToDelete.some(actu => actu.id === item.id));
+    console.log('Actu deleted successfully:', actusToDelete);
+  } catch (error) {
+    console.error('Error deleting actu:', error);
+    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue lors de la suppression de l\'actualité.' });
+  } finally {
+    toast.add({ severity: 'success', summary: 'Succès', detail: 'L\'actualité a été supprimée avec succès.' });
+  }
+}
+</script>
+
+<template>
+  <div class="flex flex-col justify-between gap-4">
+    <div v-if="items.length > 0" class="w-full">
+      <Timeline :value="pagedItems" align="alternate" class="w-full">
+        <template #content="slotProps">
+          <div class="text-sm leading-4 flex flex-col p-2 bg-surface-200/20 dark:bg-surface-950 rounded-md hover:shadow-md transition-shadow duration-200 cursor-pointer"
+               @click="openActuDetails(slotProps.item)">
+            <div v-if="slotProps.item.dateDebut && slotProps.item.dateFin" class="text-muted-color">
+              du {{ formatDateCourt(slotProps.item.dateDebut) }} au {{formatDateCourt(slotProps.item.dateFin)}}
+            </div>
+            <div v-else-if="slotProps.item.dateDebut" class="text-muted-color">
+              {{ formatDateCourt(slotProps.item.dateDebut) }}
+            </div>
+            <div class="font-semibold">
+              {{ slotProps.item.libelle }}
+            </div>
+          </div>
+        </template>
+      </Timeline>
+
+      <!-- Paginator affiché seulement s'il y a plus de rowsPerPage éléments -->
+      <div v-if="totalItems > rowsPerPage" class="flex justify-center mt-2">
+        <Paginator :first="first" :rows="rowsPerPage" :totalRecords="totalItems" @page="onPage" />
+      </div>
+    </div>
+
+    <Message v-else severity="info" icon="pi pi-info-circle">
+      Aucune actualité disponible.
+    </Message>
+
+    <PermissionGuard :permissions="['ROLE_ADMIN']">
+      <Button size="small" severity="primary" label="Gérer les actus" icon="pi pi-pencil" @click="showActuDialog = true"/>
+    </PermissionGuard>
+  </div>
+
+  <Dialog
+      header="Détail de l'actualité"
+      :visible="showActuDetailsDialog"
+      modal
+      dismissable-mask
+      :style="{ width: '50rem', maxWidth: '95vw' }"
+      @update:visible="showActuDetailsDialog = $event"
+  >
+    <div v-if="selectedActuDetails" class="flex flex-col gap-4 p-1">
+      <div class="rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 p-4">
+        <div class="text-xs uppercase tracking-wide text-muted-color mb-2">Actualité</div>
+        <div class="font-semibold text-xl leading-6">{{ selectedActuDetails.libelle }}</div>
+      </div>
+
+      <div class="rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-950 p-4 flex flex-col gap-3">
+        <div v-if="selectedActuDetails.dateDebut && selectedActuDetails.dateFin" class="text-sm text-muted-color">
+          <span class="font-medium text-color">Période :</span>
+          du {{ formatDateCourt(selectedActuDetails.dateDebut) }} au {{ formatDateCourt(selectedActuDetails.dateFin) }}
+        </div>
+        <div v-else-if="selectedActuDetails.dateDebut" class="text-sm text-muted-color">
+          <span class="font-medium text-color">Date :</span>
+          {{ formatDateCourt(selectedActuDetails.dateDebut) }}
+        </div>
+
+        <div v-if="selectedActuDetails.description" class="whitespace-pre-line text-sm leading-6">
+          {{ selectedActuDetails.description }}
+        </div>
+
+        <div v-if="selectedActuDetails.public?.length" class="text-sm">
+          <span class="font-medium">Public : </span>
+          <span class="text-muted-color">{{ selectedActuDetails.public.join(', ') }}</span>
+        </div>
+
+        <div v-if="selectedActuDetails.link" class="pt-1">
+          <a :href="selectedActuDetails.link" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-primary font-medium underline break-all">
+            Ouvrir le lien associé
+            <i class="pi pi-external-link text-xs"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </Dialog>
+
+  <Dialog
+      header="Actualités du département"
+      :visible="showActuDialog"
+      modal
+      dismissable-mask
+      :style="{ width: '90vw' }"
+      :breakpoints="{ '1199px': '85vw', '575px': '95vw' }"
+      @update:visible="showActuDialog = $event"
+  >
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-3 p-3 rounded-md border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900">
+      <div class="flex items-center gap-2">
+        <span class="font-medium text-sm">Actualités sélectionnées</span>
+        <Badge :value="selectedActus && selectedActus.length > 0 ? selectedActus.length.toString() : ''" :severity="selectedActus && selectedActus.length ? 'info' : 'secondary'" />
+      </div>
+      <ButtonDelete :disabled="!selectedActus || !selectedActus.length" @confirm-delete="deleteActus()">
+      </ButtonDelete>
+    </div>
+    <DataTable
+        :value="items"
+        :paginator="true"
+        :rows="5"
+        striped-rows
+        removableSort
+        sortMode="multiple"
+        responsive-layout="scroll"
+        class="w-full mb-6"
+        v-model:selection="selectedActus"
+    >
+      <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+      <Column field="created" header="Date de publication" sortable>
+        <template #body="slotProps">
+          {{ slotProps.data.created ? formatDateCourt(slotProps.data.created) : '' }}
+        </template>
+      </Column>
+      <Column field="libelle" header="Titre" sortable></Column>
+      <Column field="dateDebut" header="Date de début" sortable>
+        <template #body="slotProps">
+          {{ slotProps.data.dateDebut ? formatDateCourt(slotProps.data.dateDebut) : '' }}
+        </template>
+      </Column>
+      <Column field="dateFin" header="Date de fin" sortable>
+        <template #body="slotProps">
+          {{ slotProps.data.dateFin ? formatDateCourt(slotProps.data.dateFin) : '' }}
+        </template>
+      </Column>
+      <Column field="link" header="Lien" sortable></Column>
+      <Column field="description" header="Description" sortable></Column>
+      <Column field="public" header="Public" sortable>
+        <template #body="slotProps">
+          {{ slotProps.data.public?.join(', ') }}
+        </template>
+      </Column>
+      <Column header="Actions">
+        <template #body="slotProps">
+          <ButtonDelete tooltip="Supprimer l'actualité" @confirm-delete="deleteActus(slotProps.data)" />
+        </template>
+      </Column>
+
+      <template #empty>
+        <Message severity="info" icon="pi pi-info-circle">
+          Aucune actualité disponible.
+        </Message>
+      </template>
+    </DataTable>
+
+    <Divider></Divider>
+
+    <Button size="small" severity="primary" label="Créer une actus" icon="pi pi-plus" @click="showNewActuForm = true"/>
+
+    <div v-if="showNewActuForm">
+      <form @submit.prevent="createActu()" class="m-12 w-full flex justify-center">
+        <div class="p-12 bg-surface-300/20 rounded-lg flex flex-col gap-4 w-1/2">
+          <div>Les champs marqués d'un <span class="text-red-500">*</span> sont obligatoires.</div>
+          <ValidatedInput
+              v-model="newActuForm.libelle"
+              name="libelle"
+              label="Titre"
+              type="text"
+              :rules="[validationRules.required, validationRules.maxLength(255)]"
+              @validation="result => handleValidation('libelle', result)"
+              help-text="Entrez le titre de l'actu."
+          />
+
+          <div class="flex items-center gap-6">
+            <ValidatedInput
+                v-model="newActuForm.dateDebut"
+                name="dateDebut"
+                label="Date de début"
+                type="date"
+                @validation="result => handleValidation('dateDebut', result)"
+                help-text="Entrez la date de début de l'actu."
+                class="w-1/2"
+            />
+            <ValidatedInput
+                v-model="newActuForm.dateFin"
+                name="dateFin"
+                label="Date de fin"
+                type="date"
+                @validation="result => handleValidation('dateFin', result)"
+                help-text="Entrez la date de fin de l'actu."
+                class="w-1/2"
+            />
+          </div>
+
+          <ValidatedInput
+              v-model="newActuForm.link"
+              name="link"
+              label="Lien"
+              type="text"
+              @validation="result => handleValidation('link', result)"
+              help-text="Entrez le lien de l'actu."
+          />
+
+          <ValidatedInput
+              v-model="newActuForm.description"
+              name="description"
+              label="Description"
+              type="textarea"
+              @validation="result => handleValidation('description', result)"
+              help-text="Entrez la description de l'actu."
+          />
+
+          <ValidatedInput
+              type="multiselect"
+              v-model="newActuForm.public"
+              :options="publicOptions"
+              label="Public"
+              :rules="[validationRules.required]"
+              placeholder="Sélectionnez le type de public"
+              class="w-full"
+              help-text="Sélectionner à qui s'adresse cette actualité (étudiant, personnel ou les deux)."
+          />
+
+          <div class="flex gap-2">
+            <Button size="small" severity="primary" label="Enregistrer" type="submit"/>
+            <Button size="small" severity="secondary" label="Annuler" @click="resetForm"/>
+          </div>
+        </div>
+      </form>
+    </div>
+  </Dialog>
+</template>
+
+<style scoped>
+.p-timeline-event-opposite {
+  display: none;
+}
+</style>

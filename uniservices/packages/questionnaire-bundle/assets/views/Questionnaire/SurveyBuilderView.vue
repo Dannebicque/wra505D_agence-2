@@ -1,0 +1,526 @@
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import {
+  PlusIcon,
+  Bars3Icon,
+  Cog6ToothIcon,
+  EyeIcon,
+  DocumentTextIcon,
+  QuestionMarkCircleIcon,
+  RocketLaunchIcon,
+  ClockIcon
+} from '@heroicons/vue/24/outline';
+import ActionDropdown from '@components/components/ActionDropdown.vue';
+import {HeaderComponent} from '@components';
+import { VueDraggableNext as draggable } from 'vue-draggable-next';
+
+import { useSurveyStore } from '@/stores/survey';
+import { useUIStore } from '@/stores/ui';
+import type { Section, Question, QuestionType } from '@types';
+
+// Components (these would be separate files)
+import QuestionEditor from '@/components/Questionnaire/QuestionEditor.vue';
+import SurveySettingsModal from '@/components/Questionnaire/SurveySettingsModal.vue';
+import SurveyPreviewModal from '@/components/Questionnaire/SurveyPreviewModal.vue';
+import SectionConfigModal from '@/components/Questionnaire/SectionConfigModal.vue';
+import SurveyPublishModal from '@/components/Questionnaire/SurveyPublishModal.vue';
+import DuplicateSectionModal from '@/components/Questionnaire/DuplicateSectionModal.vue';
+import DuplicateQuestionModal from '@/components/Questionnaire/DuplicateQuestionModal.vue';
+
+const route = useRoute();
+const router = useRouter();
+const surveyStore = useSurveyStore();
+const uiStore = useUIStore();
+
+const showSettings = ref(false);
+const showPreview = ref(false);
+const showSectionModal = ref(false);
+const showPublishModal = ref(false);
+const showDuplicateSectionModal = ref(false);
+const showDuplicateQuestionModal = ref(false);
+const editingSection = ref<Section | null>(null);
+const duplicatingSection = ref<Section | null>(null);
+const duplicatingQuestion = ref<Question | null>(null);
+
+const questionTypes = [
+  { value: 'single_choice', label: 'Choix unique', icon: 'pi pi-comment', command: () => addQuestion('single_choice') },
+  { value: 'multiple_choice', label: 'Choix multiples', icon: 'pi pi-list', command: () => addQuestion('multiple_choice') },
+  { value: 'text_short', label: 'Texte court', icon: 'pi pi-pen-to-square', command: () => addQuestion('text_short') },
+  { value: 'text_long', label: 'Texte long', icon: 'pi pi-pencil', command: () => addQuestion('text_long') },
+  { value: 'scale', label: 'Échelle', icon: 'pi pi-sliders-h', command: () => addQuestion('scale') },
+  { value: 'matrix', label: 'Grille', icon: 'pi pi-table', command: () => addQuestion('matrix') },
+  { value: 'ranking', label: 'Classement', icon: 'pi pi-sort-alt-slash', command: () => addQuestion('ranking') },
+];
+
+const actionsSection = [
+  { label: 'Modifier', icon: 'pi pi-pencil', command: (section: Section) => editSection(section) },
+  { label: 'Dupliquer', icon: 'pi pi-clone', command: (section: Section) => openDuplicateSectionModal(section) },
+  { label: 'Supprimer', icon: 'pi pi-trash', command: (section: Section) => deleteSection(section), severity: 'danger' }
+];
+
+const currentSurvey = computed(() => surveyStore.currentSurvey);
+const currentSection = computed(() => surveyStore.currentSection);
+const sections = computed(() => surveyStore.currentSections);
+
+const estimatedTime = computed(() => {
+  if (!sections.value) return 0;
+
+  let totalSeconds = 0;
+  for (const section of sections.value) {
+    let sectionSeconds = 0;
+
+    // Check if section is configurable and get elements count
+    const numElements = section.typeSection === 'configurable' && section.opt?.elements
+      ? section.opt.elements.length
+      : 1;
+
+    for (const question of section.questions) {
+      switch (question.typeQuestion) {
+        case 'single_choice':
+          sectionSeconds += 15;
+          break;
+        case 'multiple_choice':
+          sectionSeconds += 25;
+          break;
+        case 'text_short':
+          sectionSeconds += 30;
+          break;
+        case 'text_long':
+          sectionSeconds += 60;
+          break;
+        case 'scale':
+          sectionSeconds += 15;
+          break;
+        case 'matrix':
+          sectionSeconds += 30;
+          break;
+        case 'ranking':
+          sectionSeconds += 30;
+          break;
+        default:
+          sectionSeconds += 15;
+          break;
+      }
+    }
+    totalSeconds += sectionSeconds * numElements;
+  }
+  return totalSeconds;
+});
+
+function formatEstimatedTime(seconds: number): string {
+  if (seconds < 60) {
+    return "moins d'une minute";
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (remainingSeconds === 0) {
+    return `${minutes} min`;
+  }
+  return `${minutes} min ${remainingSeconds} s`;
+}
+
+// Watch for changes in estimatedTime and save it to the database
+watch(estimatedTime, (newValue) => {
+  if (currentSurvey.value && currentSurvey.value.estimatedTime !== newValue) {
+    surveyStore.updateSurvey({ estimatedTime: newValue });
+  }
+});
+
+const surveyTitle = ref('');
+const surveyDescription = ref('');
+
+const currentSectionQuestions = computed({
+  get: () => currentSection.value?.questions || [],
+  set: (value) => {
+    if (currentSection.value) {
+      currentSection.value.questions = value;
+      surveyStore.updateSurvey({});
+    }
+  }
+});
+
+const allQuestions = computed(() => {
+  if (!currentSurvey.value) return [];
+  return sections.value.flatMap(section => section.questions);
+});
+
+// Watch for survey changes
+watch(currentSurvey, (survey) => {
+  if (survey) {
+    surveyTitle.value = survey.title;
+    surveyDescription.value = survey.description || '';
+  }
+}, { immediate: true });
+
+// Survey management
+function updateSurveyTitle() {
+  if (currentSurvey.value && surveyTitle.value.trim()) {
+    surveyStore.updateSurvey({ title: surveyTitle.value.trim() });
+  }
+}
+
+function updateSurveyDescription() {
+  if (currentSurvey.value) {
+    surveyStore.updateSurvey({ description: surveyDescription.value.trim() });
+  }
+}
+
+function updateSurveySettings(opt: any) {
+  surveyStore.updateSurvey({ opt });
+  showSettings.value = false;
+}
+
+// Section management
+async function saveSection(section: Section) {
+  if (editingSection.value) {
+    // Update existing section
+    await surveyStore.updateSection(section.uuid, section);
+  } else {
+    // Add new section directly with all options
+    await surveyStore.addSection(section.title, section.description, section.typeSection, section.opt);
+  }
+
+  closeSectionModal();
+  uiStore.addNotification('success', 'Section sauvegardée', 'La section a été sauvegardée avec succès.');
+}
+
+function closeSectionModal() {
+  showSectionModal.value = false;
+  editingSection.value = null;
+}
+
+function selectSection(section: Section) {
+  surveyStore.selectSection(section.uuid);
+}
+
+function editSection(section: Section) {
+  editingSection.value = section;
+  showSectionModal.value = true;
+}
+
+function openDuplicateSectionModal(section: Section) {
+  duplicatingSection.value = section;
+  showDuplicateSectionModal.value = true;
+}
+
+async function confirmDuplicateSection(payload: { newTitle: string; duplicateQuestions: boolean; adaptConditionalRules: boolean }) {
+  if (!duplicatingSection.value) return;
+
+  try {
+    await surveyStore.duplicateSection(duplicatingSection.value.uuid, payload);
+    showDuplicateSectionModal.value = false;
+    duplicatingSection.value = null;
+    uiStore.addNotification('success', 'Section dupliquée', 'La section et sa logique conditionnelle ont été dupliquées avec succès.');
+  } catch (error) {
+    console.error('Failed to duplicate section:', error);
+    uiStore.addNotification('danger', 'Erreur de duplication', 'Une erreur est survenue lors de la duplication.');
+  }
+}
+
+function deleteSection(section: Section) {
+  if (confirm('Êtes-vous sûr de vouloir supprimer cette section ?')) {
+    surveyStore.deleteSection(section.uuid);
+    uiStore.addNotification('success', 'Section supprimée', 'La section a été supprimée avec succès.');
+  }
+}
+
+function onSectionReorder(event: any) {
+  surveyStore.reorderSections(event.oldIndex, event.newIndex);
+}
+
+// Question management
+function addQuestion(type: QuestionType) {
+  if (!currentSection.value) return;
+  surveyStore.addQuestion(currentSection.value.uuid, type);
+}
+
+function updateQuestion(questionId: string, updates: Partial<Question>) {
+  if (!currentSection.value) return;
+  surveyStore.updateQuestion(currentSection.value.uuid, questionId, updates);
+}
+
+function deleteQuestion(question: Question) {
+  console.log('suppression question')
+  if (!currentSection.value) return;
+  console.log(currentSection.value.uuid)
+  console.log(question)
+  //question est directement l'uuid
+  surveyStore.removeQuestion(currentSection.value.uuid, question);
+}
+
+function openDuplicateQuestionModal(question: Question) {
+  duplicatingQuestion.value = question;
+  showDuplicateQuestionModal.value = true;
+}
+
+async function confirmDuplicateQuestion(payload: { newLabel: string; copyRulesMode: 'copy_adapt' | 'none' }) {
+  if (!duplicatingQuestion.value || !currentSection.value) return;
+
+  try {
+    await surveyStore.duplicateQuestion(currentSection.value.uuid, duplicatingQuestion.value, payload);
+    showDuplicateQuestionModal.value = false;
+    duplicatingQuestion.value = null;
+    uiStore.addNotification('success', 'Question dupliquée', 'La question a été dupliquée avec succès.');
+  } catch (error) {
+    console.error('Failed to duplicate question:', error);
+    uiStore.addNotification('danger', 'Erreur de duplication', 'Une erreur est survenue lors de la duplication.');
+  }
+}
+
+function onQuestionReorder(event: any) {
+  if (!currentSection.value) return;
+  surveyStore.reorderQuestions(currentSection.value.uuid, event.oldIndex, event.newIndex);
+}
+
+function updateSurveyPublishSettings() {
+
+}
+
+function publishSurvey() {
+  showPublishModal.value = true;
+}
+
+async function confirmPublish(recipients: string[]) {
+  if (!currentSurvey.value) return;
+
+  try {
+    await surveyStore.publishSurvey(currentSurvey.value.uuid, recipients);
+    showPublishModal.value = false;
+    uiStore.addNotification('success', 'Questionnaire publié', 'Le questionnaire a été publié avec succès.');
+
+    // Redirect to responses view
+    router.push({
+      name: 'questionnaire_responses',
+      params: { id: currentSurvey.value.uuid }
+    });
+  } catch (error) {
+    console.error('Failed to publish survey:', error);
+    uiStore.addNotification('danger', 'Erreur de publication', 'Une erreur est survenue lors de la publication.');
+  }
+}
+
+// Initialize
+onMounted(async () => {
+  const surveyId = route.params.id as string;
+
+  if (surveyId && surveyId !== 'new') {
+    surveyStore.selectSurvey(surveyId);
+  } else {
+    // Create new survey
+    console.log('Creating new survey');
+    const newSurvey = await surveyStore.createSurvey('Nouveau questionnaire');
+    if (newSurvey && newSurvey.uuid) {
+      router.replace({ name: 'questionnaire_builder', params: { id: newSurvey.uuid } });
+    }
+  }
+});
+</script>
+
+<style scoped>
+@reference "../../assets/tailwind.css";
+
+.section-menu,
+.question-type-menu {
+  @apply absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50;
+}
+
+.menu-item {
+  @apply flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
+}
+</style>
+
+<template>
+   <HeaderComponent
+      icon="pi pi-pencil"
+      titre="Construction du questionnaire"
+      description="Concevez, configurez et publiez vos enquêtes d'évaluation"
+    />
+
+  <div class="flex  dark:bg-gray-900">
+    <!-- Left Panel - Survey Structure -->
+    <div class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col me-3">
+      <!-- Survey Info -->
+      <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col">
+        <div class="flex items-center">
+          <div class="flex-1">
+            <input v-model="surveyTitle" @blur="updateSurveyTitle"
+              class="text-lg font-semibold w-full bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-2 py-1"
+              placeholder="Titre du questionnaire" />
+            <textarea v-model="surveyDescription" @blur="updateSurveyDescription"
+              class="text-sm text-gray-600 dark:text-gray-400 w-full bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-2 py-1 mt-2 resize-none"
+              placeholder="Description (optionnelle)" rows="2" />
+          </div>
+        </div>
+        <div class="mt-2 px-2 flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+          <ClockIcon class="w-4 h-4 text-gray-400" />
+          <span>Temps de réponse estimé : {{ formatEstimatedTime(estimatedTime) }}</span>
+        </div>
+      </div>
+
+
+
+      <!-- Sections List -->
+      <div class="flex-1 overflow-y-auto">
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Sections</h3>
+            <Button @click="showSectionModal = true" severity="primary" class="text-xs">
+              <PlusIcon class="w-3 h-3" />
+            </Button>
+          </div>
+
+          <draggable v-model="sections" @end="onSectionReorder" handle=".section-handle" class="space-y-2">
+            <div v-for="(section, index) in sections" :key="section.uuid" :class="[
+              'border rounded-lg p-3 cursor-pointer transition-colors',
+              currentSection?.uuid === section.uuid
+                ? 'border-primary-300 bg-primary-50 dark:border-primary-600 dark:bg-primary-900'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+            ]" @click="selectSection(section)">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2 flex-1">
+                  <div class="section-handle drag-handle">
+                    <Bars3Icon class="w-4 h-4" />
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                      {{ section.title }}
+                    </h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ section.questions.length }} question{{ section.questions.length > 1 ? 's' : '' }}
+                    </p>
+                  </div>
+                </div>
+
+                <ActionDropdown :iconOnly="true" :actions="actionsSection" :contextValue="section" button-label=""
+                  button-icon="pi pi-cog" button-severity="secondary" />
+              </div>
+
+              <!-- Section Type Indicator -->
+              <div v-if="section.typeSection === 'configurable' && section.opt" class="mt-2 flex items-center space-x-1">
+                <Cog6ToothIcon class="w-3 h-3 text-blue-500" />
+                <span class="text-xs text-blue-600 dark:text-blue-400">
+                  {{ section.opt.elements?.length || 0 }} {{ section.opt.sourceLabel?.toLowerCase() }}
+                </span>
+              </div>
+            </div>
+          </draggable>
+        </div>
+      </div>
+
+      <!-- Survey Settings -->
+      <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+        <Button severity="secondary" @click="showSettings = true" class="w-full text-sm">
+          <Cog6ToothIcon class="w-4 h-4" />
+          Paramètres du questionnaire
+        </Button>
+        <Button v-if="currentSurvey && currentSurvey.status === 'draft'" @click="publishSurvey" severity="primary"
+          class="w-full mt-2 text-sm">
+          <RocketLaunchIcon class="w-4 h-4" />
+          <span class="hidden sm:inline">Publier</span>
+        </Button>
+      </div>
+    </div>
+
+    <!-- Main Content - Question Builder -->
+    <div class="flex-1 flex flex-col">
+      <!-- Toolbar -->
+      <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ currentSection?.title || 'Sélectionnez une section' }}
+            </h2>
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+              {{ currentSection?.questions.length || 0 }} question{{ (currentSection?.questions.length || 0) > 1 ? 's' :
+                '' }}
+            </span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <Button @click="showPreview = true" severity="info">
+              <EyeIcon class="w-4 h-4" />
+              Aperçu
+            </Button>
+            <ActionDropdown :actions="questionTypes" button-label="Ajouter une question" button-icon="pi pi-plus"
+              button-severity="primary" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Questions Area -->
+      <div class="flex-1 overflow-y-auto mt-3">
+        <div v-if="!currentSection" class="text-center py-12">
+          <DocumentTextIcon class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Sélectionnez une section
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            Choisissez une section dans le panneau de gauche pour commencer à ajouter des questions.
+          </p>
+        </div>
+
+        <div v-else-if="currentSection.questions.length === 0" class="text-center py-12">
+          <QuestionMarkCircleIcon class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Aucune question
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">
+            Commencez par ajouter votre première question à cette section.
+          </p>
+          <ActionDropdown :actions="questionTypes" button-label="Ajouter une question" button-icon="pi pi-plus"
+            button-severity="primary" size="small" />
+        </div>
+
+        <div v-else>
+          <draggable v-model="currentSectionQuestions" @end="onQuestionReorder" handle=".question-handle"
+            class="space-y-4">
+            <QuestionEditor v-for="(question, index) in currentSectionQuestions" :key="question.uuid"
+              :question="question" :section-id="currentSection.uuid" :index="index" :all-questions="allQuestions"
+              :all-sections="sections" @update="updateQuestion" @delete="deleteQuestion"
+              @duplicate="openDuplicateQuestionModal" />
+          </draggable>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Survey Settings Modal
+  todo: a déclencher sur publication ??
+  -->
+  <!--  <SurveyPublishSettingsModal-->
+  <!--      v-if="showSettings"-->
+  <!--      :survey="currentSurvey"-->
+  <!--      @close="showSettings = false"-->
+  <!--      @update="updateSurveyPublishSettings"-->
+  <!--  />-->
+
+  <SurveySettingsModal v-if="showSettings" :survey="currentSurvey" @close="showSettings = false"
+    @update="updateSurveySettings" />
+
+  <!-- Preview Modal -->
+  <SurveyPreviewModal v-if="showPreview" :uuid="currentSurvey.uuid" :sections="sections" @close="showPreview = false" />
+
+  <!-- Section Configuration Modal -->
+  <SectionConfigModal v-if="showSectionModal" :section="editingSection" @close="closeSectionModal"
+    @save="saveSection" />
+
+  <!-- Publish Confirmation Modal -->
+  <SurveyPublishModal v-if="showPublishModal" :survey="currentSurvey" @close="showPublishModal = false"
+    @confirm="confirmPublish" />
+
+  <!-- Duplicate Section Modal -->
+  <DuplicateSectionModal
+    v-if="showDuplicateSectionModal && duplicatingSection"
+    :section="duplicatingSection"
+    @close="showDuplicateSectionModal = false; duplicatingSection = null"
+    @confirm="confirmDuplicateSection"
+  />
+
+  <!-- Duplicate Question Modal -->
+  <DuplicateQuestionModal
+    v-if="showDuplicateQuestionModal && duplicatingQuestion"
+    :question="duplicatingQuestion"
+    @close="showDuplicateQuestionModal = false; duplicatingQuestion = null"
+    @confirm="confirmDuplicateQuestion"
+  />
+</template>
