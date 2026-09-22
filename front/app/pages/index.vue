@@ -9,7 +9,7 @@ const api = useApi()
 
 useHead({ title: 'Portail' })
 
-const { data: contexte } = await useAsyncData('contexte', () => api.contexteSecurite())
+const { data: contexte } = await useContexte()
 
 const { data: widgets } = await useAsyncData('widgets-portail', async () => {
   const { widgets } = await api.widgetsDuTableauDeBord('portail')
@@ -29,7 +29,7 @@ const { data: donnees } = await useAsyncData('donnees-widgets', async () => {
 </script>
 
 <template>
-  <main class="portail">
+  <div class="portail">
     <h1>Portail</h1>
     <p v-if="contexte" class="bonjour">Bonjour, {{ contexte.user.prenom }}</p>
 
@@ -57,7 +57,7 @@ const { data: donnees } = await useAsyncData('donnees-widgets', async () => {
       </AppWidget>
     </div>
     <p v-else>Aucun widget sur votre tableau de bord.</p>
-  </main>
+  </div>
 </template>
 
 <style scoped>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const api = useApi()
 
+definePageMeta({ layout: false })
 useHead({ title: 'Connexion' })
 
 const identifiant = ref('')
