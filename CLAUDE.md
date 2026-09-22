@@ -125,4 +125,20 @@ autres.
 Jetons de direction artistique à respecter, volet 2 uniquement :
 primaire `#F7B000`, texte sur primaire `#4D3677`, texte courant `#4D5259`,
 fond `#F5F6FA`, succès `#15C377`, danger `#F96868`, rayon `6px`, police Roboto.
-Le vert et le rouge ne portent jamais de texte blanc : contraste insuffisant, corrigé chez nous.
+
+Le client ne fournit ni valeurs sombres, ni bordures, ni couleurs de texte sur le vert et le
+rouge. Celles-ci sont dérivées et mesurées, chaque rapport vérifié contre le seuil RGAA :
+
+| Usage | Clair | Sombre | Rapport |
+|---|---|---|---|
+| Texte courant sur fond | `#4D5259` | `#E1E3E7` sur `#1B1D21` | 7,29:1 et 13,13:1 |
+| Texte atténué | `#676D75` | `#A7ACB4` | 7,40:1 en sombre |
+| Surface | `#FFFFFF` | `#25282D` | — |
+| Bordure d'élément d'interface | `#7E848D` | `#666B73` | 3,49:1 et 3,15:1 |
+| Texte sur primaire | `#4D3677` | idem | 5,29:1 |
+| Texte sur succès | `#0B3D26` | idem | 5,33:1 |
+| Texte sur danger | `#4A1010` | idem | 5,25:1 |
+
+Le vert et le rouge ne portent jamais de texte blanc : 2,31:1 et 2,91:1, très en dessous du
+seuil. La primaire ne fait que 1,74:1 sur le fond clair : elle ne peut pas délimiter seule un
+élément d'interface, il lui faut une bordure. Cible tactile minimale : 44 px.
