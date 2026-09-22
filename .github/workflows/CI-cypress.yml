@@ -1,0 +1,109 @@
+name: CI-Cypress
+env:
+  CI: true
+  FORCE_COLOR: 1
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: uniservices
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: cypress_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql, iconv, simplexml
+          coverage: none
+
+      - name: Install back-end dependencies
+        working-directory: uniservices/back
+        run: composer install --no-progress --no-interaction --prefer-dist
+
+      - name: Set up .env.test file
+        working-directory: uniservices/back
+        run: |
+          cp .env .env.test
+          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/cypress_test?serverVersion=8.0" >> .env.test
+
+      - name: Generate JWT token
+        working-directory: uniservices/back
+        run: php bin/console lexik:jwt:generate-keypair
+
+      - name: Run database migrations and load fixtures
+        working-directory: uniservices/back
+        run: |
+          php bin/console doctrine:database:create --if-not-exists --no-interaction
+          php bin/console doctrine:schema:update --force --no-interaction
+          php bin/console doctrine:fixtures:load --no-interaction
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install front-end dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set environment variables
+        run: echo "VITE_BASE_URL=http://127.0.0.1:8000" >> $GITHUB_ENV
+
+      - name: Start Symfony server
+        working-directory: uniservices/back
+        run: php -S 127.0.0.1:8000 -t public > /tmp/symfony-server.log 2>&1 &
+
+      - name: Wait for Symfony server
+        run: |
+          timeout 60 bash -c 'until curl -fsS http://127.0.0.1:8000 > /dev/null; do sleep 1; done' || {
+            cat /tmp/symfony-server.log
+            exit 1
+          }
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: uniservices
+          # Utilise la commande dev du monorepo qui lance les bundles sur les ports 3000, 3001, 3003
+          start: pnpm run dev
+          wait-on: 'http://localhost:3000'
+          record: false
+          parallel: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload Cypress artifacts (optional)
+      - name: Upload Cypress Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-results
+          path: uniservices/cypress/reports
+
