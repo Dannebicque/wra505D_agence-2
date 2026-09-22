@@ -1,15 +1,19 @@
+import { comptes } from '../data/comptes'
+
 /*
- * L'API reelle repond 204 et depose le JWT dans un cookie httpOnly. Le mock fait
- * pareil, avec un jeton opaque : le front n'a jamais a lire ce cookie.
+ * L'API reelle repond 204 et depose le JWT dans un cookie httpOnly, ou 401 sur un
+ * couple invalide. Le mock reprend les deux, avec un jeton opaque : le front n'a
+ * jamais a lire ce cookie.
  */
 export default defineEventHandler(async (event) => {
   const { username, password } = await readBody<{ username?: string; password?: string }>(event)
 
-  if (!username || !password) {
-    throw createError({ statusCode: 400, statusMessage: 'Identifiants manquants' })
+  const compte = comptes.find((c) => c.username === username)
+  if (!compte || password !== compte.motDePasse) {
+    throw createError({ statusCode: 401, statusMessage: 'Invalid credentials.' })
   }
 
-  setCookie(event, 'BEARER', `mock.${username}`, {
+  setCookie(event, 'BEARER', `mock.${compte.username}`, {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
