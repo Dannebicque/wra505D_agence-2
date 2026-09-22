@@ -166,3 +166,54 @@ export interface Session {
   type: string | null
   username: string | null
 }
+
+/** Reponse de /api/me/security-context : identite, applications et droits. */
+export interface ContexteSecurite {
+  user: {
+    id: number
+    username: string
+    prenom: string
+    nom: string
+    email: string
+    type: string
+    roles: string[]
+  }
+  packages: string[]
+  permissions: string[]
+}
+
+/** Un widget du tableau de bord, tel que l'API le decrit avec sa mise en page. */
+export interface Widget {
+  code: string
+  bundle: string
+  label: string
+  icon: string
+  component: string
+  size: 'small' | 'medium' | 'large' | string
+  enabled: boolean
+  allowedProfiles: string[]
+  position: number | null
+  colSpan: number
+  rowSpan: number
+  key: string
+}
+
+export interface CatalogueWidgets {
+  bundles: { code: string; label: string }[]
+  widgets: Widget[]
+}
+
+export interface DonneesEmploiDuTemps {
+  todayLabel: string
+  items: { heure: string; cours: string }[]
+}
+
+export interface DonneesProgressionPortfolio {
+  validated: number
+  target: number
+}
+
+/* Leur widget rend chaque element tel quel : l'API renvoie des chaines. */
+export interface DonneesQuestionnairesEnAttente {
+  items: string[]
+}
