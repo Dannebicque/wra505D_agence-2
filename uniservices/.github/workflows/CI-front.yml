@@ -1,0 +1,52 @@
+name: CI-Packages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - 'shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/CI-front.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - 'shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/CI-front.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-packages-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-packages:
+    name: Vue / packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run frontend quality checks
+        run: make check-front

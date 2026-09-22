@@ -1,0 +1,213 @@
+import ConfigurationView from '../../views/ConfigurationView.vue'
+import ListAnneeUniv from '../../views/configuration/annee_univ/ListAnneeUniv.vue';
+import NewAnneeUniv from "../../views/configuration/annee_univ/NewAnneeUniv.vue";
+import AnneeUnivDiplomes from "../../views/configuration/annee_univ/AnneeUnivDiplomes.vue";
+import EditAnneeUniv from "../../views/configuration/annee_univ/EditAnneeUniv.vue";
+import GestionAccesView from '../../views/configuration/GestionAccesView.vue'
+import EtablissementView from "../../views/configuration/EtablissementView.vue";
+import EmailsView from "../../views/configuration/emails/EmailsView.vue";
+import EmailEditView from "../../views/configuration/emails/EmailEditView.vue";
+
+export default [
+  {
+    path: '',
+    component: ConfigurationView,
+    name: 'Configuration',
+    meta: {
+      permission: 'isReferent',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: null
+      }]
+    },
+  },
+  {
+    path: 'etablissement',
+    component: EtablissementView,
+    name: 'etablissement',
+    meta: {
+      permission: 'isSuperAdmin',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Établissement',
+        route: null
+      }]
+    },
+  },
+  {
+    path: 'annees-universitaires',
+    component: ListAnneeUniv,
+    name: 'annee-universitaire',
+    meta: {
+      permission: 'isReferent',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Année universitaire',
+        route: null
+      }],
+    }
+  },
+  {
+    path: 'annee-universitaire/new',
+    component: NewAnneeUniv,
+    name: 'annee-universitaire-new',
+    meta: {
+      permission: 'isReferent',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Nouvelle année universitaire',
+        route: null
+      }]
+    }
+  },
+  {
+    path: 'annee-universitaire/:id/diplomes',
+    component: AnneeUnivDiplomes,
+    name: 'annee-universitaire-diplomes',
+    meta: {
+      permission: 'isReferent',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Diplômes',
+        route: null
+      }]
+    }
+  },
+  {
+    path: 'annee-universitaire/:id/edit',
+    component: EditAnneeUniv,
+    name: 'annee-universitaire-edit',
+    meta: {
+      permission: 'isReferent',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Modifier l\'année universitaire',
+        route: null
+      }]
+    }
+  },
+  {
+    path: 'gestion-acces',
+    component: GestionAccesView,
+    name: 'gestion-acces',
+    meta: {
+      permission: 'isReferent',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Gestion des accès',
+        route: null
+      }]
+    },
+  },
+  {
+    path: 'emails',
+    component: EmailsView,
+    name: 'emails-configuration',
+    meta: {
+      permission: 'isSuperAdmin',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Modèles de mails',
+        route: null
+      }]
+    },
+  },
+  {
+    path: 'emails/:key/edit',
+    component: EmailEditView,
+    name: 'email-edit',
+    meta: {
+      permission: 'isSuperAdmin',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Modèles de mails',
+        route: '/auth/configuration/emails'
+      }, {
+        label: 'Édition',
+        route: null
+      }]
+    },
+  },
+  {
+    path: 'styleguide',
+    component: () => import('../../views/configuration/StyleguideView.vue'),
+    name: 'styleguide',
+    meta: {
+      permission: 'isReferent',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Documentation Composants',
+        route: null
+      }]
+    }
+  },
+  {
+    path: 'scheduler',
+    component: () => import('../../views/configuration/scheduler/ListSchedulerTasks.vue'),
+    name: 'scheduler-list',
+    meta: {
+      permission: 'isSuperAdmin',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Planificateur',
+        route: null
+      }]
+    },
+  },
+  {
+    path: 'scheduler/new',
+    component: () => import('../../views/configuration/scheduler/EditSchedulerTask.vue'),
+    name: 'scheduler-new',
+    meta: {
+      permission: 'isSuperAdmin',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Planificateur',
+        route: '/auth/configuration/scheduler'
+      }, {
+        label: 'Nouveau',
+        route: null
+      }]
+    },
+  },
+  {
+    path: 'scheduler/:id/edit',
+    component: () => import('../../views/configuration/scheduler/EditSchedulerTask.vue'),
+    name: 'scheduler-edit',
+    meta: {
+      permission: 'isSuperAdmin',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Planificateur',
+        route: '/auth/configuration/scheduler'
+      }, {
+        label: 'Édition',
+        route: null
+      }]
+    },
+  }
+]

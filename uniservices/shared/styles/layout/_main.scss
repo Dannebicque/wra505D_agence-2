@@ -1,0 +1,31 @@
+.layout-main-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 4rem);
+    justify-content: space-between;
+    padding: 2rem;
+    transition: margin-left var(--layout-section-transition-duration);
+    box-shadow: rgba(0, 0, 0, 0.06) 0px 4px 4px 1px inset;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) var(--surface-ground);
+    scrollbar-track-color: var(--surface-card);
+}
+
+.layout-main {
+    flex: 1 1 auto;
+    padding: 1rem;
+}
+
+.page-title {
+
+    h1 {
+        font-size: 2rem;
+        font-weight: 500;
+    }
+}
+
+.pwd {
+    display: flex;
+    flex-direction: column;
+}

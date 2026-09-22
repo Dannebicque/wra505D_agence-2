@@ -1,0 +1,193 @@
+<?php
+
+namespace App\Entity\Apc;
+
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use App\Entity\Structure\StructureAnnee;
+use App\Repository\Apc\ApcNiveauRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+
+#[ORM\Entity(repositoryClass: ApcNiveauRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(normalizationContext: ['groups' => ['niveau:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['niveau:read']]),
+        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_APC_NIVEAU', object)"),
+        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_APC_NIVEAU', object)"),
+        new Delete(security: "is_granted('CAN_DELETE_APC_NIVEAU', object)"),
+    ]
+)]
+class ApcNiveau
+{
+    final public const NIVEAU_1 = 'Novice';
+    final public const NIVEAU_2 = 'Intermédiaire';
+    final public const NIVEAU_3 = 'Compétent';
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['competence:referentiel:full'])]
+    private ?string $libelle = null;
+
+    #[ORM\Column]
+    #[Groups(['competence:referentiel:full'])]
+    private ?int $ordre = null;
+
+    /**
+     * @var Collection<int, ApcParcours>
+     */
+    #[ORM\ManyToMany(targetEntity: ApcParcours::class, inversedBy: 'niveaux')]
+    #[Groups('diplome:read')]
+    private Collection $parcours;
+
+    #[ORM\ManyToOne(inversedBy: 'niveaux')]
+    #[Groups('enseignement:detail')]
+    private ?ApcCompetence $competence = null;
+
+    #[ORM\ManyToOne(inversedBy: 'niveaux')]
+    private ?StructureAnnee $annee = null;
+
+    /**
+     * @var Collection<int, ApcApprentissageCritique>
+     */
+    #[ORM\OneToMany(targetEntity: ApcApprentissageCritique::class, mappedBy: 'niveau')]
+    #[Groups(['competence:referentiel:full'])]
+    private Collection $apprentissageCritique;
+
+    public function __construct(ApcCompetence $competence = null)
+    {
+        $this->competence = $competence;
+        $this->parcours = new ArrayCollection();
+        $this->apprentissageCritique = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getLibelle(): ?string
+    {
+        return $this->libelle;
+    }
+
+    public function setLibelle(string $libelle): static
+    {
+        $this->libelle = $libelle;
+
+        return $this;
+    }
+
+    public function getOrdre(): ?int
+    {
+        return $this->ordre;
+    }
+
+    public function setOrdre(int $ordre): static
+    {
+        $this->ordre = $ordre;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ApcParcours>
+     */
+    public function getParcours(): Collection
+    {
+        return $this->parcours;
+    }
+
+    public function addParcours(ApcParcours $parcours): static
+    {
+        if (!$this->parcours->contains($parcours)) {
+            $this->parcours->add($parcours);
+        }
+
+        return $this;
+    }
+
+    public function removeParcours(ApcParcours $parcours): static
+    {
+        $this->parcours->removeElement($parcours);
+
+        return $this;
+    }
+
+    public function getCompetence(): ?ApcCompetence
+    {
+        return $this->competence;
+    }
+
+    public function setCompetence(?ApcCompetence $competence): static
+    {
+        $this->competence = $competence;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ApcApprentissageCritique>
+     */
+    public function getApprentissageCritique(): Collection
+    {
+        return $this->apprentissageCritique;
+    }
+
+    public function addApprentissageCritique(ApcApprentissageCritique $apprentissageCritique): static
+    {
+        if (!$this->apprentissageCritique->contains($apprentissageCritique)) {
+            $this->apprentissageCritique->add($apprentissageCritique);
+            $apprentissageCritique->setNiveau($this);
+        }
+
+        return $this;
+    }
+
+    public function removeApprentissageCritique(ApcApprentissageCritique $apprentissageCritique): static
+    {
+        if ($this->apprentissageCritique->removeElement($apprentissageCritique)) {
+            // set the owning side to null (unless already changed)
+            if ($apprentissageCritique->getNiveau() === $this) {
+                $apprentissageCritique->setNiveau(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function display(): string
+    {
+        $niv = match ($this->ordre) {
+            1 => self::NIVEAU_1,
+            2 => self::NIVEAU_2,
+            3 => self::NIVEAU_3,
+            default => null,
+        };
+
+        return $this->getCompetence()?->getNomCourt().' - Niveau '.$niv.'('.$this->ordre.')';
+    }
+
+    public function getAnnee(): ?StructureAnnee
+    {
+        return $this->annee;
+    }
+
+    public function setAnnee(?StructureAnnee $annee): static
+    {
+        $this->annee = $annee;
+
+        return $this;
+    }
+}

@@ -1,0 +1,45 @@
+name: CI-Back
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'back/**'
+      - 'packages/**'
+      - '.github/workflows/CI-back.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'back/**'
+      - 'packages/**'
+      - '.github/workflows/CI-back.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-back-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-back:
+    name: Symfony / PHP
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql, iconv, simplexml
+          coverage: none
+          tools: composer:v2
+
+      - name: Run backend quality checks
+        run: make check

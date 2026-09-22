@@ -1,0 +1,58 @@
+/back/var
+/back/vendor
+/front/node_modules/
+/front/apps/auth/public/common-images/
+/front/apps/edt/public/common-images/
+/front/apps/intranet/public/common-images/
+/.idea
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Environment files (sensitive data)
+.env.local
+.env.*.local
+
+# JWT Keys
+/back/config/jwt/*.pem
+
+# Logs
+*.log
+/back/var/log/
+
+# Cache
+/back/var/cache/
+
+# Database dumps
+*.sql
+*.dump
+
+# IDE and editors
+*.swp
+*.swo
+*~
+.vscode/
+.vite/
+.idea/
+
+# OS files
+Thumbs.db
+
+# Fichiers de dépendances
+vendor/
+node_modules/
+packages/*/assets/node_modules/
+.pnpm/
+.pnpm-store/
+.pnpm-debug.log*
+
+
+# fichiers de build
+/back/public/**
+
+# exclure les fichiers github workflow CI-back, CI-front, CI-cypress
+/.github/workflows/CI-back.yml
+/.github/workflows/CI-front.yml
+/.github/workflows/CI-cypress.yml
+

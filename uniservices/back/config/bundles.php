@@ -1,0 +1,24 @@
+<?php
+
+return [
+    Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
+    Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class => ['all' => true],
+    Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle::class => ['all' => true],
+    Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
+    Symfony\Bundle\SecurityBundle\SecurityBundle::class => ['all' => true],
+    Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
+    Nelmio\CorsBundle\NelmioCorsBundle::class => ['all' => true],
+    ApiPlatform\Symfony\Bundle\ApiPlatformBundle::class => ['all' => true],
+    Lexik\Bundle\JWTAuthenticationBundle\LexikJWTAuthenticationBundle::class => ['all' => true],
+    Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle::class => ['dev' => true, 'test' => true],
+    Davidannebicque\HtmlToSpreadsheetBundle\HtmlToSpreadsheetBundle::class => ['all' => true],
+    Gesdinet\JWTRefreshTokenBundle\GesdinetJWTRefreshTokenBundle::class => ['all' => true],
+    Jawira\DoctrineDiagramBundle\DoctrineDiagramBundle::class => ['dev' => true, 'test' => true],
+    AuthBundle\AuthBundle::class => ['all' => true],
+    IntranetBundle\IntranetBundle::class => ['all' => true],
+    UnifolioBundle\UnifolioBundle::class => ['all' => true],
+    HelpdeskBundle\HelpdeskBundle::class => ['all' => true],
+    QuestionnaireBundle\QuestionnaireBundle::class => ['all' => true],
+    StageBundle\StageBundle::class => ['all' => true],
+    DocumentBundle\DocumentBundle::class => ['all' => true],
+];

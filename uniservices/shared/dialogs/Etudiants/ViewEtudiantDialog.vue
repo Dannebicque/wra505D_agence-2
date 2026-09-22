@@ -1,0 +1,41 @@
+<script setup>
+import {ProfilEtudiant} from '@components'
+import noImage from "@images/photos_etudiants/noimage.png";
+import {onMounted, ref} from "vue";
+
+const props = defineProps({
+  isVisible: Boolean,
+  etudiantSco: Object
+})
+
+const etudiantPhoto = ref(noImage);
+
+onMounted(() => {
+  if (props.etudiantSco?.etudiant.photoName) {
+    const photoPath = new URL(
+        `@common-images/photos_etudiants/${props.etudiantSco.etudiant.photoName}`,
+        import.meta.url
+    ).href;
+
+    fetch(photoPath)
+        .then((response) => {
+          if (response.ok) {
+            etudiantPhoto.value = photoPath;
+          }
+        })
+        .catch(() => {
+          etudiantPhoto.value = noImage;
+        });
+  }
+  console.log(props.etudiantSco);
+});
+</script>
+
+<template>
+  <Dialog header=" " :visible="props.isVisible" modal :style="{ width: '90vw' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" dismissable-mask :closable="true">
+    <ProfilEtudiant :etudiantSco="props.etudiantSco.etudiant.id" :isVisible="props.isVisible" :etudiantPhoto="etudiantPhoto" />
+  </Dialog>
+</template>
+
+<style scoped>
+</style>

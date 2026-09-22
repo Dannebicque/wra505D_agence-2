@@ -1,0 +1,44 @@
+[
+    {
+        "name": "DocumentBundle",
+        "description": "Gestion \u00c9lectronique de Documents (GED)",
+        "urlSlug": "documents",
+        "url": "http://localhost:5173/documents"
+    },
+    {
+        "name": "HelpDesk",
+        "description": "Syst\u00e8me de tickets",
+        "urlSlug": "helpdesk",
+        "url": "http://localhost:3004/helpdesk/"
+    },
+    {
+        "name": "UniTranet",
+        "description": "Gestion de la structure des formations et des \u00e9tudiants.",
+        "urlSlug": "intranet",
+        "url": "http://localhost:3001/intranet/"
+    },
+    {
+        "name": "QuestionnaireBundle",
+        "description": "Application QuestionnaireBundle",
+        "urlSlug": "questionnaire",
+        "url": "http://localhost:3005/questionnaire/"
+    },
+    {
+        "name": "StageBundle",
+        "description": "Gestion des stages et alternances",
+        "urlSlug": "stage",
+        "url": "http://localhost:3005/stage/"
+    },
+    {
+        "name": "UniFolio",
+        "description": "Outil de cr\u00e9ation et de gestion de portfolios universitaires.",
+        "urlSlug": "unifolio",
+        "url": "/unifolio"
+    },
+    {
+        "name": "Correcto",
+        "description": "Plateforme de correction des travaux et des examens.",
+        "urlSlug": "correcto",
+        "url": "/correcto"
+    }
+]
