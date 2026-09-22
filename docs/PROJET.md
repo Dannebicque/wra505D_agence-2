@@ -2,7 +2,7 @@
 
 > Document vivant. Il centralise toutes les réflexions du projet (site agence + projet client) pour qu'on ne reparte jamais de zéro. Tout ce qui est marqué **[À compléter]** doit être rempli ou validé en équipe. Mettez-le à jour à chaque décision, chaque réunion, chaque nouvelle idée.
 
-**Statut au 21/09/2026 :** stack tranchée (Nuxt + Vue), conventions de code définies, audit de l'existant réalisé et intégré. Priorité absolue : préparer le pitch du **22/09/2026 à 12h00** (voir section 2).
+**Statut au 22/09/2026 :** stacks tranchées (Next pour le site agence, base Vue du client reprise pour l'espace étudiant), conventions de code définies, audit de l'existant réalisé et intégré. Priorité absolue : préparer le pitch du **22/09/2026 à 12h00** (voir section 2).
 
 ---
 
@@ -62,7 +62,7 @@ Le client est le responsable des outils informatiques de son IUT. Il veut modern
 2. **[ ] Finaliser le brainstorm fonctionnalités** (section 4.4, nourri par les opportunités identifiées dans l'audit) → l'importer dans le tableau Miro.
 3. **[ ] Construire le tableau Miro** avec au minimum : mapping de l'existant, brainstorm fonctionnalités priorisé, ébauche d'arborescence de l'espace étudiant.
 4. **[ ] Préparer le pitch** à partir de la trame de la section 7.
-5. **[x] Outil Jamstack tranché : Nuxt (Vue)** (section 3.4). **[ ] Nom de l'agence** encore à choisir (section 3.1).
+5. **[x] Outil Jamstack tranché : Next.js pour le site agence** (section 3.4). **[ ] Nom de l'agence** encore à choisir (section 3.1).
 6. **[ ] Répartir les rôles dans l'équipe**, y compris les rôles **QA** et **PO** requis par le workflow Git (section 5.6) — [À compléter].
 7. Le développement du site agence et du prototype démarrent après le pitch, sur la base des retours du client.
 
@@ -104,19 +104,21 @@ Proposition de base à ajuster :
 /contact          → Formulaire + coordonnées
 ```
 
-### 3.4 Outil Jamstack retenu : Nuxt + Vue
+### 3.4 Outil Jamstack retenu : Next.js
 
-**Décision d'équipe :** Nuxt (bundler Vite intégré) avec Vue 3 comme bibliothèque d'interface — sur l'ensemble du projet, site agence comme projet client.
+**Décision d'équipe :** Next.js pour le site vitrine de l'agence, en ligne sur <https://figmium.vercel.app>. C'est ce volet qui porte la contrainte Jamstack du sujet.
+
+L'espace étudiant ne relève pas de cette contrainte : il reprend la base Vue du client (voir 5.1).
 
 | Outil | Rendu | Points forts | Limites pour notre cas |
 |---|---|---|---|
-| **Nuxt (retenu)** | Universel (SSR par défaut), SSG (`nuxt generate`), ou rendu hybride par route (`routeRules`) | Écosystème Vue visé par l'équipe, très bon DX, rendu hybride adapté au futur espace étudiant connecté, Vite pour un dev rapide | Écosystème un peu plus restreint que React sur certains sujets très spécifiques |
-| Next.js | SSG/SSR/ISR | Très mature, énorme écosystème | Impose React, hors périmètre ici |
+| **Next.js (retenu)** | SSG/SSR/ISR | Très mature, énorme écosystème, déploiement Vercel immédiat | Impose React, distinct de la stack du volet client |
+| Nuxt | Universel (SSR par défaut), SSG, ou rendu hybride par route | Écosystème Vue, très bon DX | Redondant avec la base Vue déjà en place chez le client |
 | Astro | SSG par défaut, îlots interactifs | Zéro JS par défaut, très léger | Moins pertinent si toute l'équipe travaille en Vue |
 | SvelteKit | SSG/SSR | Léger, excellent DX | Impose Svelte, hors périmètre ici |
 | Eleventy / Hugo | SSG pur | Ultra rapide, simple | Pas adapté à des pages authentifiées avec données personnalisées (espace étudiant) |
 
-**Justification à présenter au pitch :** le site agence est un site de contenu classique, mais le projet client final (espace étudiant) aura besoin de pages connectées avec données personnelles (notes, planning...). Nuxt couvre les deux besoins avec un seul outil (statique pour les pages publiques, rendu à la demande pour les pages personnalisées), tout en s'appuyant sur Vue que l'équipe a choisi de maîtriser. L'existant réel côté client (voir 4.2) est aujourd'hui un rendu serveur classique (Symfony/Twig) sans API JSON exposée : Nuxt permet de démarrer sur des données mockées puis de basculer proprement sur une vraie API une fois le contrat défini avec le client.
+**Justification à présenter au pitch :** le site agence est un site de contenu classique, sans page authentifiée : le statique prérendu lui suffit, et Next.js sur Vercel le livre sans infrastructure à gérer. L'espace étudiant est un cas opposé — pages authentifiées, données personnelles, API déjà exposée par le client. Les deux volets n'ont donc pas les mêmes besoins, et les traiter avec deux outils adaptés vaut mieux que d'en forcer un seul sur les deux.
 
 ### 3.5 Accessibilité & responsive
 
@@ -360,7 +362,7 @@ Déclenchée par l'icône loupe ou par le raccourci annoncé `cmd+k`. Appelle `G
 - **Avantage à exploiter dès maintenant** : le code source, les contrôleurs et les gabarits du système existant sont publics (dépôt `Dannebicque/intranetV3`, licence MPL-2.0). On peut cartographier le vrai modèle de données (entités déduites du routing : `Etudiant`, `Groupe`, `Semestre`, `Matiere`, `Note`, `Absence`, `Document`, `Evenement`, `Stage`, `ConventionDeStage`...) sans attendre une livraison du client.
 - **En attendant l'API réelle** : construire le frontend sur des données mockées (JSON local ou `json-server`/MSW), modélisées sur ce domaine réel plutôt que sur des suppositions génériques.
 - **Couche d'accès aux données isolée** (ex. un composable `useApi`/un module `server/utils` unique) : le jour où le client fournit la vraie structure d'API, on ne change que cette couche, pas les composants.
-- **Rendu hybride Nuxt** : pages publiques/génériques en statique (SSG/`routeRules` prerender), pages étudiant connecté (notes, planning personnel) en rendu à la demande (SSR) car les données sont personnalisées et confidentielles.
+- **Rendu côté client pour l'espace étudiant** : toutes les pages sont derrière authentification et affichent des données personnelles. Le prérendu n'y apporte rien, la SPA Vue du client est adaptée.
 
 ### 4.6 Accessibilité RGAA (obligation légale)
 
@@ -377,12 +379,19 @@ Le socle n'est pas mauvais : le texte courant et le bouton primaire orange/viole
 
 Ces règles s'appliquent dès le premier commit, sur les deux volets du projet.
 
-### 5.1 Stack retenue
+### 5.1 Stacks retenues
 
-- **Framework** : Nuxt (rendu universel par défaut, SSG via `nuxt generate`, ou rendu hybride par route via `routeRules`), bundler Vite intégré.
-- **Bibliothèque UI** : Vue 3 (Composition API), sur l'ensemble du projet (site agence et projet client).
-- **Langage** : TypeScript en mode strict, obligatoire.
-- **Gestion d'état** : Pinia, obligatoire pour l'état partagé (session utilisateur simulée, préférences, favoris de documents).
+Deux volets, deux stacks, à ne pas confondre.
+
+**Volet 1 — site vitrine de l'agence.** Next.js, déployé sur Vercel. C'est le volet qui porte la contrainte Jamstack du sujet.
+
+**Volet 2 — espace étudiant.** On reprend la base du client, [IUTTroyes/uniServices](https://github.com/IUTTroyes/uniServices), plutôt que d'en écrire une nouvelle : elle est fonctionnelle, le client la connaît, et nos cinq priorités sont des améliorations d'écrans qui existent déjà.
+
+- **Front** : Vue 3 (Composition API), Vite, PrimeVue, Tailwind, Pinia, axios.
+- **Back** : Symfony 7 et API Platform, MariaDB. Données de fixtures, jamais la production.
+- **Tests** : Vitest pour l'unitaire, Cypress pour l'E2E.
+
+Notre valeur ajoutée n'est pas la stack, c'est la correction des constats de l'audit et les cinq priorités fonctionnelles.
 
 ### 5.2 Support : GitFlow
 
@@ -437,11 +446,10 @@ Exemple : `feat(planning): add weekly calendar view`
 
 ### 5.5 Qualité de code côté front (proposition à valider en équipe)
 
-Pas de règle imposée par le sujet sur ce point précis : proposition alignée avec la rigueur déjà en place côté backend réel (PHPStan/Rector/PHP-CS-Fixer, voir 4.2), transposée au monde Vue/Nuxt :
+Pas de règle imposée par le sujet sur ce point précis : on reprend les conventions déjà en place chez le client, front comme back (voir son README et `ruleset.md`).
 
-- **Linting / formatage** : ESLint (config officielle `@nuxt/eslint`) + Prettier, exécutés en pre-commit (Husky + lint-staged) et bloquants en CI avant toute fusion.
-- **Typage** : TypeScript en mode strict, pas de `any` non justifié.
-- **Nommage** : composants Vue en PascalCase, en composants monofichiers (SFC) avec `<script setup>` (`StudentDashboard.vue`), composables en camelCase préfixés `use` (`useStudentGrades.ts`), dossiers en kebab-case.
+- **Linting / formatage** : ESLint + Prettier, bloquants en CI avant toute fusion. Côté PHP, PHPStan et les validations de son `Makefile`.
+- **Nommage** : composants Vue en PascalCase, SFC dans l'ordre `script`, `template`, `style` ; méthodes et variables en camelCase ; une méthode qui appelle l'API finit par `Service`.
 - **Structure** : organisation par domaine/fonctionnalité plutôt que par type technique pur, dès que le projet grossit.
 - **Tests** : tests unitaires sur la logique métier (Vitest + Vue Test Utils / Testing Library), tests end-to-end sur les parcours critiques avec **Cypress** — cohérent avec l'outil déjà utilisé côté backend réel.
 
@@ -455,7 +463,7 @@ Une fonctionnalité est considérée terminée quand : le build passe, le lint p
 
 | Livrable | Détail | Échéance |
 |---|---|---|
-| Site de l'agence | Nuxt/Vue, responsive, accessible : services, réalisations, équipe, contact | [À compléter — date de rendu] |
+| Site de l'agence | Next.js, responsive, accessible : services, réalisations, équipe, contact. En ligne : <https://figmium.vercel.app> | [À compléter — date de rendu] |
 | Tableau Miro | Réflexions + fonctionnalités (matière : section 4.4) | Avant le pitch du 22/09 |
 | Pitch client n°1 | Présentation de la compréhension du besoin + proposition | **Mardi 22 septembre 2026, 12h00** |
 
@@ -469,7 +477,7 @@ Proposition de trame (~10-12 min + questions), à adapter selon le temps réelle
 2. **Reformulation du besoin client** (2 min) — montrer qu'on a bien compris l'enjeu (moderniser, répondre aux attentes étudiantes, s'intégrer à l'existant).
 3. **Audit de l'existant** (3 min) — DA relevée, constats par écran, ce qui fonctionne et doit être conservé (section 4.2) : c'est la pièce maîtresse pour prouver le sérieux du travail.
 4. **Proposition fonctionnelle** (3 min) — opportunités priorisées issues de l'audit + short-list Miro.
-5. **Proposition technique** (2 min) — Nuxt/Vue justifié pour le site agence, architecture découplée envisagée pour l'espace étudiant (données mockées en attendant l'API réelle), méthode de travail GitFlow.
+5. **Proposition technique** (2 min) — Next.js justifié pour le site agence, reprise et amélioration de la base existante du client pour l'espace étudiant, méthode de travail GitFlow.
 6. **Prochaines étapes / roadmap** (1 min) — ce qu'on fait après validation du client, dont la suite de l'audit (sprint 1).
 7. **Questions du client.**
 
@@ -512,6 +520,8 @@ Issues de l'audit (section 4.2) :
 | 2026-09-21 | Identification d'intranetV3 (Dannebicque) comme base probable du projet client | Le lien "Aide" de la page de connexion réelle pointe vers la documentation de ce projet open source, correspondant exactement au contexte du sujet | — |
 | 2026-09-21 | Stack envisagée un temps en Next.js + React | Choix initial, avant clarification de l'équipe | — |
 | 2026-09-21 | Stack définitivement arbitrée en **Nuxt + Vue**, sur l'ensemble du projet | Décision d'équipe, remplace l'hypothèse Next.js/React | — |
+| 2026-09-22 | Correction : **Next.js pour le site agence**, qui porte la contrainte Jamstack | Le site est en ligne sur figmium.vercel.app ; l'entrée précédente confondait les deux volets | — |
+| 2026-09-22 | **Reprise de la base Vue du client** pour l'espace étudiant, au lieu d'une réécriture en Nuxt | Les cinq priorités sont des améliorations d'écrans existants : réécrire 229 vues avant de pouvoir les traiter coûtait des semaines pour un produit moins complet | — |
 | 2026-09-21 | Adoption de GitFlow + Conventional Commits comme méthode de travail Git | Structurer les contributions de l'équipe, PR obligatoires avec validation QA (main) / PO (develop) | — |
 | 2026-09-21 | Intégration de l'audit de l'existant (v1, sprint 0) | Audit réalisé sur un compte étudiant réel (MMI, S5, version 3.19.68) : confirme le système existant, fournit des constats mesurés et des opportunités priorisées | Équipe |
 
@@ -526,12 +536,16 @@ Issues de l'audit (section 4.2) :
 - Documentation du projet (nécessite un compte, à revérifier) : https://dannebicque.gitbook.io/intranet/
 - RGAA (référentiel accessibilité secteur public) : https://accessibilite.numerique.gouv.fr/
 - Jamstack (présentation générale) : https://jamstack.org
-- Nuxt (documentation officielle) : https://nuxt.com/docs
-- Vue.js (documentation officielle) : https://vuejs.org
+- Next.js (site agence) : https://nextjs.org/docs
+- Vue.js (espace étudiant) : https://vuejs.org
+- PrimeVue : https://primevue.org
+- API Platform : https://api-platform.com/docs
 - Conventional Commits : https://www.conventionalcommits.org/en/v1.0.0/
 - GitFlow Workflow (Atlassian) : https://www.atlassian.com/fr/git/tutorials/comparing-workflows/gitflow-workflow
 - Tableau Miro : [À compléter — lien à ajouter dès sa création]
-- Dépôt de code du projet : [À compléter — une fois le repo Git créé]
+- Dépôt de code du projet : https://github.com/Dannebicque/wra505D_agence-2
+- Base reprise du client (uniServices) : https://github.com/IUTTroyes/uniServices
+- Site de l'agence en ligne : https://figmium.vercel.app
 
 ---
 

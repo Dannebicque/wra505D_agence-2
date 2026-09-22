@@ -15,24 +15,38 @@ Priorités fonctionnelles du volet 2, dans cet ordre : recherche universelle tol
 réorganisation documentaire par matière et par SAE, tableau de bord recentré sur l'instant,
 emploi du temps mobile, normalisation du design system.
 
-## Stack imposée
+## Stack
 
-Nuxt 4 · Vue 3 Composition API · TypeScript strict · Pinia · Nitro pour l'API simulée ·
-Vitest pour l'unitaire · Cypress pour l'E2E · ESLint `@nuxt/eslint` + Prettier.
+Deux volets, deux stacks. Ne pas les confondre.
 
-Aucun autre framework, aucune librairie UI lourde. Les composants sont écrits à la main.
+**Volet 1 — site vitrine de l'agence.** Next.js, déployé sur Vercel :
+<https://figmium.vercel.app>. C'est lui qui porte la contrainte Jamstack du sujet.
+
+**Volet 2 — espace étudiant.** On reprend la base du client,
+[IUTTroyes/uniServices](https://github.com/IUTTroyes/uniServices), importée dans `uniservices/`.
+On ne réécrit pas ce qui marche, on l'améliore.
+
+Vue 3 Composition API · Vite · PrimeVue · Tailwind · Pinia · axios ·
+Vitest pour l'unitaire · Cypress pour l'E2E · ESLint + Prettier.
+
+Côté serveur : Symfony 7 et API Platform, MariaDB, données de fixtures. Jamais la production.
+
+Pas de framework supplémentaire, pas de seconde librairie de composants : on utilise PrimeVue,
+déjà en place. Un composant n'est écrit à la main que si PrimeVue n'a pas d'équivalent.
 
 ## Interdits
 
 - Commiter sur `main` ou `develop`. Jamais, sous aucun prétexte.
 - Ajouter une dépendance sans me le demander d'abord.
-- Utiliser `any`, `@ts-ignore`, `eslint-disable` sans justification écrite dans la PR.
+- Utiliser `eslint-disable` sans justification écrite dans la PR.
 - Emoji. Nulle part : code, commits, PR, interface, documentation.
 - Commentaire qui paraphrase le code. Un commentaire justifie un choix non évident, sinon il
   n'existe pas.
 - Code mort, `console.log` livré, fichier généré « au cas où », README non demandé.
 - Implémenter ce qui n'est pas dans la tâche en cours.
-- Modifier le dépôt intranetV3 ou quoi que ce soit de l'intranet réel. On construit à côté.
+- Modifier le dépôt intranetV3, le dépôt uniServices d'origine, ou quoi que ce soit de
+  l'intranet réel. On travaille sur notre copie, dans `uniservices/`.
+- Toucher aux écrans enseignant et administratif. Notre périmètre est la partie étudiante.
 
 ## Git
 
@@ -48,15 +62,17 @@ GitFlow. `main` et `develop` sont protégées.
 
 ## Code
 
-- Composants Vue en PascalCase, SFC avec `<script setup lang="ts">`.
-- Composables en camelCase préfixés `use` : `useStudentGrades.ts`.
-- Dossiers en kebab-case. Organisation par domaine, pas par type technique.
-- Types partagés dans `types/`. Jamais le même type écrit à deux endroits.
-- Tout accès aux données passe par une couche unique (`composables/useApi.ts`). Les composants
-  n'appellent jamais `$fetch` directement : le jour où la vraie API arrive, on ne change que
-  cette couche.
-- Données simulées dans `server/api/` via Nitro, modélisées sur le domaine réel
-  (`Etudiant`, `Groupe`, `Semestre`, `Matiere`, `Note`, `Absence`, `Document`, `Evenement`).
+On adopte les conventions du client. Le code doit se fondre dans le sien, pas cohabiter avec.
+
+- Composants Vue en PascalCase, SFC dans l'ordre `script`, `template`, `style`.
+- Méthodes et variables en camelCase. Une méthode qui appelle l'API finit par `Service`.
+- Les appels à l'API vivent dans `shared/requests/`, jamais dans un composant. On passe par
+  `apiService.js` et `apiCall.js`, qui gèrent l'intercepteur axios et les notifications.
+- État partagé dans les stores Pinia de `shared/stores/`.
+- Types partagés dans `shared/types/`. Jamais le même type écrit à deux endroits.
+- Les alias existent, on s'en sert : `@components`, `@stores`, `@requests`, `@helpers`,
+  `@styles`, `@config`, `@images`, `@types`.
+- Côté PHP : PSR-12, classes en PascalCase, PHPDoc sur les classes et méthodes.
 
 ## Accessibilité
 
