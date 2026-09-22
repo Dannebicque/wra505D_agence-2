@@ -9,6 +9,7 @@ const { data: contexte } = await useContexte()
 const liens = [
   { chemin: '/', libelle: 'Mon portail' },
   { chemin: '/documents', libelle: 'Mes documents' },
+  { chemin: '/profil', libelle: 'Mon profil' },
 ]
 
 async function seDeconnecter() {
