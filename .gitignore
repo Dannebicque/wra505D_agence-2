@@ -1,4 +1,3 @@
-# Regles communes aux deux sous-projets.
 # Filet de securite : un npm install lance a la racine par erreur ne doit pas
 # se retrouver dans une PR.
 node_modules/
@@ -11,26 +10,13 @@ node_modules/
 .claude/settings.local.json
 *.log
 
-# Front Nuxt. Les regles sont limitees a front/ pour ne pas masquer des fichiers
-# de uniservices/, dont le .gitignore gouverne deja son propre sous-arbre.
-/front/node_modules
-/front/.nuxt
-/front/.output
-/front/.nitro
-/front/.cache
-/front/dist
-/front/coverage
-/front/.vitest
-/front/.env
-/front/.env.*
-!/front/.env.example
-/front/cypress/videos
-/front/cypress/screenshots
-
-# Backend Symfony repris de uniServices.
+# Base reprise de uniServices.
 /uniservices/vendor
 /uniservices/back/vendor
 /uniservices/back/var
 /uniservices/back/config/jwt/*.pem
 /uniservices/node_modules
 /uniservices/**/node_modules
+/uniservices/back/public/build
+/uniservices/cypress/videos
+/uniservices/cypress/screenshots
