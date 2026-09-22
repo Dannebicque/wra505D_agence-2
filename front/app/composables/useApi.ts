@@ -1,5 +1,7 @@
 import type {
   Absence,
+  CatalogueWidgets,
+  ContexteSecurite,
   CollectionHydra,
   Document,
   DocumentCategorie,
@@ -11,6 +13,7 @@ import type {
   ScolariteSemestre,
   Semestre,
   Session,
+  Widget,
 } from '~~/types/domain'
 
 /*
@@ -24,13 +27,17 @@ import type {
 export function useApi() {
   const apiBase = useRuntimeConfig().public.apiBase
 
+  // Pendant le rendu serveur, le cookie de session n'est pas transmis tout seul :
+  // il faut le repasser depuis la requete entrante, sinon l'API repond 401.
+  const cookieEntrant = import.meta.server ? useRequestHeaders(['cookie']) : {}
+
   function requete<T>(chemin: string, options: Parameters<typeof $fetch>[1] = {}) {
     return $fetch<T>(chemin, {
       baseURL: apiBase,
       // L'API reelle depose le JWT dans un cookie httpOnly : il doit suivre.
       credentials: 'include',
-      headers: { Accept: 'application/ld+json' },
       ...options,
+      headers: { Accept: 'application/ld+json', ...cookieEntrant, ...options.headers },
     })
   }
 
@@ -41,6 +48,15 @@ export function useApi() {
     seDeconnecter: () => requete<null>('/api/logout', { method: 'POST' }),
 
     session: () => requete<Session>('/api/auth/me'),
+
+    contexteSecurite: () => requete<ContexteSecurite>('/api/me/security-context'),
+
+    widgetsDuTableauDeBord: (tableauDeBord: string) =>
+      requete<{ widgets: Widget[] }>(`/api/widgets/available/${tableauDeBord}`),
+
+    catalogueWidgets: () => requete<CatalogueWidgets>('/api/widgets/catalog'),
+
+    donneesWidget: <T>(code: string) => requete<T>(`/api/widgets/${code}/data`),
 
     etablissement: () => requete<Etablissement>('/api/etablissements'),
 

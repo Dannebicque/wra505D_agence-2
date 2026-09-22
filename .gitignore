@@ -1,4 +1,8 @@
 # Regles communes aux deux sous-projets.
+# Filet de securite : un npm install lance a la racine par erreur ne doit pas
+# se retrouver dans une PR.
+node_modules/
+
 .DS_Store
 **/.DS_Store
 .idea
