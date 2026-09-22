@@ -73,7 +73,12 @@ export function useApi() {
 
     absences: () => requete<CollectionHydra<Absence>>('/api/absence/etudiant_scolarite_semestres'),
 
-    documents: () => requete<CollectionHydra<Document>>('/api/documents'),
+    /*
+     * `pagination=false` remonte toute la collection : l'API n'acceptant aucun
+     * filtre, le tri et le filtrage se font cote client sur l'ensemble.
+     */
+    documents: () =>
+      requete<CollectionHydra<Document>>('/api/documents', { query: { pagination: false } }),
 
     categoriesDocument: () =>
       requete<CollectionHydra<DocumentCategorie>>('/api/document_categories'),
