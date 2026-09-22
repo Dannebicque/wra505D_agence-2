@@ -26,8 +26,25 @@ describe('points d entree de l API', () => {
         expect(reponse.status).to.eq(200)
         expect(reponse.body['@type']).to.eq('Collection')
         expect(reponse.body.member).to.be.an('array')
-        expect(reponse.body.totalItems).to.eq(reponse.body.member.length)
+        // Une page ne contient jamais plus que le total, et peut en contenir moins
+        // des que la collection est paginee.
+        expect(reponse.body.member.length).to.be.at.most(reponse.body.totalItems)
       })
+    })
+  })
+
+  it('pagine les documents comme l API reelle', () => {
+    cy.request('/api/documents').then((reponse) => {
+      expect(reponse.body.totalItems).to.eq(240)
+      expect(reponse.body.member).to.have.length(30)
+      expect(reponse.body.view['@type']).to.eq('PartialCollectionView')
+    })
+
+    cy.request('/api/documents?itemsPerPage=5').its('body.member').should('have.length', 5)
+
+    cy.request('/api/documents?pagination=false').then((reponse) => {
+      expect(reponse.body.member).to.have.length(240)
+      expect(reponse.body).to.not.have.property('view')
     })
   })
 

@@ -12,6 +12,8 @@ export interface CollectionHydra<T> {
   '@type': 'Collection'
   totalItems: number
   member: T[]
+  /* API Platform n'ajoute `view` que sur les collections paginees. */
+  view?: { '@id': string; '@type': 'PartialCollectionView' }
 }
 
 /** Partie commune a toute ressource JSON-LD. */
