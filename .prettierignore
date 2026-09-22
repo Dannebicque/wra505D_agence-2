@@ -1,0 +1,8 @@
+# La documentation est redigee a la main, la reformater brouillerait les diffs.
+*.md
+docs/
+
+pnpm-lock.yaml
+.nuxt
+.output
+node_modules
