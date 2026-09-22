@@ -121,6 +121,7 @@ autres.
 | `docs/PROJET.md` | dossier de suivi complet, décisions, échéances | cadrage, pitch, arbitrage de périmètre |
 | `docs/01-audit-existant.md` | audit de l'intranet, constats numérotés, jetons de DA | travail sur l'UI, l'accessibilité, la recherche, les documents |
 | `docs/02-questions-client.md` | questions au client et réponses obtenues | doute sur un besoin |
+| `docs/03-backlog.md` | toutes les tâches, réparties en colonnes | choisir sur quoi travailler |
 
 Jetons de direction artistique à respecter, volet 2 uniquement :
 primaire `#F7B000`, texte sur primaire `#4D3677`, texte courant `#4D5259`,
