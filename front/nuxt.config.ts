@@ -2,6 +2,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  // uniServices occupe deja le port 3000 dans ce depot.
+  devServer: { port: 3100 },
+
   modules: ['@nuxt/eslint', '@pinia/nuxt'],
 
   typescript: {
