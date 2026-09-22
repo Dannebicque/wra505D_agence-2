@@ -108,7 +108,7 @@ function reinitialiser() {
 </script>
 
 <template>
-  <main class="documents">
+  <div class="documents">
     <h1>Documents</h1>
 
     <section v-if="!unFiltreEstActif && recents.length" aria-labelledby="titre-recents">
@@ -157,7 +157,7 @@ function reinitialiser() {
       </p>
       <p v-else>Aucun document n'est disponible pour le moment.</p>
     </section>
-  </main>
+  </div>
 </template>
 
 <style scoped>
