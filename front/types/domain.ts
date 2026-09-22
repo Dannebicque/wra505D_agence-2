@@ -219,3 +219,30 @@ export interface DonneesProgressionPortfolio {
 export interface DonneesQuestionnairesEnAttente {
   items: string[]
 }
+
+/*
+ * Fiche etudiant telle que l'API la sert a l'etudiant lui-meme. Les champs qu'il
+ * peut modifier (mailPerso, tel1, tel2, site_perso, adresses) ne sont pas dans ce
+ * groupe de serialisation : il peut les ecrire mais pas les relire.
+ */
+export interface FicheEtudiant extends RessourceHydra {
+  username: string
+  prenom: string
+  nom: string
+  display: string
+  mailUniv: string
+  photoName: string | null
+  roles: string[]
+  boursier: boolean
+  applications: string[]
+  groupes: { '@id': string; libelle: string; type: string }[]
+  scolarites: {
+    '@id': string
+    '@type': string
+    id: number
+    ordre: number
+    public: boolean
+    anneeUniversitaire: string
+    actif: boolean
+  }[]
+}

@@ -6,6 +6,7 @@ import type {
   Document,
   DocumentCategorie,
   Etablissement,
+  FicheEtudiant,
   Evenement,
   Matiere,
   Note,
@@ -50,6 +51,8 @@ export function useApi() {
     session: () => requete<Session>('/api/auth/me'),
 
     contexteSecurite: () => requete<ContexteSecurite>('/api/me/security-context'),
+
+    ficheEtudiant: (id: number) => requete<FicheEtudiant>(`/api/etudiants/${id}`),
 
     widgetsDuTableauDeBord: (tableauDeBord: string) =>
       requete<{ widgets: Widget[] }>(`/api/widgets/available/${tableauDeBord}`),
