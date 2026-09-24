@@ -11,6 +11,11 @@ on:
 jobs:
   cypress:
     runs-on: ubuntu-latest
+    # Symfony tourne en environnement dev, qui ne lit pas .env.test : l'adresse de la base de CI
+    # doit être une vraie variable d'environnement, prioritaire sur les fichiers .env.
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/cypress_test?serverVersion=8.0&charset=utf8mb4
+      CELCAT_DSN: sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite
     defaults:
       run:
         working-directory: uniservices
@@ -44,12 +49,6 @@ jobs:
         working-directory: uniservices/back
         run: composer install --no-progress --no-interaction --prefer-dist
 
-      - name: Set up .env.test file
-        working-directory: uniservices/back
-        run: |
-          cp .env .env.test
-          echo "DATABASE_URL=mysql://root:root@127.0.0.1:3306/cypress_test?serverVersion=8.0" >> .env.test
-
       - name: Generate JWT token
         working-directory: uniservices/back
         run: php bin/console lexik:jwt:generate-keypair
@@ -60,6 +59,8 @@ jobs:
           php bin/console doctrine:database:create --if-not-exists --no-interaction
           php bin/console doctrine:schema:update --force --no-interaction
           php bin/console doctrine:fixtures:load --no-interaction
+          php bin/console app:celcat:fausse-base
+          php bin/console app:celcat:sync
 
 
       - name: Setup Node.js
@@ -74,7 +75,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Set environment variables
-        run: echo "VITE_BASE_URL=http://127.0.0.1:8000" >> $GITHUB_ENV
+        # Le front appelle l'API par le proxy de Vite : même origine, donc les cookies de session
+        # sont bien envoyés, ce qui n'est pas le cas entre localhost et 127.0.0.1.
+        run: |
+          echo "VITE_BASE_URL=" >> $GITHUB_ENV
+          echo "VITE_API_URL=http://127.0.0.1:8000" >> $GITHUB_ENV
 
       - name: Start Symfony server
         working-directory: uniservices/back
@@ -82,7 +87,7 @@ jobs:
 
       - name: Wait for Symfony server
         run: |
-          timeout 60 bash -c 'until curl -fsS http://127.0.0.1:8000 > /dev/null; do sleep 1; done' || {
+          timeout 60 bash -c 'until curl -fsS http://127.0.0.1:8000/api > /dev/null; do sleep 1; done' || {
             cat /tmp/symfony-server.log
             exit 1
           }
@@ -93,7 +98,7 @@ jobs:
           working-directory: uniservices
           # Utilise la commande dev du monorepo qui lance les bundles sur les ports 3000, 3001, 3003
           start: pnpm run dev
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://localhost:3000/app/'
           record: false
           parallel: false
         env:
