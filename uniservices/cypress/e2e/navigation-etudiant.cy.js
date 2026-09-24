@@ -12,6 +12,11 @@ describe('Navigation de l\'étudiant', () => {
         cy.location('pathname').should('match', /^\/app\/intranet\/?$/);
     });
 
+    it('retrouve sur l\'accueil les actualités que portait le portail', () => {
+        cy.contains('Actualités du département', { timeout: 15000 });
+        cy.contains('Réunion de rentrée des MMI 1');
+    });
+
     it('garde le même menu sur chaque module', () => {
         cy.visit('/app/intranet/');
         cy.get('.layout-menu', { timeout: 15000 }).should('contain', 'Mon espace');
