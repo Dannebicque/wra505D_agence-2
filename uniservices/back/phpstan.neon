@@ -10,21 +10,6 @@ parameters:
         - identifier: doctrine.associationType
         - identifier: missingType.generics
 
-        # Bugs connus, en attente d'une réponse du client (docs/04-reprise.md,
-        # « Questions en attente du client »). Retirer chaque entrée une fois la réponse reçue.
-
-        # Question 4 : les colonnes de moyennes ont été retirées, l'import V3 les écrit encore.
-        -
-            identifier: property.notFound
-            message: '#::\$moyennes(Matiere|Ue)\.#'
-            path: src/Entity/Etudiant/EtudiantScolarite.php
-            count: 4
-        -
-            identifier: property.notFound
-            message: '#::\$moyennes(Matiere|Ue)\.#'
-            path: src/Entity/Etudiant/EtudiantScolariteSemestre.php
-            count: 4
-
     paths:
         - src
         - ../packages/auth-bundle/src
