@@ -162,7 +162,9 @@ const profileMenu = ref();
 const deptMenu = ref();
 const rolesMenu = ref();
 
-const profileItems = ref([
+const estEtudiant = computed(() => userStore.userType === 'etudiants');
+
+const optionsProfil = [
   {
     label: 'Options',
     items: [
@@ -175,7 +177,8 @@ const profileItems = ref([
       },
       {
         label: 'Paramètres',
-        icon: 'pi pi-cog'
+        icon: 'pi pi-cog',
+        mortPourEtudiant: true
       },
       {
         label: 'Déconnexion',
@@ -189,7 +192,17 @@ const profileItems = ref([
       }
     ]
   }
-]);
+];
+
+// « Paramètres » ne mène nulle part : on ne le montre pas à l'étudiant, dont le département,
+// retiré de la barre, s'affiche ici.
+const profileItems = computed(() => optionsProfil.map(section => (estEtudiant.value
+  ? {
+      ...section,
+      label: departementLabel.value || section.label,
+      items: section.items.filter(item => !item.mortPourEtudiant)
+    }
+  : section)));
 
 const toggleProfileMenu = (event) => {
   profileMenu.value.toggle(event);
@@ -285,13 +298,13 @@ const selectAnneeUniversitaire = (annee) => {
 
       <div class="layout-topbar-menu lg:block">
         <div class="layout-topbar-menu-content">
-          <router-link :to="{ name: 'portail' }" v-if="route.name !== 'portail'"
+          <router-link :to="{ name: 'portail' }" v-if="route.name !== 'portail' && !estEtudiant"
             class="layout-topbar-action layout-topbar-action-text">
             <i class="pi pi-arrow-left text-primary"></i>
             <span>Portail</span>
           </router-link>
 
-          <button v-if="route.name !== 'portail'" type="button" class="layout-topbar-action layout-topbar-action-text"
+          <button v-if="route.name !== 'portail' && !estEtudiant" type="button" class="layout-topbar-action layout-topbar-action-text"
             @click="toggleToolsMenu" aria-haspopup="true" aria-controls="tools_menu">
             <i class="pi pi-box text-primary"></i>
             <span>Applications</span>
@@ -311,9 +324,6 @@ const selectAnneeUniversitaire = (annee) => {
             <i class="pi pi-arrow-right-arrow-left text-primary"></i>
             <span>{{ departementLabel }}</span>
           </button>
-          <div v-else-if="userStore.userType === 'etudiants'" class="hidden lg:inline-flex">
-            <span>{{ departementLabel }}</span>
-          </div>
           <Menu ref="deptMenu" id="dept_menu" :model="deptItems" :popup="true" />
 
           <button v-if="showRolesMenu" type="button" class="layout-topbar-action layout-topbar-action-text"
@@ -332,7 +342,7 @@ const selectAnneeUniversitaire = (annee) => {
             <Menu ref="anneeMenu" id="annee_menu" :model="anneeItems" :popup="true" />
           </PermissionGuard>
 
-          <button type="button" class="layout-topbar-action">
+          <button v-if="!estEtudiant" type="button" class="layout-topbar-action">
             <i class="pi pi-inbox"></i>
             <span>Messages</span>
           </button>
