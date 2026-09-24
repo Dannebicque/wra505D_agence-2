@@ -5,6 +5,7 @@ import {useUsersStore, useAnneeUnivStore} from '@stores';
 import {getWidgetsCatalogService, getWidgetDataByCodeService, updateDashboardWidgetLayoutService} from '@requests';
 import {WidgetCard, GlobalLoader} from '@components';
 import { formatDateLong } from "@helpers/date";
+import MaintenantWidget from "@/components/Etudiant/dashboard/MaintenantWidget.vue";
 
 const router = useRouter();
 const userStore = useUsersStore();
@@ -161,6 +162,7 @@ const moveWidget = async (widget, direction) => {
           <Button @click="router.push({name: 'IntranetDashboardWidgetsConfig'})" icon="pi pi-cog" label="Configurer" size="small"/>
         </div>
       </div>
+      <MaintenantWidget/>
       <GlobalLoader v-if="isLoadingWidgets" text="Chargement des widgets..."/>
       <div v-else class="dashboard-grid">
         <WidgetCard
