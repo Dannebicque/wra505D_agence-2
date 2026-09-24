@@ -29,9 +29,9 @@ GitHub ne lit pas.
 |---|---|---|
 | `make check-front` | passe | — |
 | `composer validate` | passe, deux avertissements | — |
-| `lint:container` | échoue | E1 |
-| `doctrine:schema:validate` | échoue, 14 mappings | E2 |
-| `phpstan` | s'exécute, 271 erreurs préexistantes | E4 |
+| `lint:container` | passe | — |
+| `doctrine:schema:validate` | passe | — |
+| `phpstan` | s'exécute, 270 erreurs préexistantes | E4 |
 
 Tant que E1 à E3 ne sont pas faites, la CI du back est rouge. Elle ne bloque pas les fusions,
 le ruleset n'exige qu'une approbation. Ces trois fiches sont prioritaires : une CI rouge en
@@ -71,6 +71,10 @@ et `EtudiantScolariteSemestre#note` sont incohérents, `ApcReferentiel#pn` point
 **Terminé quand** `php bin/console doctrine:schema:validate --skip-sync` ne signale plus rien, et
 que les fixtures se chargent toujours.
 **Attention** à redécouper par entité si la PR dépasse deux ou trois fichiers.
+**Fait** en deux PR. 18 erreurs venaient de relations renommées d'un seul côté : noms réalignés,
+dont deux relations passées en unidirectionnel. Les 2 autres étaient des collections inverses
+sans aucun côté propriétaire, retirées. Le schéma SQL généré est strictement identique avant et
+après : 217 instructions.
 
 ### E5 · La déconnexion ne déconnecte pas · S
 **Priorité haute : c'est une faille, pas une gêne.**
