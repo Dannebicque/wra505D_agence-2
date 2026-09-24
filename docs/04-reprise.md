@@ -162,6 +162,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Création d'un étudiant | inscrit d'office aux deux semestres de son année ; la notion de semestre en cours disparaît au profit de la clôture d'un semestre | Cyndel |
 | Moyennes | calculées à la volée jusqu'à validation en sous-commission, puis enregistrées dans `MoyenneUe` et `MoyenneEnseignement`, liées à `EtudiantScolariteSemestre` ; celles de l'année restent calculées à la volée. L'ancien format JSON est retiré chez nous (#38), Cyndel le retire aussi chez eux | Cyndel |
 | Voter des questionnaires | raccourci de développement retiré, règles normales appliquées | client |
+| Document et enseignement (B6) | un document se rattache à **un seul** `ScolEnseignement`, matière ou SAÉ, facultatif ; le lien s'efface si l'enseignement est supprimé. Un support commun à plusieurs matières se dépose dans chacune. Question 3 toujours sans réponse | nous |
 
 ## Questions en attente du client
 
