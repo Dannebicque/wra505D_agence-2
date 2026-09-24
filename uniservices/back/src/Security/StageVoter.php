@@ -138,7 +138,7 @@ class StageVoter extends Voter
         }
 
         // Un étudiant peut voir ses propres stages
-        return $user instanceof Etudiant;
+        return true;
     }
 
     private function canEditStage(mixed $subject, Personnel|Etudiant $user): bool
@@ -154,7 +154,7 @@ class StageVoter extends Voter
         }
 
         // Un étudiant peut modifier son propre stage (dans certaines limites)
-        return $user instanceof Etudiant;
+        return true;
     }
 
     private function canDeleteStage(Personnel|Etudiant $user): bool

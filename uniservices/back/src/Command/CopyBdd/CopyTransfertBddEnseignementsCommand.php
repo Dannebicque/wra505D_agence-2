@@ -150,7 +150,7 @@ FOREIGN_KEY_CHECKS=1');
                 $this->entityManager->persist($matiere);
                 $this->tMatieres[$mat['id']] = $matiere;
 
-                if ($mat['ue_id'] !== null && $mat['ue_id'] !== '') {
+                if ($mat['ue_id'] !== '') {
 
                     $matiereUe = new ScolEnseignementUe(
                         $matiere,
@@ -202,7 +202,7 @@ FOREIGN_KEY_CHECKS=1');
                  */
                 $this->entityManager->persist($matiere);
 
-                if ($mat['ue_id'] !== null && $mat['ue_id'] !== '') {
+                if ($mat['ue_id'] !== '') {
                     $matiereUe = new ScolEnseignementUe(
                         $matiere,
                         $this->tUes[$mat['ue_id']],
@@ -352,7 +352,7 @@ FOREIGN_KEY_CHECKS=1');
 //             */
 //            $this->entityManager->persist($matiere);
 //
-//            if ($mat['ue_id'] !== null && $mat['ue_id'] !== '') {
+//            if ($mat['ue_id'] !== '') {
 //
 //                $matiereUe = new ScolEnseignementUe(
 //                    $matiere,

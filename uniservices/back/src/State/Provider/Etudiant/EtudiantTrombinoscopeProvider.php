@@ -61,16 +61,8 @@ class EtudiantTrombinoscopeProvider implements ProviderInterface
 
                 // Tri alphabétique par nom d'étudiant (insensible à la casse)
                 usort($items, function ($a, $b) {
-                    $na = '';
-                    $nb = '';
-                    if (method_exists($a, 'getEtudiant')) {
-                        $ea = $a->getEtudiant();
-                        $na = is_array($ea) && isset($ea['nom']) ? mb_strtolower((string) $ea['nom']) : '';
-                    }
-                    if (method_exists($b, 'getEtudiant')) {
-                        $eb = $b->getEtudiant();
-                        $nb = is_array($eb) && isset($eb['nom']) ? mb_strtolower((string) $eb['nom']) : '';
-                    }
+                    $na = mb_strtolower((string) ($a->getEtudiant()['nom'] ?? ''));
+                    $nb = mb_strtolower((string) ($b->getEtudiant()['nom'] ?? ''));
                     return strcasecmp($na, $nb);
                 });
 
@@ -118,16 +110,8 @@ class EtudiantTrombinoscopeProvider implements ProviderInterface
 
             // Tri alphabétique par nom d'étudiant (insensible à la casse)
             usort($items, function ($a, $b) {
-                $na = '';
-                $nb = '';
-                if (method_exists($a, 'getEtudiant')) {
-                    $ea = $a->getEtudiant();
-                    $na = is_array($ea) && isset($ea['nom']) ? mb_strtolower((string) $ea['nom']) : '';
-                }
-                if (method_exists($b, 'getEtudiant')) {
-                    $eb = $b->getEtudiant();
-                    $nb = is_array($eb) && isset($eb['nom']) ? mb_strtolower((string) $eb['nom']) : '';
-                }
+                $na = mb_strtolower((string) ($a->getEtudiant()['nom'] ?? ''));
+                $nb = mb_strtolower((string) ($b->getEtudiant()['nom'] ?? ''));
                 return strcasecmp($na, $nb);
             });
 

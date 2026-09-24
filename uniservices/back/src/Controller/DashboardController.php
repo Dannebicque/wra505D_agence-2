@@ -375,12 +375,9 @@ class DashboardController extends AbstractController
                 }
             }
 
-            if (null !== $positionA && null === $positionB) {
-                return -1;
-            }
-
-            if (null === $positionA && null !== $positionB) {
-                return 1;
+            // Un widget positionné passe devant un widget qui ne l'est pas.
+            if ((null === $positionA) !== (null === $positionB)) {
+                return null === $positionA ? 1 : -1;
             }
 
             $orderA = $defaultOrder[$a->getWidgetKey()] ?? PHP_INT_MAX;

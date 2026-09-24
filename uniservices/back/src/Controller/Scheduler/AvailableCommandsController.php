@@ -28,7 +28,7 @@ class AvailableCommandsController extends AbstractController
                 // Eviter de lister des commandes de dev internes si on veut restreindre, mais app:* est parfait
                 $list[] = [
                     'name' => $name,
-                    'description' => $command->getDescription() ?? '',
+                    'description' => $command->getDescription(),
                 ];
             }
         }

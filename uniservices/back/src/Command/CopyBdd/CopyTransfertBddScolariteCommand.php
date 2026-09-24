@@ -166,7 +166,7 @@ FOREIGN_KEY_CHECKS=1');
                                 $moyenneUe['moyenne'] = round($moyenneUe['moyenne'], 2);
 
                                 // If decision is empty, calculate it based on the moyenne
-                                if (!isset($moyenneUe['decision']) || $moyenneUe['decision'] === null) {
+                                if (!isset($moyenneUe['decision'])) {
                                     $moyenneUe['decision'] = $moyenneUe['moyenne'] >= 10 ? 'V' : 'NV';
                                 }
                             }
@@ -197,7 +197,7 @@ FOREIGN_KEY_CHECKS=1');
                     // Set proposition if available in the last semester
                     if (!empty($scol['semestres'])) {
                         $lastSemester = end($scol['semestres']);
-                        if (isset($lastSemester['proposition']) && $lastSemester['proposition'] !== null) {
+                        if (isset($lastSemester['proposition'])) {
                             // If the proposition is for the next year (like "DUT"), find the appropriate year
                             foreach ($this->tAnneeUniversitaire as $annee) {
                                 if ($annee->getLibelle() === $lastSemester['proposition']) {
@@ -243,7 +243,7 @@ FOREIGN_KEY_CHECKS=1');
                                 }
 
                                 // Set proposition if available
-                                if (isset($semestre['proposition']) && $semestre['proposition'] !== null) {
+                                if (isset($semestre['proposition'])) {
                                     // Find the appropriate semester for the proposition
                                     foreach ($this->tSemestres as $propositionSemestre) {
                                         if ($propositionSemestre->getLibelle() === $semestre['proposition']) {
@@ -285,7 +285,7 @@ FOREIGN_KEY_CHECKS=1');
                                             $moyenneUe['moyenne'] = round($moyenneUe['moyenne'], 2);
 
                                             // If decision is empty, calculate it based on the moyenne
-                                            if (!isset($moyenneUe['decision']) || $moyenneUe['decision'] === null) {
+                                            if (!isset($moyenneUe['decision'])) {
                                                 $moyenneUe['decision'] = $moyenneUe['moyenne'] >= 10 ? 'V' : 'NV';
                                             }
                                         }

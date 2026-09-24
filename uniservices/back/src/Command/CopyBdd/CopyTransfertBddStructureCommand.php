@@ -53,8 +53,8 @@ class CopyTransfertBddStructureCommand extends Command
 
     protected SymfonyStyle $io;
     protected string $base_url;
-    private $structureAnneeUniversitaireRepository;
-    private $personnelRepository;
+    private StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository;
+    private PersonnelRepository $personnelRepository;
     private ApcParcoursRepository $apcParcoursRepository;
 
 
@@ -475,7 +475,7 @@ FOREIGN_KEY_CHECKS=1');
         $this->entityManager->flush();
     }
 
-    private function addGroupes()
+    private function addGroupes(): void
     {
         $reponses = $this->httpClient->request('GET', $this->base_url . '/groupes');
         $groupes = $reponses->toArray();

@@ -190,7 +190,7 @@ class PostVoter extends Voter
         }
 
         // Un étudiant peut voir son propre profil
-        return $user instanceof Etudiant && $user === $subject;
+        return $user === $subject;
     }
 
     private function canEditEtudiant(mixed $subject, Personnel|Etudiant $user): bool
@@ -205,7 +205,7 @@ class PostVoter extends Voter
         }
 
         // Un étudiant peut modifier son propre profil (certains champs uniquement)
-        return $user instanceof Etudiant && $user === $subject;
+        return $user === $subject;
     }
 
     private function canDeleteEtudiant(Personnel|Etudiant $user): bool
@@ -235,7 +235,7 @@ class PostVoter extends Voter
         }
 
         // Un étudiant peut voir sa propre scolarité
-        if ($user instanceof Etudiant && $subject instanceof EtudiantScolariteSemestre) {
+        if ($subject instanceof EtudiantScolariteSemestre) {
             $scolarite = $subject->getScolarite();
             return $scolarite?->getEtudiant() === $user;
         }
@@ -431,7 +431,7 @@ class PostVoter extends Voter
         }
 
         // Un étudiant peut voir ses propres absences
-        if ($user instanceof Etudiant && $subject instanceof EtudiantAbsence) {
+        if ($subject instanceof EtudiantAbsence) {
             $scolariteSemestre = $subject->getScolariteSemestre();
             if ($scolariteSemestre) {
                 $etudiant = $scolariteSemestre->getScolarite()?->getEtudiant();
@@ -492,7 +492,7 @@ class PostVoter extends Voter
         }
 
         // Un étudiant peut voir ses propres justificatifs
-        if ($user instanceof Etudiant && $subject instanceof EtudiantAbsenceJustificatif) {
+        if ($subject instanceof EtudiantAbsenceJustificatif) {
             $absences = $subject->getAbsence();
             foreach ($absences as $absence) {
                 $scolariteSemestre = $absence->getScolariteSemestre();
@@ -521,7 +521,7 @@ class PostVoter extends Voter
         }
 
         // Un étudiant peut soumettre un justificatif pour ses propres absences
-        return $user instanceof Etudiant;
+        return true;
     }
 
     private function canDeleteJustificatif(Personnel|Etudiant $user): bool
@@ -551,7 +551,7 @@ class PostVoter extends Voter
         }
 
         // Un étudiant peut voir sa propre scolarité
-        if ($user instanceof Etudiant && $subject instanceof EtudiantScolarite) {
+        if ($subject instanceof EtudiantScolarite) {
             return $subject->getEtudiant() === $user;
         }
 
