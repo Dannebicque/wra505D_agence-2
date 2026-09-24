@@ -4,7 +4,7 @@ import 'vue-cal/style'
 
 import {nextTick, ref, watch} from 'vue'
 import EdtEvent from './EdtEvent.vue'
-import {getEdtEventsService, getEtudiantScolaritesService, getSemaineUniversitaireService} from "@requests";
+import {getEdtEventsService, getEtudiantScolariteSemestresService, getSemaineUniversitaireService} from "@requests";
 import {adjustColor, colorNameToRgb, darkenColor} from "@helpers/colors.js";
 import {getISOWeekNumber} from "@helpers/date";
 import {useUsersStore} from "@stores";
@@ -50,18 +50,12 @@ function detectOverlap(event, allEvents) {
 
 const getEtudiantGroupes = async () => {
   try {
-    const scol = await getEtudiantScolaritesService(etudiant.id, true);
-
-    if (scol && scol.length > 0) {
-      etudiant.scolarites = scol;
-      // Récupère tous les groupes de chaque scolariteSemestre de chaque scolarite
-      etudiant.groupes = scol.flatMap(s =>
-          (s.scolariteSemestre || []).flatMap(ss => ss.groupes || [])
-      );
-    } else {
-      etudiant.scolarites = [];
-      etudiant.groupes = [];
-    }
+    // Les scolarités ne portent pas les groupes : on passe par les semestres de l'année affichée.
+    const scolariteSemestres = await getEtudiantScolariteSemestresService({
+      etudiant: etudiant.id,
+      anneeUniversitaire: anneeUniv.id,
+    });
+    etudiant.groupes = (scolariteSemestres || []).flatMap(ss => ss.groupes || []);
   } catch (error) {
     hasError.value = true;
     console.error('Erreur lors de la récupération des scolarités de l\'étudiant :', error);
@@ -71,6 +65,12 @@ const getEtudiantGroupes = async () => {
 const getEventsEtudiantWeek = async () => {
   try {
     await getEtudiantGroupes();
+
+    // Sans groupe, l'API renverrait les cours de tous les groupes de la semaine.
+    if (!etudiant.groupes?.length) {
+      events.value = [];
+      return;
+    }
 
     const params = {
       semaineFormation: weekUnivNumber.value,
@@ -82,7 +82,7 @@ const getEventsEtudiantWeek = async () => {
       const mappedEvents = response.map(event => {
         // Définir la couleur en fonction du type de groupe
         let eventColor;
-        switch (event.groupe.type) {
+        switch (event.groupe?.type) {
             // couleurs comme dans Celcat
           case 'CM':
             eventColor = '#33C1FF'; // Bleu pour CM
@@ -111,10 +111,10 @@ const getEventsEtudiantWeek = async () => {
           type: event.type,
           groupe: event.groupe || '**',
           personnel: event.personnel,
-          intervenantPhoto: event.personnel.photoName ?? null,
+          intervenantPhoto: event.personnel?.photoName ?? null,
           overlap: false,
           eval: event.evaluation,
-          intervenants: event.enseignement.previsionnels
+          intervenants: (event.enseignement?.previsionnels ?? [])
               .map(intervenant => ({
                 id: intervenant.id,
                 display: intervenant.personnel?.display || 'Inconnu',
@@ -148,8 +148,6 @@ const getEventsEtudiantWeek = async () => {
       }
     });
   }
-
-  console.log('events', events.value);
 };
 
 const selectedEvent = ref(null)
@@ -158,7 +156,6 @@ const visible = ref(false)
 const openDialog = ({ event }) => {
   selectedEvent.value = event
   visible.value = true
-  console.log('selected', selectedEvent.value)
 }
 
 function getBadgeSeverity(type) {
@@ -183,13 +180,13 @@ function getBadgeSeverity(type) {
       </div>
       <div class="flex items-center gap-2">
         <Badge v-if="selectedEvent.eval" severity="danger" class="uppercase">Évaluation</Badge>
-        <Badge :severity="getBadgeSeverity(selectedEvent.enseignement.type)" class="uppercase">
+        <Badge v-if="selectedEvent.enseignement" :severity="getBadgeSeverity(selectedEvent.enseignement.type)" class="uppercase">
           {{ selectedEvent.enseignement.type }}
         </Badge>
       </div>
       <div class="flex flex-col gap-1">
         <div>
-          <strong>Semestre :</strong> {{ selectedEvent.semestre.libelle }}
+          <strong>Semestre :</strong> {{ selectedEvent.semestre?.libelle }}
         </div>
         <div>
           <strong>Groupe :</strong> <Badge class="!text-black" :style="{ backgroundColor: selectedEvent?.backgroundColor ? adjustColor(darkenColor(selectedEvent.backgroundColor, 60), 0, 0.2) : '' }">{{ selectedEvent?.type }}</Badge> {{ selectedEvent?.groupe?.libelle }} ({{selectedEvent?.groupe?.etudiants?.length || 0}} étudiants)
@@ -206,7 +203,7 @@ function getBadgeSeverity(type) {
         </div>
         <Divider v-if="selectedEvent.intervenants && selectedEvent.intervenants.length > 0"></Divider>
         <div v-if="selectedEvent.intervenants && selectedEvent.intervenants.length > 0" class="flex flex-col gap-2">
-          <strong>Autres intervenants sur la {{selectedEvent.enseignement.type}} :</strong>
+          <strong>Autres intervenants sur la {{selectedEvent.enseignement?.type}} :</strong>
           <div class="flex flex-col gap-2">
             <div v-for="intervenant in selectedEvent.intervenants" :key="intervenant.id" class="flex items-center gap-2">
               <PhotoUser :user-photo="selectedEvent.intervenantPhoto" class="!w-8 border-2 border-black" />

@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import EdtEvent from './EdtEvent.vue';
-import {getEdtEventsService, getEtudiantScolaritesService, getSemaineUniversitaireService} from "@requests";
+import {getEdtEventsService, getEtudiantScolariteSemestresService, getSemaineUniversitaireService} from "@requests";
 import {useUsersStore} from "@stores";
 import {getISOWeekNumber} from "@helpers/date.js";
 import {adjustColor, colorNameToRgb, darkenColor} from "@helpers/colors.js";
@@ -45,19 +45,12 @@ const isEventOngoing = (event) => {
 
 const getEtudiantGroupes = async () => {
   try {
-    const scol = await getEtudiantScolaritesService(user.id, true);
-
-    if (scol && scol.length > 0) {
-      user.scolarites = scol;
-      // Récupère tous les groupes de chaque scolariteSemestre de chaque scolarite
-      user.groupes = scol.flatMap(s =>
-          (s.scolariteSemestre || []).flatMap(ss => ss.groupes || [])
-      );
-      groupes.value = user.groupes;
-    } else {
-      user.scolarites = [];
-      user.groupes = [];
-    }
+    // Les scolarités ne portent pas les groupes : on passe par les semestres de l'année affichée.
+    const scolariteSemestres = await getEtudiantScolariteSemestresService({
+      etudiant: user.id,
+      anneeUniversitaire: anneeUniv.id,
+    });
+    groupes.value = (scolariteSemestres || []).flatMap(ss => ss.groupes || []);
   } catch (error) {
     hasError.value = true;
     console.error('Erreur lors de la récupération des scolarités de l\'étudiant :', error);
@@ -68,6 +61,12 @@ const getEvents = async (date = new Date()) => {
   try {
     if (usersStore.isEtudiant) {
       await getEtudiantGroupes();
+      // Sans groupe, l'API renverrait les cours de tous les groupes du département.
+      if (!groupes.value.length) {
+        allEvents.value = [];
+        sortEvents();
+        return;
+      }
     }
     const personnel = usersStore.isPersonnel ? user : null;
 
