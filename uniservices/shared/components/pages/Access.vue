@@ -1,8 +1,15 @@
 <script setup>
+defineProps({
+  standalone: Boolean,
+});
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center w-full h-screen">
+  <component
+      :is="standalone ? 'main' : 'div'"
+      :id="standalone ? 'contenu-principal' : undefined"
+      class="flex flex-col items-center justify-center w-full h-screen"
+  >
     <div class="w-1/2">
       <div class="w-full bg-surface-50 dark:bg-surface-950 py-20 px-8 sm:px-20 flex flex-col items-center border border-primary-400 rounded-2xl shadow-lg">
         <div class="gap-4 flex flex-col items-center">
@@ -20,5 +27,5 @@
         </div>
       </div>
     </div>
-  </div>
+  </component>
 </template>

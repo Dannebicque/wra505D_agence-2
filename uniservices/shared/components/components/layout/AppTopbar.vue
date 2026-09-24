@@ -258,7 +258,7 @@ const selectAnneeUniversitaire = (annee) => {
 </script>
 
 <template>
-  <div class="layout-topbar">
+  <header class="layout-topbar">
     <div class="layout-topbar-logo-container">
       <button v-if="route.name !== 'portail'" class="layout-menu-button layout-topbar-action" @click="onMenuToggle">
         <i class="pi pi-bars"></i>
@@ -359,5 +359,5 @@ const selectAnneeUniversitaire = (annee) => {
       </div>
 
     </div>
-  </div>
+  </header>
 </template>

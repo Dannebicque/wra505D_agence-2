@@ -37,7 +37,7 @@
       </div>
 
       <!-- Content -->
-      <main v-else class="flex-1 overflow-y-auto p-4">
+      <div v-else class="flex-1 overflow-y-auto p-4">
         <DocumentGrid
             v-if="viewMode === 'grid'"
             :documents="filteredDocuments"
@@ -73,7 +73,7 @@
             @pageChange="handlePageChange"
             @changeView="handleViewModeChange"
         />
-      </main>
+      </div>
     </div>
 
     <!-- Detail Drawer -->

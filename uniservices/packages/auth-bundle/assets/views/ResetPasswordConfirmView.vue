@@ -78,10 +78,10 @@ const handleSubmit = async () => {
           </div>
         </div>
       </div>
-      <div class="form-section flex flex-col items-center justify-center min-h-full">
+      <main id="contenu-principal" class="form-section flex flex-col items-center justify-center min-h-full">
         <div class="form-container w-full bg-surface-0 dark:bg-surface-900 py-10 px-8 sm:px-20 h-full rounded-bl-xl rounded-br-xl">
           <div class="text-center mb-8">
-            <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4 uppercase">Réinitialisation de mot de passe</div>
+            <h1 class="text-surface-900! dark:text-surface-0! text-3xl! font-medium! mt-0! mb-4! uppercase">Réinitialisation de mot de passe</h1>
             <span class="text-muted-color font-medium">Veuillez entrer votre nouveau mot de passe</span>
           </div>
           <Divider></Divider>
@@ -122,7 +122,7 @@ const handleSubmit = async () => {
           <small class="text-muted-color">En cas de problème de connexion, contactez le support à cette adresse :
             intranet.iut-troyes@univ-reims.fr</small>
         </div>
-      </div>
+      </main>
     </div>
   </div>
 </template>

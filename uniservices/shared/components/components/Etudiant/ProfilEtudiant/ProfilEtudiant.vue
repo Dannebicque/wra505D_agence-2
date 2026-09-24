@@ -214,7 +214,7 @@ const updateEtudiantData = async () => {
       </div>
       <div class="flex flex-col gap-2 md:w-2/3 w-full p-4">
         <div>
-          <h1 class="text-2xl font-bold mb-4">Informations générales</h1>
+          <h2 class="text-2xl font-bold mb-4">Informations générales</h2>
           <Message severity="info" class="mb-4" icon="pi pi-info-circle">
             Si vous constatez une erreur dans ces données, contactez le responsable de la formation.
           </Message>
@@ -241,7 +241,7 @@ const updateEtudiantData = async () => {
         </div>
         <Divider></Divider>
         <div>
-          <h1 class="text-2xl font-bold mb-4 flex gap-4">
+          <h2 class="text-2xl font-bold mb-4 flex gap-4">
             Données personnelles
             <!-- Edit button only visible to the student themselves or users with edit permissions -->
             <Button
@@ -252,7 +252,7 @@ const updateEtudiantData = async () => {
                 icon="pi pi-user-edit"
                 @click="() => { initializeAddressObjects(); isEditing = !isEditing; }">
             </Button>
-          </h1>
+          </h2>
           <Message severity="info" class="mb-4" icon="pi pi-info-circle">
             <span v-if="userStore.isEtudiant">
               Ces informations ne sont visibles que de vous et de la direction du département. Merci de maintenir ces informations à jour, elles seront utilisées pour vous faire parvenir vos relevés de notes.

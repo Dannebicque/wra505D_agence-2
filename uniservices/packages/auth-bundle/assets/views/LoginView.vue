@@ -149,9 +149,9 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <div class="bg-white p-12 md:rounded-tr-xl md:rounded-br-xl md:rounded-bl-none rounded-br-xl rounded-bl-xl w-full flex flex-col gap-4">
+      <main id="contenu-principal" class="bg-white p-12 md:rounded-tr-xl md:rounded-br-xl md:rounded-bl-none rounded-br-xl rounded-bl-xl w-full flex flex-col gap-4">
         <div class="text-center mb-8">
-          <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium uppercase">Connexion</div>
+          <h1 class="text-surface-900! dark:text-surface-0! text-3xl! font-medium! uppercase m-0!">Connexion</h1>
           <span class="text-muted-color font-medium">Etudiants, personnels de l'Université et vacataires, connectez-vous avec l'authentification de l'Université.</span>
         </div>
         <Button label="Connexion URCA" class="w-full" as="router-link" to="/"></Button>
@@ -198,7 +198,7 @@ onMounted(async () => {
         </form>
         <small class="text-muted-color">En cas de problème de connexion, contactez le support à cette adresse :
           <a href="mailto:intranet.iut-troyes@univ-reims.fr" class="underline">intranet.iut-troyes@univ-reims.fr</a></small>
-      </div>
+      </main>
     </div>
 
   </div>

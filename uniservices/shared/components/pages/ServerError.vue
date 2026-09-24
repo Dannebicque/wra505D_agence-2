@@ -12,9 +12,9 @@ const debugMessage = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center w-full h-screen px-4">
+  <main id="contenu-principal" class="flex flex-col items-center justify-center w-full h-screen px-4">
     <div class="w-full max-w-4xl">
       <ErrorView :debug-message="debugMessage" />
     </div>
-  </div>
+  </main>
 </template>
