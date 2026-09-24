@@ -70,8 +70,8 @@ class EdtFilter extends AbstractFilter
         if ('groupe' === $property) {
             $queryBuilder
                 ->join(sprintf('%s.groupe', $alias), 'groupe')
-                ->andWhere('groupe.id = :groupe')
-                ->setParameter('groupe', $value);
+                ->andWhere('groupe.id IN (:groupe)')
+                ->setParameter('groupe', (array) $value);
         }
 
         if ('day' === $property) {
