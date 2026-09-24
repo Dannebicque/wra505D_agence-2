@@ -147,7 +147,15 @@ export const documentService = {
           isFavorite: !!item.isFavorite,
           author: item.author || 'Inconnu',
           version: item.version || 'v1.0',
-          tags: Array.isArray(item.tags) ? item.tags : []
+          tags: Array.isArray(item.tags) ? item.tags : [],
+          enseignement: item.enseignement?.id
+            ? {
+                id: item.enseignement.id.toString(),
+                code: item.enseignement.codeEnseignement || '',
+                libelle: item.enseignement.libelle || '',
+                type: item.enseignement.type
+              }
+            : undefined
         };
       });
 

@@ -24,7 +24,7 @@
         @click="$emit('selectCategory', null)"
         :class="[
           'w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
-          selectedCategory === null && !showFavorites
+          selectedCategory === null && selectedEnseignement === null && !showFavorites
             ? 'bg-primary-50 text-primary-700 border border-primary-200'
             : 'text-gray-700 hover:bg-gray-50'
         ]"
@@ -53,6 +53,40 @@
         </span>
       </button>
 
+      <div
+        v-for="section in sectionsEnseignements"
+        :key="section.titre"
+        class="mt-6"
+      >
+        <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+          {{ section.titre }}
+        </h3>
+        <ul class="space-y-1">
+          <li v-for="groupe in section.groupes" :key="groupe.enseignement.id">
+            <button
+              type="button"
+              :aria-current="selectedEnseignement === groupe.enseignement.id ? 'true' : undefined"
+              @click="$emit('selectEnseignement', groupe.enseignement.id)"
+              :class="[
+                'w-full min-h-[44px] flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md text-left transition-colors',
+                selectedEnseignement === groupe.enseignement.id
+                  ? 'bg-primary-50 text-primary-700 border border-primary-600'
+                  : 'text-gray-700 hover:bg-gray-50'
+              ]"
+            >
+              <span class="flex-1">
+                <span class="font-semibold">{{ groupe.enseignement.code }}</span>
+                {{ groupe.enseignement.libelle }}
+              </span>
+              <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" aria-hidden="true">
+                {{ groupe.documentCount }}
+              </span>
+              <span class="sr-only">{{ groupe.documentCount }} {{ groupe.documentCount > 1 ? 'documents' : 'document' }}</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
       <!-- Categories -->
       <div class="mt-6">
         <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
@@ -73,29 +107,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import CategoryItem from './CategoryItem.vue';
 import SearchBar from './SearchBar.vue';
 import type { Category } from '@types';
+import type { ClassementEnseignements } from '@/service/utils/enseignementUtils';
 
 interface Props {
   categories: Category[];
+  enseignements: ClassementEnseignements;
   selectedCategory: string | null;
+  selectedEnseignement: string | null;
   showFavorites: boolean;
   totalDocuments: number;
   favoriteCount: number;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   selectCategory: [categoryId: string | null];
+  selectEnseignement: [enseignementId: string];
   selectFavorites: [];
   search: [query: string];
   openUploadModal: [];
 }>();
 
 const searchQuery = ref('');
+
+const sectionsEnseignements = computed(() =>
+  [
+    { titre: 'Matières', groupes: props.enseignements.matieres },
+    { titre: 'SAÉ', groupes: props.enseignements.saes }
+  ].filter(section => section.groupes.length > 0)
+);
 
 const handleSearch = (query: string) => {
   emit('search', query);

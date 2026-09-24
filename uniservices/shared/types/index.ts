@@ -24,6 +24,16 @@ export interface Document {
   version: string;
   tags: string[];
   departementId?: string;
+  enseignement?: DocumentEnseignement;
+}
+
+export type TypeEnseignement = 'ressource' | 'sae' | 'matiere';
+
+export interface DocumentEnseignement {
+  id: string;
+  code: string;
+  libelle: string;
+  type: TypeEnseignement;
 }
 
 export type DocumentType = 'pdf' | 'excel' | 'word' | 'powerpoint' | 'image' | 'video' | 'audio' | 'text' | 'archive';
