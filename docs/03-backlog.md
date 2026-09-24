@@ -31,11 +31,10 @@ GitHub ne lit pas.
 | `composer validate` | passe, deux avertissements | — |
 | `lint:container` | passe | — |
 | `doctrine:schema:validate` | passe | — |
-| `phpstan` | s'exécute, 270 erreurs préexistantes | E4 |
+| `phpstan` | 19 erreurs, toutes dans `QuestionnaireVoter`, en attente du client | E6 |
 
-Tant que E1 à E3 ne sont pas faites, la CI du back est rouge. Elle ne bloque pas les fusions,
-le ruleset n'exige qu'une approbation. Ces trois fiches sont prioritaires : une CI rouge en
-permanence finit par être ignorée, et elle ne protège plus rien.
+E1 à E5 sont faites. La CI du back reste rouge tant que le client n'a pas répondu sur les droits
+des questionnaires (E6). Elle ne bloque pas les fusions, le ruleset n'exige qu'une approbation.
 
 ---
 
@@ -98,11 +97,24 @@ répond « non authentifié » juste après.
 `Etudiant::setSemestreActuel()`. Ce code plante à l'exécution dès qu'on passe dessus.
 Les 235 autres sont de l'hygiène de typage : `return.type` (42), `missingType.parameter` (41),
 `method.unused` (19), `missingType.return` (17), `instanceof.alwaysTrue` (17).
-**Approche recommandée** générer une *baseline* PHPStan qui enregistre les erreurs existantes :
-la CI ne signale alors plus que les nouvelles, et on réduit la baseline fiche par fiche. C'est
-l'usage standard pour adopter PHPStan sur un code existant. À décider en équipe, car la baseline
-revient à accepter les 271 erreurs comme dette connue.
-**Attention** à redécouper : les 36 bugs d'abord, puis un bundle à la fois.
+**Décision** pas de baseline : on corrige tout.
+**Fait** en deux temps. PR #19 et #20 : les premiers appels à des membres inexistants, dont un
+calendrier qui rendait cinq fois le lundi. La suite est la fiche E6.
+
+### E6 · Corriger toutes les erreurs PHPStan · L
+**Pourquoi** finir E4 : 244 erreurs restaient après le branchement Celcat.
+**Fait** PR #25 à #28, de 244 à 19 erreurs. Vrais plantages corrigés en chemin : réinitialisation
+du mot de passe, génération des créneaux d'EDT, liste du personnel sans statut, synthèse du
+prévisionnel qui additionnait N fois le même enseignement, état d'évaluation inexistant, création
+de ticket helpdesk réservée par erreur au superadmin, descriptions des filtres API ignorées.
+**En attente du client**
+- 19 erreurs dans `QuestionnaireVoter` : un `return true; //todo: pour les tests` autorise tout
+  utilisateur connecté, étudiant compris, à modifier ou supprimer un questionnaire et à en lire
+  les réponses. Question 7 de `04-reprise.md`. C'est aussi une faille à leur signaler.
+- 11 erreurs masquées dans `phpstan.neon` (PR #27), une entrée par bug avec renvoi à la question
+  client : ECTS de la convention de stage (question 1), `addAnnee()` (question 2), moyennes
+  (question 4). Retirer chaque entrée une fois le bug corrigé : PHPStan signale une entrée devenue
+  inutile.
 
 ---
 
@@ -226,6 +238,17 @@ dépliage des semaines, clé cours-semaine-jour-groupe, mise à jour sans recré
 conservé s'il porte des absences. Développée contre une fausse base Celcat SQLite de mêmes
 tables. Reste à la brancher sur la vraie base : il faut l'accès réseau et les identifiants de
 la DSI, que seul le client peut obtenir.
+
+### C9 · [back + front] Réparer l'emploi du temps étudiant · M
+**Pourquoi** l'écran Agenda d'un étudiant affichait une erreur à chaque chargement.
+**Fait** PR #24, #29 et #30. Trois causes cumulées : un appel à `/apitrue/etudiant_scolarites`
+(404) ; les créneaux Celcat, sans intervenant ni matière, lus sans précaution ; et le filtre
+`groupe` de l'API, qui produisait un SQL invalide dès deux groupes, donc toujours pour un
+étudiant. Les groupes sont désormais lus sur les semestres de l'année affichée. Côté fixtures,
+l'étudiant de test est inscrit en S1 dans `MMICM`, `MMITDAB` et `MMITPA`, et les années
+universitaires sont calculées à partir de la date du jour, comme la fausse base Celcat.
+**Reste** l'intervenant et la matière des créneaux Celcat restent inconnus : les codes de la
+fausse base ne correspondent pas à ceux des fixtures. La passe visuelle est la fiche C3.
 
 ### C4 · Distinguer « pas encore notée », « absent » et « zéro » · M
 **Pourquoi** relevé dans l'audit informel : des 0 s'affichent en cours d'année comme si
