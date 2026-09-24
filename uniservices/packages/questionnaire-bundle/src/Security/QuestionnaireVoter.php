@@ -83,8 +83,6 @@ class QuestionnaireVoter extends Voter
             return false;
         }
 
-        return true; //todo: pour les tests
-
         // SUPER_ADMIN a accès à tout
         if ($this->isSuperAdmin($user)) {
             return true;
@@ -252,7 +250,7 @@ class QuestionnaireVoter extends Voter
 
         // Un étudiant peut voir ses propres invitations (via token)
         // La vérification se fait au niveau du token dans le contrôleur
-        return $user instanceof Etudiant;
+        return true;
     }
 
     private function canEditInvitation(Personnel|Etudiant $user): bool
@@ -295,7 +293,7 @@ class QuestionnaireVoter extends Voter
         }
 
         // Le personnel peut aussi répondre aux questionnaires s'ils y sont invités
-        return $user instanceof Personnel;
+        return true;
     }
 }
 
