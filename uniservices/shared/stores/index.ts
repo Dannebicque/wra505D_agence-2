@@ -8,6 +8,7 @@ import { useDiplomeStore} from "./structure_stores/diplomeStore";
 import { useAnneeStore } from './structure_stores/anneeStore';
 import { useDepartementStore } from './structure_stores/departementStore'
 import { useSecurity } from './securityStore'
+import { useNotificationStore } from './notificationStore'
 
 export {
   useEtablissementStore,
@@ -19,5 +20,6 @@ export {
   useAnneeUnivStore,
   useAnneeStore,
   useDepartementStore,
-  useSecurity
+  useSecurity,
+  useNotificationStore
 }
