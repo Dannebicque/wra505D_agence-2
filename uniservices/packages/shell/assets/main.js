@@ -73,6 +73,15 @@ const MyPreset = definePreset(Aura, {
                     danger: { background: '#F96868', color: '#4A1010' }
                 }
             }
+        },
+        // En clair, le texte des messages info et erreur d'Aura tombe à 3,76:1 et 4,02:1.
+        message: {
+            colorScheme: {
+                light: {
+                    info: { color: '{blue.700}' },
+                    error: { color: '{red.700}' }
+                }
+            }
         }
     }
 });
