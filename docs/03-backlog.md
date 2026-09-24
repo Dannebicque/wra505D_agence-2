@@ -5,13 +5,17 @@ comme l'exige `CLAUDE.md`.
 
 ## Comment s'en servir
 
-Les tâches sont réparties en quatre colonnes qui suivent les **répertoires**, pas les
+Les tâches sont réparties en colonnes qui suivent les **répertoires**, pas les
 fonctionnalités. C'est ce qui permet à trois personnes de travailler en parallèle sans conflit :
 prenez une colonne chacun plutôt qu'une fiche au hasard.
 
-Chaque fiche indique les constats d'audit qu'elle couvre. Les identifiants `TB`, `DOC`, `RECH`,
-`MOB` et `A11Y` renvoient à `01-audit-existant.md`. Les fiches marquées **[back]** touchent le
-Symfony, celles marquées **[back + front]** les deux.
+Chaque fiche indique les constats d'audit qu'elle couvre. Les identifiants renvoient à
+`01-audit-existant.md` (intranet V3) jusqu'à TB-7, DOC-6, RECH-9, MOB-5 et A11Y-6, et à
+`05-audit-actuel.md` (uniServices, 24/09/2026) au-delà, ainsi que pour CNX, POR, EDT, SCO,
+TROMBI, NAV et DA. Les fiches marquées **[back]** touchent le Symfony, celles marquées
+**[back + front]** les deux.
+
+Une fiche **Obsolète** n'a plus d'objet : elle reste pour mémoire, avec sa raison.
 
 Tailles : **S** une session, **M** une journée, **L** plusieurs jours, à redécouper avant de
 commencer.
@@ -126,6 +130,7 @@ Répertoires : `uniservices/shared/components`, `uniservices/shared/styles`.
 Ces fiches touchent des fichiers partagés : les faire tôt évite les conflits avec B, C et D.
 
 ### A1 · Masquer les ligatures d'icônes aux lecteurs d'écran · S
+**Obsolète** corrigé : plus aucune ligature n'est lue (A11Y-1, audit 05). La suite est A10.
 **Pourquoi** A11Y-1. Les libellés de navigation contiennent la ligature de l'icône, non masquée.
 Un lecteur d'écran annonce « dashboard Dashboard », « group Trombinoscope », « calendar Agenda ».
 **Terminé quand** toute icône décorative porte `aria-hidden="true"`, et qu'aucun nom accessible
@@ -140,6 +145,8 @@ valeurs déjà mesurées et consignées dans `CLAUDE.md`. Vérifier aussi les bl
 que l'audit n'avait pas pu mesurer.
 
 ### A3 · Lien d'évitement, un seul `header`, titres continus · S
+**Audit 05** le constat reste entier : A11Y-7 (pas de lien d'évitement), A11Y-8 (repères `main`,
+`nav`, `header` incohérents), A11Y-9 (toutes les pages s'appellent « Uniservices »).
 **Pourquoi** A11Y-5, A11Y-6. Aucun lien d'évitement, trois `<header>` sur une même page,
 hiérarchie de titres discontinue.
 **Terminé quand** un lien d'évitement visible au focus ouvre la page, qu'il n'y a qu'un `banner`
@@ -156,6 +163,43 @@ téléchargée nulle part : l'interface s'affiche dans la police système.
 **Terminé quand** Roboto est servie par l'application, sans dépendance à un service tiers si
 possible, et que le texte rendu correspond à la DA.
 
+### A6 · Une seule couleur primaire, celle de la DA · M
+**Pourquoi** DA-1, A11Y-10, A11Y-11, A11Y-13. Chaque module déclare sa propre primaire Tailwind
+(jaune, violet, bleu…), posée avec du texte blanc : 1,92:1 au portail, 4,23:1 dans l'intranet.
+**Terminé quand** un seul preset porte les jetons de la DA pour tous les modules, et qu'aucun
+texte sur primaire ne passe sous 4,5:1.
+
+### A7 · Contrastes des textes secondaires · S
+**Pourquoi** A11Y-12 : heures de l'agenda à 2,64:1, métadonnées des documents à 2,75:1, date du
+jour à 4,41:1. La couleur « texte atténué » de `CLAUDE.md` passe partout.
+
+### A8 · Noms des boutons icônes, étiquettes des champs · M
+**Pourquoi** A11Y-14, A11Y-15, NAV-2, EDT-3, TROMBI-3. Menu, thème, flèches de l'agenda,
+chevrons des catégories sans nom ; recherche des documents, filtres du trombinoscope et case
+« Se souvenir de moi » sans étiquette. La recherche de la barre haute est réglée par D3.
+
+### A9 · Focus visible dans le menu, menu en `nav` · S
+**Pourquoi** A11Y-16, NAV-3. Les liens du menu latéral n'ont aucun indicateur de focus.
+
+### A10 · Masquer les icônes décoratives · S
+**Pourquoi** A11Y-18 : 12 à 21 PrimeIcons par page, aucune avec `aria-hidden`. Remplace A1.
+
+### A11 · Page de connexion accessible · M
+**Pourquoi** CNX-1 à CNX-4 : logo absent, carrousel en tête de tabulation avec des noms de code,
+case « Se souvenir de moi » sans `id`, « Connexion URCA » à 1,92:1. S'y ajoute un défaut relevé
+en écrivant les tests E2E : le bouton « Connexion invité » reste désactivé tant que le focus est
+dans le mot de passe.
+
+### A12 · Menu mobile de la barre haute fermé au chargement · S
+**Pourquoi** MOB-6 : le menu d'actions est ouvert à chaque page et recouvre le contenu.
+
+### A13 · Blocs qui débordent en mobile · S
+**Pourquoi** MOB-10 : la carte « Mon dashboard » du portail sort de l'écran, d'autres blocs sont
+rognés sur le tableau de bord, le trombinoscope et le profil.
+
+### A14 · Retirer « Messages » et « Notifications », sans action · S
+**Pourquoi** NAV-1 : deux entrées mortes sur chaque page. La vraie fonction reste P3.
+
 ---
 
 ## Colonne B — Documents
@@ -163,6 +207,8 @@ possible, et que le texte rendu correspond à la DA.
 Répertoire : `uniservices/packages/document-bundle`.
 
 ### B1 · Catégories en vrais liens, avec adresse propre · M
+**Audit 05** DOC-13 : les catégories sont atteignables au clavier, mais toujours sans adresse,
+et leurs chevrons n'ont pas de nom.
 **Pourquoi** DOC-2. Les cartes de catégorie sont des `<div>` sans lien, sans `tabindex` et sans
 rôle : ni atteignables au clavier, ni annoncées comme cliquables, et sans URL. Une catégorie ne
 peut être ni mise en favori ni partagée.
@@ -170,15 +216,20 @@ peut être ni mise en favori ni partagée.
 et qu'un rechargement restitue la vue.
 
 ### B2 · Réparer la hiérarchie de titres · S
+**Audit 05** DOC-12 : plus de `h5` en rafale, mais plus de `h1` non plus.
 **Pourquoi** DOC-5. Un `h1` suivi directement de neuf `h5`, sans `h2`.
 
 ### B3 · Afficher le compteur de documents · S
+**Obsolète** corrigé : les compteurs s'affichent (DOC-3, audit 05).
 **Pourquoi** DOC-3. Le libellé « Nb. de documents dans la catégorie » s'affiche sans sa valeur
 sur huit cartes sur neuf. Aucune indication de volume ni de fraîcheur.
 **Attention** vérifier d'abord si la valeur est absente ou seulement non affichée. C'est la
 question 1 de l'audit, restée sans réponse du client.
 
 ### B4 · Recherche, filtres, tri et récents, dans l'URL · L
+**Audit 05** recherche, tri et vue liste existent. Restent : la tolérance aux fautes, en passant
+par `/api/recherche` (DOC-10 : « gide » ne trouve rien), les filtres dans l'URL, et l'annonce du
+nombre de résultats (A11Y-17).
 **Pourquoi** DOC-4. Ni recherche interne, ni filtre, ni tri, ni vue « récents ». La seule
 stratégie possible est l'exploration séquentielle.
 **Terminé quand** les filtres se cumulent, vivent dans l'URL, et que le nombre de résultats est
@@ -188,6 +239,8 @@ filtre côté client sur la collection complète (`pagination=false`), soit on a
 l'API — voir B6.
 
 ### B5 · Densifier la grille en mobile · S
+**Audit 05** aggravé et passé **Critique** : en mobile, la liste est écrasée dans une colonne
+d'environ 40 px (MOB-9). Taille revue à M.
 **Pourquoi** DOC-6. À 800 px, une carte par ligne pour trois mots utiles : neuf catégories
 demandent plusieurs écrans de défilement.
 
@@ -208,6 +261,17 @@ servie à l'étudiant. La fonctionnalité est inutilisable côté interface.
 **Terminé quand** un étudiant voit ses favoris, peut en ajouter et en retirer, et que l'état
 survit à un rechargement.
 
+### B8 · Documents utilisables au clavier · M
+**Pourquoi** DOC-7, **Critique** : 80 cartes et étiquettes sont des `div` non focalisables.
+DOC-8 : « Télécharger » reçoit le focus en restant invisible.
+
+### B9 · Titres de documents lisibles · S
+**Pourquoi** DOC-9 : à 1 280 px, les titres sont tronqués à 4 ou 5 caractères.
+
+### B10 · Remplacer les emoji par des icônes · S
+**Pourquoi** DOC-11 : les emoji servent d'icônes et sont lus par les lecteurs d'écran.
+`CLAUDE.md` les proscrit de l'interface.
+
 ---
 
 ## Colonne C — Tableau de bord, emploi du temps, notes
@@ -222,10 +286,14 @@ le cours en cours ni le jour courant ne sont mis en évidence.
 restant, et dit explicitement qu'il n'y en a plus quand la journée est finie.
 
 ### C2 · Ne plus rendre les tableaux vides · S
+**Obsolète** sans objet : il n'y a plus de tableaux de notes (TB-3, audit 05).
 **Pourquoi** TB-3. Les tableaux vides sont rendus intégralement, en-têtes compris, avec une
 ligne « Aucune note n'a été saisie ». Deux blocs occupent l'écran pour ne rien dire.
 
 ### C3 · Emploi du temps mobile · L
+**Audit 05** MOB-7 : la vue semaine s'ouvre par défaut et reste illisible sur téléphone. Aussi
+MOB-8 (« Aujourd'hui » coupé), EDT-4 (deux numérotations de semaine), EDT-5 (sous-titre qui
+promet des onglets absents).
 **Pourquoi** MOB-1, MOB-2, MOB-3, MOB-5, et c'est la **priorité 4**. En vue jour, le bloc de
 cours est dans une colonne décalée, sans axe horaire ni en-tête de jour, avec une large zone vide
 à sa gauche. Deux barres de navigation temporelle empilées aux styles incohérents. Le libellé
@@ -233,6 +301,7 @@ cours est dans une colonne décalée, sans axe horaire ni en-tête de jour, avec
 contenu utile.
 
 ### C8 · [back] Connecteur Celcat · L
+**Kanban** C0.
 **Pourquoi** l'emploi du temps officiel vit dans Celcat, et uniServices ne savait que le recopier
 depuis l'intranet actuel. Sans source, l'emploi du temps mobile (C3) n'aurait rien à afficher.
 **Fait** Commande `app:celcat:sync`, qui reprend les requêtes et les règles de l'intranet V3 :
@@ -253,6 +322,7 @@ universitaires sont calculées à partir de la date du jour, comme la fausse bas
 fausse base ne correspondent pas à ceux des fixtures. La passe visuelle est la fiche C3.
 
 ### C4 · Distinguer « pas encore notée », « absent » et « zéro » · M
+**Obsolète** pour l'instant : aucune note n'est affichée. Repris dans F1.
 **Pourquoi** relevé dans l'audit informel : des 0 s'affichent en cours d'année comme si
 l'étudiant avait eu 0. C'est un défaut qui fausse la lecture de ses résultats.
 **Vérifié** `EtudiantNote` porte `note` (qui peut être nulle), `publiee` et `presenceStatut`.
@@ -261,6 +331,8 @@ L'information nécessaire existe, elle n'est pas exploitée à l'affichage.
 et que la moyenne n'intègre pas les deux premiers cas.
 
 ### C5 · Retirer le bouton « Configurer » du portail étudiant · S
+**Obsolète** prémisse fausse : `/api/widgets/available/intranet` répond maintenant 200 à un
+étudiant (audit 05).
 **Pourquoi** le portail propose « Personnalisez vos widgets », mais l'API répond **403** à un
 étudiant, aussi bien sur `/api/widgets/available/intranet` que sur le `PATCH` de mise en page.
 Le bouton échoue en silence.
@@ -268,15 +340,47 @@ Le bouton échoue en silence.
 client si la personnalisation doit être ouverte aux étudiants, ou retirée pour eux.
 
 ### C6 · Modalités de contrôle des connaissances · M
+**Audit 05** les modalités ne sont plus affichées nulle part (TB-4). Fiche en cours chez JEREMY :
+à confirmer avec lui avant de la retirer.
 **Pourquoi** TB-4, confirmé par l'audit informel. Le tableau affiche des compétences suivies de
 nombres entre parenthèses, sans légende. L'information n'est pas interprétable.
 **Terminé quand** soit une légende rend le tableau lisible, soit le bloc est retiré du tableau de
 bord — à trancher avec le client.
 
 ### C7 · Trois nettoyages du tableau de bord · S
+**Obsolète** TB-6 et TB-7 sont corrigés, TB-5 devient POR-2 : remplacée par C12.
 **Pourquoi** TB-5, le bloc Contacts répète six fois les deux mêmes personnes, une fois par
 parcours du BUT. TB-6, l'avertissement Celcat s'affiche à chaque visite sans pouvoir être masqué.
 TB-7, un bouton flottant orange sans libellé se superpose au contenu.
+
+---
+
+### C10 · [back + front] Widget « Aujourd'hui » juste · S
+**Pourquoi** TB-8, **Critique** : le widget annonce « Aucun événement aujourd'hui » alors qu'un
+cours a lieu. `edt_events?day=` renvoie 0 créneau quand `semaineFormation=` renvoie bien le cours.
+TB-9 : il contredit le widget « Maintenant ».
+
+### C11 · Widget « Notes » : notes de l'étudiant, ou retiré · S
+**Pourquoi** TB-10 : le widget montre des pense-bêtes destinés au personnel, en barres grises.
+
+### C12 · Nettoyer le portail · S
+**Pourquoi** POR-2 : contacts « JOHN DOE » écrits en dur, liens utiles sans destination. POR-3 :
+le bouton « Retour » du portail renvoie à la connexion. Remplace C7.
+
+### C13 · Portail : applications non activées · S
+**Pourquoi** POR-1 : six applications grisées, sous leur nom de code, occupent le premier écran
+en mobile.
+
+### C14 · Agenda utilisable au clavier · M
+**Pourquoi** EDT-1 : les cours ne sont pas atteignables au clavier. EDT-3 : flèches sans nom. Le
+changement de semaine n'est pas annoncé (A11Y-17).
+
+### C15 · Retirer les actions enseignant de la vue étudiante · S
+**Pourquoi** EDT-2 : « Appel » et « Tous présents » sont proposés à l'étudiant, sans effet.
+
+### C16 · [back] Intervenants de l'agenda présents dans l'annuaire · S
+**Pourquoi** EDT-6 : les intervenants de la fausse base Celcat n'existent pas dans les fixtures,
+donc la recherche ne les trouve pas. C'est la réserve de C9.
 
 ---
 
@@ -308,6 +412,7 @@ matières, l'emploi du temps, les actualités et les pages ne le sont pas. « de
 ne renvoie rien alors que la matière existe.
 
 ### D3 · [front] Palette de recherche accessible · L
+**Fait** PR #43. Corrige RECH-10 et RECH-12 de l'audit 05.
 **Pourquoi** RECH-3, RECH-4, RECH-5. Le champ n'a ni `role="combobox"`, ni `aria-expanded`, ni
 `aria-controls`. Aucune région `aria-live` : l'arrivée des résultats n'est pas annoncée. La
 surcouche n'a pas de `role="dialog"` et Échap ne la ferme pas. Aucune navigation des résultats au
@@ -316,14 +421,43 @@ clavier.
 ferme à Échap, et annonce le nombre de résultats.
 
 ### D4 · [front] Lisibilité des résultats · M
+**Fait** PR #46 : champ élargi, statut, adresse et action des
+personnes, message vide unique, contrastes et focus mesurés en clair et en sombre.
 **Pourquoi** RECH-6, le champ tronque la requête au-delà d'une vingtaine de caractères. RECH-7,
 les résultats « personne » n'affichent que nom et adresse, sans rôle, sans département et sans
 action. RECH-8, trois blocs « pas de résultat » s'affichent simultanément.
 
 ### D5 · Signaler les comptes de test en production · S
+**Obsolète** sans objet dans uniServices : ce sont nos fixtures (RECH-9, audit 05).
 **Pourquoi** RECH-9. Des comptes de test apparaissent dans les résultats de production.
 **Terminé quand** le client a été prévenu. Ce n'est pas à nous de nettoyer sa base : la fiche se
 ferme sur un message, pas sur un commit.
+
+### D6 · Recherche en mobile · S
+**Pourquoi** RECH-11 : sous 1 024 px, les deux champs de recherche sont masqués.
+
+---
+
+## Colonne F — Scolarité, profil, trombinoscope
+
+Répertoire : `uniservices/packages/intranet-bundle`, vues de l'étudiant. Colonne ouverte par
+l'audit 05 : ces écrans existent mais sont vides ou cassés.
+
+### F1 · [back + front] Page Scolarité : notes, absences, moyennes · L
+**Pourquoi** SCO-1, **Critique** : la page est un gabarit « Semestre : OK », l'étudiant n'a accès à
+aucune note, absence ni moyenne. Reprend C4.
+
+### F2 · Cahier de texte · M
+**Pourquoi** SCO-2 : même gabarit inachevé.
+
+### F3 · Profil étudiant rempli · S
+**Pourquoi** SCO-3 : prénom, nom, login et adresse restent vides alors que l'API les renvoie.
+
+### F4 · Trombinoscope : plus de JSON brut · S
+**Pourquoi** TROMBI-1, **Critique** : chaque fiche affiche un objet JSON de l'API.
+
+### F5 · Trombinoscope : accès étudiant et export · S
+**Pourquoi** TROMBI-2 : un bouton « Exporter les données » est proposé à un étudiant.
 
 ---
 
@@ -355,6 +489,8 @@ Demandés dans l'audit informel. `/api/lien_utiles` existe déjà et expose les 
 nécessaires, le travail est surtout d'interface.
 
 ### P5 · Vocabulaire de la navigation · S
+**Audit 05** c'est pire : le portail et la connexion affichent les noms de code des modules
+(« DocumentBundle », « StageBundle »).
 L'audit relève que la navigation nomme des objets administratifs — « Trombinoscope »,
 « Applications », « Modalités de Contrôle des Connaissances » — quand l'étudiant cherche un cours,
 une salle, une note, une personne. Renommer coûte peu et se remarque tout de suite.
