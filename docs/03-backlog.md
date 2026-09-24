@@ -31,10 +31,10 @@ GitHub ne lit pas.
 | `composer validate` | passe, deux avertissements | — |
 | `lint:container` | passe | — |
 | `doctrine:schema:validate` | passe | — |
-| `phpstan` | 19 erreurs, toutes dans `QuestionnaireVoter`, en attente du client | E6 |
+| `phpstan` | 0 erreur, aucune masquée | E6 |
+| Cypress | un parcours E2E ; la CI attend `fix/ci-cypress-serveur` | E7 |
 
-E1 à E5 sont faites. La CI du back reste rouge tant que le client n'a pas répondu sur les droits
-des questionnaires (E6). Elle ne bloque pas les fusions, le ruleset n'exige qu'une approbation.
+E1 à E6 sont faites, CI-Back et CI-Packages sont au vert. E7 finit CI-Cypress.
 
 ---
 
@@ -107,14 +107,16 @@ calendrier qui rendait cinq fois le lundi. La suite est la fiche E6.
 du mot de passe, génération des créneaux d'EDT, liste du personnel sans statut, synthèse du
 prévisionnel qui additionnait N fois le même enseignement, état d'évaluation inexistant, création
 de ticket helpdesk réservée par erreur au superadmin, descriptions des filtres API ignorées.
-**En attente du client**
-- 19 erreurs dans `QuestionnaireVoter` : un `return true; //todo: pour les tests` autorise tout
-  utilisateur connecté, étudiant compris, à modifier ou supprimer un questionnaire et à en lire
-  les réponses. Question 7 de `04-reprise.md`. C'est aussi une faille à leur signaler.
-- 11 erreurs masquées dans `phpstan.neon` (PR #27), une entrée par bug avec renvoi à la question
-  client : ECTS de la convention de stage (question 1), `addAnnee()` (question 2), moyennes
-  (question 4). Retirer chaque entrée une fois le bug corrigé : PHPStan signale une entrée devenue
-  inutile.
+**Fini** avec les réponses du client et de Cyndel (PR #36 et #38) : voter des questionnaires
+rétabli, ECTS laissés vides dans le PDF, appel à `addAnnee()` retiré, ancien format des moyennes
+supprimé. PHPStan est à 0 erreur et `phpstan.neon` ne masque plus rien.
+
+### E7 · Faire passer CI-Cypress · M
+**Pourquoi** le job échouait sur chaque PR, avant même de lancer un test.
+**Fait** PR #40 : adresse de la base passée en variable d'environnement, `cypress.config.js`
+ajouté, exemples de Cypress remplacés par un parcours réel (connexion du compte invité, puis
+cours de l'étudiant dans l'agenda), fausse base Celcat générée en CI.
+**Reste** `fix/ci-cypress-serveur` : l'API lancée par `php -S` ne voyait pas cette variable.
 
 ---
 
@@ -287,6 +289,9 @@ plus pénalisant à l'usage.
 colonne commence donc par du back, pas par de l'interface.
 
 ### D1 · [back] Endpoint de recherche tolérant aux fautes · L
+**Fait** PR #34. MariaDB et PHP, sans dépendance ni serveur supplémentaire. `GET /api/recherche?q=`
+limité au département de l'utilisateur, comme la V3. Accents, casse, lettre oubliée, en trop,
+remplacée ou inversée, mot inachevé. Environ 60 ms, 36 à 55 ms de calcul pour 3 000 fiches.
 **Pourquoi** RECH-1. « annebicque » renvoie deux résultats, « anebicque » zéro, sans suggestion.
 **Terminé quand** un endpoint renvoie des résultats pertinents malgré une faute de frappe, sur
 plusieurs types, en restant sous la centaine de millisecondes — l'existant répond en 50 à 90 ms,
@@ -295,6 +300,9 @@ c'est le niveau à tenir.
 Le choix engage l'infrastructure, il se discute en équipe et avec le client.
 
 ### D2 · [back] Élargir le périmètre indexé · M
+**Fait** PR #35 : matières et SAÉ (par code ou libellé), actualités du département. L'emploi du
+temps passe par les matières plutôt que par chaque créneau. Les pages de l'intranet reviennent à
+la palette front (D3).
 **Pourquoi** RECH-2. Seuls trois types sont cherchables : Étudiants, Permanents, Documents. Les
 matières, l'emploi du temps, les actualités et les pages ne le sont pas. « developpement front »
 ne renvoie rien alors que la matière existe.

@@ -74,6 +74,14 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #27 | trois bugs en attente du client masqués dans `phpstan.neon`, un par un |
 | #29 | étudiant de test inscrit dans ses groupes ; un bug des fixtures lui retirait son semestre |
 | #30 | années universitaires des fixtures calculées à partir de la date du jour |
+| #31 | accessibilité transverse, côté LOU |
+| #33 | retour à l'année active quand l'année mémorisée n'existe plus |
+| #34, #35 | recherche tolérante aux fautes, fiches D1 et D2 : `GET /api/recherche?q=` |
+| #36 | réponses du client : ECTS du PDF de stage, `addAnnee()`, voter des questionnaires |
+| #37 | veille du dépôt amont, voir « Dépôt du client » plus bas |
+| #38 | ancien format des moyennes par UE retiré : PHPStan à 0 erreur, sans rien masquer |
+| #39 | reprise du `main` amont jusqu'à `ef38ca880` (release 0.1.11) |
+| #40 | CI-Cypress : base de données, configuration, premier vrai parcours E2E |
 
 Le connecteur Celcat, en bref :
 
@@ -91,8 +99,27 @@ Le connecteur Celcat, en bref :
 | Job | État | Pourquoi |
 |---|---|---|
 | CI-Packages (front) | vert | |
-| CI-Back | rouge | PHPStan : 19 erreurs, toutes dans `QuestionnaireVoter`, en attente de la question 7 |
-| CI-Cypress | rouge | pas encore étudié |
+| CI-Back | vert | PHPStan à 0 erreur depuis #38 |
+| CI-Cypress | rouge | toutes les étapes passent sauf le test : l'API lancée par `php -S` ignorait la base de CI. Corrigé par `fix/ci-cypress-serveur`, à merger |
+
+La recherche (D1, D2) cherche étudiants, personnels, documents, matières et actualités du
+département de l'utilisateur, en respectant la visibilité des documents et le public des
+actualités. Les pages de l'intranet seront cherchées par la palette front (D3), qui connaît la
+navigation. Le code est dans `back/src/Service/Recherche/` : un nouveau type se branche en
+ajoutant une source.
+
+### Dépôt du client
+
+Le `main` de [IUTTroyes/uniServices](https://github.com/IUTTroyes/uniServices) évolue encore
+(Cyndel, David Annebicque). Règle : **on ne reprend un commit amont que s'il est bon et ne casse
+rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs branches.
+
+- Dernier commit examiné : noté dans `.github/uniservices-amont-examine`, aujourd'hui `ef38ca880`.
+- Le workflow « Veille uniServices » ouvre une issue chaque matin de semaine s'il y a du nouveau.
+  Il ne tourne que depuis la branche par défaut, `main` : pas avant le prochain passage vers `main`.
+- Procédure : dans le clone `Reference/uniServices`, `git fetch` puis `git diff`, appliquer ce qui
+  est retenu avec `git apply --directory=uniservices -3` sur une branche `chore/amont-<version>`,
+  puis PHPStan et PHPUnit.
 
 ---
 
@@ -103,48 +130,48 @@ Suivie dans le tableau de tâches de l'équipe, hors de ce dépôt.
 | Qui | Colonne du backlog |
 |---|---|
 | LCS | E, back et CI |
-| LOU | A, accessibilité transverse, branche `feature/accessibilite` |
+| LOU | A, accessibilité transverse |
 | JEREMY | C, tableau de bord et emploi du temps |
 
-Les colonnes B (documents) et D (recherche) n'ont encore personne. Ce sont pourtant les
-priorités 1 et 2 du client. D1 est du back.
+La colonne B (documents) n'a encore personne, alors que c'est la priorité 2 du client. D1 et D2
+sont faites, D3 et D4 restent à prendre.
 
 ---
 
 ## Ce qu'il reste à faire, dans l'ordre
 
-1. **Envoyer les questions au client**, plus bas. Elles bloquent la fin d'E6 et la fiche B6.
-2. **Revenir à l'année active quand l'année mémorisée n'existe plus.** Après un rechargement des
-   fixtures, `initAnneeUnivData()` (`shared/requests/initializeData.js`) garde un identifiant
-   d'année disparu, et l'agenda reste vide. Petit correctif front.
-3. **Passe visuelle de l'emploi du temps**, fiche C3 et priorité 4, côté JEREMY. Écran concerné :
-   `packages/intranet-bundle/assets/components/Edt/EdtEtudiant.vue`.
-4. **Étudier l'échec de CI-Cypress.**
+1. **Merger `fix/ci-cypress-serveur`**, puis vérifier que CI-Cypress passe au vert sur GitHub.
+2. **D3, la palette de recherche accessible**, branchée sur `/api/recherche`, avec les pages de
+   l'intranet cherchées côté front.
+3. **B6, relier un document à une matière ou à une SAE** : la question 6 reste sans réponse, on
+   tranche nous-mêmes (voir « Décisions »).
+4. **Passe visuelle de l'emploi du temps**, fiche C3 et priorité 4, côté JEREMY.
 5. **Examiner les 18 alertes de sécurité** remontées par `composer audit`, antérieures à nous.
-6. **D1, l'endpoint de recherche tolérant aux fautes**, à cadrer avant de coder.
+6. **Import d'étudiants** : il inscrit chaque étudiant dans *tous* les groupes du semestre, TD et
+   TP compris, au lieu des siens.
 7. Le reste du backlog, colonnes A à D et propositions P.
+
+## Décisions
+
+Quand le client n'a pas tranché, **on choisit ce qui nous paraît le mieux**, on le note ici, et
+on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
+
+| Sujet | Décision | Source |
+|---|---|---|
+| ECTS du stage | la balise `{stage.ects}` sort vide dans le PDF, en attendant leur décision | client |
+| Création d'un étudiant | inscrit d'office aux deux semestres de son année ; la notion de semestre en cours disparaît au profit de la clôture d'un semestre | Cyndel |
+| Moyennes | calculées à la volée jusqu'à validation en sous-commission, puis enregistrées dans `MoyenneUe` et `MoyenneEnseignement`, liées à `EtudiantScolariteSemestre` ; celles de l'année restent calculées à la volée. L'ancien format JSON est retiré chez nous (#38), Cyndel le retire aussi chez eux | Cyndel |
+| Voter des questionnaires | raccourci de développement retiré, règles normales appliquées | client |
 
 ## Questions en attente du client
 
-À envoyer à Dannebicque. Les numéros 1, 2 et 4 sont cités dans `phpstan.neon` : ne pas les
-renuméroter.
+À envoyer à Dannebicque.
 
-1. **Convention de stage** : `StagePdfController` appelle `StagePeriode::getNbEcts()`, qui
-   n'existe pas, et le nombre d'ECTS n'est stocké nulle part. Le stocker sur la période, le
-   déduire des UE, ou retirer la mention du PDF ?
-2. **Création manuelle d'un étudiant** : `addAnnee()` n'existe pas, l'année se déduit des
-   semestres. L'inscrire aux deux semestres de l'année, ou au semestre en cours ?
-3. **Emploi du temps** : qui branchera la vraie base Celcat, et quand ? Il faut l'accès réseau
-   et les identifiants de la DSI.
-4. **Moyennes** : les accesseurs `moyennesMatiere` et `moyennesUe` pointent des propriétés
-   retirées, mais l'import depuis l'intranet V3 écrit toujours dedans. Rétablir les colonnes, ou
-   cesser de les écrire ?
-5. `packages` renvoie `documents`, le catalogue `document`, la fiche étudiant `UniTranet`.
+1. **Emploi du temps** : qui branchera la vraie base Celcat, et quand ? Il faut l'accès réseau
+   et les identifiants de la DSI. Le client laisse Cyndel préciser.
+2. `packages` renvoie `documents`, le catalogue `document`, la fiche étudiant `UniTranet`.
    Lequel fait foi ?
-6. Peut-on relier un document à une matière ou à une SAE ? C'est le cœur de la priorité 2.
-7. **Droits sur les questionnaires** : `QuestionnaireVoter` renvoie `true` avant ses règles, avec
-   le commentaire « pour les tests ». Peut-on appliquer les règles écrites en dessous ? Elles
-   passent des noms de rôles (`ROLE_ADMIN`…) à `hasAnyPermission()` : est-ce le format attendu ?
+3. Peut-on relier un document à une matière ou à une SAE ? C'est le cœur de la priorité 2.
 
 Trois failles à leur signaler, car elles sont dans leur code de production :
 
@@ -152,7 +179,7 @@ Trois failles à leur signaler, car elles sont dans leur code de production :
 - le lien d'abonnement iCal de l'intranet V3 : son identifiant est `MD5(prenom.nom)`, donc
   n'importe qui peut obtenir l'emploi du temps d'un étudiant en connaissant son nom. Ne pas le
   tester sur le vrai site ;
-- les questionnaires, ouverts en modification à tout utilisateur connecté (question 7).
+- les questionnaires, ouverts en modification à tout utilisateur connecté, corrigé chez nous (#36).
 
 ---
 
@@ -179,6 +206,9 @@ Trois failles à leur signaler, car elles sont dans leur code de production :
 - **Les fixtures du bundle stage** créent leurs propres années `2023-2024`, `2024-2025` et
   `2025-2026`, avec un tiret. Elles s'ajoutent aux années calculées et font doublon dans le
   sélecteur.
+- **`php -S` n'expose pas l'environnement du processus** à Symfony sans
+  `-d variables_order=EGPCS` : l'API retombe alors sur les `.env`, et en local sur
+  `back/.env.local`, alors que la console voit bien les variables. Piège rencontré sur CI-Cypress.
 - **Tester l'API sans mot de passe** : générer un jeton en console, puis l'envoyer en
   `Authorization: Bearer`.
   `php bin/console lexik:jwt:generate-token -c 'App\Entity\Users\Etudiant' etudiant`
