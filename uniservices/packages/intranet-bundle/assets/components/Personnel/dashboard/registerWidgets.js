@@ -2,7 +2,7 @@ import { registerWidgetComponent } from '@components';
 import EmploiDuTempsWidget from './widgets/EmploiDuTempsWidget.vue';
 import ActionsUrgentesWidget from './widgets/ActionsUrgentesWidget.vue';
 import DocumentsRecentsWidget from './widgets/DocumentsRecentsWidget.vue';
-import NotesWidget from './widgets/NotesWidget.vue';
+import NotesWidget from '@/components/Etudiant/dashboard/NotesWidget.vue';
 import ContactsWidget from '@/components/Etudiant/dashboard/ContactsWidget.vue';
 
 export const registerWidgets = () => {
