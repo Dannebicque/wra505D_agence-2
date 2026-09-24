@@ -31,6 +31,31 @@ class StructureAnneeUniversitaireFixtures extends Fixture implements OrderedFixt
         return 7;
     }
 
+    /**
+     * Libellé de l'année universitaire en cours, décalée de $decalage années.
+     *
+     * L'année est calculée à partir de la date du jour, avec la même règle que la fausse base
+     * Celcat : sans cela, les créneaux de la rentrée tombent dans une année figée.
+     */
+    public static function libelle(int $decalage = 0): string
+    {
+        $debut = self::anneeDeDebut() + $decalage;
+
+        return $debut.'/'.($debut + 1);
+    }
+
+    /**
+     * L'année bascule à la mi-août, comme dans CelcatFausseBaseCommand::lundiDeLaRentree().
+     */
+    private static function anneeDeDebut(): int
+    {
+        $aujourdhui = new \DateTimeImmutable('today');
+
+        return (int) $aujourdhui->format('n') >= 8 && (int) $aujourdhui->format('j') >= 15 || (int) $aujourdhui->format('n') > 8
+            ? (int) $aujourdhui->format('Y')
+            : (int) $aujourdhui->format('Y') - 1;
+    }
+
     public function load(ObjectManager $manager): void
     {
         $personnel = $this->personnelRepository->findOneBy(['username' => 'personnel']);
@@ -40,8 +65,8 @@ class StructureAnneeUniversitaireFixtures extends Fixture implements OrderedFixt
 
         $anneeUniversitaire1 = new StructureAnneeUniversitaire();
         $anneeUniversitaire1
-            ->setLibelle('2023/2024')
-            ->setAnnee(2023)
+            ->setLibelle(self::libelle(-1))
+            ->setAnnee(self::anneeDeDebut() - 1)
             ->addPn($pn1)
             ->addPn($pn2)
             ->addPersonnel($personnel)
@@ -50,8 +75,8 @@ class StructureAnneeUniversitaireFixtures extends Fixture implements OrderedFixt
         $manager->persist($anneeUniversitaire1);
 
         $anneeUniversitaire2 = new StructureAnneeUniversitaire();
-        $anneeUniversitaire2->setLibelle('2024/2025')
-            ->setAnnee(2024)
+        $anneeUniversitaire2->setLibelle(self::libelle())
+            ->setAnnee(self::anneeDeDebut())
             ->addPn($pn1)
             ->addPn($pn2)
             ->addPersonnel($personnel)

@@ -34,7 +34,7 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $s1 = $this->structureSemestreRepository->findOneBy(['libelle' => 'S1']);
-        $anneeU = $this->structureAnneeUniversitaireRepository->findOneBy(['libelle' => '2024/2025']);
+        $anneeU = $this->structureAnneeUniversitaireRepository->findOneBy(['libelle' => StructureAnneeUniversitaireFixtures::libelle()]);
         $departement = $this->structureDepartementRepository->findOneBy(['libelle' => 'MMI']);
 
         if ($s1 === null) {
