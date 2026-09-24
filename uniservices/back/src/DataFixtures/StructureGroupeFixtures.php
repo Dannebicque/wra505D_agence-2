@@ -170,7 +170,6 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
             $scol->setUuid(UuidV4::v4());
             $scol->setActif(true);
             $scol->setDepartement($departement);
-            $scol->addScolariteSemestre($s1->getScolariteSemestre()[0]);
             $etudiant->addScolarite($scol);
 
             $scolS1 = new EtudiantScolariteSemestre();

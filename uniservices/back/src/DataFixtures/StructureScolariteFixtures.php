@@ -6,6 +6,8 @@ use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Repository\EtudiantRepository;
 use App\Repository\Structure\StructureAnneeUniversitaireRepository;
+use App\Repository\Structure\StructureDepartementRepository;
+use App\Repository\Structure\StructureGroupeRepository;
 use App\Repository\Structure\StructureSemestreRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
@@ -22,7 +24,9 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
     public function __construct(
         StructureSemestreRepository           $semestreRepository,
         EtudiantRepository                    $etudiantRepository,
-        StructureAnneeUniversitaireRepository $anneeUniversitaireRepository
+        StructureAnneeUniversitaireRepository $anneeUniversitaireRepository,
+        private readonly StructureGroupeRepository $groupeRepository,
+        private readonly StructureDepartementRepository $departementRepository,
     )
     {
         $this->semestreRepository = $semestreRepository;
@@ -35,15 +39,13 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
      */
     public function getOrder(): int
     {
-        return 8;
+        // Après StructureGroupeFixtures, qui crée les groupes de S1.
+        return 10;
     }
 
     public function load(ObjectManager $manager): void
     {
         $semestre1 = $this->semestreRepository->findOneBy(['libelle' => 'S1']);
-        $semestre2 = $this->semestreRepository->findOneBy(['libelle' => 'S2']);
-        $semestre3 = $this->semestreRepository->findOneBy(['libelle' => 'S3 - DWeb-DI FC']);
-        $semestre4 = $this->semestreRepository->findOneBy(['libelle' => 'S4 - DWeb-DI FC']);
 
         $etu1 = $this->etudiantRepository->findOneBy(['username' => 'etudiant']);
 
@@ -67,17 +69,26 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         $manager->persist($scolarite1);
         $manager->persist($scolariteSemestre1);
 
+        // Scolarité en cours, sur l'année et les groupes de l'emploi du temps simulé par Celcat.
         $scolarite2 = new EtudiantScolarite();
         $scolarite2->setEtudiant($etu1)
             ->setOrdre(2)
             ->setNbAbsences(0)
             ->setPublic(true)
             ->setAnneeUniversitaire($anneeUniversitaire2)
+            ->setDepartement($this->departementRepository->findOneBy(['libelle' => 'MMI']))
             ->setUuid(Uuid::v4());
+        $scolarite2->setActif(true);
 
         $scolariteSemestre2 = new EtudiantScolariteSemestre();
-        $scolariteSemestre2->setSemestre($semestre2)
+        $scolariteSemestre2->setSemestre($semestre1)
             ->setScolarite($scolarite2);
+
+        foreach (['MMICM', 'MMITDAB', 'MMITPA'] as $codeGroupe) {
+            $groupe = $this->groupeRepository->findOneBy(['codeApogee' => $codeGroupe]);
+            $scolariteSemestre2->addGroupe($groupe);
+            $etu1->addGroupe($groupe);
+        }
 
         $scolarite2->addScolariteSemestre($scolariteSemestre2);
         $manager->persist($scolarite2);
