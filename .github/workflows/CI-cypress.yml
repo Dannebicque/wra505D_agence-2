@@ -83,7 +83,9 @@ jobs:
 
       - name: Start Symfony server
         working-directory: uniservices/back
-        run: php -S 127.0.0.1:8000 -t public > /tmp/symfony-server.log 2>&1 &
+        # Le serveur intégré ne transmet l'environnement à PHP qu'avec variables_order=EGPCS :
+        # sans cela, l'API ignore DATABASE_URL et interroge la base du .env.
+        run: php -d variables_order=EGPCS -S 127.0.0.1:8000 -t public > /tmp/symfony-server.log 2>&1 &
 
       - name: Wait for Symfony server
         run: |
