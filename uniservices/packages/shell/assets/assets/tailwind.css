@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
 
+@theme {
+    --font-sans: 'Roboto', sans-serif;
+}
+
 @variant dark (&:where(.app-dark, .app-dark *));
 
 @source "../../../../packages/*/assets/**/*.vue";
