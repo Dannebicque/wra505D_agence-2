@@ -65,7 +65,8 @@ export const documentService = {
           id,
           name: item.libelle || item.name || 'Sans nom',
           parentId,
-          icon: item.icon || '📁',
+          // Les catégories créées avant le passage aux icônes PrimeIcons portent encore un emoji.
+          icon: typeof item.icon === 'string' && item.icon.startsWith('pi ') ? item.icon : 'pi pi-folder',
           color: item.color || 'bg-blue-500',
           packageKey,
           isSystem,

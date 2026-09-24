@@ -27,46 +27,46 @@ class DocumentFixtures extends Fixture implements OrderedFixtureInterface, Fixtu
         $categoriesData = [
             [
                 'libelle' => 'Ressources Humaines',
-                'icon' => '👥',
+                'icon' => 'pi pi-users',
                 'color' => 'bg-blue-500',
                 'packageKey' => 'intranet',
                 'isSystem' => true,
                 'children' => [
-                    ['libelle' => 'Contrats', 'icon' => '📋', 'color' => 'bg-blue-400', 'packageKey' => 'intranet', 'isSystem' => true],
-                    ['libelle' => 'Formations', 'icon' => '🎓', 'color' => 'bg-blue-400', 'packageKey' => 'intranet', 'isSystem' => true],
+                    ['libelle' => 'Contrats', 'icon' => 'pi pi-id-card', 'color' => 'bg-blue-400', 'packageKey' => 'intranet', 'isSystem' => true],
+                    ['libelle' => 'Formations', 'icon' => 'pi pi-graduation-cap', 'color' => 'bg-blue-400', 'packageKey' => 'intranet', 'isSystem' => true],
                 ],
             ],
             [
                 'libelle' => 'Finance & Comptabilité',
-                'icon' => '💰',
+                'icon' => 'pi pi-wallet',
                 'color' => 'bg-green-500',
                 'packageKey' => 'intranet',
                 'isSystem' => true,
                 'children' => [
-                    ['libelle' => 'Budgets Prévisionnels', 'icon' => '📈', 'color' => 'bg-green-400', 'packageKey' => 'intranet', 'isSystem' => true],
-                    ['libelle' => 'Factures & Remboursements', 'icon' => '📊', 'color' => 'bg-green-400', 'packageKey' => 'intranet', 'isSystem' => true],
+                    ['libelle' => 'Budgets Prévisionnels', 'icon' => 'pi pi-chart-line', 'color' => 'bg-green-400', 'packageKey' => 'intranet', 'isSystem' => true],
+                    ['libelle' => 'Factures & Remboursements', 'icon' => 'pi pi-receipt', 'color' => 'bg-green-400', 'packageKey' => 'intranet', 'isSystem' => true],
                 ],
             ],
             [
                 'libelle' => 'Technique & Documentation',
-                'icon' => '⚙️',
+                'icon' => 'pi pi-cog',
                 'color' => 'bg-purple-500',
                 'packageKey' => null,
                 'isSystem' => false,
                 'children' => [
-                    ['libelle' => 'Documentation API', 'icon' => '🔧', 'color' => 'bg-purple-400', 'packageKey' => null, 'isSystem' => false],
-                    ['libelle' => 'Guides Utilisateur', 'icon' => '📖', 'color' => 'bg-purple-400', 'packageKey' => null, 'isSystem' => false],
+                    ['libelle' => 'Documentation API', 'icon' => 'pi pi-code', 'color' => 'bg-purple-400', 'packageKey' => null, 'isSystem' => false],
+                    ['libelle' => 'Guides Utilisateur', 'icon' => 'pi pi-book', 'color' => 'bg-purple-400', 'packageKey' => null, 'isSystem' => false],
                 ],
             ],
             [
                 'libelle' => 'Stages & Alternances',
-                'icon' => '💼',
+                'icon' => 'pi pi-briefcase',
                 'color' => 'bg-teal-500',
                 'packageKey' => 'stage',
                 'isSystem' => true,
                 'children' => [
-                    ['libelle' => 'Modèles de Convention', 'icon' => '📝', 'color' => 'bg-teal-400', 'packageKey' => 'stage', 'isSystem' => true],
-                    ['libelle' => 'Fiches d\'Offres de Stage', 'icon' => '📄', 'color' => 'bg-teal-400', 'packageKey' => 'stage', 'isSystem' => true],
+                    ['libelle' => 'Modèles de Convention', 'icon' => 'pi pi-pencil', 'color' => 'bg-teal-400', 'packageKey' => 'stage', 'isSystem' => true],
+                    ['libelle' => 'Fiches d\'Offres de Stage', 'icon' => 'pi pi-file', 'color' => 'bg-teal-400', 'packageKey' => 'stage', 'isSystem' => true],
                 ],
             ],
         ];

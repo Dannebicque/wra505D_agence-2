@@ -25,4 +25,14 @@ describe('Documents par matière et par SAÉ', () => {
         cy.contains('button', 'Tous les documents').click();
         cy.contains('button', 'SAE1.01').should('not.have.attr', 'aria-current');
     });
+
+    it('n\'affiche aucun emoji, ni dans les documents ni dans leur détail', () => {
+        // Le pied de page commun écrit « Copyright © » : ©, ® et ™ comptent comme pictogrammes.
+        const emoji = /(?![©®™])\p{Extended_Pictographic}/u;
+        cy.get('body').invoke('text').should('not.match', emoji);
+        cy.contains('button', 'SAE1.01').click();
+        cy.contains('SAÉ 1.01 : sujet et attendus').click();
+        cy.contains('Informations');
+        cy.get('body').invoke('text').should('not.match', emoji);
+    });
 });

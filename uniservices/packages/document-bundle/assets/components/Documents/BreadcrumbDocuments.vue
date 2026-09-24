@@ -4,7 +4,7 @@
       @click="$emit('navigate', null)"
       class="hover:text-gray-700 transition-colors"
     >
-      📁 Accueil
+      <i class="pi pi-folder" aria-hidden="true"></i> Accueil
     </button>
     
     <template v-for="(item, index) in breadcrumbItems" :key="item.id">
@@ -17,11 +17,11 @@
         @click="$emit('navigate', item.id)"
         class="hover:text-gray-700 transition-colors"
       >
-        {{ item.icon }} {{ item.name }}
+        <i :class="item.icon" aria-hidden="true"></i> {{ item.name }}
       </button>
       
       <span v-else class="text-gray-900 font-medium">
-        {{ item.icon }} {{ item.name }}
+        <i :class="item.icon" aria-hidden="true"></i> {{ item.name }}
       </span>
     </template>
   </nav>
@@ -45,7 +45,7 @@ defineEmits<{
 
 const breadcrumbItems = computed(() => {
   if (props.showFavorites) {
-    return [{ id: 'favorites', name: 'Favoris', icon: '⭐' }];
+    return [{ id: 'favorites', name: 'Favoris', icon: 'pi pi-star' }];
   }
   
   if (!props.currentCategory) {

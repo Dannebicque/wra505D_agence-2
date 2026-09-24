@@ -2,17 +2,17 @@ import type { DocumentType } from '@types';
 
 export const getFileIcon = (type: DocumentType): string => {
   const icons: Record<DocumentType, string> = {
-    pdf: '📄',
-    excel: '📊',
-    word: '📝',
-    powerpoint: '📊',
-    image: '🖼️',
-    video: '🎥',
-    audio: '🎵',
-    text: '📄',
-    archive: '📦'
+    pdf: 'pi pi-file-pdf',
+    excel: 'pi pi-file-excel',
+    word: 'pi pi-file-word',
+    powerpoint: 'pi pi-chart-bar',
+    image: 'pi pi-image',
+    video: 'pi pi-video',
+    audio: 'pi pi-volume-up',
+    text: 'pi pi-file',
+    archive: 'pi pi-box'
   };
-  return icons[type];
+  return icons[type] ?? 'pi pi-file';
 };
 
 export const getFileIconColor = (type: DocumentType): string => {
