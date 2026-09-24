@@ -20,6 +20,7 @@ class IntranetDashboardDefinition implements DashboardDefinitionInterface
             new DashboardWidgetLayout('intranet.documents_recents', 1, colSpan: 1, rowSpan: 1),
             new DashboardWidgetLayout('intranet.actions_urgentes', 2, colSpan: 1, rowSpan: 2),
             new DashboardWidgetLayout('intranet.notes', 3, colSpan: 2, rowSpan: 1),
+            new DashboardWidgetLayout('intranet.contacts', 4, colSpan: 2, rowSpan: 1),
         ];
     }
 
