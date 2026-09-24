@@ -21,6 +21,8 @@ class IntranetDashboardDefinition implements DashboardDefinitionInterface
             new DashboardWidgetLayout('intranet.actions_urgentes', 2, colSpan: 1, rowSpan: 2),
             new DashboardWidgetLayout('intranet.notes', 3, colSpan: 2, rowSpan: 1),
             new DashboardWidgetLayout('intranet.contacts', 4, colSpan: 2, rowSpan: 1),
+            new DashboardWidgetLayout('intranet.actualites', 5, colSpan: 2, rowSpan: 1),
+            new DashboardWidgetLayout('intranet.actualites_iut', 6, colSpan: 2, rowSpan: 1),
         ];
     }
 
@@ -30,6 +32,8 @@ class IntranetDashboardDefinition implements DashboardDefinitionInterface
             new DashboardWidgetLayout('intranet.emploi_du_temps', 0, colSpan: 2, rowSpan: 1),
             new DashboardWidgetLayout('intranet.actions_urgentes', 1, colSpan: 1, rowSpan: 2),
             new DashboardWidgetLayout('intranet.notes', 3, colSpan: 2, rowSpan: 1),
+            new DashboardWidgetLayout('intranet.actualites', 4, colSpan: 2, rowSpan: 1),
+            new DashboardWidgetLayout('intranet.actualites_iut', 5, colSpan: 2, rowSpan: 1),
         ];
     }
 }

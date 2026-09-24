@@ -24,6 +24,9 @@ class IntranetWidgetProvider implements WidgetProviderInterface
             new WidgetDefinition('intranet.actions_urgentes', 'intranet', 'Actions urgentes', 'pi pi-sparkles', 'ActionsUrgentesWidget', 'medium', true, defaultConfig: ['position' => 3], allowedProfiles: [WidgetDefinition::PROFILE_PERSONNEL]),
             new WidgetDefinition('intranet.notes', 'intranet', 'Notes', 'pi pi-pencil', 'NotesWidget', 'small', true, defaultConfig: ['position' => 5], allowedProfiles: [WidgetDefinition::PROFILE_ETUDIANT]),
             new WidgetDefinition('intranet.contacts', 'intranet', 'Contacts', 'pi pi-users', 'ContactsWidget', 'medium', true, defaultConfig: ['position' => 6], allowedProfiles: [WidgetDefinition::PROFILE_ETUDIANT]),
+            // L'étudiant ne passe plus par le portail, qui portait seul les actualités.
+            new WidgetDefinition('intranet.actualites', 'intranet', 'Actualités du département', 'pi pi-megaphone', 'IntActusWidget', 'large', true, defaultConfig: ['position' => 4], allowedProfiles: [WidgetDefinition::PROFILE_ETUDIANT]),
+            new WidgetDefinition('intranet.actualites_iut', 'intranet', 'Actualités de l\'IUT', 'pi pi-globe', 'ExtActusWidget', 'large', true, defaultConfig: ['position' => 7], allowedProfiles: [WidgetDefinition::PROFILE_ETUDIANT]),
         ];
     }
 }
