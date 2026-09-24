@@ -269,7 +269,7 @@ const selectAnneeUniversitaire = (annee) => {
       </router-link>
     </div>
 
-    <div v-if="route.name !== 'portail'" class="layout-topbar-search hidden lg:block">
+    <div v-if="route.name !== 'portail'" class="layout-topbar-search hidden w-full max-w-md lg:block">
       <AppSearch input-id="recherche-globale" />
     </div>
 

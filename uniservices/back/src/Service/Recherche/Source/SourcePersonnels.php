@@ -6,11 +6,12 @@ use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureDepartementPersonnel;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
+use App\Enum\StatutEnum;
 use App\Service\Recherche\Candidat;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Personnels rattachés au département.
+ * Personnels rattachés au département, avec leur statut pour les distinguer.
  */
 final class SourcePersonnels implements SourceRechercheInterface
 {
@@ -21,7 +22,7 @@ final class SourcePersonnels implements SourceRechercheInterface
     public function candidats(StructureDepartement $departement, Etudiant|Personnel $utilisateur): iterable
     {
         $personnels = $this->entityManager->createQueryBuilder()
-            ->select('DISTINCT p.id', 'p.nom', 'p.prenom', 'p.username', 'p.mailUniv')
+            ->select('DISTINCT p.id', 'p.nom', 'p.prenom', 'p.username', 'p.mailUniv', 'p.statut')
             ->from(StructureDepartementPersonnel::class, 'dp')
             ->join('dp.personnel', 'p')
             ->where('dp.departement = :departement')
@@ -34,7 +35,7 @@ final class SourcePersonnels implements SourceRechercheInterface
                 'personnel',
                 $personnel['id'],
                 $personnel['prenom'].' '.$personnel['nom'],
-                null,
+                $personnel['statut'] instanceof StatutEnum ? $personnel['statut']->getLibelle() : null,
                 $personnel['prenom'].' '.$personnel['nom'].' '.$personnel['username'],
                 $personnel['mailUniv'],
             );
