@@ -93,7 +93,7 @@
                 background-color: var(--surface-hover);
             }
 
-            &:focus {
+            &:focus-visible {
                 @include mixins.focused-inset();
             }
         }

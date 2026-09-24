@@ -10,9 +10,9 @@ const props = defineProps({
 </script>
 
 <template>
-    <div class="layout-sidebar">
+    <nav class="layout-sidebar" aria-label="Menu principal">
         <app-menu :model="menuItems"></app-menu>
-    </div>
+    </nav>
 </template>
 
 <style lang="scss" scoped></style>

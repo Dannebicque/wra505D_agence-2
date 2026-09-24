@@ -9,7 +9,8 @@
         outline-color var(--transition-duration);
 }
 
+// Couleur du texte et non primaire du module : le contraste de l'anneau ne dépend pas du module.
 @mixin focused-inset() {
-    outline-offset: -1px;
-    box-shadow: inset var(--focus-ring-shadow);
+    outline: 2px solid var(--text-color);
+    outline-offset: -2px;
 }
