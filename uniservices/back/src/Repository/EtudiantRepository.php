@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Users\Etudiant;
 use App\Repository\Traits\FindAllByIdArrayTrait;
+use App\Repository\Traits\FindAllByOldIdArrayTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -13,6 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
 class EtudiantRepository extends ServiceEntityRepository
 {
     use FindAllByIdArrayTrait;
+    use FindAllByOldIdArrayTrait;
 
     public function __construct(ManagerRegistry $registry)
     {

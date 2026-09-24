@@ -70,13 +70,9 @@ class StageFixtures extends Fixture implements OrderedFixtureInterface, FixtureG
         $resp1 = $personnels[0] ?? null;
         $resp2 = $personnels[1] ?? $resp1;
 
-        // 4. Get Etudiant records & assign test student to S5 (BUT 3)
+        // 4. Get Etudiant records
         $students = $manager->getRepository(Etudiant::class)->findBy([], null, 10);
         $mainStudent = $students[0] ?? null;
-        if ($mainStudent && $s5) {
-            $mainStudent->setSemestreActuel($s5);
-            $manager->persist($mainStudent);
-        }
 
         // --- BUT 1 : PAS DE PÉRIODE DE STAGE (0 période) ---
         // (On n'instancie aucune StagePeriode rattachée à 2023-2024 ou S1/S2)

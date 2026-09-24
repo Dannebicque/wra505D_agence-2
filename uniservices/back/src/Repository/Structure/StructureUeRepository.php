@@ -4,6 +4,7 @@ namespace App\Repository\Structure;
 
 use App\Entity\Structure\StructureUe;
 use App\Repository\Traits\FindAllByIdArrayTrait;
+use App\Repository\Traits\FindAllByOldIdArrayTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -13,6 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
 class StructureUeRepository extends ServiceEntityRepository
 {
     use findAllByIdArrayTrait;
+    use FindAllByOldIdArrayTrait;
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, StructureUe::class);
