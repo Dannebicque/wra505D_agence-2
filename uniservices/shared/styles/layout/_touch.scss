@@ -1,0 +1,21 @@
+@media (max-width: 991px) {
+    button,
+    select,
+    textarea,
+    input:not([type='checkbox'], [type='radio'], [type='hidden'], .p-hidden-accessible) {
+        min-height: 44px;
+    }
+
+    button {
+        min-width: 44px;
+    }
+
+    .layout-topbar-action,
+    .p-breadcrumb-item-link,
+    .touch-target {
+        display: inline-flex;
+        align-items: center;
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
