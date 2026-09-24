@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Dto\Previsionnel\PreviStatsEdtDto;
-use IntranetBundle\Repository\Previsionnel\PrevisionnelRepository;
 use App\Repository\Edt\EdtEventRepository;
 
 class PreviStatsEdtProvider implements ProviderInterface
@@ -17,7 +16,6 @@ class PreviStatsEdtProvider implements ProviderInterface
     public function __construct(
         private CollectionProvider $collectionProvider,
         private ItemProvider $itemProvider,
-        private PrevisionnelRepository $previsionnelRepository,
         private EdtEventRepository $edtEventRepository,
     )
     {
@@ -40,7 +38,7 @@ class PreviStatsEdtProvider implements ProviderInterface
                 $groupes = (array) $previ->getGroupes();
                 $keys = array_unique(array_merge(array_keys($heures), array_keys($groupes)));
                 foreach ($keys as $k) {
-                    if ($k !== null && $k !== '') {
+                    if ($k !== '') {
                         $typesSet[$k] = true;
                     }
                 }

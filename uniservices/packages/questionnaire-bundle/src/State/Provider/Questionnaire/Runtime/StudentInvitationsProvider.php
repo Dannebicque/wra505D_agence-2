@@ -52,7 +52,7 @@ final class StudentInvitationsProvider implements ProviderInterface
                 estimatedTime: $q->getEstimatedTime(),
                 deadline: $q->getClosingDate()?->format('d/m/Y'),
                 token: $inv->getToken(),
-                status: $inv->getStatus()?->value ?? 'pending',
+                status: $inv->getStatus()->value,
                 anonymous: $q->getOpt()['anonymous'] ?? true
             );
         }

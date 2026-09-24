@@ -42,11 +42,9 @@ class AuthWidgetDataProvider implements WidgetDataProviderInterface
         if ($user instanceof Personnel) {
             $departement = $this->structureDepartementPersonnelRepository->findOneBy(['personnel' => $user, 'defaut' => true])->getDepartement();
             $public = "personnel";
-        } elseif ($user instanceof Etudiant) {
+        } else {
             $departement = $this->structureDepartementRepository->findOneByEtudiant($user);
             $public = "etudiant";
-        } else {
-            return [];
         }
 
         $actus = $this->departementActualiteRepository->findByDepartementAndPublic($departement, $public);

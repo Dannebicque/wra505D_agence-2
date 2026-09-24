@@ -29,7 +29,7 @@ final class QuestionnaireReminderEmail extends AbstractEmailDefinition
         return '@Questionnaire/emails/questionnaire/reminder.html.twig';
     }
 
-    public function getTxtTemplatePath(): ?string
+    public function getTxtTemplatePath(): string
     {
         return '@Questionnaire/emails/questionnaire/reminder.txt.twig';
     }

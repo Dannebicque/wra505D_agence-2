@@ -28,7 +28,7 @@ class PrevisionnelFilter extends AbstractFilter
         'enseignement' => 'enseignement',
         'diplome' => 'diplome',
     ];
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (!in_array($property, self::FILTERS) || null === $value) {
             return;
@@ -119,57 +119,43 @@ class PrevisionnelFilter extends AbstractFilter
                 'property' => 'personnel',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by personnel',
-                ],
+                'description' => 'Filter by personnel',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by anneeUniversitaire',
-                ],
+                'description' => 'Filter by anneeUniversitaire',
             ],
             'departement' => [
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by departement',
-                ],
+                'description' => 'Filter by departement',
             ],
             'diplome' => [
                 'property' => 'diplome',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by diplome',
-                ],
+                'description' => 'Filter by diplome',
             ],
             'semestre' => [
                 'property' => 'semestre',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by semestre',
-                ],
+                'description' => 'Filter by semestre',
             ],
             'enseignement' => [
                 'property' => 'enseignement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by enseignement',
-                ],
+                'description' => 'Filter by enseignement',
             ],
             'annee' => [
                 'property' => 'annee',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by annee',
-                ],
+                'description' => 'Filter by annee',
             ],
         ];
     }

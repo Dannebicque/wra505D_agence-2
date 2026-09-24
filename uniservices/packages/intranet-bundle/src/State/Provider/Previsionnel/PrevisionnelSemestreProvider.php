@@ -22,6 +22,11 @@ class PrevisionnelSemestreProvider implements ProviderInterface
     {
     }
 
+    /**
+     * Renvoie des tableaux, qu'API Platform sérialise tels quels, et non des ressources.
+     *
+     * @return array<mixed>|object|null
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof GetCollection) {
@@ -221,7 +226,7 @@ class PrevisionnelSemestreProvider implements ProviderInterface
         return $this->syntheseToDto($data);
     }
 
-    public function syntheseToDto($group): PrevisionnelSemestreDto
+    public function syntheseToDto(mixed $group): PrevisionnelSemestreDto
     {
         $prevSem = new PrevisionnelSemestreDto();
         $prevSem->setCodeEnseignement($group['enseignement']->getCodeEnseignement());
@@ -256,7 +261,7 @@ class PrevisionnelSemestreProvider implements ProviderInterface
         return $prevSem;
     }
 
-    public function formToDto($item): PrevisionnelSemestreDto
+    public function formToDto(mixed $item): PrevisionnelSemestreDto
     {
         $prevSem = new PrevisionnelSemestreDto();
         $prevSem->setId($item->getId());

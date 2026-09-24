@@ -26,7 +26,7 @@ final class DuplicateQuestionnaireService
             $duplicate->setStatus(QuestStatutEnum::DRAFT);
             $duplicate->setOpeningDate(null);
             $duplicate->setClosingDate(null);
-            $duplicate->setOpt($source->getOpt() ?? []);
+            $duplicate->setOpt($source->getOpt());
 
             $this->em->persist($duplicate);
 
@@ -48,7 +48,7 @@ final class DuplicateQuestionnaireService
                 $newSection->setDescription($section->getDescription());
                 $newSection->setSortOrder($section->getSortOrder());
                 $newSection->setTypeSection($section->getTypeSection());
-                $newSection->setOpt($section->getOpt() ?? []);
+                $newSection->setOpt($section->getOpt());
                 $newSection->setQuestionnaire($duplicate);
 
                 $sectionUuidMap[(string)$section->getUuid()] = (string)$newSection->getUuid();
@@ -69,7 +69,7 @@ final class DuplicateQuestionnaireService
                     $newQ->setChoices($q->getChoices());
                     $newQ->setConditionalRules($q->getConditionalRules());
                     $newQ->setSortOrder($q->getSortOrder());
-                    $newQ->setOpt($q->getOpt() ?? []);
+                    $newQ->setOpt($q->getOpt());
                     $newQ->setSection($newSection);
 
                     $questionUuidMap[(string)$q->getUuid()] = (string)$newQ->getUuid();
@@ -85,7 +85,7 @@ final class DuplicateQuestionnaireService
             // 2. Re-map conditional rules across all cloned questions
             foreach ($allClonedQuestions as $newQ) {
                 $rules = $newQ->getConditionalRules();
-                if (!empty($rules) && is_array($rules)) {
+                if (!empty($rules)) {
                     $remappedRules = [];
                     $ruleList = isset($rules[0]) && is_array($rules[0]) ? $rules : [$rules];
 

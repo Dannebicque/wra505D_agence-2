@@ -94,19 +94,17 @@ class DocumentFixtures extends Fixture implements OrderedFixtureInterface, Fixtu
             $manager->persist($parentCat);
             $createdCategories[] = $parentCat;
 
-            if (isset($catData['children'])) {
-                foreach ($catData['children'] as $childData) {
-                    $childCat = new DocumentCategory();
-                    $childCat->setLibelle($childData['libelle'])
-                        ->setIcon($childData['icon'])
-                        ->setColor($childData['color'])
-                        ->setPackageKey($childData['packageKey'])
-                        ->setIsSystem($childData['isSystem'])
-                        ->setParent($parentCat);
+            foreach ($catData['children'] as $childData) {
+                $childCat = new DocumentCategory();
+                $childCat->setLibelle($childData['libelle'])
+                    ->setIcon($childData['icon'])
+                    ->setColor($childData['color'])
+                    ->setPackageKey($childData['packageKey'])
+                    ->setIsSystem($childData['isSystem'])
+                    ->setParent($parentCat);
 
-                    $manager->persist($childCat);
-                    $createdCategories[] = $childCat;
-                }
+                $manager->persist($childCat);
+                $createdCategories[] = $childCat;
             }
         }
 

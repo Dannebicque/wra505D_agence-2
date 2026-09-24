@@ -33,9 +33,7 @@ class QuestionnaireAnalyticsService
 
         foreach ($invitations as $inv) {
             $status = $inv->getStatus() ? $inv->getStatus()->value : 'pending';
-            if (isset($statusCounts[$status])) {
-                $statusCounts[$status]++;
-            }
+            $statusCounts[$status]++;
 
             if ($status === 'submitted') {
                 $totalResponses++;
