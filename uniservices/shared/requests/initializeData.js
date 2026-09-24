@@ -20,23 +20,20 @@ const initAnneeUnivData = async () => {
 
   // Check if a selected annee universitaire exists in localStorage
   const selectedAnneeUnivStr = localStorage.getItem('selectedAnneeUniv');
-  if (selectedAnneeUnivStr) {
-    // Load the selected annee from localStorage
-    const selectedAnneeUniv = JSON.parse(selectedAnneeUnivStr);
-    // Find the corresponding annee in the list to get the current actif status
-    const foundAnnee = anneeUnivStore.anneesUniv.find(annee => annee.id === selectedAnneeUniv.id);
-    if (foundAnnee) {
-      // Update the selected annee with the current actif status
-      anneeUnivStore.setSelectedAnneeUniv({
-        ...selectedAnneeUniv,
-        isActif: foundAnnee.actif
-      });
-    } else {
-      // If not found, just set what we have
-      anneeUnivStore.selectedAnneeUniv.value = selectedAnneeUniv;
-    }
+  const selectedAnneeUniv = selectedAnneeUnivStr ? JSON.parse(selectedAnneeUnivStr) : null;
+  // Find the corresponding annee in the list to get the current actif status
+  const foundAnnee = selectedAnneeUniv
+    ? anneeUnivStore.anneesUniv.find(annee => annee.id === selectedAnneeUniv.id)
+    : null;
+
+  if (foundAnnee) {
+    // Update the selected annee with the current actif status
+    anneeUnivStore.setSelectedAnneeUniv({
+      ...selectedAnneeUniv,
+      isActif: foundAnnee.actif
+    });
   } else {
-    // No selected annee in localStorage, set the current one
+    // Aucune année mémorisée, ou une année qui n'existe plus (base rechargée) : on prend l'année en cours.
     await anneeUnivStore.getCurrentAnneeUniv();
 
     // If we have a current annee, set it as selected
