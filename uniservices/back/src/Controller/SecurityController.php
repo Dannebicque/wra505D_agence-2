@@ -238,7 +238,7 @@ class SecurityController extends AbstractController
     ): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof Etudiant && !$user instanceof Personnel) {
             return new JsonResponse(['message' => 'Non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 

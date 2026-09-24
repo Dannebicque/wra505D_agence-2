@@ -105,7 +105,7 @@ class StructureCalendrier
     public function getJours(): array
     {
         $jours = [];
-        $date = clone $this->dateLundi;
+        $date = \DateTime::createFromInterface($this->dateLundi);
         for ($i = 0; $i < 5; $i++) {
             $jours[] = clone $date;
             $date->modify('+1 day');

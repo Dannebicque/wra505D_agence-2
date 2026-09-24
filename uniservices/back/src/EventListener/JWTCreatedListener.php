@@ -3,6 +3,7 @@
 namespace App\EventListener;
 
 use App\Entity\Users\Etudiant;
+use App\Entity\Users\Personnel;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 
 class JWTCreatedListener
@@ -10,6 +11,9 @@ class JWTCreatedListener
     public function onJWTCreated(JWTCreatedEvent $event): void
     {
         $user = $event->getUser();
+        if (!$user instanceof Etudiant && !$user instanceof Personnel) {
+            return;
+        }
         $payload = $event->getData();
 
         if ($user instanceof Etudiant) {
