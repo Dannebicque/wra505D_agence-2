@@ -162,6 +162,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Création d'un étudiant | inscrit d'office aux deux semestres de son année ; la notion de semestre en cours disparaît au profit de la clôture d'un semestre | Cyndel |
 | Moyennes | calculées à la volée jusqu'à validation en sous-commission, puis enregistrées dans `MoyenneUe` et `MoyenneEnseignement`, liées à `EtudiantScolariteSemestre` ; celles de l'année restent calculées à la volée. L'ancien format JSON est retiré chez nous (#38), Cyndel le retire aussi chez eux | Cyndel |
 | Voter des questionnaires | raccourci de développement retiré, règles normales appliquées | client |
+| Navigation étudiante | un seul menu, le même sur chaque page, assemblé depuis le `studentMenu` des modules actifs (`shared/helpers/menuEtudiant.js`) ; l'étudiant arrive sur l'Accueil sans passer par le portail ; Portail, Applications et Messages retirés de sa barre haute, Messages rejoindra le centre de notifications. Rien ne change pour le personnel | nous |
 | Document et enseignement (B6) | un document se rattache à **un seul** `ScolEnseignement`, matière ou SAÉ, facultatif ; le lien s'efface si l'enseignement est supprimé. Un support commun à plusieurs matières se dépose dans chacune. Question 3 toujours sans réponse | nous |
 
 ## Questions en attente du client
@@ -173,6 +174,10 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 2. `packages` renvoie `documents`, le catalogue `document`, la fiche étudiant `UniTranet`.
    Lequel fait foi ?
 3. Peut-on relier un document à une matière ou à une SAE ? C'est le cœur de la priorité 2.
+4. Quelle est l'adresse de la messagerie universitaire des étudiants ? Le menu du profil doit y
+   mener, on ne l'invente pas.
+5. Les modules d'un étudiant sont codés en dur (`intranet`, `documents`, `SecurityController`) :
+   doivent-ils suivre ceux de son département, pour lui ouvrir Stages et Assistance ?
 
 Trois failles à leur signaler, car elles sont dans leur code de production :
 
