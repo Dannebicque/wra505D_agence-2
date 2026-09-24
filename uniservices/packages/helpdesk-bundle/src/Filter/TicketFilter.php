@@ -13,7 +13,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(TicketFilter::class)]
 class TicketFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -56,33 +56,25 @@ class TicketFilter extends AbstractFilter
                 'property' => 'latest',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by latests tickets',
-                ],
+                'description' => 'Filter by latests tickets',
             ],
             'auteur' => [
                 'property' => 'auteur',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by auteur',
-                ]
+                'description' => 'Filter by auteur',
             ],
             'statut' => [
                 'property' => 'statut',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by statut',
-                ]
+                'description' => 'Filter by statut',
             ],
             'hasRecentMessage' => [
                 'property' => 'hasRecentMessage',
                 'type' => Type::BUILTIN_TYPE_BOOL,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by new message',
-                ]
+                'description' => 'Filter by new message',
             ]
         ];
 

@@ -13,7 +13,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(AbsenceFilter::class)]
 class AbsenceFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -107,49 +107,37 @@ class AbsenceFilter extends AbstractFilter
                 'property' => 'annee',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by annee',
-                ],
+                'description' => 'Filter by annee',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by anneeUniversitaire',
-                ],
+                'description' => 'Filter by anneeUniversitaire',
             ],
             'justifiee' => [
                 'property' => 'justifiee',
                 'type' => Type::BUILTIN_TYPE_BOOL,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by justifiee',
-                ],
+                'description' => 'Filter by justifiee',
             ],
             'event' => [
                 'property' => 'event',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by event',
-                ],
+                'description' => 'Filter by event',
             ],
             'personnel' => [
                 'property' => 'personnel',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by personnel',
-                ],
+                'description' => 'Filter by personnel',
             ],
             'scolariteSemestre' => [
                 'property' => 'scolariteSemestre',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by scolariteSemestre',
-                ],
+                'description' => 'Filter by scolariteSemestre',
             ],
         ];
     }

@@ -10,7 +10,7 @@ use Symfony\Component\PropertyInfo\Type;
 
 class JustificatifAbsenceFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -109,57 +109,43 @@ class JustificatifAbsenceFilter extends AbstractFilter
                 'property' => 'annee',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by annee',
-                ],
+                'description' => 'Filter by annee',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by anneeUniversitaire',
-                ],
+                'description' => 'Filter by anneeUniversitaire',
             ],
             'etat' => [
                 'property' => 'etat',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by etat',
-                ],
+                'description' => 'Filter by etat',
             ],
             'motif' => [
                 'property' => 'motif',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by motif',
-                ],
+                'description' => 'Filter by motif',
             ],
             'etudiant' => [
                 'property' => 'etudiant',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by etudiant display',
-                ],
+                'description' => 'Filter by etudiant display',
             ],
             'debut' => [
                 'property' => 'debut',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by start date',
-                ],
+                'description' => 'Filter by start date',
             ],
             'fin' => [
                 'property' => 'fin',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by end date',
-                ],
+                'description' => 'Filter by end date',
             ],
         ];
     }
