@@ -2,7 +2,6 @@
 
 namespace IntranetBundle\Service\Absence;
 
-use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Users\Etudiant;
 use Doctrine\ORM\EntityManagerInterface;
 use IntranetBundle\Entity\Etudiant\EtudiantAbsence;
@@ -26,10 +25,6 @@ class JustificatifReconciliationService
 
         foreach ($etudiant->getScolarites() as $etudiantScolarite) {
             foreach ($etudiantScolarite->getScolariteSemestre() as $scolariteSemestre) {
-                if (!$scolariteSemestre instanceof EtudiantScolariteSemestre) {
-                    continue;
-                }
-
                 $justificatifs = [...$justificatifs, ...$this->justificatifRepository->findByScolariteSemestre($scolariteSemestre)];
             }
         }
@@ -75,7 +70,7 @@ class JustificatifReconciliationService
         $hasChanges = false;
 
         foreach ($absences as $absence) {
-            if (!$absence instanceof EtudiantAbsence || null !== $absence->getAbsenceJustificatif()) {
+            if (null !== $absence->getAbsenceJustificatif()) {
                 continue;
             }
 

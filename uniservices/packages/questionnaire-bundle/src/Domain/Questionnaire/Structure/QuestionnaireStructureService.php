@@ -2,15 +2,12 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Structure;
 
-use QuestionnaireBundle\Domain\Questionnaire\Repeat\RepeatItemsProviderRegistry;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
 use QuestionnaireBundle\Enum\QuestTypeSectionEnum;
 
 final class QuestionnaireStructureService
 {
-    public function __construct(private readonly RepeatItemsProviderRegistry $repeatRegistry) {}
-
     /**
      * Plan des sections réelles.
      * @return list<array{sectionTemplate: QuestionnaireSection, title: string, repeatItemType: ?string, repeatItemId: ?string, sortOrder: int}>

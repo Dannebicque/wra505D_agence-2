@@ -31,7 +31,7 @@ class DocumentWidgetDataProvider implements WidgetDataProviderInterface
                         'type' => $doc->getType(),
                         'size' => $doc->getFileSize(),
                         'category' => $doc->getCategory()?->getLibelle() ?? 'Général',
-                        'updatedAt' => $doc->getUpdatedAt()?->format('d/m/Y H:i') ?? $doc->getCreatedAt()?->format('d/m/Y H:i'),
+                        'updatedAt' => $doc->getUpdatedAt()->format('d/m/Y H:i'),
                         'author' => $doc->getAuthor(),
                     ],
                     $this->documentRepository->findBy([], ['createdAt' => 'DESC'], 5)

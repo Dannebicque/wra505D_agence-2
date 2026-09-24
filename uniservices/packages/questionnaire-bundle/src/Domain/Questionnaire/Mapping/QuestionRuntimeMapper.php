@@ -52,7 +52,7 @@ final class QuestionRuntimeMapper
         $targetedRule = null;
         foreach ($searchQuestions as $sq) {
             $rules = $sq->getConditionalRules();
-            if (empty($rules) || !is_array($rules)) {
+            if (empty($rules)) {
                 continue;
             }
 

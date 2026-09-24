@@ -44,7 +44,7 @@ final class SaveAnswersProcessor implements ProcessorInterface
 
         foreach ($data->answers as $incoming) {
             $incomingArr = (array) $incoming;
-            $qid = (int) ($incomingArr['questionId'] ?? 0);
+            $qid = (int) $incomingArr['questionId'];
             if (!isset($qById[$qid])) { continue; }
 
             $incomingVal = $incomingArr['value'] ?? null;
