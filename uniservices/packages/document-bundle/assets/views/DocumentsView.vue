@@ -6,11 +6,14 @@
     <!-- Sidebar -->
     <Sidebar
         :categories="categories"
+        :enseignements="classementEnseignements"
         :selected-category="selectedCategory"
+        :selected-enseignement="selectedEnseignement"
         :show-favorites="showFavorites"
         :total-documents="totalDocuments"
         :favorite-count="favoriteCount"
         @selectCategory="selectCategory"
+        @selectEnseignement="selectEnseignement"
         @selectFavorites="selectFavorites"
         @search="handleSearch"
         @openUploadModal="showUploadModal = true"
@@ -105,6 +108,7 @@ import DocumentList from '@/components/Documents/DocumentList.vue';
 import DocumentUploadModal from '@/components/Documents/DocumentUploadModal.vue';
 import DocumentDetailDrawer from '@/components/Documents/DocumentDetailDrawer.vue';
 import { documentService } from '@/service/documentService';
+import { classerParEnseignement, libelleEnseignement } from '@/service/utils/enseignementUtils';
 import { CardSkeleton, ListSkeleton } from '@components';
 import { useSecurity } from '@stores';
 import type { Category, Document, SortField, SortOrder, PaginationInfo, ViewMode } from '@types';
@@ -121,6 +125,7 @@ const selectedDocument = ref<Document | null>(null);
 const categories = ref<Category[]>([]);
 const documentsList = ref<Document[]>([]);
 const selectedCategory = ref<string | null>(null);
+const selectedEnseignement = ref<string | null>(null);
 const showFavorites = ref(false);
 const searchQuery = ref('');
 const sortField = ref<SortField>('lastModified');
@@ -132,6 +137,7 @@ const viewMode = ref<ViewMode>('grid');
 // Computed
 const totalDocuments = computed(() => documentsList.value.length);
 const favoriteCount = computed(() => documentsList.value.filter(d => d.isFavorite).length);
+const classementEnseignements = computed(() => classerParEnseignement(documentsList.value));
 
 const selectedDocumentCategoryName = computed(() => {
   if (!selectedDocument.value?.categoryId) return undefined;
@@ -151,6 +157,10 @@ const selectedDocumentCategoryName = computed(() => {
 const currentDocuments = computed(() => {
   if (showFavorites.value) {
     return documentsList.value.filter(d => d.isFavorite);
+  }
+
+  if (selectedEnseignement.value) {
+    return documentsList.value.filter(d => d.enseignement?.id === selectedEnseignement.value);
   }
 
   if (selectedCategory.value) {
@@ -273,6 +283,14 @@ const openDetailDrawer = (doc: Document) => {
 
 const selectCategory = (categoryId: string | null) => {
   selectedCategory.value = categoryId;
+  selectedEnseignement.value = null;
+  showFavorites.value = false;
+  currentPage.value = 1;
+};
+
+const selectEnseignement = (enseignementId: string) => {
+  selectedEnseignement.value = enseignementId;
+  selectedCategory.value = null;
   showFavorites.value = false;
   currentPage.value = 1;
 };
@@ -280,6 +298,7 @@ const selectCategory = (categoryId: string | null) => {
 const selectFavorites = () => {
   showFavorites.value = true;
   selectedCategory.value = null;
+  selectedEnseignement.value = null;
   currentPage.value = 1;
 };
 
@@ -373,6 +392,11 @@ const handleCreateDocument = async (docData: { titre: string; description?: stri
 const getTitle = () => {
   if (showFavorites.value) {
     return 'Documents favoris';
+  }
+
+  if (selectedEnseignement.value) {
+    const document = documentsList.value.find(d => d.enseignement?.id === selectedEnseignement.value);
+    return document?.enseignement ? libelleEnseignement(document.enseignement) : 'Enseignement inconnu';
   }
 
   if (selectedCategory.value) {

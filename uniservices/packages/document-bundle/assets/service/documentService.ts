@@ -95,13 +95,20 @@ export const documentService = {
 
   async fetchDocuments(params?: { categoryId?: string; isFavorite?: boolean; query?: string }): Promise<Document[]> {
     try {
-      const response = await api.get('/api/documents', { headers: defaultHeaders });
-      const data = response.data;
-      const rawItems = Array.isArray(data)
-        ? data
-        : (data['hydra:member'] || data['member'] || data['data'] || []);
-
-      if (!Array.isArray(rawItems)) return [];
+      // L'écran filtre et compte côté client : il lui faut toutes les pages, pas seulement la première.
+      const rawItems: any[] = [];
+      let url: string | undefined = '/api/documents';
+      while (url) {
+        const response = await api.get(url, { headers: defaultHeaders });
+        const data = response.data;
+        const items = Array.isArray(data)
+          ? data
+          : (data['hydra:member'] || data['member'] || data['data'] || []);
+        if (!Array.isArray(items)) break;
+        rawItems.push(...items);
+        const view = Array.isArray(data) ? undefined : (data['hydra:view'] || data['view']);
+        url = view?.['hydra:next'] || view?.next;
+      }
 
       let docs: Document[] = rawItems.map((item: any) => {
         const id = item.id
@@ -140,7 +147,15 @@ export const documentService = {
           isFavorite: !!item.isFavorite,
           author: item.author || 'Inconnu',
           version: item.version || 'v1.0',
-          tags: Array.isArray(item.tags) ? item.tags : []
+          tags: Array.isArray(item.tags) ? item.tags : [],
+          enseignement: item.enseignement?.id
+            ? {
+                id: item.enseignement.id.toString(),
+                code: item.enseignement.codeEnseignement || '',
+                libelle: item.enseignement.libelle || '',
+                type: item.enseignement.type
+              }
+            : undefined
         };
       });
 

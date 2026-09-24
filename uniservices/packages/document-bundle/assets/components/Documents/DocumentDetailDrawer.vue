@@ -78,6 +78,11 @@
           <span class="font-medium text-gray-800">{{ formatFileSize(document.size) }}</span>
         </div>
 
+        <div v-if="document.enseignement" class="flex justify-between gap-4 py-1 border-b border-gray-50">
+          <span class="text-gray-500">{{ document.enseignement.type === 'sae' ? 'SAÉ' : 'Matière' }}</span>
+          <span class="font-medium text-gray-800 text-right">{{ libelleEnseignement(document.enseignement) }}</span>
+        </div>
+
         <div v-if="categoryName" class="flex justify-between py-1 border-b border-gray-50">
           <span class="text-gray-500">Catégorie</span>
           <span class="font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded text-xs">{{ categoryName }}</span>
@@ -114,6 +119,7 @@ import Sidebar from 'primevue/sidebar';
 import type { Document } from '@types';
 import { ButtonDelete } from '@components';
 import { getFileIcon, getFileIconColor, formatFileSize, formatDate, getFileExtension } from '@/service/utils/fileUtils';
+import { libelleEnseignement } from '@/service/utils/enseignementUtils';
 
 interface Props {
   visible: boolean;
