@@ -18,7 +18,7 @@ class GenereSlots
     {
     }
 
-    public function genereAllSlots(array $previsionnels)
+    public function genereAllSlots(array $previsionnels): int
     {
         foreach ($previsionnels as $previsionnel) {
             $this->getGroupes($previsionnel);
@@ -29,7 +29,7 @@ class GenereSlots
         return $this->nbSlots;
     }
 
-    private function genereSlots(Previsionnel $previsionnel)
+    private function genereSlots(Previsionnel $previsionnel): void
     {
         if ($previsionnel->getProgression() !== null) {
             $progression = $previsionnel->getProgression();
@@ -39,7 +39,7 @@ class GenereSlots
         }
     }
 
-    private function genereSlotsFromProgression(string $value, int|string $semaine, Previsionnel $previsionnel)
+    private function genereSlotsFromProgression(string $value, int|string $semaine, Previsionnel $previsionnel): void
     {
         $creneaux = explode(' ', $value);
         foreach ($creneaux as $creneau) {
@@ -59,7 +59,7 @@ class GenereSlots
         }
     }
 
-    private function createEdtEvent(Previsionnel $previsionnel, string $typeCours, int|string $semaine, string $numeroSeance, string $getGr)
+    private function createEdtEvent(Previsionnel $previsionnel, string $typeCours, int|string $semaine, string $numeroSeance, string $getGr): void
     {
         $edtEvent = new EdtEvent();
         $semestre = $this->getSemestre($previsionnel);
@@ -96,7 +96,7 @@ class GenereSlots
         return $enseignementUe ? $enseignementUe->getUe()?->getSemestre() : null;
     }
 
-    private function getGroupes(Previsionnel $previsionnel)
+    private function getGroupes(Previsionnel $previsionnel): void
     {
         $semestre = $this->getSemestre($previsionnel);
         if ($semestre !== null && !array_key_exists($semestre->getId(), $this->groupes)) {

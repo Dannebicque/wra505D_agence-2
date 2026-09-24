@@ -13,7 +13,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(SemestreFilter::class)]
 class SemestreFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -65,33 +65,25 @@ class SemestreFilter extends AbstractFilter
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by département',
-                ],
+                'description' => 'Filter by département',
             ],
             'diplome' => [
                 'property' => 'diplome',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by diplôme',
-                ],
+                'description' => 'Filter by diplôme',
             ],
             'annee' => [
                 'property' => 'annee',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by year',
-                ],
+                'description' => 'Filter by year',
             ],
             'actif' => [
                 'property' => 'actif',
                 'type' => Type::BUILTIN_TYPE_BOOL,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by active semesters',
-                ],
+                'description' => 'Filter by active semesters',
             ],
         ];
     }

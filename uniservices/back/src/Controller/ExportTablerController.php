@@ -21,16 +21,6 @@ class ExportTablerController extends AbstractController
         return new Response('OK');
     }
 
-    #[Route('/export/download', name: 'app_export_download')]
-    public function download($data, $type): Response
-    {
-        return $this->renderSpreadsheet(
-            'export_tabler/'.$type.'.html.twig',
-            ['sheets' => $data],
-            'export_previsionnel.xlsx'
-        );
-    }
-
     // Endpoint pour traiter les données prévisionnelles et construire le tableau d'export
     #[Route('/export/previ', name: 'app_export_previ', methods: ['POST'])]
     public function exportPrevi(Request $request): Response

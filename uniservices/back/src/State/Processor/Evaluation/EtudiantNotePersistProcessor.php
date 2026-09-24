@@ -88,10 +88,6 @@ class EtudiantNotePersistProcessor implements ProcessorInterface
         ];
 
         foreach ($evaluation->getNotes() as $note) {
-            if (!$note instanceof EtudiantNote) {
-                continue;
-            }
-
             $ps = $note->getPresenceStatut();
 
             // compter les différents types d'absences

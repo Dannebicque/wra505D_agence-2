@@ -14,7 +14,7 @@ class PersonnelEnseignantHrsFilter extends AbstractFilter
 {
     protected function filterProperty(
         string $property,
-               $value,
+        mixed $value,
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
         string $resourceClass,
@@ -48,17 +48,13 @@ class PersonnelEnseignantHrsFilter extends AbstractFilter
                 'property' => 'personnel',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by personnel',
-                ],
+                'description' => 'Filter by personnel',
             ],
             'annee_universitaire' => [
                 'property' => 'annee_universitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by academic year',
-                ],
+                'description' => 'Filter by academic year',
             ],
         ];
     }

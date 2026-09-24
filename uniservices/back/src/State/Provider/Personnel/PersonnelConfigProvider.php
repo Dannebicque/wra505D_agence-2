@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
+use App\Entity\Users\Personnel;
 use App\Security\UserEffectivePermissionService;
 
 class PersonnelConfigProvider implements ProviderInterface
@@ -21,6 +22,11 @@ class PersonnelConfigProvider implements ProviderInterface
     ) {
     }
 
+    /**
+     * Renvoie des tableaux, qu'API Platform sérialise tels quels, et non des ressources.
+     *
+     * @return array<mixed>|object|null
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof GetCollection) {
@@ -54,7 +60,7 @@ class PersonnelConfigProvider implements ProviderInterface
         return $this->itemProvider->provide($operation, $uriVariables, $context);
     }
 
-    public function formatPersonnel($item): array
+    public function formatPersonnel(Personnel $item): array
     {
         $departements = [];
         $packages = [];

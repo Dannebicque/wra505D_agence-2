@@ -9,7 +9,7 @@ class JsonRequest
     protected static array $data = [];
 
     public static function getValuesFromString(
-        string $content = null
+        ?string $content = null
         ): Response|array
     {
         return self::getDataFromContent($content) ? self::$data : [];
@@ -25,7 +25,7 @@ class JsonRequest
         return isset(self::$data[$key]);
     }
 
-    private static function getDataFromContent(string $content): bool
+    private static function getDataFromContent(?string $content): bool
     {
         if ($content === null) {
             throw new \InvalidArgumentException('Content is null');

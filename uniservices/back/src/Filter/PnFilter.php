@@ -17,7 +17,7 @@ class PnFilter extends AbstractFilter
         'enseignement' => 'enseignement',
         'diplome' => 'diplome',
     ];
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (!in_array($property, self::FILTERS) || null === $value) {
             return;
@@ -49,17 +49,13 @@ class PnFilter extends AbstractFilter
                 'property' => 'diplome',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by diplôme',
-                ],
+                'description' => 'Filter by diplôme',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by année universitaire',
-                ],
+                'description' => 'Filter by année universitaire',
             ],
         ];
     }

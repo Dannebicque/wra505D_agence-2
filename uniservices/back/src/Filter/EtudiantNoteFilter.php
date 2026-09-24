@@ -12,7 +12,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(EtudiantNoteFilter::class)]
 class EtudiantNoteFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -43,17 +43,13 @@ class EtudiantNoteFilter extends AbstractFilter
                 'property' => 'etudiant',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by etudiant',
-                ],
+                'description' => 'Filter by etudiant',
             ],
             'evaluation' => [
                 'property' => 'evaluation',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by evaluation',
-                ],
+                'description' => 'Filter by evaluation',
             ],
         ];
     }

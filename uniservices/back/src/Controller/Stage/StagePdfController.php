@@ -172,12 +172,12 @@ class StagePdfController extends AbstractController
         $dept = ($sem && $sem->getAnnee()) ? $sem->getAnnee()->getDepartement() : null;
         if ($dept) {
             $deptTel = $dept->getTelContact() ?? '';
-            if ($sem && $sem->getAnnee() && $sem->getAnnee()->getDiplome() && $sem->getAnnee()->getDiplome()->getAssistantDiplome()) {
+            if ($sem->getAnnee()->getDiplome() && $sem->getAnnee()->getDiplome()->getAssistantDiplome()) {
                 $deptMail = $sem->getAnnee()->getDiplome()->getAssistantDiplome()->getMailUniv() ?? '';
             }
         }
         if ($etab && $etab->getAdresse()) {
-            $deptAdresse = is_array($etab->getAdresse()) ? implode(', ', $etab->getAdresse()) : $etab->getAdresse();
+            $deptAdresse = implode(', ', $etab->getAdresse());
         }
 
         // Annee universitaire display
@@ -195,7 +195,7 @@ class StagePdfController extends AbstractController
             '{etudiant.prenom}' => $etu ? $etu->getPrenom() : '',
             '{etudiant.sexe}' => $etu && method_exists($etu, 'getCivilite') && $etu->getCivilite() === 'Mme' ? 'Femme' : 'Homme',
             '{etudiant.date_naissance}' => $etu && $etu->getDateNaissance() ? $fmtDate($etu->getDateNaissance()) : '',
-            '{etudiant.adresse}' => $etu && method_exists($etu, 'getAdresseEtudiante') && $etu->getAdresseEtudiante() ? $etu->getAdresseEtudiante()->getAdresse() : '',
+            '{etudiant.adresse}' => $etu && $etu->getAdresseEtudiante() ? $etu->getAdresseEtudiante()->getAdresse() : '',
             '{etudiant.telephones}' => $telephones,
             '{etudiant.email}' => $etu ? $etu->getMailUniv() : '',
             '{etudiant.formation}' => $formationLibelle,
@@ -204,7 +204,7 @@ class StagePdfController extends AbstractController
             '{etudiant.secu_adresse}' => $etu && method_exists($etu, 'getAdresseSecuriteSociale') && $etu->getAdresseSecuriteSociale() ? $etu->getAdresseSecuriteSociale() : '',
 
             '{entreprise.nom}' => $ent ? $ent->getRaisonSociale() : '',
-            '{entreprise.adresse}' => $stage->getAdresseStage() ? (is_array($stage->getAdresseStage()) ? implode(', ', $stage->getAdresseStage()) : $stage->getAdresseStage()) : ($ent && $ent->getAdresse() ? $ent->getAdresse()->getAdresse() : ''),
+            '{entreprise.adresse}' => $stage->getAdresseStage() ?: ($ent && $ent->getAdresse() ? $ent->getAdresse()->getAdresse() : ''),
             '{entreprise.signataire}' => $ent && $ent->getResponsable() ? $ent->getResponsable()->getDisplay() : '',
             '{entreprise.signataire_fonction}' => $ent && $ent->getResponsable() ? $ent->getResponsable()->getFonction() : '',
             '{entreprise.telephone}' => $ent && $ent->getResponsable() ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
@@ -215,11 +215,11 @@ class StagePdfController extends AbstractController
             '{stage.date_debut}' => $fmtDate($stage->getDateDebutStage()),
             '{stage.date_fin}' => $fmtDate($stage->getDateFinStage()),
             '{stage.semaines}' => (string)$nbSemaines,
-            '{stage.jours}' => (string)($stage->getDureeJoursStage() ?? '0'),
+            '{stage.jours}' => (string)$stage->getDureeJoursStage(),
             '{stage.commentaire_heures}' => $stage->getCommentaireDureeHebdomadaire() ?? '',
             '{stage.activites}' => $stage->getActivites() ?? '',
             '{stage.competences}' => $periode ? ($periode->getCompetencesVisees() ?? '') : '',
-            '{stage.heures_hebdo}' => (string)($stage->getDureeHebdomadaire() ?? '35'),
+            '{stage.heures_hebdo}' => (string)$stage->getDureeHebdomadaire(),
             '{stage.amenagements}' => $stage->getAmenagementStage() ?? 'Aucun',
             '{stage.modalites_encadrement}' => $periode ? ($periode->getModalitesEncadrement() ?? '') : '',
             '{stage.gratification}' => $stage->getGratificationMontant() ? number_format($stage->getGratificationMontant(), 2, ',', ' ') : '0,00',
@@ -229,7 +229,7 @@ class StagePdfController extends AbstractController
             '{stage.ects}' => $periode ? ($periode->getNbEcts() === 0 ? 'Le stage ne donne pas lieu à des ECTS mais une note comptant dans différentes UE' : (string)$periode->getNbEcts()) : '',
 
             '{tuteur.nom}' => $tutUniv ? $tutUniv->getDisplay() : ($periode && $periode->getResponsablePrincipal() ? $periode->getResponsablePrincipal()->getDisplay() : 'Non attribué'),
-            '{tuteur.telephone}' => $tutUniv && method_exists($tutUniv, 'getTelBureau') ? $tutUniv->getTelBureau() : '',
+            '{tuteur.telephone}' => $tutUniv ? $tutUniv->getTelBureau() : '',
             '{tuteur.email}' => $tutUniv ? $tutUniv->getMailUniv() : '',
 
             '{tuteur_entreprise.nom}' => $tut ? $tut->getDisplay() : ($ent && $ent->getResponsable() ? $ent->getResponsable()->getDisplay() : ''),

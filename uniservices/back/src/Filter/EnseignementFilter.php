@@ -12,7 +12,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(EnseignementFilter::class)]
 class EnseignementFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -81,49 +81,37 @@ class EnseignementFilter extends AbstractFilter
                 'property' => 'semestre',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by semestre',
-                ],
+                'description' => 'Filter by semestre',
             ],
             'departement' => [
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by departement',
-                ],
+                'description' => 'Filter by departement',
             ],
             'ue' => [
                 'property' => 'ue',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by UE',
-                ],
+                'description' => 'Filter by UE',
             ],
             'actif' => [
                 'property' => 'actif',
                 'type' => Type::BUILTIN_TYPE_BOOL,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by actif status',
-                ],
+                'description' => 'Filter by actif status',
             ],
             'annee' => [
                 'property' => 'annee',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by année',
-                ],
+                'description' => 'Filter by année',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by année universitaire',
-                ],
+                'description' => 'Filter by année universitaire',
             ]
         ];
     }

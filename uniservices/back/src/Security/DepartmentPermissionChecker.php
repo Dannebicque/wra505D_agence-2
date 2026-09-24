@@ -45,22 +45,18 @@ class DepartmentPermissionChecker
         }
 
         // 3. Personnel have resolved rights within a department
-        if ($user instanceof Personnel) {
-            $dp = $this->departementPersonnelRepository->findOneBy([
-                'personnel' => $user,
-                'departement' => $departement
-            ]);
+        $dp = $this->departementPersonnelRepository->findOneBy([
+            'personnel' => $user,
+            'departement' => $departement
+        ]);
 
-            if (!$dp) {
-                return false;
-            }
-
-            $resolvedPermissions = $this->resolver->resolve($dp->getPermissions(), $dp->getPackages());
-
-            return in_array($permission, $resolvedPermissions, true);
+        if (!$dp) {
+            return false;
         }
 
-        return false;
+        $resolvedPermissions = $this->resolver->resolve($dp->getPermissions(), $dp->getPackages());
+
+        return in_array($permission, $resolvedPermissions, true);
     }
 
     public function getStudentDepartment(Etudiant $etudiant): ?StructureDepartement

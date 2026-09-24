@@ -50,12 +50,12 @@ class PersonnelsContraintes
         $this->contraintes = $contraintes;
     }
 
-    public function setSemaineFormation(StructureCalendrier $semaine)
+    public function setSemaineFormation(StructureCalendrier $semaine): void
     {
         $this->semaineFormation = $semaine;
     }
 
-    public function setPersonnel(?Personnel $personnel = null)
+    public function setPersonnel(?Personnel $personnel = null): void
     {
         $this->personnel = $personnel;
     }

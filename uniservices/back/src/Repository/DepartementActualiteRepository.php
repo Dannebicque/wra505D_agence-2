@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\DepartementActualite;
+use App\Entity\Structure\StructureDepartement;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,7 +17,10 @@ class DepartementActualiteRepository extends ServiceEntityRepository
         parent::__construct($registry, DepartementActualite::class);
     }
 
-    public function findByDepartementAndPublic($departement, string $public): array
+    /**
+     * @return DepartementActualite[]
+     */
+    public function findByDepartementAndPublic(?StructureDepartement $departement, string $public): array
     {
         $qb = $this->createQueryBuilder('a')
             ->where('a.departement = :dept')

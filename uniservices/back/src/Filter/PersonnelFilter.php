@@ -14,7 +14,7 @@ class PersonnelFilter extends AbstractFilter
 {
     protected function filterProperty(
         string $property,
-               $value,
+        mixed $value,
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
         string $resourceClass,
@@ -93,25 +93,19 @@ class PersonnelFilter extends AbstractFilter
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by departement',
-                ],
+                'description' => 'Filter by departement',
             ],
             'enseignement' => [
                 'property' => 'enseignement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by enseignement',
-                ],
+                'description' => 'Filter by enseignement',
             ],
             'enseignant' => [
                 'property' => 'enseignant',
                 'type' => Type::BUILTIN_TYPE_BOOL,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by enseignant',
-                ],]
+                'description' => 'Filter by enseignant',]
         ];
     }
 }

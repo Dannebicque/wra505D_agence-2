@@ -12,7 +12,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(DepartementPersonnelFilter::class)]
 class DepartementPersonnelFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -48,39 +48,14 @@ class DepartementPersonnelFilter extends AbstractFilter
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by departement',
-                ],
+                'description' => 'Filter by departement',
             ],
             'personnel' => [
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by personnel',
-                ],
+                'description' => 'Filter by personnel',
             ],
         ];
-    }
-
-    /**
-     * Reuse an existing join alias if present, otherwise create a new join and return its alias.
-     * This prevents multiple joins to the same association with different aliases.
-     */
-    private function getOrCreateJoin(QueryBuilder $qb, QueryNameGeneratorInterface $queryNameGenerator, string $fromAlias, string $association): string
-    {
-        // Try to find an existing join for the association
-        foreach ($qb->getDQLPart('join') as $alias => $joins) {
-            foreach ($joins as $join) {
-                if ($join->getJoin() === "$fromAlias.$association") {
-                    return $join->getAlias();
-                }
-            }
-        }
-
-        // If not found, generate a new alias and add the join
-        $newAlias = $queryNameGenerator->generateJoinAlias($association);
-        $qb->join("$fromAlias.$association", $newAlias);
-        return $newAlias;
     }
 }

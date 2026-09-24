@@ -9,6 +9,7 @@ use Symfony\Component\Console\Messenger\RunCommandMessage;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Scheduler\Event\FailureEvent;
 use Symfony\Component\Scheduler\Event\PostRunEvent;
+use Symfony\Component\Scheduler\Generator\MessageContext;
 
 class SchedulerEventListener
 {
@@ -29,7 +30,7 @@ class SchedulerEventListener
         $this->updateTaskExecution($event->getMessage(), $event->getMessageContext());
     }
 
-    private function updateTaskExecution(object $message, $context): void
+    private function updateTaskExecution(object $message, MessageContext $context): void
     {
         if (!$message instanceof RunCommandMessage) {
             return;

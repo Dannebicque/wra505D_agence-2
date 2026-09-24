@@ -20,7 +20,10 @@ class StructureGroupeRepository extends ServiceEntityRepository
         parent::__construct($registry, StructureGroupe::class);
     }
 
-    public function findBySemestreId($semestreId)
+    /**
+     * @return StructureGroupe[]
+     */
+    public function findBySemestreId(int|string $semestreId): array
     {
         return $this->createQueryBuilder('g')
             ->join('g.semestres', 's')
