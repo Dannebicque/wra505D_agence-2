@@ -13,6 +13,7 @@ use App\Security\PermissionResolver;
 use App\Security\UserEffectivePermissionService;
 use App\Entity\Users\Personnel;
 use App\Entity\Users\Etudiant;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -155,7 +156,8 @@ class SecurityController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         ValidatorInterface $validator,
-        RateLimiterFactory $passwordResetLimiter
+        RateLimiterFactory $passwordResetLimiter,
+        EntityManagerInterface $entityManager,
     ): JsonResponse
     {
         // Rate limiting : protection contre le brute force
@@ -219,7 +221,6 @@ class SecurityController extends AbstractController
         $user->setPassword($hashedPassword);
 
         // Sauvegarder le nouveau mot de passe
-        $entityManager = $this->resetTokenRepository->getEntityManager();
         $entityManager->persist($user);
 
         // Supprimer le token
