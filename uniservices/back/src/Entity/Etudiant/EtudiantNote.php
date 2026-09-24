@@ -23,8 +23,16 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiFilter(EtudiantNoteFilter::class)]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['note:detail']]),
-        new GetCollection(normalizationContext: ['groups' => ['note:detail']]),
+        // Un étudiant lisait ici les notes de tous les autres, publiées ou non. Il a son propre
+        // relevé, filtré et limité à lui : /api/me/scolarite.
+        new Get(
+            normalizationContext: ['groups' => ['note:detail']],
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['note:detail']],
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
+        ),
         new Post(
             normalizationContext: ['groups' => ['note:write']],
             securityPostDenormalize: "is_granted('CAN_EDIT_NOTES', object)",

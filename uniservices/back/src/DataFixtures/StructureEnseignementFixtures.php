@@ -33,6 +33,9 @@ class StructureEnseignementFixtures extends Fixture implements OrderedFixtureInt
         'SAE1.01' => 'Recommandation de communication numérique',
     ];
 
+    /** Coefficient de chaque matière dans l'UE : la SAÉ pèse plus que les ressources. */
+    private const COEFFICIENTS = ['SAE1.01' => 3.0, 'R1.11' => 2.0, 'R1.06' => 2.0];
+
     public function __construct(
         private readonly StructureSemestreRepository $semestreRepository,
         private readonly StructureDepartementRepository $departementRepository,
@@ -68,6 +71,7 @@ class StructureEnseignementFixtures extends Fixture implements OrderedFixtureInt
             $manager->persist($enseignement);
 
             $lien = new ScolEnseignementUe($enseignement, $ue);
+            $lien->setCoefficient(self::COEFFICIENTS[$code] ?? 1.0);
             $ue->addEnseignementUe($lien);
             $manager->persist($lien);
         }
