@@ -62,6 +62,7 @@ class StructureUserFixtures extends Fixture implements OrderedFixtureInterface
             ->setPrenom('Jane')
             ->setNom('Doe')
             ->setBoursier(false)
+            ->setApplications(['UniTranet'])
             ->setPhotoName('noimage.png')
         ;
         $manager->persist($etudiant);

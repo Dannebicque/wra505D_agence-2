@@ -21,7 +21,7 @@ final class SourceEtudiants implements SourceRechercheInterface
     public function candidats(StructureDepartement $departement, Etudiant|Personnel $utilisateur): iterable
     {
         $lignes = $this->entityManager->createQueryBuilder()
-            ->select('e.id', 'e.nom', 'e.prenom', 'e.username', 'sem.libelle AS semestre')
+            ->select('e.id', 'e.nom', 'e.prenom', 'e.username', 'e.mailUniv', 'sem.libelle AS semestre')
             ->from(EtudiantScolarite::class, 's')
             ->join('s.etudiant', 'e')
             ->leftJoin('s.scolariteSemestre', 'ss')
@@ -48,6 +48,7 @@ final class SourceEtudiants implements SourceRechercheInterface
                 $etudiant['prenom'].' '.$etudiant['nom'],
                 [] === $etudiant['semestres'] ? null : implode(', ', array_unique($etudiant['semestres'])),
                 $etudiant['prenom'].' '.$etudiant['nom'].' '.$etudiant['username'],
+                $etudiant['mailUniv'],
             );
         }
     }

@@ -45,6 +45,7 @@ final class ResultatRecherche
         private readonly string $libelle,
         private readonly ?string $detail,
         private readonly float $score,
+        private readonly ?string $mail = null,
     ) {
     }
 
@@ -74,6 +75,14 @@ final class ResultatRecherche
     public function getDetail(): ?string
     {
         return $this->detail;
+    }
+
+    /**
+     * Adresse universitaire d'une personne, pour lui écrire depuis la recherche.
+     */
+    public function getMail(): ?string
+    {
+        return $this->mail;
     }
 
     public function getScore(): float

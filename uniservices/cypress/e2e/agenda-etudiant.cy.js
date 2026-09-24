@@ -15,12 +15,7 @@ const lundiDeLaRentree = (aujourdhui) => {
 
 describe('Agenda de l\'étudiant', () => {
     it('se connecte avec le compte invité et affiche les cours de ses groupes', () => {
-        cy.visit('/app/auth/login');
-        cy.get('input[name="username"]').type('etudiant');
-        // Le bouton ne se réactive qu'à la sortie du champ, comme lorsqu'on clique avec la souris.
-        cy.get('input[name="password"]').type('test', { log: false }).blur();
-        cy.contains('button', 'Connexion invité').click();
-        cy.location('pathname').should('eq', '/app/auth/portail');
+        cy.connexionInvite('etudiant');
 
         // Mercredi de la troisième semaine de cours, loin des vacances : l'agenda s'ouvre sur une
         // semaine qui a toujours des cours, quel que soit le jour où la CI tourne. L'horloge n'est
