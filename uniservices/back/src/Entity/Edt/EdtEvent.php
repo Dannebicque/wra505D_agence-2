@@ -28,6 +28,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use IntranetBundle\Entity\Etudiant\EtudiantAbsence;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: EdtEventRepository::class)]
@@ -200,7 +201,7 @@ class EdtEvent
         return $this;
     }
 
-    public function getUuid(): UuidV4
+    public function getUuid(): Uuid
     {
         return $this->uuid;
     }

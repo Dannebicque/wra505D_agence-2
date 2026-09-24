@@ -17,7 +17,10 @@ class StructureDiplomeRepository extends ServiceEntityRepository
     }
 
     // en passant par le lien diplome->pns (collection)->anneeUniversitaire
-    public function findByAnneeUniversitaire(int $anneeUniversitaire)
+    /**
+     * @return StructureDiplome[]
+     */
+    public function findByAnneeUniversitaire(int $anneeUniversitaire): array
     {
         return $this->createQueryBuilder('d')
             ->join('d.pns', 'p')

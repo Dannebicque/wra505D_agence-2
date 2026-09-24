@@ -9,8 +9,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class GroupesParSemestreController extends AbstractController
 {
-    public function __invoke($semestreId, Request $request,
-                             StructureGroupeRepository $repo)
+    public function __invoke(int|string|null $semestreId, Request $request,
+                             StructureGroupeRepository $repo): JsonResponse
     {
         if (!$semestreId) {
             return new JsonResponse(['error' => 'Paramètre semestre manquant'], 400);

@@ -22,7 +22,7 @@ class StageSoutenanceController extends AbstractController
         $this->em = $em;
     }
 
-    private function getIdFromIri($id): ?int
+    private function getIdFromIri(mixed $id): ?int
     {
         if ($id === null || $id === '') {
             return null;

@@ -3,7 +3,6 @@
 namespace App\Repository\Apc;
 
 use App\Entity\Apc\ApcCompetence;
-use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDiplome;
 use App\Repository\Traits\FindAllByIdArrayTrait;
 use App\Repository\Traits\FindAllByOldIdArrayTrait;
@@ -22,7 +21,10 @@ class ApcCompetenceRepository extends ServiceEntityRepository
         parent::__construct($registry, ApcCompetence::class);
     }
 
-    public function findByDiplome(StructureDiplome $diplome)
+    /**
+     * @return ApcCompetence[]
+     */
+    public function findByDiplome(StructureDiplome $diplome): array
     {
         return $this->createQueryBuilder('c')
             ->join('c.referentiel', 'r')

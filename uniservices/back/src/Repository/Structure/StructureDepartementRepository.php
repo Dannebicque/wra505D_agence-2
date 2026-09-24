@@ -3,6 +3,7 @@
 namespace App\Repository\Structure;
 
 use App\Entity\Structure\StructureDepartement;
+use App\Entity\Users\Etudiant;
 use App\Repository\Traits\FindAllByIdArrayTrait;
 use App\Repository\Traits\FindAllByOldIdArrayTrait;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -21,7 +22,7 @@ class StructureDepartementRepository extends ServiceEntityRepository
         parent::__construct($registry, StructureDepartement::class);
     }
 
-    public function findOneByEtudiant($etudiant)
+    public function findOneByEtudiant(Etudiant $etudiant): ?StructureDepartement
     {
         // récupérer le département de etudiant.etudiantScolarite quand etudiantScolarite.actif = true
         $qb = $this->createQueryBuilder('d')

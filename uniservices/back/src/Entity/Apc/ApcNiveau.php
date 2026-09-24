@@ -65,7 +65,7 @@ class ApcNiveau
     #[Groups(['competence:referentiel:full'])]
     private Collection $apprentissageCritique;
 
-    public function __construct(ApcCompetence $competence = null)
+    public function __construct(?ApcCompetence $competence = null)
     {
         $this->competence = $competence;
         $this->parcours = new ArrayCollection();

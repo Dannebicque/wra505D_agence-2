@@ -110,7 +110,7 @@ class DepartementActualite
     }
 
     /**
-     * @param TypePublicEnum[] $public
+     * @param array<TypePublicEnum|string> $public
      */
     public function setPublic(array $public): static
     {

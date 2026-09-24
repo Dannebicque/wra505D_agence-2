@@ -263,13 +263,6 @@ class StructureAnnee
         return $this;
     }
 
-    /**
-     * @return Collection<int, EtudiantScolarite>
-     */
-
-
-
-
     public function getPn(): ?StructurePn
     {
         return $this->pn;
