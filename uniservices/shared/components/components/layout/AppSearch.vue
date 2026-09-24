@@ -2,9 +2,10 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getRechercheService } from '@requests';
-import { useUsersStore } from '@stores';
+import { useSecurity, useUsersStore } from '@stores';
 import { hasPermission } from '@utils/permissions';
 import { destinationResultat, filtrerPages, grouperResultats } from '@helpers/recherche.js';
+import { menuEtudiant } from '@helpers/menuEtudiant.js';
 import { bundles } from '../../../../packages/shell/assets/bundles-registry';
 
 const props = defineProps({
@@ -16,6 +17,7 @@ const props = defineProps({
 
 const router = useRouter();
 const usersStore = useUsersStore();
+const security = useSecurity();
 const selection = ref(null);
 const suggestions = ref([]);
 const requete = ref('');
@@ -23,13 +25,17 @@ const requete = ref('');
 // Le groupe affiché au-dessus ne suffit pas à un lecteur d'écran, qui lit l'option seule.
 const roles = { etudiant: 'Étudiant', personnel: 'Personnel' };
 
-// Mêmes règles que le portail (applications de l'utilisateur) et que le menu (permissions).
-const pagesAccessibles = () => bundles
-    .filter(bundle => bundle.menu && usersStore.applications.includes(bundle.name))
-    .flatMap(bundle => (Array.isArray(bundle.menu) ? bundle.menu : [bundle.menu]))
+// Mêmes pages que le menu : celui de l'étudiant, ou, pour le personnel, les applications et permissions.
+const sectionsAccessibles = () => (hasPermission('isEtudiant')
+    ? menuEtudiant(bundles, security.hasPackage)
+    : bundles
+        .filter(bundle => bundle.menu && usersStore.applications.includes(bundle.name))
+        .flatMap(bundle => (Array.isArray(bundle.menu) ? bundle.menu : [bundle.menu])));
+
+const pagesAccessibles = () => sectionsAccessibles()
     .flatMap(section => (section.items || []).map(item => ({ ...item, section: section.label })))
     .filter(item => item.to && (!item.permission || hasPermission(item.permission)))
-    .map(item => ({ cle: `page-${item.to}`, type: 'page', libelle: item.label, detail: item.section, to: item.to }));
+    .map(item => ({ cle: `page-${item.to}`, type: 'page', libelle: item.label, detail: item.section, to: item.to, motsCles: item.motsCles }));
 
 const rechercher = async ({ query }) => {
   requete.value = query;

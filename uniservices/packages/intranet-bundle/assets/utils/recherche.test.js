@@ -33,6 +33,12 @@ describe('filtrerPages', () => {
 
         expect(filtrerPages(pages, 'agnda').map((page) => page.libelle)).toEqual(['Agenda']);
     });
+
+    it('retrouve une page par l\'un de ses mots-clés', () => {
+        const pages = [{libelle: 'Emploi du temps', motsCles: ['agenda', 'edt']}, {libelle: 'Documents'}];
+
+        expect(filtrerPages(pages, 'agneda').map((page) => page.libelle)).toEqual(['Emploi du temps']);
+    });
 });
 
 describe('destinationResultat', () => {

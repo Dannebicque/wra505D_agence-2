@@ -79,7 +79,9 @@ export const correspond = (requete, texte) => {
 /**
  * @param {Array<{libelle: string}>} pages
  */
-export const filtrerPages = (pages, requete) => pages.filter((page) => correspond(requete, page.libelle));
+// Les mots-clés gardent trouvable une page renommée ou qu'on appelle autrement (« agenda », « edt »).
+export const filtrerPages = (pages, requete) => pages.filter((page) =>
+    [page.libelle, ...(page.motsCles ?? [])].some((texte) => correspond(requete, texte)));
 
 /**
  * Où mène un résultat. Les personnes n'ont pas de page publique : on leur écrit.
