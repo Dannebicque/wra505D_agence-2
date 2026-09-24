@@ -48,11 +48,10 @@ security:
             provider: chain_provider
             custom_authenticator:
                 - App\Security\LoginFormAuthenticator
-            entry_point: App\Security\LoginFormAuthenticator
             pattern: ^(?!/api)
             logout:
-                path: security_logout
-                target: security_login
+                path: app_logout
+                target: /
 
             remember_me:
                 secret: '%kernel.secret%'
