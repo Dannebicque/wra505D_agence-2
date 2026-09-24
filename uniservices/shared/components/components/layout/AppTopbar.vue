@@ -4,6 +4,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { AVAILABLE_ROLES } from "@utils/permissions";
 import Logo from '@components/components/Logo.vue';
 import AppSearch from './AppSearch.vue';
+import NotificationsCloche from './NotificationsCloche.vue';
 import { useAnneeUnivStore, useUsersStore } from "@stores";
 import { useRoute, useRouter } from 'vue-router';
 import { tools } from '@config/uniServices.js';
@@ -346,7 +347,8 @@ const selectAnneeUniversitaire = (annee) => {
             <i class="pi pi-inbox"></i>
             <span>Messages</span>
           </button>
-          <button type="button" class="layout-topbar-action">
+          <NotificationsCloche v-if="estEtudiant" />
+          <button v-else type="button" class="layout-topbar-action">
             <i class="pi pi-bell"></i>
             <span>Notifications</span>
           </button>
