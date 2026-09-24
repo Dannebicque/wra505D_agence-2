@@ -50,7 +50,7 @@ class SynchroRefFormation
                 //on pioche dans le diplôme parent
                 $diplome = $diplome->getParent();
             }
-            $competences = $this->apcCompetenceRepository->findByDiplome($diplome, $anneeUniversitaire);
+            $competences = $this->apcCompetenceRepository->findByDiplome($diplome);
             foreach ($competences as $competence) {
                 $this->competencesDips[$competence->getNomCourt()] = $competence;
             }
@@ -109,7 +109,7 @@ class SynchroRefFormation
             $annee = $annees[(int) ceil($semestre['ordre'] / 2)];
             $sem->setAnnee($annee);
             $sem->setLibelle('Semestre ' . $semestre['ordre']);
-            $sem->setOrdreAnnee(ceil($semestre['ordre'] / 2));
+            $sem->setOrdreAnnee((int) ceil($semestre['ordre'] / 2));
             $sem->setOrdreLmd($semestre['ordre']);
             $semestres[] = $sem;
             $ecs = [];

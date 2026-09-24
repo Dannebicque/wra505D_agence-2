@@ -48,6 +48,7 @@ class CopyTransfertBddStructureCommand extends Command
     protected array $tMatieres = [];
     protected array $tCompetences = [];
     protected array $tUes = [];
+    protected array $tSemestreUes = [];
     protected array $tApprentissages = [];
 
     protected SymfonyStyle $io;
