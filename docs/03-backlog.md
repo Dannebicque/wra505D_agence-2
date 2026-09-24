@@ -55,10 +55,13 @@ l'objet d'une fiche à part : on ne les corrige pas dans celle-ci.
 cette classe étend `AbstractAuthenticator` sans implémenter `AuthenticationEntryPointInterface`.
 `lint:container` refuse la configuration.
 **Où** `uniservices/back/config/packages/security.yaml`, `back/src/Security/LoginFormAuthenticator.php`
-**Terminé quand** `php bin/console lint:container` passe, et qu'une requête non authentifiée sur
-une route protégée répond un 401 JSON explicite plutôt qu'une redirection.
-**Attention** on touche à l'authentification : vérifier que la connexion et le rafraîchissement
-de jeton fonctionnent toujours avant d'ouvrir la PR.
+**Terminé quand** `php bin/console lint:container` passe et que la connexion, le rafraîchissement
+de jeton et la lecture des données protégées fonctionnent toujours.
+**Fait** Le pare-feu `main` était un vestige : son authentificateur ne s'y déclenchait jamais,
+puisqu'il ne répond qu'à `api_login`, situé sous `/api` ; et sa déconnexion pointait deux routes
+inexistantes. `GET /logout` répondait 500 à chaque appel. Point d'entrée retiré, déconnexion
+branchée sur `app_logout`. Aucune route protégée ne vivant dans ce pare-feu, le critère initial
+« répondre 401 plutôt que rediriger » était sans objet.
 
 ### E2 · Réparer les mappings Doctrine · M
 **Pourquoi** 14 associations invalides, dont des côtés propriétaires qui n'existent pas :
@@ -68,6 +71,20 @@ et `EtudiantScolariteSemestre#note` sont incohérents, `ApcReferentiel#pn` point
 **Terminé quand** `php bin/console doctrine:schema:validate --skip-sync` ne signale plus rien, et
 que les fixtures se chargent toujours.
 **Attention** à redécouper par entité si la PR dépasse deux ou trois fichiers.
+
+### E5 · La déconnexion ne déconnecte pas · S
+**Priorité haute : c'est une faille, pas une gêne.**
+**Pourquoi** relevé en testant E1, antérieur à notre reprise. `POST /api/logout`, la
+déconnexion qu'utilise le front, répond 500 à chaque appel : le contrôleur lit un paramètre
+`JWT_COOKIE_SECURE` qui existe dans `.env` mais n'est déclaré nulle part comme paramètre du
+conteneur. Le jeton de rafraîchissement est supprimé en base avant le plantage, mais les
+en-têtes qui effacent les cookies sont posés après et ne partent jamais.
+**Vérifié** après un clic sur « Se déconnecter », `/api/auth/me` répond toujours
+« authentifié » et `/api/me/security-context` renvoie 200. Sur un poste partagé, l'étudiant
+suivant récupère la session du précédent pendant toute la durée de vie du jeton.
+**Où** `uniservices/back/config/services.yaml`
+**Terminé quand** la déconnexion répond 200, efface les deux cookies, et que `/api/auth/me`
+répond « non authentifié » juste après.
 
 ### E4 · Traiter les 271 erreurs PHPStan · L
 **Pourquoi** révélées par E3, toutes antérieures à notre reprise. 271 erreurs dans 117 fichiers :
