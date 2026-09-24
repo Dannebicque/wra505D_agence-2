@@ -58,7 +58,7 @@ const handleSubmit = async () => {
       <main id="contenu-principal" class="form-section flex flex-col items-center justify-center min-h-full">
         <div class="form-container w-full bg-surface-0 dark:bg-surface-900 py-10 px-8 sm:px-20 h-full rounded-bl-xl rounded-br-xl">
           <div class="text-center mb-8">
-            <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4 uppercase">Mot de passe perdu ?</div>
+            <h1 class="text-surface-900! dark:text-surface-0! text-3xl! font-medium! mt-0! mb-4! uppercase">Mot de passe perdu ?</h1>
             <span class="text-muted-color font-medium">Cette fonctionnalité est disponible pour les utilisateurs invités ou les vacataires qui ne dépendent pas de l'URCA.</span>
           </div>
           <Divider></Divider>
