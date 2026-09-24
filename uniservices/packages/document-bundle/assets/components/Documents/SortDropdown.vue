@@ -35,9 +35,7 @@
           ]"
         >
           <span>{{ option.label }}</span>
-          <span v-if="sortField === option.field && sortOrder === option.order" class="text-primary-500">
-            ✓
-          </span>
+          <i v-if="sortField === option.field && sortOrder === option.order" class="pi pi-check text-primary-500" aria-hidden="true"></i>
         </button>
       </div>
     </div>
@@ -62,12 +60,12 @@ const emit = defineEmits<{
 const isOpen = ref(false);
 
 const sortOptions = [
-  { field: 'title' as SortField, order: 'asc' as SortOrder, label: 'Titre (A→Z)' },
-  { field: 'title' as SortField, order: 'desc' as SortOrder, label: 'Titre (Z→A)' },
+  { field: 'title' as SortField, order: 'asc' as SortOrder, label: 'Titre, de A à Z' },
+  { field: 'title' as SortField, order: 'desc' as SortOrder, label: 'Titre, de Z à A' },
   { field: 'lastModified' as SortField, order: 'desc' as SortOrder, label: 'Plus récent' },
   { field: 'lastModified' as SortField, order: 'asc' as SortOrder, label: 'Plus ancien' },
-  { field: 'size' as SortField, order: 'desc' as SortOrder, label: 'Taille (↓)' },
-  { field: 'size' as SortField, order: 'asc' as SortOrder, label: 'Taille (↑)' },
+  { field: 'size' as SortField, order: 'desc' as SortOrder, label: 'Plus lourd' },
+  { field: 'size' as SortField, order: 'asc' as SortOrder, label: 'Plus léger' },
 ];
 
 const selectSort = (field: SortField, order: SortOrder) => {

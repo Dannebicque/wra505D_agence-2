@@ -7,8 +7,8 @@
       <!-- Header -->
       <div class="flex items-start justify-between mb-3">
         <div class="flex items-center space-x-3 min-w-0">
-          <div :class="['text-3xl p-2 rounded-lg bg-gray-50 flex items-center justify-center', getFileIconColor(document.type)]">
-            {{ getFileIcon(document.type) }}
+          <div :class="['p-2 rounded-lg bg-gray-50 flex items-center justify-center', getFileIconColor(document.type)]">
+            <i :class="[getFileIcon(document.type), 'text-2xl']" aria-hidden="true"></i>
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
@@ -24,22 +24,24 @@
           @click.stop="$emit('toggleFavorite', document.id)"
           class="p-1 hover:bg-gray-100 rounded transition-colors"
           :title="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+          :aria-label="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
         >
-          <span :class="['text-lg', document.isFavorite ? 'text-yellow-500' : 'text-gray-300 group-hover:text-gray-400']">
-            {{ document.isFavorite ? '⭐' : '☆' }}
-          </span>
+          <i
+            :class="[document.isFavorite ? 'pi pi-star-fill text-yellow-500' : 'pi pi-star text-gray-300 group-hover:text-gray-400', 'text-lg']"
+            aria-hidden="true"
+          ></i>
         </button>
       </div>
 
       <!-- Info badges -->
       <div class="space-y-1.5 text-xs text-gray-500 my-2">
         <div class="flex items-center">
-          <span class="w-4 me-1 opacity-70">👤</span>
+          <i class="pi pi-user w-4 me-1 opacity-70" aria-hidden="true"></i>
           <span class="truncate">{{ document.author }}</span>
         </div>
 
         <div class="flex items-center">
-          <span class="w-4 me-1 opacity-70">📅</span>
+          <i class="pi pi-calendar w-4 me-1 opacity-70" aria-hidden="true"></i>
           <span>{{ formatDate(document.lastModified) }}</span>
         </div>
       </div>
@@ -68,22 +70,26 @@
 
     <!-- Quick Footer Actions -->
     <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-      <span class="text-xs font-medium text-primary-600 hover:underline">Voir détails →</span>
+      <span class="text-xs font-medium text-primary-600 hover:underline">
+        Voir détails <i class="pi pi-arrow-right text-xs" aria-hidden="true"></i>
+      </span>
       <div class="flex items-center space-x-1">
         <button
           @click.stop="$emit('downloadDocument', document)"
           class="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
           title="Télécharger"
+          aria-label="Télécharger"
         >
-          📥
+          <i class="pi pi-download" aria-hidden="true"></i>
         </button>
         <button
           v-permission="'isPersonnel'"
           @click.stop="$emit('deleteDocument', document)"
           class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
           title="Supprimer"
+          aria-label="Supprimer"
         >
-          🗑️
+          <i class="pi pi-trash" aria-hidden="true"></i>
         </button>
       </div>
     </div>

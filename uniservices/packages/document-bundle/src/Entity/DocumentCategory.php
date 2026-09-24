@@ -49,7 +49,7 @@ class DocumentCategory
 
     #[ORM\Column(length: 50, nullable: true)]
     #[Groups(['document_category:read', 'document_category:write', 'document:read'])]
-    private ?string $icon = '📁';
+    private ?string $icon = 'pi pi-folder';
 
     #[ORM\Column(length: 50, nullable: true)]
     #[Groups(['document_category:read', 'document_category:write', 'document:read'])]

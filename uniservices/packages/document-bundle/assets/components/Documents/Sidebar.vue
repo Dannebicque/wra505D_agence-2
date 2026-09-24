@@ -29,7 +29,7 @@
             : 'text-gray-700 hover:bg-gray-50'
         ]"
       >
-        <span class="text-lg">📁</span>
+        <i class="pi pi-folder text-lg" aria-hidden="true"></i>
         <span>Tous les documents</span>
         <span class="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
           {{ totalDocuments }}
@@ -46,7 +46,7 @@
             : 'text-gray-700 hover:bg-gray-50'
         ]"
       >
-        <span class="text-lg">⭐</span>
+        <i class="pi pi-star text-lg" aria-hidden="true"></i>
         <span>Favoris</span>
         <span class="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
           {{ favoriteCount }}

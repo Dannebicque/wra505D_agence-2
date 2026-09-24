@@ -28,13 +28,13 @@
             v-model="form.type"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
           >
-            <option value="pdf">📄 PDF</option>
-            <option value="word">📝 Document Word</option>
-            <option value="excel">📊 Tableur Excel</option>
-            <option value="powerpoint">📊 Présentation PowerPoint</option>
-            <option value="image">🖼️ Image</option>
-            <option value="archive">📦 Archive ZIP</option>
-            <option value="text">📄 Texte</option>
+            <option value="pdf">PDF</option>
+            <option value="word">Document Word</option>
+            <option value="excel">Tableur Excel</option>
+            <option value="powerpoint">Présentation PowerPoint</option>
+            <option value="image">Image</option>
+            <option value="archive">Archive ZIP</option>
+            <option value="text">Texte</option>
           </select>
         </div>
 
@@ -79,7 +79,7 @@
       <div
         class="border-2 border-dashed border-gray-300 hover:border-primary-400 rounded-lg p-6 text-center cursor-pointer transition-colors bg-gray-50 hover:bg-gray-100"
       >
-        <div class="text-3xl mb-2">📁</div>
+        <i class="pi pi-folder text-3xl mb-2" aria-hidden="true"></i>
         <p class="text-sm font-medium text-gray-700">Glissez-déposez votre fichier ici, ou parcourez vos dossiers</p>
         <p class="text-xs text-gray-500 mt-1">Formats acceptés : PDF, DOCX, XLSX, PNG, ZIP (Max 50 Mo)</p>
       </div>

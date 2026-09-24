@@ -34,7 +34,7 @@
         </button>
         <div v-else class="w-5"></div>
         
-        <span class="text-lg">{{ category.icon }}</span>
+        <i :class="[category.icon, 'text-lg']" aria-hidden="true"></i>
         <span class="flex-1 text-left">{{ category.name }}</span>
         
         <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">

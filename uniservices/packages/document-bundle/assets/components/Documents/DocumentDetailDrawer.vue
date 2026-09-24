@@ -7,7 +7,7 @@
   >
     <template #header>
       <div class="flex items-center space-x-3">
-        <span class="text-2xl">{{ getFileIcon(document?.type || 'pdf') }}</span>
+        <i :class="[getFileIcon(document?.type || 'pdf'), 'text-2xl']" aria-hidden="true"></i>
         <div class="min-w-0">
           <h3 class="font-bold text-gray-900 truncate">{{ document?.title }}</h3>
           <p class="text-xs text-gray-500">{{ getFileExtension(document?.type || 'pdf') }}</p>
@@ -18,8 +18,8 @@
     <div v-if="document" class="space-y-6 pt-4">
       <!-- File Preview Box -->
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
-        <div :class="['text-5xl mb-2', getFileIconColor(document.type)]">
-          {{ getFileIcon(document.type) }}
+        <div :class="['mb-2', getFileIconColor(document.type)]">
+          <i :class="[getFileIcon(document.type), 'text-5xl']" aria-hidden="true"></i>
         </div>
         <p class="font-semibold text-gray-800 text-sm truncate">{{ document.title }}</p>
         <p class="text-xs text-gray-500 mt-1">{{ formatFileSize(document.size) }}</p>
@@ -31,7 +31,7 @@
           @click="$emit('download', document)"
           class="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm"
         >
-          <span>📥</span>
+          <i class="pi pi-download" aria-hidden="true"></i>
           <span>Télécharger</span>
         </button>
 
@@ -44,8 +44,9 @@
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           ]"
           :title="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+          :aria-label="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
         >
-          <span>{{ document.isFavorite ? '⭐' : '☆' }}</span>
+          <i :class="document.isFavorite ? 'pi pi-star-fill' : 'pi pi-star'" aria-hidden="true"></i>
         </button>
 
         <ButtonDelete
