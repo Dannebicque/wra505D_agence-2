@@ -92,7 +92,11 @@ onUnmounted(() => {
         <p class="m-0! text-lg font-semibold">
           {{ situation.enCours.codeModule }} - {{ situation.enCours.libModule }}
         </p>
-        <p class="m-0!">Salle {{ situation.enCours.salle || 'non précisée' }}</p>
+        <p class="m-0! flex items-center gap-1">
+          <i class="pi pi-map-marker" aria-hidden="true"/>
+          <span class="sr-only">Lieu :</span>
+          {{ situation.enCours.salle || 'Lieu non précisé' }}
+        </p>
         <p class="m-0!">
           Jusqu'à <time :datetime="formatDateTimeAttr(situation.enCours.fin)">{{ formatHeure(situation.enCours.fin) }}</time>,
           encore {{ formatDelai(minutesEntre(now, situation.enCours.fin)) }}
@@ -104,7 +108,11 @@ onUnmounted(() => {
         <p class="m-0! text-lg font-semibold">
           {{ situation.prochain.codeModule }} - {{ situation.prochain.libModule }}
         </p>
-        <p class="m-0!">Salle {{ situation.prochain.salle || 'non précisée' }}</p>
+        <p class="m-0! flex items-center gap-1">
+          <i class="pi pi-map-marker" aria-hidden="true"/>
+          <span class="sr-only">Lieu :</span>
+          {{ situation.prochain.salle || 'Lieu non précisé' }}
+        </p>
         <p class="m-0!">
           À <time :datetime="formatDateTimeAttr(situation.prochain.debut)">{{ formatHeure(situation.prochain.debut) }}</time>,
           dans {{ formatDelai(minutesEntre(now, situation.prochain.debut)) }}
