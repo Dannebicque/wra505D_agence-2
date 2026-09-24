@@ -12,9 +12,9 @@ describe('Recherche de la barre du haut', () => {
         cy.get('[role="listbox"]').should('contain', 'Matières').and('contain', 'R1.11 Développement web');
     });
 
-    it('ouvre une page au clavier', () => {
+    it('ouvre une page au clavier, même cherchée sous son ancien nom', () => {
         cy.get('#recherche-globale').type('agneda');
-        cy.get('[role="listbox"]').should('contain', 'Pages').and('contain', 'Agenda');
+        cy.get('[role="listbox"]').should('contain', 'Pages').and('contain', 'Emploi du temps');
 
         cy.get('#recherche-globale').type('{downArrow}{enter}');
 
