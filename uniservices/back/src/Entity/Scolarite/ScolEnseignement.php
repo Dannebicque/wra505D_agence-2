@@ -49,11 +49,11 @@ class ScolEnseignement
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['maquette:detail', 'enseignement:detail', 'enseignement:light', 'enseignement_ue:read', 'previsionnel_personnel:read', 'edt_event:read:agenda', 'evaluation:init', 'absence:administration'])]
+    #[Groups(['maquette:detail', 'enseignement:detail', 'enseignement:light', 'enseignement_ue:read', 'previsionnel_personnel:read', 'edt_event:read:agenda', 'evaluation:init', 'absence:administration', 'document:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['maquette:detail', 'previsionnel:read', 'enseignement:detail', 'previsionnel_semestre:read', 'previsionnel_personnel:read', 'enseignement_ue:read', 'evaluation:init'])]
+    #[Groups(['maquette:detail', 'previsionnel:read', 'enseignement:detail', 'previsionnel_semestre:read', 'previsionnel_personnel:read', 'enseignement_ue:read', 'evaluation:init', 'document:read'])]
     private ?string $libelle = null;
 
     #[ORM\Column(length: 25, nullable: true)]
@@ -77,7 +77,7 @@ class ScolEnseignement
     private ?string $motsCles = null;
 
     #[ORM\Column(length: 20, nullable: true)]
-    #[Groups(['maquette:detail', 'enseignement:detail', 'previsionnel:read', 'previsionnel_semestre:read', 'previsionnel_personnel:read', 'enseignement_ue:read', 'edt_event:read:agenda', 'evaluation:init'])]
+    #[Groups(['maquette:detail', 'enseignement:detail', 'previsionnel:read', 'previsionnel_semestre:read', 'previsionnel_personnel:read', 'enseignement_ue:read', 'edt_event:read:agenda', 'evaluation:init', 'document:read'])]
     private ?string $codeEnseignement = null;
 
     #[ORM\Column]
@@ -89,7 +89,7 @@ class ScolEnseignement
     private array $heures = [];
 
     #[ORM\Column(type: 'string', enumType: TypeEnseignementEnum::class)]
-    #[Groups(['maquette:detail', 'previsionnel:read', 'enseignement:detail', 'enseignement:light', 'enseignement_ue:read', 'edt_event:read:agenda', 'evaluation:init'])]
+    #[Groups(['maquette:detail', 'previsionnel:read', 'enseignement:detail', 'enseignement:light', 'enseignement_ue:read', 'edt_event:read:agenda', 'evaluation:init', 'document:read'])]
     private TypeEnseignementEnum $type = TypeEnseignementEnum::TYPE_RESSOURCE;
 
     #[ORM\Column]

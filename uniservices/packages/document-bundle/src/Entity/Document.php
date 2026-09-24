@@ -2,12 +2,15 @@
 
 namespace DocumentBundle\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use App\Entity\Scolarite\ScolEnseignement;
 use App\Entity\Structure\StructureDepartement;
 use DocumentBundle\Repository\DocumentRepository;
 use Doctrine\DBAL\Types\Types;
@@ -35,6 +38,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     normalizationContext: ['groups' => ['document:read']],
     denormalizationContext: ['groups' => ['document:write']]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['enseignement' => 'exact', 'enseignement.type' => 'exact'])]
 class Document
 {
     #[ORM\Id]
@@ -91,6 +95,15 @@ class Document
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     #[Groups(['document:read', 'document:write'])]
     private ?DocumentCategory $category = null;
+
+    /**
+     * Matière ou SAÉ du document. Un seul enseignement : un support commun à plusieurs se dépose
+     * dans chacun, ce qui garde le classement lisible pour l'étudiant.
+     */
+    #[ORM\ManyToOne(targetEntity: ScolEnseignement::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    #[Groups(['document:read', 'document:write'])]
+    private ?ScolEnseignement $enseignement = null;
 
     #[ORM\ManyToOne(targetEntity: StructureDepartement::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
@@ -251,6 +264,17 @@ class Document
     public function setCategory(?DocumentCategory $category): static
     {
         $this->category = $category;
+        return $this;
+    }
+
+    public function getEnseignement(): ?ScolEnseignement
+    {
+        return $this->enseignement;
+    }
+
+    public function setEnseignement(?ScolEnseignement $enseignement): static
+    {
+        $this->enseignement = $enseignement;
         return $this;
     }
 
