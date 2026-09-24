@@ -3,6 +3,7 @@
 namespace App\Service\Edt;
 
 use App\Entity\Edt\EdtEvent;
+use App\Entity\Structure\StructureSemestre;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -48,7 +49,7 @@ class GenereSlots
                 'TD' => explode(' ', $previsionnel->getProgression()?->getGrTd()),
                 'TP' => explode(' ', $previsionnel->getProgression()?->getGrTp()),
                 'CM' => ['CM'],
-                default => 0,
+                default => [],
             };
 
             foreach($nbGroupes as $getGr) {
@@ -61,20 +62,21 @@ class GenereSlots
     private function createEdtEvent(Previsionnel $previsionnel, string $typeCours, int|string $semaine, string $numeroSeance, string $getGr)
     {
         $edtEvent = new EdtEvent();
-        $semestre = $previsionnel->getSemestre();
+        $semestre = $this->getSemestre($previsionnel);
         $edtEvent->setPersonnel($previsionnel->getPersonnel());
         $edtEvent->setLibPersonnel($previsionnel->getPersonnel()?->getDisplay());
-        $edtEvent->setCodePersonnel($previsionnel->getPersonnel()?->getNumeroHarpege());
+        $numeroHarpege = $previsionnel->getPersonnel()?->getNumeroHarpege();
+        $edtEvent->setCodePersonnel($numeroHarpege !== null ? (string) $numeroHarpege : null);
         $edtEvent->setSemestre($semestre);
         $edtEvent->setAnneeUniversitaire($previsionnel->getAnneeUniversitaire());
         $edtEvent->setType($typeCours);
         $edtEvent->setSemaineFormation($semaine);
-        $edtEvent->setEnseignement($previsionnel->getMatiere());
-        $edtEvent->setLibModule($previsionnel->getMatiere()?->getLibelle());
-        $edtEvent->setCodeModule($previsionnel->getMatiere()?->getCodeApogee());
-        $edtEvent->setOrdreSeance($numeroSeance);
+        $edtEvent->setEnseignement($previsionnel->getEnseignement());
+        $edtEvent->setLibModule($previsionnel->getEnseignement()?->getLibelle());
+        $edtEvent->setCodeModule($previsionnel->getEnseignement()?->getCodeEnseignement());
+        $edtEvent->setOrdreSeance((int) $numeroSeance);
         $edtEvent->setCouleur($semestre?->getAnnee()?->getCouleur());
-        $groupe = $this->groupes[$previsionnel->getSemestre()?->getId()][strtoupper($getGr)];
+        $groupe = $this->groupes[$semestre?->getId()][strtoupper($getGr)];
         $edtEvent->setGroupe($groupe);
         $edtEvent->setLibGroupe($groupe->getLibelle());
         $edtEvent->setCodeGroupe($groupe->getCodeApogee());
@@ -83,11 +85,22 @@ class GenereSlots
         $this->nbSlots++;
     }
 
+    /**
+     * Le prévisionnel ne porte plus de semestre : il se déduit de l'enseignement, via ses UE,
+     * comme le fait PrevisionnelFilter.
+     */
+    private function getSemestre(Previsionnel $previsionnel): ?StructureSemestre
+    {
+        $enseignementUe = $previsionnel->getEnseignement()?->getEnseignementUes()->first();
+
+        return $enseignementUe ? $enseignementUe->getUe()?->getSemestre() : null;
+    }
+
     private function getGroupes(Previsionnel $previsionnel)
     {
-        $semestre = $previsionnel->getSemestre();
+        $semestre = $this->getSemestre($previsionnel);
         if ($semestre !== null && !array_key_exists($semestre->getId(), $this->groupes)) {
-            $groupes = $semestre->getStructureGroupes();
+            $groupes = $semestre->getGroupes();
             foreach ($groupes as $groupe) {
                 $this->groupes[$semestre->getId()][$groupe->getLibelle()] = $groupe;
             }
