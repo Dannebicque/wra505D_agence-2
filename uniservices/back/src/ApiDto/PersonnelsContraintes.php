@@ -9,7 +9,7 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Entity\Structure\StructureCalendrier;
 use App\Entity\Users\Personnel;
-use App\State\UniEdt\PersonnelsContraintesProvider;
+use App\State\Provider\UniEdt\PersonnelsContraintesProvider;
 
 #[ApiResource(
     operations: [
