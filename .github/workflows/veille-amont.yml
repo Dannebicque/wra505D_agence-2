@@ -1,0 +1,58 @@
+name: Veille uniServices
+
+# Signale les nouveaux commits sur le main du dépôt du client, IUTTroyes/uniServices.
+# Chaque commit est examiné avant d'être repris dans uniservices/ : on ne reprend que ce qui est
+# bon et ne casse rien. Le dernier commit examiné est noté dans .github/uniservices-amont-examine.
+#
+# GitHub n'exécute un workflow planifié que depuis la branche par défaut du dépôt (main).
+
+on:
+  schedule:
+    - cron: '0 6 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Signaler les commits non examinés
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          examine=$(tr -d '[:space:]' < .github/uniservices-amont-examine)
+          dernier=$(gh api repos/IUTTroyes/uniServices/commits/main --jq .sha)
+
+          if [ "$examine" = "$dernier" ]; then
+            echo "Rien de nouveau sur IUTTroyes/uniServices main depuis ${examine:0:9}."
+            exit 0
+          fi
+
+          titre="Amont uniServices : nouveaux commits jusqu'à ${dernier:0:9}"
+          deja=$(gh issue list --state open --search "\"${dernier:0:9}\" in:title" --json number --jq length)
+          if [ "$deja" != "0" ]; then
+            echo "Une issue ouverte signale déjà ${dernier:0:9}."
+            exit 0
+          fi
+
+          commits=$(gh api "repos/IUTTroyes/uniServices/compare/${examine}...${dernier}" \
+            --jq '.commits[] | "- [`\(.sha[0:9])`](\(.html_url)) \(.commit.message | split("\n")[0]) (\(.commit.author.name))"')
+
+          {
+            echo "Nouveaux commits sur le main de IUTTroyes/uniServices depuis le dernier commit examiné, \`${examine:0:9}\` :"
+            echo
+            echo "$commits"
+            echo
+            echo "Pour chaque commit : le reprendre, l'écarter ou l'adapter. On ne reprend que ce qui est bon et ne casse rien."
+            echo
+            echo "1. Dans le clone \`Reference/uniServices\` : \`git fetch\` puis \`git diff ${examine:0:9} ${dernier:0:9}\`."
+            echo "2. Sur une branche \`chore/amont-<version>\` partie de \`develop\` : appliquer ce qui est retenu avec \`git apply --directory=uniservices -3\`, puis PHPStan et PHPUnit."
+            echo "3. Dans la même branche, noter \`${dernier}\` dans \`.github/uniservices-amont-examine\`, y compris si tout est écarté."
+          } > corps.md
+
+          gh issue create --title "$titre" --body-file corps.md
