@@ -219,7 +219,7 @@ watch(() => route.path, async (newPath, oldPath) => {
     </main>
     <div v-else class="px-4 lg:px-10">
       <div class="grid grid-cols-12 gap-4">
-        <aside class="col-span-12 lg:col-span-2 pt-28 pb-14 h-screen">
+        <aside class="col-span-12 lg:col-span-2 pt-28 pb-14 lg:h-screen lg:sticky lg:top-0 lg:self-start">
           <div class="card card-body h-full overflow-y-auto flex flex-col gap-6">
             <div class="flex flex-col gap-4">
               <div class="text-md font-semibold text-color-secondary uppercase">Applications</div>
@@ -279,8 +279,8 @@ watch(() => route.path, async (newPath, oldPath) => {
           </div>
         </aside>
 
-        <main id="contenu-principal" class="col-span-12 lg:col-span-10 pt-28 pb-14 h-screen">
-          <div class="h-full overflow-y-auto">
+        <main id="contenu-principal" class="col-span-12 lg:col-span-10 pt-28 pb-14">
+          <div>
             <HeaderComponent
                 icon="pi pi-home"
                 :titre="titrePortail"
@@ -419,6 +419,5 @@ watch(() => route.path, async (newPath, oldPath) => {
   grid-template-columns: repeat(4, 1fr);
   grid-auto-rows: 1fr;
   gap: 1rem;
-  overflow-y: auto;
 }
 </style>

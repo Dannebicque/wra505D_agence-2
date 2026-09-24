@@ -136,7 +136,7 @@ const moveWidget = async (widget, direction) => {
 
 <template>
   <section class="col-span-12 lg:col-span-10 pb-14">
-    <div class="h-screen overflow-y-auto">
+    <div>
       <div v-if="!userStore.isLoading" class="flex items-center justify-between mb-4">
         <div class="flex items-center">
           <div class="w-20 h-20 bg-primary-400 rounded-full flex items-center justify-center shrink-0">
@@ -187,6 +187,5 @@ const moveWidget = async (widget, direction) => {
   grid-template-columns: repeat(4, 1fr);
   grid-auto-rows: 1fr;
   gap: 1rem;
-  overflow-y: auto;
 }
 </style>
