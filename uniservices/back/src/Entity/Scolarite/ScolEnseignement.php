@@ -11,7 +11,6 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Apc\ApcApprentissageCritique;
 use App\Entity\Edt\EdtEvent;
-use IntranetBundle\Entity\Etudiant\EtudiantAbsence;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 use App\Entity\Traits\ApogeeTrait;
 use App\Entity\Traits\OldIdTrait;
@@ -135,12 +134,6 @@ class ScolEnseignement
     private Collection $apprentissageCritique;
 
     /**
-     * @var Collection<int, EtudiantAbsence>
-     */
-    #[ORM\OneToMany(targetEntity: EtudiantAbsence::class, mappedBy: 'enseignement', cascade: ['remove'], orphanRemoval: true)]
-    private Collection $absences;
-
-    /**
      * @var Collection<int, ScolEvaluation>
      */
     #[ORM\OneToMany(targetEntity: ScolEvaluation::class, mappedBy: 'enseignement', cascade: ['remove'], orphanRemoval: true)]
@@ -171,7 +164,6 @@ class ScolEnseignement
     {
         $this->enfants = new ArrayCollection();
         $this->apprentissageCritique = new ArrayCollection();
-        $this->absences = new ArrayCollection();
         $this->evaluations = new ArrayCollection();
         $this->edtEvents = new ArrayCollection();
         $this->enseignementUes = new ArrayCollection();
@@ -418,36 +410,6 @@ class ScolEnseignement
     public function removeApprentissageCritique(ApcApprentissageCritique $apprentissageCritique): static
     {
         $this->apprentissageCritique->removeElement($apprentissageCritique);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, EtudiantAbsence>
-     */
-    public function getAbsences(): Collection
-    {
-        return $this->absences;
-    }
-
-    public function addAbsence(EtudiantAbsence $absence): static
-    {
-        if (!$this->absences->contains($absence)) {
-            $this->absences->add($absence);
-            $absence->setEnseignement($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAbsence(EtudiantAbsence $absence): static
-    {
-        if ($this->absences->removeElement($absence)) {
-            // set the owning side to null (unless already changed)
-            if ($absence->getEnseignement() === $this) {
-                $absence->setEnseignement(null);
-            }
-        }
 
         return $this;
     }

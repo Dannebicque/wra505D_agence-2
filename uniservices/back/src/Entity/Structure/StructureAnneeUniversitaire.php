@@ -11,7 +11,6 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Entity\Apc\ApcReferentiel;
 use App\Entity\Edt\EdtContraintesSemestre;
 use App\Entity\Edt\EdtCreneauxInterditsSemaine;
 use App\Entity\Edt\EdtEvent;
@@ -100,12 +99,6 @@ class StructureAnneeUniversitaire
     private bool $actif = false;
 
     /**
-     * @var Collection<int, ApcReferentiel>
-     */
-    #[ORM\OneToMany(targetEntity: ApcReferentiel::class, mappedBy: 'anneeUniversitaire')]
-    private Collection $referentiels;
-
-    /**
      * @var Collection<int, ScolEvaluation>
      */
     #[ORM\OneToMany(targetEntity: ScolEvaluation::class, mappedBy: 'anneeUniversitaire')]
@@ -159,7 +152,6 @@ class StructureAnneeUniversitaire
         $this->scolarites = new ArrayCollection();
         $this->pns = new ArrayCollection();
         $this->personnels = new ArrayCollection();
-        $this->referentiels = new ArrayCollection();
         $this->evaluations = new ArrayCollection();
         $this->edtEvents = new ArrayCollection();
 
