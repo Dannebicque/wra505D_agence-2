@@ -28,16 +28,18 @@ class EdtAgendaProvider implements ProviderInterface
                 return [];
             }
 
+            $output = [];
             foreach ($data as $item) {
                 $output[] = $this->syntheseToDto($item);
             }
-        } else {
-            $data = $this->itemProvider->provide($operation, $uriVariables, $context);
+
+            return $output;
         }
-        return $this->syntheseToDto($data);
+
+        return $this->syntheseToDto($this->itemProvider->provide($operation, $uriVariables, $context));
     }
 
-    public function syntheseToDto($item): EdtAgendaDto
+    public function syntheseToDto(mixed $item): EdtAgendaDto
     {
         $edt = new EdtAgendaDto();
         $edt->setIdEnseignement($item->getEnseignement()?->getId() ?? 0);
