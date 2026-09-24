@@ -12,7 +12,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(SemaineFormationFilter::class)]
 class SemaineFormationFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if ('semaineFormation' !== $property || null === $value) {
             return;
@@ -33,9 +33,7 @@ class SemaineFormationFilter extends AbstractFilter
                 'property' => 'semaineFormation',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by semaineFormation',
-                ],
+                'description' => 'Filter by semaineFormation',
             ],
         ];
     }

@@ -12,7 +12,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(CompetenceFilter::class)]
 class CompetenceFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -53,17 +53,13 @@ class CompetenceFilter extends AbstractFilter
                 'property' => 'ue',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by ue',
-                ],
+                'description' => 'Filter by ue',
             ],
             'referentiel' => [
                 'property' => 'referentiel',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by referentiel',
-                ],
+                'description' => 'Filter by referentiel',
             ],
         ];
     }

@@ -91,41 +91,31 @@ class EtudiantScolariteSemestreFilter extends AbstractFilter
                 'property' => 'scolarite',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by scolarite',
-                ],
+                'description' => 'Filter by scolarite',
             ],
             'groupe' => [
                 'property' => 'groupe',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by groupe',
-                ],
+                'description' => 'Filter by groupe',
             ],
             'semestre' => [
                 'property' => 'semestre',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by semestre',
-                ],
+                'description' => 'Filter by semestre',
             ],
             'etudiant' => [
                 'property' => 'etudiant',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by etudiant',
-                ],
+                'description' => 'Filter by etudiant',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by anneeUniversitaire',
-                ],
+                'description' => 'Filter by anneeUniversitaire',
             ]
         ];
     }

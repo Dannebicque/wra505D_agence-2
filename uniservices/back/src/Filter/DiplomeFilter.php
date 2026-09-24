@@ -12,7 +12,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(DiplomeFilter::class)]
 class DiplomeFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -43,17 +43,13 @@ class DiplomeFilter extends AbstractFilter
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by departement',
-                ],
+                'description' => 'Filter by departement',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by année universitaire',
-                ],
+                'description' => 'Filter by année universitaire',
             ],
         ];
     }

@@ -136,89 +136,67 @@ class EdtFilter extends AbstractFilter
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by année universitaire',
-                ],
+                'description' => 'Filter by année universitaire',
             ],
             'semaineFormation' => [
                 'property' => 'semaineFormation',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by semaine de formation',
-                ],
+                'description' => 'Filter by semaine de formation',
             ],
             'personnel' => [
                 'property' => 'personnel',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by personnel',
-                ],
+                'description' => 'Filter by personnel',
             ],
             'departement' => [
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by department',
-                ],
+                'description' => 'Filter by department',
             ],
             'semestre' => [
                 'property' => 'semestre',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by semester',
-                ],
+                'description' => 'Filter by semester',
             ],
             'day' => [
                 'property' => 'day',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter events to only include events on the specified date (format: YYYY-MM-DD)',
-                ]
+                'description' => 'Filter events to only include events on the specified date (format: YYYY-MM-DD)',
             ],
             'debut' => [
                 'property' => 'debut',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter events to only include events starting from the specified date (format: YYYY-MM-DD)',
-                ]
+                'description' => 'Filter events to only include events starting from the specified date (format: YYYY-MM-DD)',
             ],
             'fin' => [
                 'property' => 'fin',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter events to only include events ending before the specified date (format: YYYY-MM-DD)',
-                ]
+                'description' => 'Filter events to only include events ending before the specified date (format: YYYY-MM-DD)',
             ],
             'enseignement' => [
                 'property' => 'enseignement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by enseignement',
-                ],
+                'description' => 'Filter by enseignement',
             ],
             'salle' => [
                 'property' => 'salle',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by salle (partial match)',
-                ],
+                'description' => 'Filter by salle (partial match)',
             ],
             'annee' => [
                 'property' => 'annee',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by annee',
-                ],
+                'description' => 'Filter by annee',
             ]
         ];
     }

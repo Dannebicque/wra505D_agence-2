@@ -12,7 +12,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(EtudiantFilter::class)]
 class EtudiantFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -78,41 +78,31 @@ class EtudiantFilter extends AbstractFilter
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by departement',
-                ],
+                'description' => 'Filter by departement',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by anneeUniversitaire',
-                ],
+                'description' => 'Filter by anneeUniversitaire',
             ],
             'semestre' => [
                 'property' => 'semestre',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by semestre',
-                ],
+                'description' => 'Filter by semestre',
             ],
             'annee' => [
                 'property' => 'annee',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by annee',
-                ],
+                'description' => 'Filter by annee',
             ],
             'groupe' => [
                 'property' => 'groupe',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by groupe',
-                ],
+                'description' => 'Filter by groupe',
             ],
         ];
     }

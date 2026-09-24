@@ -13,7 +13,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(GroupeFilter::class)]
 class GroupeFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -42,17 +42,13 @@ class GroupeFilter extends AbstractFilter
                 'property' => 'semestre',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by semestre',
-                ],
+                'description' => 'Filter by semestre',
             ],
             'type' => [
                 'property' => 'type',
                 'type' => Type::BUILTIN_TYPE_STRING,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by type (e.g., TD, TP, CM)',
-                ],
+                'description' => 'Filter by type (e.g., TD, TP, CM)',
             ],
         ];
     }

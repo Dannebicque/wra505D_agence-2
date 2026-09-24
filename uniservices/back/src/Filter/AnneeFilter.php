@@ -12,7 +12,7 @@ use Symfony\Component\PropertyInfo\Type;
 #[ApiFilter(AnneeFilter::class)]
 class AnneeFilter extends AbstractFilter
 {
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value) {
             return;
@@ -81,41 +81,31 @@ class AnneeFilter extends AbstractFilter
                 'property' => 'departement',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by departement',
-                ],
+                'description' => 'Filter by departement',
             ],
             'pn' => [
                 'property' => 'pn',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by pn',
-                ],
+                'description' => 'Filter by pn',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by anneeUniversitaire',
-                ]
+                'description' => 'Filter by anneeUniversitaire',
             ],
             'diplome' => [
                 'property' => 'diplome',
                 'type' => Type::BUILTIN_TYPE_INT,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by diploma',
-                ],
+                'description' => 'Filter by diploma',
             ],
             'actif' => [
                 'property' => 'actif',
                 'type' => Type::BUILTIN_TYPE_BOOL,
                 'required' => false,
-                'openapi' => [
-                    'description' => 'Filter by actif status',
-                ],
+                'description' => 'Filter by actif status',
             ]
         ];
     }
