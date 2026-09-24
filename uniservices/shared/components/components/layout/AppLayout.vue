@@ -7,6 +7,8 @@ import AppSidebar from './AppSidebar.vue';
 import AppTopbar from './AppTopbar.vue';
 import AppBreadcrumb from "./AppBreadcrumb.vue";
 import { hasPermission } from '@utils/permissions';
+import { menuEtudiant } from '@helpers/menuEtudiant.js';
+import { useSecurity } from '@stores';
 import { bundles } from '../../../../packages/shell/assets/bundles-registry';
 
 const props = defineProps({
@@ -64,10 +66,14 @@ const getPackageFromPath = (path) => {
   return null;
 };
 
+const security = useSecurity();
+
 const computedMenuItems = computed(() => {
-  // L'étudiant n'a qu'une application, UniTranet : il garde le même menu dans chaque module, sans
-  // quoi la page Documents, qui n'appartient à aucun, s'ouvrait sans navigation.
-  const pathPkg = hasPermission('isEtudiant') ? 'intranet' : getPackageFromPath(currentRoute?.path || '/');
+  if (hasPermission('isEtudiant')) {
+    return menuEtudiant(bundles, security.hasPackage);
+  }
+
+  const pathPkg = getPackageFromPath(currentRoute?.path || '/');
 
   // Find the bundle manifest matching the current package name
   const activeBundle = bundles.find(b => b.name === pathPkg);

@@ -28,12 +28,6 @@ const intranetMenu = {
       permission: 'isEtudiant'
     },
     {
-      label: 'Documents',
-      icon: 'pi pi-fw pi-folder',
-      to: '/documents',
-      permission: 'isEtudiant'
-    },
-    {
       label: 'Cahier de texte',
       icon: 'pi pi-fw pi-book',
       to: '/intranet/cahier-de-texte',
@@ -54,8 +48,17 @@ const intranetMenu = {
   ]
 };
 
+// Libellés choisis pour l'étudiant (P5) : le menu du personnel garde les siens.
+const studentMenu = [
+  { label: 'Accueil', icon: 'pi pi-fw pi-home', to: '/intranet/', groupe: 'scolarite', ordre: 10, motsCles: ['tableau de bord', 'dashboard'] },
+  { label: 'Emploi du temps', icon: 'pi pi-fw pi-calendar', to: '/intranet/agenda', groupe: 'scolarite', ordre: 20, motsCles: ['agenda', 'edt', 'planning', 'cours'] },
+  { label: 'Notes et absences', icon: 'pi pi-fw pi-graduation-cap', to: '/intranet/scolarite', groupe: 'scolarite', ordre: 30, motsCles: ['scolarité', 'moyennes', 'bulletin', 'relevé'] },
+  { label: 'Cahier de texte', icon: 'pi pi-fw pi-book', to: '/intranet/cahier-de-texte', groupe: 'scolarite', ordre: 50, motsCles: ['devoirs', 'travail à faire'] },
+];
+
 export default {
   name: 'intranet',
+  studentMenu,
   primaryColor: 'violet',
   registerWidgets,
   routes: [
