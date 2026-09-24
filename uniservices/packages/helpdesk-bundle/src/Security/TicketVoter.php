@@ -55,6 +55,7 @@ class TicketVoter extends Voter
             self::CAN_VIEW_TICKET => $this->canViewTicket($user),
             self::CAN_EDIT_TICKET => $this->canEditTicket($user,$subject),
             self::CAN_DELETE_TICKET => $this->canDeleteTicket($user,$subject),
+            self::CAN_CREATE_TICKET => $this->canCreateTicket($user),
             default => false,
         };
     }
@@ -62,11 +63,6 @@ class TicketVoter extends Voter
     private function isSuperAdmin(Personnel|Etudiant $user): bool
     {
         return $this->effectivePermissionService->isSuperAdmin($user);
-    }
-
-    private function hasAnyRole(Personnel $user, array $roles): bool
-    {
-        return $this->effectivePermissionService->hasAnyPermission($user, $roles);
     }
 
     private function canViewTicket(Personnel|Etudiant $user): bool
