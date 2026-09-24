@@ -145,4 +145,19 @@ const demissionEtudiantScolariteService = async (scolariteId, showToast = false)
 // ------------------- DELETE -------------------
 // ----------------------------------------------
 
-export { getEtudiantsScolariteService, getEtudiantScolariteService, getEtudiantScolaritesService, updateEtudiantScolariteService, demissionEtudiantScolariteService };
+const getMaScolariteService = async (showToast = false) => {
+    try {
+        return await apiCall(
+            api.get,
+            ['/api/me/scolarite'],
+            'Relevé de scolarité récupéré avec succès',
+            'Erreur lors de la récupération du relevé de scolarité',
+            showToast
+        );
+    } catch (error) {
+        console.error('Erreur dans getMaScolariteService:', error);
+        throw error;
+    }
+}
+
+export { getEtudiantsScolariteService, getEtudiantScolariteService, getEtudiantScolaritesService, getMaScolariteService, updateEtudiantScolariteService, demissionEtudiantScolariteService };
