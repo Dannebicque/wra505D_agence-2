@@ -31,7 +31,7 @@ GitHub ne lit pas.
 | `composer validate` | passe, deux avertissements | — |
 | `lint:container` | échoue | E1 |
 | `doctrine:schema:validate` | échoue, 14 mappings | E2 |
-| `phpstan` | échoue, configuration obsolète | E3 |
+| `phpstan` | s'exécute, 271 erreurs préexistantes | E4 |
 
 Tant que E1 à E3 ne sont pas faites, la CI du back est rouge. Elle ne bloque pas les fusions,
 le ruleset n'exige qu'une approbation. Ces trois fiches sont prioritaires : une CI rouge en
@@ -48,6 +48,7 @@ disparu du dépôt. PHPStan s'arrête avant d'analyser quoi que ce soit.
 **Terminé quand** `make phpstan` s'exécute jusqu'au bout. Les erreurs qu'il révèle alors font
 l'objet d'une fiche à part : on ne les corrige pas dans celle-ci.
 **Commencer par là** : c'est la plus courte des trois et elle débloque la mesure du reste.
+**Fait** PHPStan s'exécute maintenant jusqu'au bout. Il trouve 271 erreurs, reprises dans E4.
 
 ### E1 · Corriger le point d'entrée d'authentification · S
 **Pourquoi** `security.yaml` déclare `entry_point: App\Security\LoginFormAuthenticator`, mais
@@ -67,6 +68,20 @@ et `EtudiantScolariteSemestre#note` sont incohérents, `ApcReferentiel#pn` point
 **Terminé quand** `php bin/console doctrine:schema:validate --skip-sync` ne signale plus rien, et
 que les fixtures se chargent toujours.
 **Attention** à redécouper par entité si la PR dépasse deux ou trois fichiers.
+
+### E4 · Traiter les 271 erreurs PHPStan · L
+**Pourquoi** révélées par E3, toutes antérieures à notre reprise. 271 erreurs dans 117 fichiers :
+184 dans `back/`, 39 dans `intranet-bundle`, 36 dans `questionnaire-bundle`, le reste marginal.
+**Commencer par les 36 qui sont probablement de vrais bugs** : 27 `method.notFound` et
+9 `property.notFound`, soit des appels à des méthodes ou propriétés qui n'existent pas. Par exemple
+`Etudiant::setSemestreActuel()`. Ce code plante à l'exécution dès qu'on passe dessus.
+Les 235 autres sont de l'hygiène de typage : `return.type` (42), `missingType.parameter` (41),
+`method.unused` (19), `missingType.return` (17), `instanceof.alwaysTrue` (17).
+**Approche recommandée** générer une *baseline* PHPStan qui enregistre les erreurs existantes :
+la CI ne signale alors plus que les nouvelles, et on réduit la baseline fiche par fiche. C'est
+l'usage standard pour adopter PHPStan sur un code existant. À décider en équipe, car la baseline
+revient à accepter les 271 erreurs comme dette connue.
+**Attention** à redécouper : les 36 bugs d'abord, puis un bundle à la fois.
 
 ---
 
