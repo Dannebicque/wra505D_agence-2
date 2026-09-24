@@ -10,16 +10,16 @@ const { version } = useVersion();
     <div class="flex items-center gap-2">
       <span class="font-bold">UniServices</span>
       <span>Copyright &copy; 2026</span>
-      <span><a class="underline" href="">@David Annebicque</a></span>
+      <span><a class="underline touch-target" href="">@David Annebicque</a></span>
       <span>-</span>
-      <span><a class="underline" href="@mailto">@Cyndel Herolt</a></span>
+      <span><a class="underline touch-target" href="@mailto">@Cyndel Herolt</a></span>
       <span>All rights reserved</span>
       <span>|</span>
       <span>Version {{ version }}</span>
     </div>
 
     <div class="">
-      <span>Contact : <a href="" class="underline">intranet.iut-troyes@univ-reims.fr</a></span>
+      <span>Contact : <a href="" class="underline touch-target">intranet.iut-troyes@univ-reims.fr</a></span>
     </div>
   </div>
 </template>

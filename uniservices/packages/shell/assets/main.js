@@ -36,6 +36,44 @@ const MyPreset = definePreset(Aura, {
             900: '{violet.900}',
             950: '{violet.950}'
         },
+    },
+    components: {
+        button: {
+            colorScheme: {
+                light: {
+                    root: {
+                        success: {
+                            background: '#15C377', hoverBackground: '#3DD68F', activeBackground: '#5FE0A3',
+                            borderColor: '#15C377', hoverBorderColor: '#3DD68F', activeBorderColor: '#5FE0A3',
+                            color: '#0B3D26', hoverColor: '#0B3D26', activeColor: '#0B3D26',
+                            focusRing: { color: '#0B3D26' }
+                        },
+                        danger: {
+                            background: '#F96868', hoverBackground: '#FA8585', activeBackground: '#FBA0A0',
+                            borderColor: '#F96868', hoverBorderColor: '#FA8585', activeBorderColor: '#FBA0A0',
+                            color: '#4A1010', hoverColor: '#4A1010', activeColor: '#4A1010',
+                            focusRing: { color: '#4A1010' }
+                        }
+                    },
+                    outlined: {
+                        success: { color: '{green.800}', borderColor: '{green.800}' },
+                        danger: { color: '{red.700}', borderColor: '{red.700}' }
+                    },
+                    text: {
+                        success: { color: '{green.800}' },
+                        danger: { color: '{red.700}' }
+                    }
+                }
+            }
+        },
+        badge: {
+            colorScheme: {
+                light: {
+                    success: { background: '#15C377', color: '#0B3D26' },
+                    danger: { background: '#F96868', color: '#4A1010' }
+                }
+            }
+        }
     }
 });
 

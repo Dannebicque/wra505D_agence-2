@@ -37,7 +37,7 @@ const copyDebugMessage = async () => {
           </div>
           <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">Erreur</h1>
           <span class="text-muted-color text-center">Une erreur est survenue. <br> Veuillez réessayer plus tard ou contacter les administrateurs du site.</span>
-          <a href="mailto:intranet.iut-troyes@univ-reims.fr" class="underline">Contacter les administrateurs du site &nbsp; <i class="pi pi-external-link !text-xs underline"></i></a>
+          <a href="mailto:intranet.iut-troyes@univ-reims.fr" class="underline touch-target">Contacter les administrateurs du site &nbsp; <i class="pi pi-external-link !text-xs underline"></i></a>
 
           <div v-if="debugMessage" class="w-full max-w-2xl rounded-xl border border-surface-300 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 mt-2">
             <div class="flex items-center justify-between gap-3 mb-2">
