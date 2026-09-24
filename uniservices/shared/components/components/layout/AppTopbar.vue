@@ -260,7 +260,7 @@ const selectAnneeUniversitaire = (annee) => {
 <template>
   <header class="layout-topbar">
     <div class="layout-topbar-logo-container">
-      <button v-if="route.name !== 'portail'" class="layout-menu-button layout-topbar-action" @click="onMenuToggle">
+      <button v-if="route.name !== 'portail'" class="layout-menu-button layout-topbar-action" aria-label="Menu" @click="onMenuToggle">
         <i class="pi pi-bars"></i>
       </button>
 
