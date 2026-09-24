@@ -7,6 +7,7 @@ use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Entity\Scolarite\ScolEnseignement;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelSemestreDto;
 use App\Repository\Structure\StructureSemestreRepository;
 
@@ -144,9 +145,9 @@ class PrevisionnelSemestreProvider implements ProviderInterface
             $output['previSynthese'] = [];
             foreach ($groupedData as $group) {
                 // todo: à vérifier -> est-ce qu'on prend les heures une seule fois par enseignement ?
-                $nbHrAttenduCM += $item->getEnseignement()->getHeures()['CM']['IUT'];
-                $nbHrAttenduTD += $item->getEnseignement()->getHeures()['TD']['IUT'];
-                $nbHrAttenduTP += $item->getEnseignement()->getHeures()['TP']['IUT'];
+                $nbHrAttenduCM += $group['enseignement']->getHeures()['CM']['IUT'];
+                $nbHrAttenduTD += $group['enseignement']->getHeures()['TD']['IUT'];
+                $nbHrAttenduTP += $group['enseignement']->getHeures()['TP']['IUT'];
 
                 $totalCM['Maquette'] += $group['enseignement']->getHeures()['CM']['IUT'];
                 $totalCM['Previsionnel'] += $group['heures']['CM'];
@@ -209,7 +210,7 @@ class PrevisionnelSemestreProvider implements ProviderInterface
 
             $output['TotalEquTd'] = [
                 'TotalClassique' => round($totalCM['Previsionnel'] + $totalTD['Previsionnel'] + $totalTP['Previsionnel'], 1),
-                'TotalTd' => round($totalCM['Previsionnel'] * $item->getEnseignement()::MAJORATION_CM + $totalTD['Previsionnel'] + $totalTP['Previsionnel'], 1),
+                'TotalTd' => round($totalCM['Previsionnel'] * ScolEnseignement::MAJORATION_CM + $totalTD['Previsionnel'] + $totalTP['Previsionnel'], 1),
             ];
 
             return array_values($output);

@@ -7,6 +7,7 @@ use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Entity\Scolarite\ScolEnseignement;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 
 class PrevisionnelEnseignementProvider implements ProviderInterface
@@ -87,7 +88,7 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
 
             $output['TotalEquTd'] = [
                 'TotalClassique' => $totalCM + $totalTD + $totalTP,
-                'TotalTd' => $totalCM * $item->getEnseignement()::MAJORATION_CM + $totalTD + $totalTP,
+                'TotalTd' => $totalCM * ScolEnseignement::MAJORATION_CM + $totalTD + $totalTP,
             ];
 
             return $output;
