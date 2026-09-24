@@ -163,6 +163,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Moyennes | calculées à la volée jusqu'à validation en sous-commission, puis enregistrées dans `MoyenneUe` et `MoyenneEnseignement`, liées à `EtudiantScolariteSemestre` ; celles de l'année restent calculées à la volée. L'ancien format JSON est retiré chez nous (#38), Cyndel le retire aussi chez eux | Cyndel |
 | Voter des questionnaires | raccourci de développement retiré, règles normales appliquées | client |
 | Document et enseignement (B6) | un document se rattache à **un seul** `ScolEnseignement`, matière ou SAÉ, facultatif ; le lien s'efface si l'enseignement est supprimé. Un support commun à plusieurs matières se dépose dans chacune. Question 3 toujours sans réponse | nous |
+| Notifications et messages | un seul fil pour l'étudiant : notes publiées, absences, documents de ses matières, actualités et messages. Les notifications sont recalculées, seule leur lecture est stockée. Les « messages » sont les copies des e-mails que l'intranet envoie (écoute du mailer) : la boîte universitaire n'est pas lue. La décision sur un justificatif n'a pas de date : son état figure dans le texte de l'absence | nous, validé par LCS |
 
 ## Questions en attente du client
 
