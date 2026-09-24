@@ -3,24 +3,25 @@
 namespace IntranetBundle\State\Provider\Previsionnel;
 
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
-use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelSemestreDto;
-use App\Repository\Structure\StructureSemestreRepository;
 
 class PrevisionnelSemestreTestProvider implements ProviderInterface
 {
 
     public function __construct(
         private CollectionProvider $collectionProvider,
-        private ItemProvider $itemProvider,
-        private StructureSemestreRepository $semestreRepository
     )
     {
     }
 
+    /**
+     * Renvoie des tableaux, qu'API Platform sérialise tels quels, et non des ressources.
+     *
+     * @return array<mixed>|object|null
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof GetCollection) {
@@ -64,7 +65,7 @@ class PrevisionnelSemestreTestProvider implements ProviderInterface
         }
     }
 
-    public function formToDto($item): PrevisionnelSemestreDto
+    public function formToDto(mixed $item): PrevisionnelSemestreDto
     {
         $prevSem = new PrevisionnelSemestreDto();
         $prevSem->setId($item->getId());

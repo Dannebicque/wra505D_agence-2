@@ -29,7 +29,7 @@ final class QuestionnaireInvitationEmail extends AbstractEmailDefinition
         return '@Questionnaire/emails/questionnaire/invitation.html.twig';
     }
 
-    public function getTxtTemplatePath(): ?string
+    public function getTxtTemplatePath(): string
     {
         return '@Questionnaire/emails/questionnaire/invitation.txt.twig';
     }

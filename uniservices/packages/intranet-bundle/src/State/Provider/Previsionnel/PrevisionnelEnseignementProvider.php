@@ -20,6 +20,11 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
     {
     }
 
+    /**
+     * Renvoie des tableaux, qu'API Platform sérialise tels quels, et non des ressources.
+     *
+     * @return array<mixed>|object|null
+     */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof GetCollection) {
@@ -99,7 +104,7 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
         return $this->toDto($data);
     }
 
-    public function toDto($item)
+    public function toDto(mixed $item): PrevisionnelEnseignementDto
     {
         $prevMatiere = new PrevisionnelEnseignementDto();
         $prevMatiere->setLibelle($item->getEnseignement()->getLibelle());
