@@ -2,15 +2,15 @@
 
 namespace App\Repository\Traits;
 
-trait FindAllByIdArrayTrait
+trait FindAllByOldIdArrayTrait
 {
-    public function findAllByIdArray(): array
+    public function findAllByOldIdArray(): array
     {
         $datas = $this->findAll();
         $result = [];
 
         foreach ($datas as $data) {
-            $result[$data->getId()] = $data;
+            $result[$data->getOldId()] = $data;
         }
 
         return $result;

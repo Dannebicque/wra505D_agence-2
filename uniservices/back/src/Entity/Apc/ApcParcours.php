@@ -165,7 +165,7 @@ class ApcParcours
     {
         if (!$this->diplome->contains($diplome)) {
             $this->diplome->add($diplome);
-            $diplome->setParcourss($this);
+            $diplome->setParcours($this);
         }
 
         return $this;
@@ -175,8 +175,8 @@ class ApcParcours
     {
         if ($this->diplome->removeElement($diplome)) {
             // set the owning side to null (unless already changed)
-            if ($diplome->getParcourss() === $this) {
-                $diplome->setParcourss(null);
+            if ($diplome->getParcours() === $this) {
+                $diplome->setParcours(null);
             }
         }
 
