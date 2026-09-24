@@ -60,7 +60,7 @@ class EtudiantScolariteSemestre
     /**
      * @var Collection<int, EtudiantNote>
      */
-    #[ORM\OneToMany(targetEntity: EtudiantNote::class, mappedBy: 'semestre')]
+    #[ORM\OneToMany(targetEntity: EtudiantNote::class, mappedBy: 'scolariteSemestre')]
     private Collection $note;
 
     #[ORM\ManyToOne(inversedBy: 'scolariteSemestre')]
@@ -82,7 +82,7 @@ class EtudiantScolariteSemestre
     #[Groups(['scolarite-semestre:detail'])]
     private ?bool $decision = null;
 
-    #[ORM\ManyToOne(inversedBy: 'scolariteSemestre')]
+    #[ORM\ManyToOne(inversedBy: 'scolariteSemestrePropositions')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     #[Groups(['scolarite-semestre:detail', 'etudiant:read'])]
     private ?StructureSemestre $proposition = null;

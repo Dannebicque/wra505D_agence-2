@@ -41,7 +41,7 @@ class StageAvenant
     #[Groups(['stage_avenant:read', 'stage_etudiant:read'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: StageEtudiant::class, inversedBy: 'avenants')]
+    #[ORM\ManyToOne(targetEntity: StageEtudiant::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Groups(['stage_avenant:read', 'stage_avenant:write'])]
     private ?StageEtudiant $stageEtudiant = null;
