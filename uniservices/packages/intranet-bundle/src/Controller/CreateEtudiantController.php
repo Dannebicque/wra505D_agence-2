@@ -248,7 +248,6 @@ class CreateEtudiantController extends AbstractController
         $etudiantSco->setAnneeUniversitaire($anneeUniv);
         $etudiantSco->setEtudiant($etudiant);
         $etudiantSco->setDepartement($annee->getDepartement());
-        $etudiantSco->addAnnee($annee);
         $etudiantSco->setUuid();
         if ($anneeUniv->isActif()) {
             $etudiantSco->setActif(true);
