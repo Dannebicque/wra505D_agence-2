@@ -53,6 +53,7 @@ final class RechercheProvider implements ProviderInterface
                 $candidat->libelle,
                 $candidat->detail,
                 $score,
+                $candidat->mail,
             );
         }
 

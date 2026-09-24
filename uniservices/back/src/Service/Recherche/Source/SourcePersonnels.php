@@ -21,7 +21,7 @@ final class SourcePersonnels implements SourceRechercheInterface
     public function candidats(StructureDepartement $departement, Etudiant|Personnel $utilisateur): iterable
     {
         $personnels = $this->entityManager->createQueryBuilder()
-            ->select('DISTINCT p.id', 'p.nom', 'p.prenom', 'p.username')
+            ->select('DISTINCT p.id', 'p.nom', 'p.prenom', 'p.username', 'p.mailUniv')
             ->from(StructureDepartementPersonnel::class, 'dp')
             ->join('dp.personnel', 'p')
             ->where('dp.departement = :departement')
@@ -36,6 +36,7 @@ final class SourcePersonnels implements SourceRechercheInterface
                 $personnel['prenom'].' '.$personnel['nom'],
                 null,
                 $personnel['prenom'].' '.$personnel['nom'].' '.$personnel['username'],
+                $personnel['mailUniv'],
             );
         }
     }

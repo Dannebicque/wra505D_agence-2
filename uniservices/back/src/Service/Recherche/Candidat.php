@@ -3,7 +3,8 @@
 namespace App\Service\Recherche;
 
 /**
- * Élément cherchable fourni par une source : ce qui est affiché, et le texte sur lequel on compare.
+ * Élément cherchable fourni par une source : ce qui est affiché, le texte sur lequel on compare, et
+ * l'adresse mail universitaire quand l'élément est une personne.
  */
 final readonly class Candidat
 {
@@ -13,6 +14,7 @@ final readonly class Candidat
         public string $libelle,
         public ?string $detail,
         public string $texte,
+        public ?string $mail = null,
     ) {
     }
 }
