@@ -57,7 +57,9 @@ class QuestionnaireSectionInstance
         $this->sortOrder = $order;
         $this->titleSnapshot = $titleSnapshot;
         $this->repeatSectionItemType = $repeatItemType;
-        $this->repeatSectionItemId = $repeatItemId;
+        // Les identifiants d'éléments arrivent du JSON de la section sous forme de chaîne,
+        // vide quand l'élément n'en a pas.
+        $this->repeatSectionItemId = $repeatItemId !== null && $repeatItemId !== '' ? (int) $repeatItemId : null;
     }
 
     public function getId(): ?int

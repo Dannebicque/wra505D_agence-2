@@ -2,6 +2,8 @@
 
 namespace App\Security;
 
+use App\Entity\Users\Etudiant;
+use App\Entity\Users\Personnel;
 use App\Entity\Structure\StructureDepartement;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -22,7 +24,7 @@ class DepartmentPermissionVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
-        if (!$user) {
+        if (!$user instanceof Etudiant && !$user instanceof Personnel) {
             return false;
         }
 

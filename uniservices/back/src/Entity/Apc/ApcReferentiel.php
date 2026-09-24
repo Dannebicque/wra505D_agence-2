@@ -77,7 +77,7 @@ class ApcReferentiel
 
     #[ORM\ManyToOne(inversedBy: 'referentiels')]
     //todo: pas nécessaire ??
-    private StructureTypeDiplome $typeDiplome;
+    private ?StructureTypeDiplome $typeDiplome = null;
 
     public function __construct()
     {
@@ -229,12 +229,12 @@ class ApcReferentiel
         return $this;
     }
 
-    public function getTypeDiplome(): StructureTypeDiplome
+    public function getTypeDiplome(): ?StructureTypeDiplome
     {
         return $this->typeDiplome;
     }
 
-    public function setTypeDiplome(StructureTypeDiplome $typeDiplome): static
+    public function setTypeDiplome(?StructureTypeDiplome $typeDiplome): static
     {
         $this->typeDiplome = $typeDiplome;
 

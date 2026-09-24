@@ -23,7 +23,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: HelpdeskTicketRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiFilter(TicketFilter::class, MessageFilter::class)]
+#[ApiFilter(TicketFilter::class)]
 #[ApiResource(
     operations: [
         new Post(
@@ -223,7 +223,7 @@ class HelpdeskTicket
         return $this->auteur;
     }
 
-    public function setAuteur(Personnel $auteur): static
+    public function setAuteur(?Personnel $auteur): static
     {
         $this->auteur = $auteur;
 
