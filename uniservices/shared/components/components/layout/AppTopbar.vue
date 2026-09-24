@@ -3,6 +3,7 @@ import { useLayout } from './composables/layout.js';
 import { computed, onMounted, ref, watch } from 'vue';
 import { AVAILABLE_ROLES } from "@utils/permissions";
 import Logo from '@components/components/Logo.vue';
+import AppSearch from './AppSearch.vue';
 import { useAnneeUnivStore, useUsersStore } from "@stores";
 import { useRoute, useRouter } from 'vue-router';
 import { tools } from '@config/uniServices.js';
@@ -155,8 +156,6 @@ const props = defineProps({
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
-const search = ref('');
-
 const anneeMenu = ref();
 const toolsMenu = ref();
 const profileMenu = ref();
@@ -271,18 +270,12 @@ const selectAnneeUniversitaire = (annee) => {
     </div>
 
     <div v-if="route.name !== 'portail'" class="layout-topbar-search hidden lg:block">
-      <IconField>
-        <InputIcon class="pi pi-search" />
-        <InputText v-model="search" placeholder="Recherche" />
-      </IconField>
+      <AppSearch input-id="recherche-globale" />
     </div>
 
     <div class="layout-topbar-actions">
       <div v-if="route.name !== 'portail'" class="layout-topbar-search lg:hidden">
-        <IconField>
-          <InputIcon class="pi pi-search" />
-          <InputText v-model="search" placeholder="Recherche" />
-        </IconField>
+        <AppSearch input-id="recherche-globale-mobile" />
       </div>
 
       <button class="layout-topbar-menu-button layout-topbar-action"
