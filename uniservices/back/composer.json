@@ -102,11 +102,13 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.6",
+        "jawira/doctrine-diagram-bundle": "^1.2",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-doctrine": "^2.0",
         "phpstan/phpstan-symfony": "^2.0",
+        "phpunit/phpunit": "^11.5",
         "symfony/maker-bundle": "^1.61",
-        "jawira/doctrine-diagram-bundle": "^1.2"
+        "symfony/phpunit-bridge": "7.3.*"
     }
 }
