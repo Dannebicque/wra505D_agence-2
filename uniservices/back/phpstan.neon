@@ -13,20 +13,6 @@ parameters:
         # Bugs connus, en attente d'une réponse du client (docs/04-reprise.md,
         # « Questions en attente du client »). Retirer chaque entrée une fois la réponse reçue.
 
-        # Question 1 : le nombre d'ECTS d'un stage n'est stocké nulle part.
-        -
-            identifier: method.notFound
-            message: '#StagePeriode::getNbEcts\(\)#'
-            path: src/Controller/Stage/StagePdfController.php
-            count: 2
-
-        # Question 2 : l'année d'un étudiant se déduit de ses semestres, addAnnee() n'existe plus.
-        -
-            identifier: method.notFound
-            message: '#EtudiantScolarite::addAnnee\(\)#'
-            path: ../packages/intranet-bundle/src/Controller/CreateEtudiantController.php
-            count: 1
-
         # Question 4 : les colonnes de moyennes ont été retirées, l'import V3 les écrit encore.
         -
             identifier: property.notFound
