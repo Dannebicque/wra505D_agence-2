@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Users\Etudiant;
+use App\Entity\Users\Personnel;
 use Doctrine\ORM\EntityManagerInterface;
 use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -38,7 +39,7 @@ class AuthController extends AbstractController
             }
         }
 
-        $secure = $this->parameterBag->get('JWT_COOKIE_SECURE') === 'true' || $this->parameterBag->get('JWT_COOKIE_SECURE') === true;
+        $secure = (bool) $this->parameterBag->get('JWT_COOKIE_SECURE');
         
         // Supprimer les cookies
         $response->headers->setCookie(
@@ -69,7 +70,7 @@ class AuthController extends AbstractController
     {
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof Etudiant && !$user instanceof Personnel) {
             return new JsonResponse(['authenticated' => false], Response::HTTP_UNAUTHORIZED);
         }
 

@@ -47,6 +47,7 @@ déjà en place. Un composant n'est écrit à la main que si PrimeVue n'a pas d'
 - Modifier le dépôt intranetV3, le dépôt uniServices d'origine, ou quoi que ce soit de
   l'intranet réel. On travaille sur notre copie, dans `uniservices/`.
 - Toucher aux écrans enseignant et administratif. Notre périmètre est la partie étudiante.
+  Exception : corriger un bug dans leur code back reste permis, on n'y ajoute rien.
 
 ## Git
 
