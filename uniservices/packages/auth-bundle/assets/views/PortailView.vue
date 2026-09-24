@@ -13,7 +13,6 @@ const userStore = useUsersStore();
 const anneeUnivStore = useAnneeUnivStore();
 const date = new Date();
 const etablissementStore = useEtablissementStore();
-const departement = userStore.departementDefaut;
 
 defineProps({
   appName: {
@@ -35,11 +34,37 @@ const isLoadingWidgets = ref(false);
 const widgetData = ref({});
 const selectedAnneeUniversitaireId = computed(() => anneeUnivStore.selectedAnneeUniv?.id ?? null);
 const etablissement = ref([]);
+const contacts = ref(null);
+
+// Le widget Contacts de l'intranet est la seule source des coordonnées de département : un
+// étudiant y trouve le sien, le personnel n'y a pas accès.
+const departementEtudiant = computed(() =>
+    contacts.value?.items?.find((departement) => departement.id === contacts.value.departementEtudiantId) ?? null
+);
+
+const titrePortail = computed(() => {
+  const libelle = userStore.departementDefaut?.libelle ?? departementEtudiant.value?.libelle;
+  return libelle ? `Portail - ${libelle}` : 'Portail';
+});
+
+const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
+
+const getContactsDepartement = async () => {
+  if (!userStore.isEtudiant) {
+    return;
+  }
+  try {
+    contacts.value = await getWidgetDataByCodeService('intranet.contacts');
+  } catch {
+    contacts.value = null;
+  }
+};
 
 onMounted(async () => {
   isLoadingBundles.value = true;
   try {
     etablissement.value = await etablissementStore.etablissement;
+    getContactsDepartement();
     activatedBundles.value = tools.filter((bundle) => isBundleActivated(bundle));
     unactivatedBundles.value = tools.filter((bundle) => !isBundleActivated(bundle));
     // si on a le bundle "intranet" on le place en premier dans le tableau
@@ -258,8 +283,9 @@ watch(() => route.path, async (newPath, oldPath) => {
           <div class="h-full overflow-y-auto">
             <HeaderComponent
                 icon="pi pi-home"
-                :titre="`Portail - ${departement.libelle}`"
+                :titre="titrePortail"
                 description="Accédez à vos applications et personnalisez votre tableau de bord"
+                :show-back="false"
             />
             <div v-if="!userStore.isLoading" class="flex items-center justify-between mb-4">
               <div class="flex items-center">
@@ -316,49 +342,56 @@ watch(() => route.path, async (newPath, oldPath) => {
                 </header>
                 <div class="card-body flex items-start justify-around gap-4">
                   <div class="w-full flex flex-col items-center justify-center bg-surface-200/20 rounded-md p-2">
-                    <i class="pi pi-book text-2xl! text-primary"></i>
-                    <div class="font-bold">Documentation</div>
-                    <Button severity="primary" size="small" icon="pi pi-external-link" label="Accéder"/>
-                  </div>
-                  <div class="w-full flex flex-col items-center justify-center bg-surface-200/20 rounded-md p-2">
-                    <i class="pi pi-crown text-2xl! text-primary"></i>
+                    <i class="pi pi-crown text-2xl! text-primary" aria-hidden="true"></i>
                     <div class="font-bold">Site de l'URCA</div>
-                    <Button severity="primary" size="small" icon="pi pi-external-link" label="Accéder"/>
+                    <Button
+                        as="a"
+                        href="https://www.univ-reims.fr"
+                        target="_blank"
+                        rel="noopener"
+                        severity="secondary"
+                        size="small"
+                        icon="pi pi-external-link"
+                        label="Accéder"
+                        aria-label="Accéder au site de l'URCA, nouvel onglet"
+                        class="touch-target"
+                    />
                   </div>
-                  <div class="w-full flex flex-col items-center justify-center bg-surface-200/20 rounded-md p-2">
-                    <i class="pi pi-building-columns text-2xl! text-primary"></i>
+                  <div v-if="etablissement?.site_web" class="w-full flex flex-col items-center justify-center bg-surface-200/20 rounded-md p-2">
+                    <i class="pi pi-building-columns text-2xl! text-primary" aria-hidden="true"></i>
                     <div class="font-bold">Site de l'IUT</div>
-                    <Button severity="primary" size="small" icon="pi pi-external-link" label="Accéder"/>
+                    <Button
+                        as="a"
+                        :href="etablissement.site_web"
+                        target="_blank"
+                        rel="noopener"
+                        severity="secondary"
+                        size="small"
+                        icon="pi pi-external-link"
+                        label="Accéder"
+                        aria-label="Accéder au site de l'IUT, nouvel onglet"
+                        class="touch-target"
+                    />
                   </div>
                 </div>
               </div>
               <div class="card w-1/3">
                 <header class="card-header flex justify-between items-center w-full">
                   <div class="flex flex-col items-start">
-                    <h2 class="m-0! text-xl!"><i class="pi pi-users text-primary"></i> Contacts</h2>
+                    <h2 class="m-0! text-xl!"><i class="pi pi-users text-primary" aria-hidden="true"></i> Contacts</h2>
                   </div>
-                  <Button severity="primary" size="small" icon="pi pi-plus" label="Voir plus"/>
                 </header>
                 <div class="card-body flex items-start justify-around gap-4">
-                  <div class="w-full flex flex-col items-center justify-center">
-                    <p class="uppercase text-xs font-bold mb-0! text-muted-color">département</p>
-                    <div class="font-bold">Chef de département</div>
-                    <div>
-                      JOHN DOE
-                    </div>
-                    <div class="text-sm text-muted-color">
-                      john.doe@univ-reims.fr
-                    </div>
-                  </div>
-                  <div class="w-full flex flex-col items-center justify-center">
-                    <p class="uppercase text-xs font-bold mb-0! text-muted-color">département</p>
-                    <div class="font-bold">Support administratif</div>
-                    <div>
-                      JOHN DOE
-                    </div>
-                    <div class="text-sm text-muted-color">
-                      john.doe@univ-reims.fr
-                    </div>
+                  <div v-if="departementEtudiant" class="w-full flex flex-col items-center justify-center">
+                    <p class="uppercase text-xs font-bold mb-0! text-muted-color">votre département</p>
+                    <div class="font-bold">{{ departementEtudiant.libelle }}</div>
+                    <a v-if="departementEtudiant.telephone" :href="telephoneHref(departementEtudiant.telephone)" class="underline! touch-target justify-center">
+                      <span class="sr-only">Téléphone du département {{ departementEtudiant.libelle }} :</span>
+                      {{ departementEtudiant.telephone }}
+                    </a>
+                    <a v-if="departementEtudiant.siteWeb" :href="departementEtudiant.siteWeb" target="_blank" rel="noopener" class="underline! touch-target justify-center">
+                      Site web<span class="sr-only"> du département {{ departementEtudiant.libelle }}, nouvel onglet</span>
+                    </a>
                   </div>
                   <div class="w-full flex flex-col items-center justify-center">
                     <p class="uppercase text-xs font-bold mb-0! text-muted-color">établissement</p>
@@ -366,9 +399,9 @@ watch(() => route.path, async (newPath, oldPath) => {
                     <div>
                       CYNDEL HEROLT
                     </div>
-                    <div class="text-sm text-muted-color">
+                    <a href="mailto:cyndel.herolt@univ-reims.fr" class="text-sm underline! touch-target justify-center">
                       cyndel.herolt@univ-reims.fr
-                    </div>
+                    </a>
                   </div>
                 </div>
               </div>
