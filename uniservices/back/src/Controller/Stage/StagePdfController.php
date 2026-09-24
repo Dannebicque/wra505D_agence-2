@@ -226,7 +226,9 @@ class StagePdfController extends AbstractController
             '{stage.gratification_periode}' => $stage->getGratificationPeriode() === 'M' ? 'mois' : ($stage->getGratificationPeriode() === 'H' ? 'heure' : 'jour'),
             '{stage.avantages}' => $stage->getAvantages() ?? 'Aucun',
             '{stage.documents_a_rendre}' => $periode ? ($periode->getDocumentsRendre() ?? '') : '',
-            '{stage.ects}' => $periode ? ($periode->getNbEcts() === 0 ? 'Le stage ne donne pas lieu à des ECTS mais une note comptant dans différentes UE' : (string)$periode->getNbEcts()) : '',
+            // Les ECTS d'un stage ne sont pas encore décidés par le client : la balise reste vide
+            // plutôt que d'apparaître telle quelle dans le PDF.
+            '{stage.ects}' => '',
 
             '{tuteur.nom}' => $tutUniv ? $tutUniv->getDisplay() : ($periode && $periode->getResponsablePrincipal() ? $periode->getResponsablePrincipal()->getDisplay() : 'Non attribué'),
             '{tuteur.telephone}' => $tutUniv ? $tutUniv->getTelBureau() : '',
