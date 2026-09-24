@@ -6,12 +6,10 @@ use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Scolarite\ScolBac;
 use App\Repository\EtudiantRepository;
-use App\Repository\ScolEnseignementRepository;
 use App\Repository\Structure\StructureAnneeUniversitaireRepository;
 use App\Repository\Structure\StructureDepartementRepository;
 use App\Repository\Structure\StructureGroupeRepository;
 use App\Repository\Structure\StructureSemestreRepository;
-use App\Repository\Structure\StructureUeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -36,8 +34,6 @@ class CopyTransfertBddScolariteCommand extends Command
     protected array $tAnneeUniversitaire = [];
     protected array $tSemestres = [];
     protected array $tDepartements = [];
-    protected array $tMatieres = [];
-    protected array $tUes = [];
 
     protected array $tGroupes = [];
     protected string $base_url;
@@ -54,8 +50,6 @@ class CopyTransfertBddScolariteCommand extends Command
         protected HttpClientInterface         $httpClient,
         StructureDepartementRepository $structureDepartementRepository,
         StructureGroupeRepository $structureGroupeRepository,
-        ScolEnseignementRepository $scolEnseignementRepository,
-        StructureUeRepository $structureUeRepository,
         ParameterBagInterface                 $params
     ) {
         parent::__construct();
@@ -65,8 +59,6 @@ class CopyTransfertBddScolariteCommand extends Command
         $this->tEtudiants = $etudiantRepository->findAllByOldIdArray();
         $this->tDepartements = $structureDepartementRepository->findAllByIdArray();
         $this->tGroupes = $structureGroupeRepository->findAllByOldIdArray();
-        $this->tMatieres = $scolEnseignementRepository->findAllByOldIdArray();
-        $this->tUes = $structureUeRepository->findAllByOldIdArray();
         // url intranet
         $this->base_url = $params->get('URL_INTRANET_V3');
         $this->httpClient = HttpClient::create([
@@ -138,50 +130,6 @@ FOREIGN_KEY_CHECKS=1');
                     $scolarite->setMoyenne(isset($scol['bilan']['moyenne']) ? round($scol['bilan']['moyenne'], 2) : 0);
                     $scolarite->setNbAbsences($scol['bilan']['nbAbsences'] ?? 0);
 
-                    // Process moyennesMatieres with correct IDs
-                    $moyennesMatieres = [];
-                    if (isset($scol['bilan']['moyennesMatieres']) && is_array($scol['bilan']['moyennesMatieres'])) {
-                        foreach ($scol['bilan']['moyennesMatieres'] as $oldId => $moyenneMatiere) {
-                            // Remove "matiere_" prefix if present
-                            $cleanOldId = str_replace('matiere_', '', $oldId);
-
-                            // If it's a numeric ID, try to find the corresponding matiere
-                            if (is_numeric($cleanOldId) && isset($this->tMatieres[$cleanOldId])) {
-                                $newId = $this->tMatieres[$cleanOldId]->getId();
-                                $moyennesMatieres[$newId] = $moyenneMatiere;
-                            } else {
-                                // Keep the original ID if we can't find a mapping
-                                $moyennesMatieres[$oldId] = $moyenneMatiere;
-                            }
-                        }
-                    }
-                    $scolarite->setMoyennesMatiere($moyennesMatieres);
-
-                    // Process moyennesUes with correct IDs
-                    $moyennesUes = [];
-                    if (isset($scol['bilan']['moyennesUes']) && is_array($scol['bilan']['moyennesUes'])) {
-                        foreach ($scol['bilan']['moyennesUes'] as $oldId => $moyenneUe) {
-                            // Round moyenne to 2 decimal places
-                            if (isset($moyenneUe['moyenne'])) {
-                                $moyenneUe['moyenne'] = round($moyenneUe['moyenne'], 2);
-
-                                // If decision is empty, calculate it based on the moyenne
-                                if (!isset($moyenneUe['decision'])) {
-                                    $moyenneUe['decision'] = $moyenneUe['moyenne'] >= 10 ? 'V' : 'NV';
-                                }
-                            }
-
-                            // If it's a numeric ID, try to find the corresponding UE
-                            if (is_numeric($oldId) && isset($this->tUes[$oldId])) {
-                                $newId = $this->tUes[$oldId]->getId();
-                                $moyennesUes[$newId] = $moyenneUe;
-                            } else {
-                                // Keep the original ID if we can't find a mapping
-                                $moyennesUes[$oldId] = $moyenneUe;
-                            }
-                        }
-                    }
-                    $scolarite->setMoyennesUe($moyennesUes);
                     $scolarite->setCommentaire($scol['bilan']['commentaire'] ?? '');
 
                     // Set decision from bilan data (convert string to boolean if needed)
@@ -255,52 +203,6 @@ FOREIGN_KEY_CHECKS=1');
 
                                 // Set moyenne from semestre data
                                 $etudiantScolSemestre->setMoyenne(isset($semestre['moyenne']) ? round($semestre['moyenne'], 2) : 0);
-
-                                // Set moyennesMatieres and moyennesUes from semestre data
-                                // Process moyennesMatieres with correct IDs
-                                $moyennesMatieres = [];
-                                if (isset($semestre['moyennesMatieres']) && is_array($semestre['moyennesMatieres'])) {
-                                    foreach ($semestre['moyennesMatieres'] as $oldId => $moyenneMatiere) {
-                                        // Remove "matiere_" prefix if present
-                                        $cleanOldId = str_replace('matiere_', '', $oldId);
-
-                                        // If it's a numeric ID, try to find the corresponding matiere
-                                        if (is_numeric($cleanOldId) && isset($this->tMatieres[$cleanOldId])) {
-                                            $newId = $this->tMatieres[$cleanOldId]->getId();
-                                            $moyennesMatieres[$newId] = $moyenneMatiere;
-                                        } else {
-                                            // Keep the original ID if we can't find a mapping
-                                            $moyennesMatieres[$oldId] = $moyenneMatiere;
-                                        }
-                                    }
-                                }
-                                $etudiantScolSemestre->setMoyennesMatiere($moyennesMatieres);
-
-                                // Process moyennesUes with correct IDs
-                                $moyennesUes = [];
-                                if (isset($semestre['moyennesUes']) && is_array($semestre['moyennesUes'])) {
-                                    foreach ($semestre['moyennesUes'] as $oldId => $moyenneUe) {
-                                        // Round moyenne to 2 decimal places
-                                        if (isset($moyenneUe['moyenne'])) {
-                                            $moyenneUe['moyenne'] = round($moyenneUe['moyenne'], 2);
-
-                                            // If decision is empty, calculate it based on the moyenne
-                                            if (!isset($moyenneUe['decision'])) {
-                                                $moyenneUe['decision'] = $moyenneUe['moyenne'] >= 10 ? 'V' : 'NV';
-                                            }
-                                        }
-
-                                        // If it's a numeric ID, try to find the corresponding UE
-                                        if (is_numeric($oldId) && isset($this->tUes[$oldId])) {
-                                            $newId = $this->tUes[$oldId]->getId();
-                                            $moyennesUes[$newId] = $moyenneUe;
-                                        } else {
-                                            // Keep the original ID if we can't find a mapping
-                                            $moyennesUes[$oldId] = $moyenneUe;
-                                        }
-                                    }
-                                }
-                                $etudiantScolSemestre->setMoyennesUe($moyennesUes);
 
                                 $this->entityManager->persist($etudiantScolSemestre);
                                 $semestresCrees[$semestreDest->getId()] = true;
