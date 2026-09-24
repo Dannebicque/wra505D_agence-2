@@ -218,6 +218,15 @@ cours est dans une colonne décalée, sans axe horaire ni en-tête de jour, avec
 « Déposer un justificatif » déborde. L'avertissement Celcat occupe quatre lignes avant tout
 contenu utile.
 
+### C8 · [back] Connecteur Celcat · L
+**Pourquoi** l'emploi du temps officiel vit dans Celcat, et uniServices ne savait que le recopier
+depuis l'intranet actuel. Sans source, l'emploi du temps mobile (C3) n'aurait rien à afficher.
+**Fait** Commande `app:celcat:sync`, qui reprend les requêtes et les règles de l'intranet V3 :
+dépliage des semaines, clé cours-semaine-jour-groupe, mise à jour sans recréation, créneau
+conservé s'il porte des absences. Développée contre une fausse base Celcat SQLite de mêmes
+tables. Reste à la brancher sur la vraie base : il faut l'accès réseau et les identifiants de
+la DSI, que seul le client peut obtenir.
+
 ### C4 · Distinguer « pas encore notée », « absent » et « zéro » · M
 **Pourquoi** relevé dans l'audit informel : des 0 s'affichent en cours d'année comme si
 l'étudiant avait eu 0. C'est un défaut qui fausse la lecture de ses résultats.

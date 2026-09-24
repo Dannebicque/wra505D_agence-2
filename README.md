@@ -84,6 +84,46 @@ Ils se saisissent dans le bloc « Compte invité », pas via « Connexion URCA �
 CAS de l'université. Le mot de passe doit être tapé au clavier : PrimeVue ignore une valeur
 injectée et le bouton reste inactif.
 
+## L'emploi du temps : le branchement Celcat
+
+L'emploi du temps officiel vit dans **Celcat**, l'outil de planning de l'université. uniServices
+ne le recopiait jusqu'ici que depuis l'intranet actuel. Il sait maintenant le lire directement,
+par la commande `app:celcat:sync`, qui reprend les requêtes et les règles de l'intranet V3.
+
+En production, Celcat est une base SQL Server accessible uniquement depuis le réseau de
+l'université, avec des identifiants fournis par la DSI. Tant qu'on n'y a pas accès, on
+développe contre une **fausse base Celcat** : un fichier SQLite avec les mêmes tables, rempli
+d'une semaine type de BUT 1 MMI. Le code et les requêtes sont exactement ceux qui tourneront
+en production, seule l'adresse de la base change.
+
+```bash
+cd uniservices/back && php bin/console app:celcat:fausse-base
+```
+
+Ajoute ensuite dans `uniservices/back/.env.local` :
+
+```bash
+CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"
+```
+
+puis synchronise :
+
+```bash
+cd uniservices/back && php bin/console app:celcat:sync
+```
+
+La commande affiche, par département, les créneaux créés, mis à jour et supprimés, ainsi que
+les codes Celcat — groupes, enseignants, matières — qui n'ont trouvé aucune correspondance
+dans uniServices. Le jour du vrai branchement, c'est la liste de ce qu'il faudra renseigner.
+
+Relancer la commande ne duplique rien : les créneaux existants sont mis à jour. Un cours retiré
+de Celcat est supprimé, sauf s'il porte des absences : il est alors conservé et signalé, car la
+base refuse de supprimer un créneau qui en porte.
+
+Pour brancher la vraie base, il suffira de renseigner `CELCAT_DSN`, `CELCAT_USER` et
+`CELCAT_PASSWORD` avec les accès de la DSI, par exemple
+`CELCAT_DSN="dblib:host=serveur-celcat;dbname=celcat"`.
+
 ## Contrôles avant de pousser
 
 Depuis `uniservices/`, leur `Makefile` rejoue les validations de leur CI :
@@ -93,7 +133,7 @@ make check
 ```
 
 Il enchaîne, côté back, `composer validate`, `lint:container`, `doctrine:schema:validate`,
-PHPStan et les tests ; côté front, l'installation, les tests et le build.
+PHPStan et les tests PHPUnit ; côté front, l'installation, les tests et le build.
 
 Une tâche n'est terminée que si tout passe.
 
