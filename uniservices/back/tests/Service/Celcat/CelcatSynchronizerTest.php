@@ -5,6 +5,7 @@ namespace App\Tests\Service\Celcat;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Scolarite\ScolEnseignement;
 use App\Entity\Structure\StructureAnneeUniversitaire;
+use App\Entity\Structure\StructureCalendrier;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Users\Personnel;
 use App\Enum\TypeGroupeEnum;
@@ -40,6 +41,7 @@ final class CelcatSynchronizerTest extends TestCase
             StructureGroupe::class => [$this->groupe('MMICM', TypeGroupeEnum::TYPE_GROUPE_CM), $this->groupe('MMITDAB', TypeGroupeEnum::TYPE_GROUPE_TD)],
             Personnel::class => [],
             ScolEnseignement::class => [],
+            StructureCalendrier::class => [],
         ];
     }
 
@@ -87,7 +89,7 @@ final class CelcatSynchronizerTest extends TestCase
         return $creneau;
     }
 
-    private function synchroniser(): \App\Service\Celcat\CelcatRapport
+    private function synchroniseur(): CelcatSynchronizer
     {
         $lignes = $this->lignes;
         $source = new class($lignes) implements CelcatSource {
@@ -127,7 +129,35 @@ final class CelcatSynchronizerTest extends TestCase
             $this->supprimes[] = $entite;
         });
 
-        return (new CelcatSynchronizer($source, new CelcatEventConverter(), $entityManager))->synchroniser($this->annee, 123);
+        return new CelcatSynchronizer($source, new CelcatEventConverter(), $entityManager);
+    }
+
+    private function synchroniser(): \App\Service\Celcat\CelcatRapport
+    {
+        return $this->synchroniseur()->synchroniser($this->annee, 123);
+    }
+
+    public function testRepriseDuCalendrierAvecLeNumeroDeSemaineIso(): void
+    {
+        $semaines = $this->synchroniseur()->synchroniserCalendrier($this->annee);
+
+        /** @var list<StructureCalendrier> $calendrier */
+        $calendrier = $this->persistes;
+        self::assertSame(2, $semaines);
+        self::assertSame(1, $calendrier[1]->getSemaineFormation());
+        self::assertSame('2026-09-07', $calendrier[1]->getDateLundi()?->format('Y-m-d'));
+        self::assertSame(37, $calendrier[1]->getSemaineReelle());
+    }
+
+    public function testNeDupliquePasUneSemaineDejaConnue(): void
+    {
+        $existante = (new StructureCalendrier())->setAnneeUniversitaire($this->annee)->setSemaineFormation(0)->setSemaineReelle(1);
+        $this->enBase[StructureCalendrier::class] = [$existante];
+
+        $this->synchroniseur()->synchroniserCalendrier($this->annee);
+
+        self::assertCount(1, $this->persistes);
+        self::assertSame(36, $existante->getSemaineReelle());
     }
 
     public function testCreeUnCreneauParSemaineEtParGroupe(): void

@@ -65,6 +65,7 @@ final class CelcatSyncCommand extends Command
         }
 
         $io->title('Synchronisation Celcat, année '.$annee->getLibelle());
+        $io->text($this->synchroniseur->synchroniserCalendrier($annee).' semaines reprises dans le calendrier.');
 
         foreach ($departements as $departement) {
             $rapport = $this->synchroniseur->synchroniser($annee, $departement);

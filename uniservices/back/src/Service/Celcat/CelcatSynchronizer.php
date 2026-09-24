@@ -5,6 +5,7 @@ namespace App\Service\Celcat;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Scolarite\ScolEnseignement;
 use App\Entity\Structure\StructureAnneeUniversitaire;
+use App\Entity\Structure\StructureCalendrier;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Structure\StructureSemestre;
 use App\Entity\Users\Personnel;
@@ -23,6 +24,40 @@ final class CelcatSynchronizer
         private readonly CelcatEventConverter $convertisseur,
         private readonly EntityManagerInterface $entityManager,
     ) {
+    }
+
+    /**
+     * Reprend les semaines de Celcat dans le calendrier d'uniServices, comme
+     * MyCelcat::getCalendar() de l'intranet V3. L'écran étudiant en a besoin pour passer
+     * d'une semaine du calendrier à une semaine de formation.
+     *
+     * L'intranet V3 ajoutait des lignes à chaque appel ; on met à jour celle de chaque
+     * semaine, pour qu'une relance ne crée pas de doublon.
+     *
+     * @return int nombre de semaines écrites
+     */
+    public function synchroniserCalendrier(StructureAnneeUniversitaire $annee): int
+    {
+        /** @var array<int, StructureCalendrier> $existantes */
+        $existantes = [];
+        foreach ($this->entityManager->getRepository(StructureCalendrier::class)->findBy(['anneeUniversitaire' => $annee]) as $semaine) {
+            $existantes[(int) $semaine->getSemaineFormation()] = $semaine;
+        }
+
+        $lundis = $this->lecteur->lireSemaines();
+        foreach ($lundis as $numero => $lundi) {
+            $semaine = $existantes[$numero] ?? null;
+            if (null === $semaine) {
+                $semaine = (new StructureCalendrier())->setAnneeUniversitaire($annee)->setSemaineFormation($numero);
+                $this->entityManager->persist($semaine);
+            }
+            // Numéro ISO 8601 : c'est celui que l'écran calcule côté navigateur.
+            $semaine->setDateLundi(\DateTime::createFromImmutable($lundi))->setSemaineReelle((int) $lundi->format('W'));
+        }
+
+        $this->entityManager->flush();
+
+        return \count($lundis);
     }
 
     public function synchroniser(StructureAnneeUniversitaire $annee, int $departement): CelcatRapport
