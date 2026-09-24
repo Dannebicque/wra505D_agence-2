@@ -49,7 +49,7 @@ class QuestionnaireExportController extends AbstractController
 
         $sheet->setCellValue('A6', 'Taux de complétion');
         $sheet->setCellValue('B6', $analytics->completionRate / 100);
-        $sheet->getStyle('B6')->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_3);
+        $sheet->getStyle('B6')->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_00);
 
         $sheet->setCellValue('A7', 'Temps moyen (secondes)');
         $sheet->setCellValue('B7', $analytics->averageTimeSpent);
@@ -102,7 +102,7 @@ class QuestionnaireExportController extends AbstractController
                         $statsSheet->setCellValue('A' . $rowIdx, $choice['text']);
                         $statsSheet->setCellValue('B' . $rowIdx, $choice['count']);
                         $statsSheet->setCellValue('C' . $rowIdx, $choice['percentage'] / 100);
-                        $statsSheet->getStyle('C' . $rowIdx)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_3);
+                        $statsSheet->getStyle('C' . $rowIdx)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_00);
                         $rowIdx++;
                     }
                 } elseif ($qt->questionType === 'scale') {

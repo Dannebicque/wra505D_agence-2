@@ -13,7 +13,7 @@ final class QuestionnaireStructureService
 
     /**
      * Plan des sections réelles.
-     * @return list<array{sectionTemplate: QuestionnaireSection, title: string, repeatItemType: ?string, repeatItemId: ?string, order: int}>
+     * @return list<array{sectionTemplate: QuestionnaireSection, title: string, repeatItemType: ?string, repeatItemId: ?string, sortOrder: int}>
      */
     public function buildPlan(Questionnaire $q): array
     {
