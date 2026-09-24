@@ -186,11 +186,13 @@ watch(() => route.path, async (newPath, oldPath) => {
 </script>
 
 <template>
-  <main>
+  <div>
     <TopbarComponent :app-name :logo-url/>
 
-    <RouterView class="mt-28 mx-10"/>
-    <div v-if="!route.path.includes('/portail/widgets')" class="px-4 lg:px-10">
+    <main v-if="route.path.includes('/portail/widgets')" id="contenu-principal">
+      <RouterView class="mt-28 mx-10"/>
+    </main>
+    <div v-else class="px-4 lg:px-10">
       <div class="grid grid-cols-12 gap-4">
         <aside class="col-span-12 lg:col-span-2 pt-28 pb-14 h-screen">
           <div class="card card-body h-full overflow-y-auto flex flex-col gap-6">
@@ -252,7 +254,7 @@ watch(() => route.path, async (newPath, oldPath) => {
           </div>
         </aside>
 
-        <section class="col-span-12 lg:col-span-10 pt-28 pb-14 h-screen">
+        <main id="contenu-principal" class="col-span-12 lg:col-span-10 pt-28 pb-14 h-screen">
           <div class="h-full overflow-y-auto">
             <HeaderComponent
                 icon="pi pi-home"
@@ -372,10 +374,10 @@ watch(() => route.path, async (newPath, oldPath) => {
               </div>
             </div>
           </div>
-        </section>
+        </main>
       </div>
     </div>
-  </main>
+  </div>
 </template>
 
 <style scoped>

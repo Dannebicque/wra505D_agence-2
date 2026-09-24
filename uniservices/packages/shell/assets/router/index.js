@@ -40,6 +40,7 @@ const router = createRouter({
       path: '/access',
       name: 'access',
       component: () => import('@components/pages/Access.vue'),
+      props: { standalone: true },
       meta: { title: 'Accès Refusé', public: true }
     },
     {

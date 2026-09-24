@@ -113,9 +113,9 @@ const computedMenuItems = computed(() => {
           <Message severity="error" class="absolute top-24 right-16 w-fit z-10" icon="pi pi-exclamation-triangle"><span class="font-bold">Attention !</span> Vous n'êtes pas sur l'année universitaire courante</Message>
         </div>
       </div>
-      <div class="layout-main">
+      <main id="contenu-principal" class="layout-main">
         <router-view></router-view>
-      </div>
+      </main>
       <app-footer></app-footer>
     </div>
     <div class="layout-mask animate-fadein"></div>
