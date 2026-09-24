@@ -137,7 +137,7 @@ class ScolEvaluationInitProcessor implements ProcessorInterface
             $today = new \DateTimeImmutable('today');
             $evaluationDate = \DateTimeImmutable::createFromInterface($data->getDate());
             $etat = $evaluationDate < $today
-                ? EtatEvaluationEnum::ETAT_TERMINEE
+                ? EtatEvaluationEnum::ETAT_COMPLETEE
                 : EtatEvaluationEnum::ETAT_PLANIFIEE;
         }
         $data->setEtat($etat);
