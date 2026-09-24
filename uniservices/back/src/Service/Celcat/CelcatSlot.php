@@ -29,11 +29,12 @@ final readonly class CelcatSlot
     }
 
     /**
-     * Celcat décrit un cours une seule fois pour toutes ses semaines : c'est le couple
-     * identifiant et semaine qui désigne un créneau précis.
+     * Même clé que EdtCelcat::getUniqueId() de l'intranet V3. L'identifiant Celcat ne suffit
+     * pas : un cours décrit toutes ses semaines, et un CM commun à plusieurs groupes revient
+     * une fois par groupe dans la jointure.
      */
     public function cle(): string
     {
-        return $this->celcatId.'-'.$this->semaine;
+        return $this->celcatId.'_'.$this->semaine.'_'.$this->jour.'_'.($this->codeGroupe ?? '');
     }
 }

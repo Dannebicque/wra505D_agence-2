@@ -40,7 +40,7 @@ final class CelcatEventConverterTest extends TestCase
             'module_code' => 'R5.01',
             'module_name' => 'Développement front avancé',
             'staff_code' => '1234',
-            'staff_name' => 'Annebicque David',
+            'staff_name' => 'Martin Claire',
             'room_code' => 'B204',
             'room_name' => 'Salle B204',
             'group_code' => 'MMI3-TD2',
@@ -138,9 +138,9 @@ final class CelcatEventConverterTest extends TestCase
 
     public function testLaisseIntactUnTexteDejaEnUtf8(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'staff_name' => 'Hérolt Cyndel']), $this->lundis);
+        [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'staff_name' => 'Lefèvre Hélène']), $this->lundis);
 
-        self::assertSame('Hérolt Cyndel', $creneau->libPersonnel);
+        self::assertSame('Lefèvre Hélène', $creneau->libPersonnel);
     }
 
     public function testConsidereUnChampVideCommeAbsent(): void
@@ -151,11 +151,19 @@ final class CelcatEventConverterTest extends TestCase
         self::assertNull($creneau->libSalle);
     }
 
-    public function testIdentifieUnCreneauParLeCoursEtLaSemaine(): void
+    public function testIdentifieUnCreneauParCoursSemaineJourEtGroupe(): void
     {
         [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'NNNY']), $this->lundis);
 
-        self::assertSame('4210-3', $creneau->cle());
+        self::assertSame('4210_3_2_MMI3-TD2', $creneau->cle());
+    }
+
+    public function testDistingueUnCmCommunAPlusieursGroupes(): void
+    {
+        [$pourTd1] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'group_code' => 'MMI3-TD1']), $this->lundis);
+        [$pourTd2] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'group_code' => 'MMI3-TD2']), $this->lundis);
+
+        self::assertNotSame($pourTd1->cle(), $pourTd2->cle());
     }
 
     public function testLitLaDateDeDerniereModification(): void
