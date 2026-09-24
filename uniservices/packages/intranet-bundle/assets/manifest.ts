@@ -28,6 +28,12 @@ const intranetMenu = {
       permission: 'isEtudiant'
     },
     {
+      label: 'Documents',
+      icon: 'pi pi-fw pi-folder',
+      to: '/documents',
+      permission: 'isEtudiant'
+    },
+    {
       label: 'Cahier de texte',
       icon: 'pi pi-fw pi-book',
       to: '/intranet/cahier-de-texte',

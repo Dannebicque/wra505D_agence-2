@@ -65,7 +65,9 @@ const getPackageFromPath = (path) => {
 };
 
 const computedMenuItems = computed(() => {
-  const pathPkg = getPackageFromPath(currentRoute?.path || '/');
+  // L'étudiant n'a qu'une application, UniTranet : il garde le même menu dans chaque module, sans
+  // quoi la page Documents, qui n'appartient à aucun, s'ouvrait sans navigation.
+  const pathPkg = hasPermission('isEtudiant') ? 'intranet' : getPackageFromPath(currentRoute?.path || '/');
 
   // Find the bundle manifest matching the current package name
   const activeBundle = bundles.find(b => b.name === pathPkg);
