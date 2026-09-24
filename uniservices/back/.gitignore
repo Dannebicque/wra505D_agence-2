@@ -19,3 +19,8 @@ phpstan.dist.neon
 ###< phpstan/phpstan ###
 
 .idea/
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
