@@ -67,7 +67,9 @@ class CopyTransfertBddScolariteCommand extends Command
         ]);
     }
 
-    protected function configure(): void {}
+    protected function configure(): void
+    {
+    }
 
     private function effacerTables(): void
     {
@@ -88,8 +90,7 @@ FOREIGN_KEY_CHECKS=1');
 FOREIGN_KEY_CHECKS=1');
     }
 
-    protected
-    function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
 

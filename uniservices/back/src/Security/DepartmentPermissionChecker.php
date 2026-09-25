@@ -12,7 +12,8 @@ class DepartmentPermissionChecker
     public function __construct(
         private readonly StructureDepartementPersonnelRepository $departementPersonnelRepository,
         private readonly PermissionResolver $resolver
-    ) {}
+    ) {
+    }
 
     public function checkPermission(Personnel|Etudiant $user, StructureDepartement $departement, string $permission): bool
     {

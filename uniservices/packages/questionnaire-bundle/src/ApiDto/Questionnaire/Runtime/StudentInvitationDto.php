@@ -25,5 +25,6 @@ final class StudentInvitationDto
         public string $token,
         public string $status,
         public bool $anonymous
-    ) {}
+    ) {
+    }
 }

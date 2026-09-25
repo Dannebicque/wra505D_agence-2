@@ -8,7 +8,6 @@ final class ChoiceDto
         public string $id,
         public string $text,
         public string $value,
-    )
-    {
+    ) {
     }
 }

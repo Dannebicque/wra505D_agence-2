@@ -6,7 +6,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 abstract class JsonResponse
 {
-
     public static function Error(string $message): Response
     {
         return new Response(

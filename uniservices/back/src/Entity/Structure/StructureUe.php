@@ -33,7 +33,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiFilter(UeFilter::class)]
 class StructureUe
 {
-//    use LifeCycleTrait;
+    //    use LifeCycleTrait;
     use OldIdTrait; //a supprimer après transfert
 
     #[ORM\Id]

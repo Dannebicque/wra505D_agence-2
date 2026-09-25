@@ -13,7 +13,8 @@ final class DuplicateQuestionnaireService
 {
     public function __construct(
         private readonly EntityManagerInterface $em
-    ) {}
+    ) {
+    }
 
     public function duplicate(Questionnaire $source, ?string $newTitle = null): array
     {
@@ -90,7 +91,9 @@ final class DuplicateQuestionnaireService
                     $ruleList = isset($rules[0]) && is_array($rules[0]) ? $rules : [$rules];
 
                     foreach ($ruleList as $r) {
-                        if (!is_array($r)) continue;
+                        if (!is_array($r)) {
+                            continue;
+                        }
 
                         $dependsOn = (string)($r['dependsOnQuestionId'] ?? $r['dependsOn'] ?? '');
                         if (isset($questionUuidMap[$dependsOn])) {
@@ -101,7 +104,9 @@ final class DuplicateQuestionnaireService
                         if (isset($r['conditions']) && is_array($r['conditions'])) {
                             $newConditions = [];
                             foreach ($r['conditions'] as $cond) {
-                                if (!is_array($cond)) continue;
+                                if (!is_array($cond)) {
+                                    continue;
+                                }
                                 $cDep = (string)($cond['dependsOnQuestionId'] ?? $cond['dependsOn'] ?? '');
                                 if (isset($questionUuidMap[$cDep])) {
                                     if (isset($cond['dependsOn'])) {

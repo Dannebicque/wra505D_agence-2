@@ -45,8 +45,7 @@ class CopyTransfertBddUserCommand extends Command
         StructureGroupeRepository $structureGroupeRepository,
         EtudiantRepository $etudiantRepository,
         ScolBacRepository $scolBacRepository
-    )
-    {
+    ) {
         parent::__construct();
         $this->em = $managerRegistry->getConnection('copy');
         $this->tAnneeUniversitaire = $structureAnneeUniversitaireRepository->findAllByIdArray();
@@ -72,8 +71,7 @@ FOREIGN_KEY_CHECKS=0');
 FOREIGN_KEY_CHECKS=1');
     }
 
-    protected
-    function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
 
@@ -104,13 +102,13 @@ FOREIGN_KEY_CHECKS=1');
             $personnel->setUsername($pers['username']);
             $personnel->setPassword($pers['password']);
             $personnel->setPhotoName($pers['photo_name']);
-            $personnel->setInitiales(substr($pers['initiales'], 0,3));
+            $personnel->setInitiales(substr($pers['initiales'], 0, 3));
             $personnel->setOldId($pers['id']);
             $personnel->setAnneeUniversitaire($this->tAnneeUniversitaire[$pers['annee_universitaire_id']]);
             $personnel->setEntreprise($pers['entreprise']);
             $personnel->setTelBureau($pers['tel_bureau']);
             $personnel->setDomaines(
-            // transformer le string $pers['domaines'] en tableau
+                // transformer le string $pers['domaines'] en tableau
                 explode(',', $pers['domaines'])
             );
             $personnel->setBureau($pers['bureau1']);

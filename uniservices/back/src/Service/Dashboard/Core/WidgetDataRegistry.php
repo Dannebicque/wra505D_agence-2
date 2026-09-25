@@ -15,7 +15,8 @@ class WidgetDataRegistry
     public function __construct(
         #[TaggedIterator('app.dashboard.widget_data_provider')]
         private readonly iterable $providers,
-    ) {}
+    ) {
+    }
 
     public function get(string $code, Personnel|Etudiant $user): ?array
     {

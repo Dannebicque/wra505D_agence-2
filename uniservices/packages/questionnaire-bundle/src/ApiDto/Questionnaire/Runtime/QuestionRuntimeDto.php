@@ -2,7 +2,6 @@
 
 namespace QuestionnaireBundle\ApiDto\Questionnaire\Runtime;
 
-
 use QuestionnaireBundle\Enum\QuestTypeQuestionEnum;
 
 final class QuestionRuntimeDto
@@ -17,7 +16,6 @@ final class QuestionRuntimeDto
         public ?array                $choices = null,
         public ?ScaleDto             $scale = null,
         public ?VisibilityRuleDto    $visibility = null
-    )
-    {
+    ) {
     }
 }

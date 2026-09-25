@@ -2,7 +2,6 @@
 
 namespace QuestionnaireBundle\ApiDto\Questionnaire\Publish;
 
-
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
@@ -40,7 +39,6 @@ final class PublishOutputDto
         public \DateTimeImmutable $publishedAt,
         public int                $sectionsCount,
         public int                $invitationsCount
-    )
-    {
+    ) {
     }
 }

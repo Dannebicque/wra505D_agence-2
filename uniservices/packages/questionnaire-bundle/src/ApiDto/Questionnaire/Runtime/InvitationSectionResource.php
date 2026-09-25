@@ -14,4 +14,6 @@ use QuestionnaireBundle\State\Provider\Questionnaire\Runtime\InvitationSectionPr
         ),
     ],
 )]
-final class InvitationSectionResource {}
+final class InvitationSectionResource
+{
+}

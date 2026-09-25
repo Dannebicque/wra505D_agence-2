@@ -16,8 +16,7 @@ class PersonnelsContraintesProvider implements ProviderInterface
     public function __construct(
         protected StructureCalendrierRepository $structureCalendrierRepository,
         protected PersonnelRepository           $personnelRepository
-    )
-    {
+    ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null

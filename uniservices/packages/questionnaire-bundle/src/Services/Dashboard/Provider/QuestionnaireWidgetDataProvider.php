@@ -12,7 +12,8 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
 {
     public function __construct(
         private readonly QuestionnaireRepository $questionnaireRepository
-    ) {}
+    ) {
+    }
 
     public function supports(string $code): bool
     {
@@ -25,7 +26,7 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
             'questionnaire.pending' => [
                 // List the 5 most recently published questionnaires
                 'items' => array_map(
-                    fn($q) => $q->getTitle(),
+                    fn ($q) => $q->getTitle(),
                     $this->questionnaireRepository->findBy(
                         ['status' => QuestStatutEnum::PUBLISHED],
                         ['publishedAt' => 'DESC'],
@@ -42,7 +43,7 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
             'questionnaire.last_answers' => [
                 // List the 5 most recently created questionnaires
                 'items' => array_map(
-                    fn($q) => $q->getTitle() . ' (' . ($q->getCreated()?->format('d/m H:i') ?? 'N/A') . ')',
+                    fn ($q) => $q->getTitle() . ' (' . ($q->getCreated()?->format('d/m H:i') ?? 'N/A') . ')',
                     $this->questionnaireRepository->findBy(
                         [],
                         ['created' => 'DESC'],
@@ -54,4 +55,3 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
         };
     }
 }
-

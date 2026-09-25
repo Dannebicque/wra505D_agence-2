@@ -53,7 +53,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
         });
 
         if ($this->isFlatMode($context)) {
-            $flatRows = array_map(fn(EtudiantAbsence $absence) => $this->buildFlatRow($absence), $absences);
+            $flatRows = array_map(fn (EtudiantAbsence $absence) => $this->buildFlatRow($absence), $absences);
 
             return $this->paginateRows($flatRows, $context);
         }

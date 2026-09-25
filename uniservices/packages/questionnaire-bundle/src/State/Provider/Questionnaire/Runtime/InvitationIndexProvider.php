@@ -12,14 +12,18 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SectionIndexDto;
 
 final class InvitationIndexProvider implements ProviderInterface
 {
-    public function __construct(private EntityManagerInterface $em) {}
+    public function __construct(private EntityManagerInterface $em)
+    {
+    }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): InvitationIndexDto
     {
         $token = (string) $uriVariables['token'];
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv) { throw new \RuntimeException('Invitation not found'); }
+        if (!$inv) {
+            throw new \RuntimeException('Invitation not found');
+        }
 
         $inv->markStarted();
         $this->em->flush();

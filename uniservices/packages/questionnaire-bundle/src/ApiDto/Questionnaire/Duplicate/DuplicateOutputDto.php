@@ -38,5 +38,6 @@ final class DuplicateOutputDto
         public string $status,
         public int $sectionsCount,
         public int $questionsCount
-    ) {}
+    ) {
+    }
 }

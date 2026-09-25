@@ -27,8 +27,7 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         StructureAnneeUniversitaireRepository $anneeUniversitaireRepository,
         private readonly StructureGroupeRepository $groupeRepository,
         private readonly StructureDepartementRepository $departementRepository,
-    )
-    {
+    ) {
         $this->semestreRepository = $semestreRepository;
         $this->etudiantRepository = $etudiantRepository;
         $this->anneeUniversitaireRepository = $anneeUniversitaireRepository;
@@ -59,7 +58,7 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
             ->setPublic(true)
             ->setAnneeUniversitaire($anneeUniversitaire1)
             ->setUuid(Uuid::v4())
-            ;
+        ;
 
         $scolariteSemestre1 = new EtudiantScolariteSemestre();
         $scolariteSemestre1->setSemestre($semestre1)

@@ -69,13 +69,15 @@ class AuthWidgetDataProvider implements WidgetDataProviderInterface
     private function getActusExt(): array
     {
         // récupérer l'url depuis .env
-        $actus_url=$_ENV['URL_ACTUS'];
+        $actus_url = $_ENV['URL_ACTUS'];
         $actus = $this->loadRss($actus_url);
         $data = [];
         if ($actus && isset($actus->channel->item)) {
             $count = 0;
             foreach ($actus->channel->item as $actu) {
-                if ($count >= 4) break;
+                if ($count >= 4) {
+                    break;
+                }
                 $data[] = [
                     'title' => (string) $actu->title,
                     'description' => html_entity_decode($actu->description),

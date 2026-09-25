@@ -18,4 +18,6 @@ use QuestionnaireBundle\State\Provider\Questionnaire\Runtime\SubmitProcessor;
         ),
     ],
 )]
-final class SubmitResource {}
+final class SubmitResource
+{
+}

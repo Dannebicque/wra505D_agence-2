@@ -15,8 +15,7 @@ final class PublishProcessor implements ProcessorInterface
     public function __construct(
         private readonly EntityManagerInterface      $em,
         private readonly PublishQuestionnaireService $service
-    )
-    {
+    ) {
     }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): PublishOutputDto

@@ -33,7 +33,8 @@ class SynchroRefFormation
         protected StructureDiplomeRepository $structureDiplomeRepository,
         protected HttpClientInterface $httpClient,
         protected EntityManagerInterface $entityManager
-    ){}
+    ) {
+    }
 
     public function synchroniser(int $diplomeId, int $idAnneeUniversitaire, int $oreofId): bool
     {
@@ -125,16 +126,35 @@ class SynchroRefFormation
 
                 foreach ($ue['ec'] as $e) {
                     if (is_array($e)) {
-                    if ($e['nature_ec'] === 'SAE' || $e['nature_ec'] === 'Ressource') {
-                        //vérifier si EC pas déjà existante
-                        if (array_key_exists($e['sigle'], $ecs)) {
-                            $ecue = new ScolEnseignementUe($ecs[$e['sigle']], $u);
-                            $ecue->setCoefficient($e['ects']);
-                            $this->entityManager->persist($ecue);
+                        if ($e['nature_ec'] === 'SAE' || $e['nature_ec'] === 'Ressource') {
+                            //vérifier si EC pas déjà existante
+                            if (array_key_exists($e['sigle'], $ecs)) {
+                                $ecue = new ScolEnseignementUe($ecs[$e['sigle']], $u);
+                                $ecue->setCoefficient($e['ects']);
+                                $this->entityManager->persist($ecue);
+                            } else {
+                                $ec = new ScolEnseignement();
+                                $ec->setLibelle($e['libelle']);
+                                $ec->setType($e['nature_ec'] === 'SAE' ? TypeEnseignementEnum::TYPE_SAE : TypeEnseignementEnum::TYPE_RESSOURCE);
+                                $ec->setCodeEnseignement($e['sigle']);
+                                $ec->setDescription($e['description']);
+                                $ec->setObjectif($e['objectifs']);
+                                $ec->setLibelleCourt($e['sigle']);
+                                $ec->setHeures([
+                                    'CM' => ['PN' => $e['volumes']['CM']['presentiel'], 'IUT' => $e['volumes']['CM']['presentiel']],
+                                    'TD' => ['PN' => $e['volumes']['TD']['presentiel'], 'IUT' => $e['volumes']['TD']['presentiel']],
+                                    'TP' => ['PN' => $e['volumes']['TP']['presentiel'], 'IUT' => $e['volumes']['TP']['presentiel']],
+                                ]);
+                                $ecs[$e['sigle']] = $ec;
+                                $ecue = new ScolEnseignementUe($ec, $u);
+                                $ecue->setCoefficient($e['ects']);
+                                $this->entityManager->persist($ecue);
+                                $this->entityManager->persist($ec);
+                            }
                         } else {
                             $ec = new ScolEnseignement();
                             $ec->setLibelle($e['libelle']);
-                            $ec->setType($e['nature_ec'] === 'SAE' ? TypeEnseignementEnum::TYPE_SAE : TypeEnseignementEnum::TYPE_RESSOURCE);
+                            $ec->setType(TypeEnseignementEnum::TYPE_MATIERE);
                             $ec->setCodeEnseignement($e['sigle']);
                             $ec->setDescription($e['description']);
                             $ec->setObjectif($e['objectifs']);
@@ -144,29 +164,10 @@ class SynchroRefFormation
                                 'TD' => ['PN' => $e['volumes']['TD']['presentiel'], 'IUT' => $e['volumes']['TD']['presentiel']],
                                 'TP' => ['PN' => $e['volumes']['TP']['presentiel'], 'IUT' => $e['volumes']['TP']['presentiel']],
                             ]);
-                            $ecs[$e['sigle']] = $ec;
                             $ecue = new ScolEnseignementUe($ec, $u);
-                            $ecue->setCoefficient($e['ects']);
                             $this->entityManager->persist($ecue);
                             $this->entityManager->persist($ec);
                         }
-                    } else {
-                        $ec = new ScolEnseignement();
-                        $ec->setLibelle($e['libelle']);
-                        $ec->setType(TypeEnseignementEnum::TYPE_MATIERE);
-                        $ec->setCodeEnseignement($e['sigle']);
-                        $ec->setDescription($e['description']);
-                        $ec->setObjectif($e['objectifs']);
-                        $ec->setLibelleCourt($e['sigle']);
-                        $ec->setHeures([
-                            'CM' => ['PN' => $e['volumes']['CM']['presentiel'], 'IUT' => $e['volumes']['CM']['presentiel']],
-                            'TD' => ['PN' => $e['volumes']['TD']['presentiel'], 'IUT' => $e['volumes']['TD']['presentiel']],
-                            'TP' => ['PN' => $e['volumes']['TP']['presentiel'], 'IUT' => $e['volumes']['TP']['presentiel']],
-                        ]);
-                        $ecue = new ScolEnseignementUe($ec, $u);
-                        $this->entityManager->persist($ecue);
-                        $this->entityManager->persist($ec);
-                    }
                     }
 
                 }

@@ -34,7 +34,7 @@ class AvailableCommandsController extends AbstractController
         }
 
         // Tri alphabetique par nom de commande
-        usort($list, static fn($a, $b) => strcmp($a['name'], $b['name']));
+        usort($list, static fn ($a, $b) => strcmp($a['name'], $b['name']));
 
         return new JsonResponse($list);
     }

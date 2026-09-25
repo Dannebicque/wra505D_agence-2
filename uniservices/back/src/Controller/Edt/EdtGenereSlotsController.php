@@ -17,8 +17,8 @@ class EdtGenereSlotsController extends AbstractController
     public function __construct(
         protected GenereSlots $genereSlots,
         protected PrevisionnelRepository $previsionnelRepository,
-        protected EntityManagerInterface $entityManager)
-    {
+        protected EntityManagerInterface $entityManager
+    ) {
     }
 
     #[Route('/api/edt_genere_slots', name: 'edt_progression_genere_slots', methods: ['POST'])]

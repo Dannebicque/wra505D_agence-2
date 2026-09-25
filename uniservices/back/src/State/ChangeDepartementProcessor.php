@@ -15,8 +15,7 @@ class ChangeDepartementProcessor implements ProcessorInterface
         protected Security $security,
         protected StructureDepartementPersonnelRepository $structureDepartementPersonnelRepository,
         private EntityManagerInterface $entityManager,
-    )
-    {
+    ) {
     }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed

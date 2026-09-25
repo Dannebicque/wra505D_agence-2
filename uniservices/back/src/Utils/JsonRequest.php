@@ -10,14 +10,13 @@ class JsonRequest
 
     public static function getValuesFromString(
         ?string $content = null
-        ): Response|array
-    {
+    ): Response|array {
         return self::getDataFromContent($content) ? self::$data : [];
     }
 
     public static function get(string $content, string $key): mixed
     {
-       return self::getDataFromContent($content) ? self::$data[$key] ?? null : null;
+        return self::getDataFromContent($content) ? self::$data[$key] ?? null : null;
     }
 
     public static function has(string $key): bool

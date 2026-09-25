@@ -15,7 +15,8 @@ final readonly class PreviewIndexProvider implements ProviderInterface
     public function __construct(
         private EntityManagerInterface $em,
         private readonly QuestionnaireStructureService $structureService,
-    ) {}
+    ) {
+    }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PreviewIndexDto
     {
@@ -49,7 +50,8 @@ final readonly class PreviewIndexProvider implements ProviderInterface
             $q->getOpt(),
             $q->getStartText(),
             $q->getEndText(),
-            $sections);
+            $sections
+        );
     }
 
     private function makeKey(?int $sectionTemplateId, ?string $type, ?string $id): string

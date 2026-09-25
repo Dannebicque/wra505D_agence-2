@@ -11,7 +11,6 @@ final class PreviewSectionIndexDto
         public ?string $repeatItemType,
         public ?string $repeatItemId,
         public int     $sortOrder,
-    )
-    {
+    ) {
     }
 }

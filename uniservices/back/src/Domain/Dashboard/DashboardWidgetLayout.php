@@ -10,5 +10,6 @@ class DashboardWidgetLayout
         public readonly int $colSpan = 1,
         public readonly int $rowSpan = 1,
         public readonly bool $enabled = true,
-    ) {}
+    ) {
+    }
 }

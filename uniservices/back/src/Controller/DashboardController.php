@@ -25,7 +25,8 @@ class DashboardController extends AbstractController
         private readonly DashboardPreferenceRepository $preferenceRepository,
         private readonly StructureDepartementPersonnelRepository $structureDepartementPersonnelRepository,
         private readonly DashboardRegistry $dashboardRegistry,
-    ) {}
+    ) {
+    }
 
 
     #[Route('/api/widgets/catalog', name: 'api_widgets_catalog', methods: ['GET'])]

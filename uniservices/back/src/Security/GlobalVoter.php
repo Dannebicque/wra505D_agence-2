@@ -8,7 +8,6 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-
 class GlobalVoter extends Voter
 {
     public const IS_SUPER_ADMIN = 'IS_SUPER_ADMIN';
@@ -19,7 +18,8 @@ class GlobalVoter extends Voter
 
     public function __construct(
         private readonly UserEffectivePermissionService $effectivePermissionService
-    ) {}
+    ) {
+    }
 
     /**
      * @inheritDoc
@@ -66,5 +66,3 @@ class GlobalVoter extends Voter
             ]);
     }
 }
-
-

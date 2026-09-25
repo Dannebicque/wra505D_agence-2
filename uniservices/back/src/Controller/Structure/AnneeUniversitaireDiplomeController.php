@@ -47,5 +47,3 @@ class AnneeUniversitaireDiplomeController extends AbstractController
         return new JsonResponse(['message' => 'Diplôme retiré de l\'année universitaire avec succès'], Response::HTTP_OK);
     }
 }
-
-

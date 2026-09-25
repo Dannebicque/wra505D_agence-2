@@ -23,7 +23,6 @@ final class InvitationIndexDto
         public ?\DateTimeImmutable $startedAt,
         public ?\DateTimeImmutable $submittedAt,
         public array               $sections
-    )
-    {
+    ) {
     }
 }

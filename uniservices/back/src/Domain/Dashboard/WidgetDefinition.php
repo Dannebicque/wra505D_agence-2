@@ -20,7 +20,8 @@ class WidgetDefinition
         private readonly bool $enabled = true,
         private readonly array $defaultConfig = [],
         private readonly array $allowedProfiles = [self::PROFILE_PERSONNEL, self::PROFILE_ETUDIANT],
-    ) {}
+    ) {
+    }
 
     public function getCode(): string
     {

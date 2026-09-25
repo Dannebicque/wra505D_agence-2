@@ -11,7 +11,8 @@ class PermissionDefinition
         private readonly string $package,
         private readonly array $inheritedRoles = [],
         private readonly bool $defaultAccess = false
-    ) {}
+    ) {
+    }
 
     public function getCode(): string
     {

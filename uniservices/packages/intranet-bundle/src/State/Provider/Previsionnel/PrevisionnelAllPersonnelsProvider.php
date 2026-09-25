@@ -13,13 +13,11 @@ use App\Repository\Structure\StructureDepartementPersonnelRepository;
 
 class PrevisionnelAllPersonnelsProvider implements ProviderInterface
 {
-
     public function __construct(
         private CollectionProvider $collectionProvider,
         private ItemProvider $itemProvider,
         private StructureDepartementPersonnelRepository $structureDepartementPersonnelRepository
-    )
-    {
+    ) {
     }
 
     /**
@@ -153,8 +151,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                 } elseif ($group['statutLibelle'] === 'Enseignant Vacataire' && $total > $group['nbHeuresService']) {
                     $diffValue = $total - $group['nbHeuresService'];
                     $diff = 'Dépassement de ' . $diffValue;
-                }
-                else {
+                } else {
                     if ($group['affectation']) {
                         $diff = $total - $group['nbHeuresService'];
                     } else {

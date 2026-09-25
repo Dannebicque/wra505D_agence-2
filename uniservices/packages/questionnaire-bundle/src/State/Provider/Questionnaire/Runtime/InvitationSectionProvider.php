@@ -16,7 +16,8 @@ final class InvitationSectionProvider implements ProviderInterface
     public function __construct(
         private EntityManagerInterface $em,
         private QuestionRuntimeMapper $mapper
-    ) {}
+    ) {
+    }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): SectionRuntimeDto
     {
@@ -24,7 +25,9 @@ final class InvitationSectionProvider implements ProviderInterface
         $id = (int) $uriVariables['id'];
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv) { throw new \RuntimeException('Invitation not found'); }
+        if (!$inv) {
+            throw new \RuntimeException('Invitation not found');
+        }
 
         $psi = $this->em->getRepository(QuestionnaireSectionInstance::class)->find($id);
         if (!$psi || $psi->getQuestionnaire()->getId() !== $inv->getQuestionnaire()->getId()) {

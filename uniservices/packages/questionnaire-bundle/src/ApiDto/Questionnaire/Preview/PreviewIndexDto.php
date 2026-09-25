@@ -2,7 +2,6 @@
 
 namespace QuestionnaireBundle\ApiDto\Questionnaire\Preview;
 
-
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;

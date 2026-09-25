@@ -5,7 +5,6 @@ namespace QuestionnaireBundle\Repository\Questionnaires;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 

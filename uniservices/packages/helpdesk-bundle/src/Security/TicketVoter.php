@@ -20,7 +20,7 @@ class TicketVoter extends Voter
     public const CAN_VIEW_TICKET = 'CAN_VIEW_TICKET';
     public const CAN_EDIT_TICKET = 'CAN_EDIT_TICKET';
     public const CAN_DELETE_TICKET = 'CAN_DELETE_TICKET';
-    public const CAN_CREATE_TICKET= 'CAN_CREATE_TICKET';
+    public const CAN_CREATE_TICKET = 'CAN_CREATE_TICKET';
 
     private const SUPPORTED_ATTRIBUTES = [
         self::CAN_VIEW_TICKET,
@@ -31,7 +31,8 @@ class TicketVoter extends Voter
 
     public function __construct(
         private readonly UserEffectivePermissionService $effectivePermissionService
-    ) {}
+    ) {
+    }
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -53,8 +54,8 @@ class TicketVoter extends Voter
 
         return match($attribute) {
             self::CAN_VIEW_TICKET => $this->canViewTicket($user),
-            self::CAN_EDIT_TICKET => $this->canEditTicket($user,$subject),
-            self::CAN_DELETE_TICKET => $this->canDeleteTicket($user,$subject),
+            self::CAN_EDIT_TICKET => $this->canEditTicket($user, $subject),
+            self::CAN_DELETE_TICKET => $this->canDeleteTicket($user, $subject),
             self::CAN_CREATE_TICKET => $this->canCreateTicket($user),
             default => false,
         };
@@ -70,26 +71,25 @@ class TicketVoter extends Voter
         return  (!$user instanceof Etudiant);
     }
 
-    private function canCreateTicket(Personnel|Etudiant $user):bool
+    private function canCreateTicket(Personnel|Etudiant $user): bool
     {
         return (!$user instanceof Etudiant);
     }
 
-    private function canEditTicket(Personnel|Etudiant $user,HelpdeskTicket $subject): bool
+    private function canEditTicket(Personnel|Etudiant $user, HelpdeskTicket $subject): bool
     {
-        if($user instanceof Etudiant){
+        if ($user instanceof Etudiant) {
             return false;
         }
         return $user->getId() === $subject->getAuteur()->getId();
 
     }
 
-    private function canDeleteTicket(Personnel|Etudiant $user,HelpdeskTicket $subject): bool
+    private function canDeleteTicket(Personnel|Etudiant $user, HelpdeskTicket $subject): bool
     {
-        if($user instanceof Etudiant){
+        if ($user instanceof Etudiant) {
             return false;
         }
         return $user->getId() === $subject->getAuteur()->getId();
     }
 }
-

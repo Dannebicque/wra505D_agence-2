@@ -8,5 +8,6 @@ final class RepeatItemView
         public string $type,  // matiere|ressource|sae|previsionnel
         public string $id,
         public string $label
-    ) {}
+    ) {
+    }
 }

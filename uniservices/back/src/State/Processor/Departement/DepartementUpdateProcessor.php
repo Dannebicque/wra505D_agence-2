@@ -16,7 +16,7 @@ class DepartementUpdateProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-// Persist changes made to the evaluation first (Doctrine will track the entity)
+        // Persist changes made to the evaluation first (Doctrine will track the entity)
         $this->em->flush();
 
         if (!$data instanceof StructureDepartement) {

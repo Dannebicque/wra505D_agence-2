@@ -10,7 +10,8 @@ class PortalDashboardDefinition implements DashboardDefinitionInterface
 {
     public function __construct(
         private readonly WidgetRegistry $widgetRegistry
-    ) {}
+    ) {
+    }
 
     public function getCode(): string
     {

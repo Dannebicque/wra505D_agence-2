@@ -15,7 +15,6 @@ use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StagePeriode;
 use StageBundle\Enum\EtatStageEnum;
 use App\ValueObject\Adresse;
-
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 
 class StageFixtures extends Fixture implements OrderedFixtureInterface, FixtureGroupInterface
@@ -24,7 +23,7 @@ class StageFixtures extends Fixture implements OrderedFixtureInterface, FixtureG
     {
         return ['stage'];
     }
-    
+
     public function getOrder(): int
     {
         return 10;
@@ -34,7 +33,7 @@ class StageFixtures extends Fixture implements OrderedFixtureInterface, FixtureG
     {
         // 1. Get or create StructureAnneeUniversitaire records
         $anneeUnivRepo = $manager->getRepository(StructureAnneeUniversitaire::class);
-        
+
         $anneeUniv2324 = $anneeUnivRepo->findOneBy(['libelle' => '2023-2024']);
         if (!$anneeUniv2324) {
             $anneeUniv2324 = new StructureAnneeUniversitaire();

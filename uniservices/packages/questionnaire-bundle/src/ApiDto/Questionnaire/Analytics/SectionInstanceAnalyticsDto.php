@@ -22,5 +22,6 @@ final class SectionInstanceAnalyticsDto
         public ?string $repeatItemId,
         #[Groups(['questionnaire:read'])]
         public array $questions
-    ) {}
+    ) {
+    }
 }

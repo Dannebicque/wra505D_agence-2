@@ -15,7 +15,8 @@ class DocumentWidgetDataProvider implements WidgetDataProviderInterface
         private readonly DocumentRepository $documentRepository,
         private readonly DocumentCategoryRepository $categoryRepository,
         private readonly DocumentFavoriRepository $favoriRepository,
-    ) {}
+    ) {
+    }
 
     public function supports(string $code): bool
     {
@@ -27,7 +28,7 @@ class DocumentWidgetDataProvider implements WidgetDataProviderInterface
         return match ($code) {
             'document.recents' => [
                 'items' => array_map(
-                    fn($doc) => [
+                    fn ($doc) => [
                         'id' => $doc->getId(),
                         'title' => $doc->getTitre(),
                         'type' => $doc->getType(),

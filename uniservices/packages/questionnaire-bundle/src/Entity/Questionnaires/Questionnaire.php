@@ -266,7 +266,8 @@ class Questionnaire
     }
 
     #[Groups(['questionnaire:read'])]
-    public function getStatutSeverity(): string {
+    public function getStatutSeverity(): string
+    {
         return $this->status->getBadge();
     }
 
@@ -331,7 +332,8 @@ class Questionnaire
     }
 
     #[Groups(['questionnaire:read'])]
-    public function isPublished(): bool {
+    public function isPublished(): bool
+    {
         return $this->getStatus() === QuestStatutEnum::PUBLISHED;
     }
 

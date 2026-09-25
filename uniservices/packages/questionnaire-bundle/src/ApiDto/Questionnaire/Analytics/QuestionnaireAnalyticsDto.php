@@ -41,5 +41,6 @@ final class QuestionnaireAnalyticsDto
         public array $statusCounts,
         #[Groups(['questionnaire:read'])]
         public array $sections
-    ) {}
+    ) {
+    }
 }

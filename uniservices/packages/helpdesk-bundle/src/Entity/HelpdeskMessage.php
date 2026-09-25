@@ -18,8 +18,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     operations: [
         new Get(
-        normalizationContext: ['groups' => ['message:read']],
-    ),
+            normalizationContext: ['groups' => ['message:read']],
+        ),
         new Post(
             denormalizationContext: ['groups' => ['message:write']],
         )

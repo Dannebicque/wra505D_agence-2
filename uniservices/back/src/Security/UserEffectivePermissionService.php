@@ -10,7 +10,8 @@ class UserEffectivePermissionService
 {
     public function __construct(
         private readonly PermissionResolver $resolver
-    ) {}
+    ) {
+    }
 
     /**
      * @return string[]

@@ -12,13 +12,11 @@ use App\Repository\Edt\EdtEventRepository;
 
 class PreviStatsEdtProvider implements ProviderInterface
 {
-
     public function __construct(
         private CollectionProvider $collectionProvider,
         private ItemProvider $itemProvider,
         private EdtEventRepository $edtEventRepository,
-    )
-    {
+    ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
@@ -98,7 +96,7 @@ class PreviStatsEdtProvider implements ProviderInterface
             $anneeUniversitaireId = !empty($filters['anneeUniversitaire']) ? (int) $filters['anneeUniversitaire'] : null;
 
             if ($semestreId) {
-            $events = $this->edtEventRepository->findForStatsBySemestreAndAnneeUniversitaire($semestreId, $anneeUniversitaireId);
+                $events = $this->edtEventRepository->findForStatsBySemestreAndAnneeUniversitaire($semestreId, $anneeUniversitaireId);
             } elseif ($anneeId) {
                 $events = $this->edtEventRepository->findForStatsByAnneeAndAnneeUniversitaire($anneeId, $anneeUniversitaireId);
             } else {
@@ -113,14 +111,18 @@ class PreviStatsEdtProvider implements ProviderInterface
             foreach ($events as $ev) {
                 $start = $ev->getDebut();
                 $end = $ev->getFin();
-                if (!$start || !$end) continue;
+                if (!$start || !$end) {
+                    continue;
+                }
                 $interval = $start->diff($end);
                 $duration = $interval->h + ($interval->days * 24) + ($interval->i / 60.0);
 
                 $ens = $ev->getEnseignement();
                 $ensId = $ens?->getId();
                 $type = (string) $ev->getType();
-                if ($type === '') { $type = 'UNKNOWN'; }
+                if ($type === '') {
+                    $type = 'UNKNOWN';
+                }
                 if ($ensId) {
                     if (!isset($edtByEnsType[$ensId])) {
                         $edtByEnsType[$ensId] = [];
@@ -190,9 +192,13 @@ class PreviStatsEdtProvider implements ProviderInterface
             // On parcourt d'abord les enseignants rencontrés dans les événements pour préserver l'ordre
             foreach ($events as $ev) {
                 $enseignantDisplay = $ev->getPersonnel()?->getDisplay();
-                if (!$enseignantDisplay) continue;
+                if (!$enseignantDisplay) {
+                    continue;
+                }
                 // éviter doublons
-                if (isset($seenTeachers[$enseignantDisplay])) continue;
+                if (isset($seenTeachers[$enseignantDisplay])) {
+                    continue;
+                }
                 $seenTeachers[$enseignantDisplay] = true;
 
                 // --- CHANGEMENT : calculer les totaux par enseignant ---
@@ -229,7 +235,9 @@ class PreviStatsEdtProvider implements ProviderInterface
 
             // Puis compléter avec les enseignants provenant du prévisionnel qui n'apparaissent pas dans les événements
             foreach ($allTeachers as $teacher) {
-                if (isset($seenTeachers[$teacher])) continue;
+                if (isset($seenTeachers[$teacher])) {
+                    continue;
+                }
 
                 // --- CHANGEMENT : calculer les totaux par enseignant (pour ceux provenant du prévisionnel) ---
                 $totalPreviTeacher = 0.0;

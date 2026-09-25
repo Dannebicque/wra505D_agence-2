@@ -14,7 +14,8 @@ final class PublishQuestionnaireService
     public function __construct(
         private readonly EntityManagerInterface        $em,
         private readonly QuestionnaireStructureService $structureService
-    ) {}
+    ) {
+    }
 
     /**
      * @param list<string> $recipientEmails
@@ -48,7 +49,9 @@ final class PublishQuestionnaireService
         $countInv = 0;
         foreach ($recipientEmails as $email) {
             $email = trim(mb_strtolower($email));
-            if ($email === '') { continue; }
+            if ($email === '') {
+                continue;
+            }
             $token = Uuid::v7()->toRfc4122();
             $inv = new QuestionnaireInvitation($q, $token, $email);
             $this->em->persist($inv);

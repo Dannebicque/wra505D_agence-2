@@ -64,7 +64,8 @@ class ApcVoter extends Voter
 
     public function __construct(
         private readonly UserEffectivePermissionService $effectivePermissionService
-    ) {}
+    ) {
+    }
 
     /**
      * @inheritDoc
@@ -264,4 +265,3 @@ class ApcVoter extends Voter
         ]);
     }
 }
-

@@ -14,8 +14,7 @@ class StructureSemestreFixtures extends Fixture implements OrderedFixtureInterfa
 
     public function __construct(
         StructureAnneeRepository $anneeRepository
-    )
-    {
+    ) {
         $this->anneeRepository = $anneeRepository;
     }
 
@@ -42,7 +41,7 @@ class StructureSemestreFixtures extends Fixture implements OrderedFixtureInterfa
             ->setNbGroupesTp(6)
             ->setCodeElement('MMI123')
             ->setAnnee($annee1)
-            ;
+        ;
         $manager->persist($semestre1);
 
         $semestre2 = new StructureSemestre();
@@ -55,7 +54,7 @@ class StructureSemestreFixtures extends Fixture implements OrderedFixtureInterfa
             ->setNbGroupesTp(6)
             ->setCodeElement('MMI123')
             ->setAnnee($annee1)
-            ;
+        ;
         $manager->persist($semestre2);
 
         $semestre3 = new StructureSemestre();
@@ -68,7 +67,7 @@ class StructureSemestreFixtures extends Fixture implements OrderedFixtureInterfa
             ->setNbGroupesTp(2)
             ->setCodeElement('MMI124')
             ->setAnnee($annee2)
-            ;
+        ;
         $manager->persist($semestre3);
 
         $semestre4 = new StructureSemestre();
@@ -81,7 +80,7 @@ class StructureSemestreFixtures extends Fixture implements OrderedFixtureInterfa
             ->setNbGroupesTp(2)
             ->setCodeElement('MMI124')
             ->setAnnee($annee2)
-            ;
+        ;
         $manager->persist($semestre4);
 
         $manager->flush();

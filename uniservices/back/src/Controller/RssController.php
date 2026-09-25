@@ -43,13 +43,15 @@ class RssController extends AbstractController
     public function getActus(): Response
     {
         // récupérer l'url depuis .env
-        $actus_url=$_ENV['URL_ACTUS'];
+        $actus_url = $_ENV['URL_ACTUS'];
         $actus = $this->loadRss($actus_url);
         $data = [];
         if ($actus && isset($actus->channel->item)) {
             $count = 0;
             foreach ($actus->channel->item as $actu) {
-                if ($count >= 4) break;
+                if ($count >= 4) {
+                    break;
+                }
                 $data[] = [
                     'title' => (string) $actu->title,
                     'description' => html_entity_decode($actu->description),
@@ -73,7 +75,9 @@ class RssController extends AbstractController
         if ($events && isset($events->channel->item)) {
             $count = 0;
             foreach ($events->channel->item as $event) {
-                if ($count >= 4) break;
+                if ($count >= 4) {
+                    break;
+                }
                 $data[] = [
                     'title' => (string) $event->title,
                     'description' => html_entity_decode($event->description),

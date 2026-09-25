@@ -140,15 +140,19 @@ class StagePdfController extends AbstractController
         }
 
         // Safe format helper for dates
-        $fmtDate = function(?\DateTimeInterface $d) {
+        $fmtDate = function (?\DateTimeInterface $d) {
             return $d ? $d->format('d/m/Y') : '';
         };
 
         // Telephones
         $tels = [];
         if ($etu) {
-            if ($etu->getTel1()) $tels[] = $etu->getTel1();
-            if ($etu->getTel2()) $tels[] = $etu->getTel2();
+            if ($etu->getTel1()) {
+                $tels[] = $etu->getTel1();
+            }
+            if ($etu->getTel2()) {
+                $tels[] = $etu->getTel2();
+            }
         }
         $telephones = implode(' / ', $tels);
 
@@ -262,7 +266,7 @@ class StagePdfController extends AbstractController
         }
 
         $paragraphs = nl2br(htmlspecialchars($text));
-        
+
         return <<<HTML
 <!DOCTYPE html>
 <html>

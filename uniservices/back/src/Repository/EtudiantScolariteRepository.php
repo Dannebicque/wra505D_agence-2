@@ -77,4 +77,3 @@ class EtudiantScolariteRepository extends ServiceEntityRepository
             ->getResult();
     }
 }
-

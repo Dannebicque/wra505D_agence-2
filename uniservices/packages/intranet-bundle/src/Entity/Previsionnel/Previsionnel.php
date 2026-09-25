@@ -217,7 +217,7 @@ class Previsionnel
         $this->configureOptionsHeures($resolver);
 
         // Convertir toutes les valeurs en float
-        $heures = array_map(function($value) {
+        $heures = array_map(function ($value) {
             return (float) $value;
         }, $heures);
 

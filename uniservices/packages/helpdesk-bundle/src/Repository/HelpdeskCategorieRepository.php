@@ -6,7 +6,6 @@ use HelpdeskBundle\Entity\HelpdeskCategorie;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-
 class HelpdeskCategorieRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

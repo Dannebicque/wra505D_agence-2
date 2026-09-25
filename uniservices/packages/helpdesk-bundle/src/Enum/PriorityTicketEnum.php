@@ -4,10 +4,10 @@ namespace HelpdeskBundle\Enum;
 
 enum PriorityTicketEnum: string
 {
-    case BASSE= 'Basse';
+    case BASSE = 'Basse';
     case MOYENNE = 'Moyenne';
     case HAUTE = 'Haute';
-    case CRITIQUE='Critique';
+    case CRITIQUE = 'Critique';
 
     public function getPriorities(): array
     {

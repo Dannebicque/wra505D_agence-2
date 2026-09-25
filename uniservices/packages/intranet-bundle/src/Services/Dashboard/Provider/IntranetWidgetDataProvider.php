@@ -17,7 +17,8 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         private readonly StructureDepartementRepository $structureDepartementRepository,
         private readonly AuthWidgetDataProvider $authWidgetDataProvider,
         private readonly SemestresEtudiant $semestresEtudiant,
-    ) {}
+    ) {
+    }
 
     public function supports(string $code): bool
     {
@@ -61,7 +62,7 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
             : null;
 
         return [
-            'items' => array_map(fn($departement) => [
+            'items' => array_map(fn ($departement) => [
                 'id' => $departement->getId(),
                 'libelle' => $departement->getLibelle(),
                 'telephone' => $departement->getTelContact(),
@@ -81,7 +82,7 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         $formatter = new \IntlDateFormatter('fr_FR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, \IntlDateFormatter::GREGORIAN, 'EEEE d MMMM yyyy');
         return [
             'todayLabel' => $formatter->format($today),
-            'items' => array_map(fn($e) => [
+            'items' => array_map(fn ($e) => [
                 'heure'  => $e->getDebut()?->format('H:i') . ' - ' . $e->getFin()?->format('H:i'),
                 'groupe' => $e->getLibGroupe(),
                 'cours'  => $e->getCodeModule() . ' - ' . $e->getLibModule(),

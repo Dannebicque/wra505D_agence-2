@@ -77,9 +77,10 @@ class QuestionnaireInvitation
     private Collection $questionnaireReponses;
 
     public function __construct(
-        Questionnaire $q, string $token, ?string $email = null
-    )
-    {
+        Questionnaire $q,
+        string $token,
+        ?string $email = null
+    ) {
         $this->questionnaireReponses = new ArrayCollection();
         $this->questionnaire = $q;
         $this->token = $token;
@@ -219,7 +220,10 @@ class QuestionnaireInvitation
         $this->submittedAt = new \DateTimeImmutable();
     }
 
-    public function isSubmitted(): bool { return $this->status === QuestInvitationStatusEnum::SUBMITTED; }
+    public function isSubmitted(): bool
+    {
+        return $this->status === QuestInvitationStatusEnum::SUBMITTED;
+    }
 
     public function getRemindedAt(): ?\DateTimeImmutable
     {

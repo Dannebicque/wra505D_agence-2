@@ -60,7 +60,8 @@ class QuestionnaireVoter extends Voter
 
     public function __construct(
         private readonly UserEffectivePermissionService $effectivePermissionService
-    ) {}
+    ) {
+    }
 
     /**
      * @inheritDoc
@@ -296,5 +297,3 @@ class QuestionnaireVoter extends Voter
         return true;
     }
 }
-
-

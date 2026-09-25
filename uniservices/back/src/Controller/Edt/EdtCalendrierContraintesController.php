@@ -25,8 +25,7 @@ class EdtCalendrierContraintesController extends AbstractController
         StructureCalendrierRepository    $structureCalendrierRepository,
         EdtContraintesSemestreRepository $edtContraintesSemestreRepository,
         Request                          $request
-    ): Response
-    {
+    ): Response {
         //todo: tester securité et droits
 
         $data = JsonRequest::getValuesFromString($request->getContent());

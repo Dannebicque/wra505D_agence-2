@@ -14,8 +14,7 @@ class GenereSlots
 
     public function __construct(
         protected EntityManagerInterface $entityManager,
-    )
-    {
+    ) {
     }
 
     public function genereAllSlots(array $previsionnels): int
@@ -52,7 +51,7 @@ class GenereSlots
                 default => [],
             };
 
-            foreach($nbGroupes as $getGr) {
+            foreach ($nbGroupes as $getGr) {
                 $this->createEdtEvent($previsionnel, $typeCours, $semaine, $numeroSeance, $getGr);
             }
 

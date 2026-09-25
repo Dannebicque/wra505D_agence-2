@@ -6,7 +6,8 @@ class PermissionResolver
 {
     public function __construct(
         private readonly PermissionRegistry $registry
-    ) {}
+    ) {
+    }
 
     /**
      * Resolves all effective permissions given a set of directly assigned permissions (roles)

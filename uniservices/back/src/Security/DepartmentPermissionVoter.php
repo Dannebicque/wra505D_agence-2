@@ -13,11 +13,12 @@ class DepartmentPermissionVoter extends Voter
     public function __construct(
         private readonly DepartmentPermissionChecker $checker,
         private readonly PermissionRegistry $registry
-    ) {}
+    ) {
+    }
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $subject instanceof StructureDepartement && 
+        return $subject instanceof StructureDepartement &&
             ($this->registry->getPermissionByRole($attribute) !== null || str_starts_with($attribute, 'ROLE_'));
     }
 

@@ -22,8 +22,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [
         new Get(normalizationContext: ['groups' => ['enseignant_hrs:read']]),
         new GetCollection(normalizationContext: ['groups' => ['enseignant_hrs:read']]),
-        new Post(normalizationContext: ['groups' => ['enseignant_hrs:write']],),
-        new Delete(normalizationContext: ['groups' => ['enseignant_hrs:write']],)
+        new Post(normalizationContext: ['groups' => ['enseignant_hrs:write']], ),
+        new Delete(normalizationContext: ['groups' => ['enseignant_hrs:write']], )
     ]
 )]
 #[ApiFilter(PersonnelEnseignantHrsFilter::class)]

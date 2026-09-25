@@ -267,7 +267,8 @@ class EtudiantAbsenceJustificatif
     }
 
     #[Groups(['justificatif:administration'])]
-    public function getEtudiant(): ?Etudiant {
+    public function getEtudiant(): ?Etudiant
+    {
 
         return $this->scolariteSemestre?->getScolarite()?->getEtudiant();
     }

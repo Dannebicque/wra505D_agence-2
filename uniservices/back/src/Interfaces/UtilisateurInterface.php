@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2021. | David Annebicque | IUT de Troyes  - All Rights Reserved
  * @file /Users/davidannebicque/htdocs/intranetV3/src/Interfaces/UtilisateurInterface.php
@@ -19,7 +20,7 @@ interface UtilisateurInterface
 
     public function getTypeUser(): ?string;
 
-//    public function getAnneeUniversitaire(): ?AnneeUniversitaire;
+    //    public function getAnneeUniversitaire(): ?AnneeUniversitaire;
 
     public function setPassword(string $password): void;
 }

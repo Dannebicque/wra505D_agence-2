@@ -39,7 +39,8 @@ class PersonnelVoter extends Voter
 
     public function __construct(
         private readonly UserEffectivePermissionService $effectivePermissionService
-    ) {}
+    ) {
+    }
 
     /**
      * @inheritDoc
@@ -172,5 +173,3 @@ class PersonnelVoter extends Voter
         ]);
     }
 }
-
-

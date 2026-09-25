@@ -68,8 +68,7 @@ class CopyTransfertBddStructureCommand extends Command
         PersonnelRepository              $personnelRepository,
         protected HttpClientInterface      $httpClient,
         ParameterBagInterface              $params
-    )
-    {
+    ) {
         parent::__construct();
         $this->tCompetences = $apcCompetenceRepository->findAllByOldIdArray();
         $this->tApprentissages = $apcApprentissageCritiqueRepository->findAllByOldIdArray();
@@ -129,7 +128,7 @@ FOREIGN_KEY_CHECKS=1');
         $this->effacerTables();
         $this->addAnneeUniversitaire();
 
-//        // Départements
+        //        // Départements
         $this->addTypeDiplome();
         $this->addDepartements();
         $this->addDiplomes();

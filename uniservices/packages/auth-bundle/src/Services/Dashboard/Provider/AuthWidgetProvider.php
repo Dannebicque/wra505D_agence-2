@@ -8,7 +8,6 @@ use App\Repository\EtablissementRepository;
 
 class AuthWidgetProvider implements WidgetProviderInterface
 {
-
     public function __construct(private EtablissementRepository $etablissementRepository)
     {
 

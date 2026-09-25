@@ -36,8 +36,7 @@ class CopyTransfertBddApcCommand extends Command
     public function __construct(
         protected EntityManagerInterface $entityManager,
         ManagerRegistry                  $managerRegistry,
-    )
-    {
+    ) {
         parent::__construct();
         $this->em = $managerRegistry->getConnection('copy');
     }
@@ -61,8 +60,7 @@ FOREIGN_KEY_CHECKS=0');
 FOREIGN_KEY_CHECKS=1');
     }
 
-    protected
-    function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
 
