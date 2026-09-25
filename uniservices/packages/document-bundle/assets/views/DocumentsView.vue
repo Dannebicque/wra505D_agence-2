@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick, type Ref } from 'vue';
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router';
 import Toast from 'primevue/toast';
 import ConfirmDialog from 'primevue/confirmdialog';
@@ -256,6 +256,21 @@ watch(() => route.query, () => {
 watch([selectedCategory, selectedEnseignement, showFavorites], () => {
   filtresOuverts.value = false;
 });
+
+// Le Drawer de PrimeVue, contrairement au Dialog, ne rend pas le focus en se fermant : il
+// retomberait en haut de la page, et l'utilisateur au clavier perdrait sa place.
+const rendreLeFocusALaFermeture = (visible: Ref<boolean>) => {
+  let declencheur: HTMLElement | null = null;
+  watch(visible, (ouvert) => {
+    if (ouvert) {
+      declencheur = document.activeElement as HTMLElement | null;
+      return;
+    }
+    nextTick(() => declencheur?.focus());
+  });
+};
+rendreLeFocusALaFermeture(showDetailDrawer);
+rendreLeFocusALaFermeture(filtresOuverts);
 
 const panneau = computed(() => ({
   categories: categories.value,
