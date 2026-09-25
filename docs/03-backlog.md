@@ -128,7 +128,7 @@ documents `PERSONNEL` et `DEPARTEMENT` de tous les départements. À l'inverse, 
 `Delete` exigent `ROLE_PERSONNEL`, que personne ne reçoit (`Personnel::getRoles()` renvoie les
 permissions du département) : personne ne peut créer ni modifier un document.
 **Terminé quand** la lecture exige une connexion et suit les règles de visibilité de
-`back/src/Service/Recherche/Source/SourceDocuments.php`, et qu'une règle d'écriture défendable
+`back/src/Service/Search/Source/DocumentSearchSource.php`, et qu'une règle d'écriture défendable
 est choisie, notée dans les décisions de `04-reprise.md` et couverte par PHPUnit.
 
 ### E9 · [back] Code client au format PSR-12 · S
@@ -249,7 +249,12 @@ explicitement, sans changement de comportement.
 champs JSON ne changent pas : le front n'est pas touché. Une PR par module : recherche,
 notifications, scolarité, Celcat, documents favoris. On y applique aussi les usages actuels
 (services `final readonly`, repositories injectés, `#[CurrentUser]`, pas de requête N+1).
-
+**Recherche faite** `Service/Recherche` devient `Service/Search` : `SearchEngine`, `FuzzyMatcher`,
+`Candidate`, `SearchSourceInterface` et les sources `*SearchSource`, `SearchProvider`,
+`SearchResult`. Le `shortName` `ResultatRecherche`, l'URL `/recherche` et les champs JSON sont
+conservés, avec `#[SerializedName]`. Renommage délégué à Codex. Vérifié : 20 recherches, en
+étudiant et en personnel, et la partie OpenAPI renvoient un résultat identique à l'octet près.
+**Reste** notifications, scolarité, Celcat, documents favoris.
 ### E15 · [back] PHPStan au niveau max, sans baseline · L, à redécouper
 **Pourquoi** le niveau 6 laisse passer le `mixed` et les nullabilités, et 4 identifiants sont
 ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au 9, 2 871 au 10,

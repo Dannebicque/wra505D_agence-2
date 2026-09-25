@@ -1,29 +1,31 @@
 <?php
 
-namespace App\Tests\Service\Recherche;
+declare(strict_types=1);
 
-use App\Service\Recherche\CorrespondanceTolerante;
+namespace App\Tests\Service\Search;
+
+use App\Service\Search\FuzzyMatcher;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-final class CorrespondanceToleranteTest extends TestCase
+final class FuzzyMatcherTest extends TestCase
 {
-    private CorrespondanceTolerante $correspondance;
+    private FuzzyMatcher $matcher;
 
     protected function setUp(): void
     {
-        $this->correspondance = new CorrespondanceTolerante();
+        $this->matcher = new FuzzyMatcher();
     }
 
-    public function testNormaliseLaCasseLesAccentsEtLaPonctuation(): void
+    public function testNormalizesCaseAccentsAndPunctuation(): void
     {
-        self::assertSame('developpement front end', $this->correspondance->normaliser('  Développement Front-End !'));
+        self::assertSame('developpement front end', $this->matcher->normalize('  Développement Front-End !'));
     }
 
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function correspondances(): iterable
+    public static function matchingCases(): iterable
     {
         yield 'identique' => ['Annebicque', 'David Annebicque'];
         yield 'casse et accents' => ['developpement', 'Développement front'];
@@ -37,16 +39,16 @@ final class CorrespondanceToleranteTest extends TestCase
         yield 'deux fautes sur un mot long' => ['devlopement', 'Développement front'];
     }
 
-    #[DataProvider('correspondances')]
-    public function testTrouveMalgreLesFautes(string $requete, string $texte): void
+    #[DataProvider('matchingCases')]
+    public function testMatchesDespiteTypos(string $query, string $text): void
     {
-        self::assertNotNull($this->correspondance->score($requete, $texte));
+        self::assertNotNull($this->matcher->score($query, $text));
     }
 
     /**
      * @return iterable<string, array{string, string}>
      */
-    public static function absences(): iterable
+    public static function nonMatchingCases(): iterable
     {
         yield 'mot court sans tolérance' => ['jon', 'Jane Doe'];
         yield 'trop de fautes' => ['bugdte', 'Budget prévisionnel'];
@@ -54,20 +56,20 @@ final class CorrespondanceToleranteTest extends TestCase
         yield 'requête vide après normalisation' => ['!!', 'Jane Doe'];
     }
 
-    #[DataProvider('absences')]
-    public function testNeTrouvePasCeQuiNeCorrespondPas(string $requete, string $texte): void
+    #[DataProvider('nonMatchingCases')]
+    public function testDoesNotMatchUnrelatedText(string $query, string $text): void
     {
-        self::assertNull($this->correspondance->score($requete, $texte));
+        self::assertNull($this->matcher->score($query, $text));
     }
 
-    public function testClasseLExactAvantLeDebutDeMotEtAvantLaFaute(): void
+    public function testRanksExactBeforePrefixAndTypo(): void
     {
-        $exact = $this->correspondance->score('doe', 'Jane Doe');
-        $debut = $this->correspondance->score('doe', 'John Doering');
-        $faute = $this->correspondance->score('jnae', 'Jane Doe');
+        $exact = $this->matcher->score('doe', 'Jane Doe');
+        $prefix = $this->matcher->score('doe', 'John Doering');
+        $typo = $this->matcher->score('jnae', 'Jane Doe');
 
         self::assertSame(1.0, $exact);
-        self::assertGreaterThan($debut, $exact);
-        self::assertGreaterThan($faute, $debut);
+        self::assertGreaterThan($prefix, $exact);
+        self::assertGreaterThan($typo, $prefix);
     }
 }
