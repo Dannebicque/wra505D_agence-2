@@ -12,7 +12,7 @@ Dernière mise à jour : 25/09/2026.
 - **Volet 1**, le site de l'agence : Next.js, en ligne sur <https://figmium.vercel.app>. Hors de
   ce dépôt. C'est lui qui porte la contrainte Jamstack du sujet.
 - **Volet 2**, l'espace étudiant : on reprend la base du client, uniServices, importée dans
-  `uniservices/`. Front Vue 3 + Vite + PrimeVue, back Symfony 7.4 + API Platform, MariaDB.
+  `uniservices/`. Front Vue 3 + Vite + PrimeVue, back Symfony 8.1 + API Platform, MariaDB.
 - Le détail des tâches est dans `docs/03-backlog.md`, les constats d'audit dans
   `docs/01-audit-existant.md`, l'audit informel de l'équipe dans le `.docx` du dossier Drive.
 
@@ -146,6 +146,12 @@ Le `main` de [IUTTroyes/uniServices](https://github.com/IUTTroyes/uniServices) �
 (Cyndel, David Annebicque). Règle : **on ne reprend un commit amont que s'il est bon et ne casse
 rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs branches.
 
+- Depuis E13, notre back est en Symfony 8.1 et le leur en 7.3 : une modification de leurs
+  `composer.json` se réécrit à la main, elle ne s'applique pas telle quelle.
+- **Symfony 8.1 n'est maintenu que jusqu'à fin janvier 2027** : passer en 8.2 avant.
+- **Au déploiement**, vider aussi les pools de cache :
+  `php bin/console cache:pool:clear cache.global_clearer`. Le cache de métadonnées d'API Platform
+  survit à `cache:clear` et garde des groupes de sérialisation périmés.
 - Dernier commit examiné : noté dans `.github/uniservices-amont-examine`, aujourd'hui `ef38ca880`.
 - Le workflow « Veille uniServices » ouvre une issue chaque matin de semaine s'il y a du nouveau.
   Il ne tourne que depuis la branche par défaut, `main` : pas avant le prochain passage vers `main`.
