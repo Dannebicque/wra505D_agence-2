@@ -2,7 +2,7 @@
   <div>
     <div
       :class="[
-        'w-full flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+        'w-full flex items-center space-x-2 pr-3 text-sm font-medium rounded-md transition-colors',
         selectedCategory === category.id
           ? 'bg-primary-50 text-primary-700 border border-primary-200'
           : 'text-gray-700 hover:bg-gray-50'
@@ -14,7 +14,7 @@
         :aria-label="`Sous-catégories de ${category.name}`"
         :aria-expanded="expanded"
         @click="toggleExpanded"
-        class="p-1 hover:bg-gray-100 rounded"
+        class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
       >
         <svg
           :class="[
@@ -24,6 +24,7 @@
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             stroke-linecap="round"
@@ -33,16 +34,21 @@
           />
         </svg>
       </button>
-      <div v-else class="w-5"></div>
+      <div v-else class="w-[44px] shrink-0"></div>
 
-      <button type="button" @click="selectCategory" class="flex items-center space-x-2 flex-1">
+      <RouterLink
+        :to="{ query: { categorie: category.id } }"
+        :aria-current="selectedCategory === category.id ? 'page' : undefined"
+        class="flex items-center space-x-2 flex-1 min-h-[44px] rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+      >
         <i :class="[category.icon, 'text-lg']" aria-hidden="true"></i>
         <span class="flex-1 text-left">{{ category.name }}</span>
 
-        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" aria-hidden="true">
           {{ category.documentCount }}
         </span>
-      </button>
+        <span class="sr-only">{{ category.documentCount }} {{ category.documentCount > 1 ? 'documents' : 'document' }}</span>
+      </RouterLink>
     </div>
 
     <div
@@ -54,15 +60,15 @@
         :key="child.id"
         :category="child"
         :selected-category="selectedCategory"
-        @select="$emit('select', $event)"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { Category } from '@types';
+import { contientCategorie } from '@/service/utils/categorieUtils';
 
 interface Props {
   category: Category;
@@ -71,17 +77,17 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const emit = defineEmits<{
-  select: [categoryId: string];
-}>();
+const contientLaSelection = () => contientCategorie(props.category.children ?? [], props.selectedCategory);
 
-const expanded = ref(false);
+const expanded = ref(contientLaSelection());
+
+watch(() => props.selectedCategory, () => {
+  if (contientLaSelection()) {
+    expanded.value = true;
+  }
+});
 
 const toggleExpanded = () => {
   expanded.value = !expanded.value;
-};
-
-const selectCategory = () => {
-  emit('select', props.category.id);
 };
 </script>

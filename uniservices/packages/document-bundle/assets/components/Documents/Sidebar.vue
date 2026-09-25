@@ -21,7 +21,7 @@
     <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
       <!-- All Documents -->
       <button
-        @click="$emit('selectCategory', null)"
+        @click="$emit('selectAll')"
         :class="[
           'w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
           selectedCategory === null && selectedEnseignement === null && !showFavorites
@@ -98,7 +98,6 @@
             :key="category.id"
             :category="category"
             :selected-category="selectedCategory"
-            @select="$emit('selectCategory', $event)"
           />
         </div>
       </div>
@@ -126,7 +125,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  selectCategory: [categoryId: string | null];
+  selectAll: [];
   selectEnseignement: [enseignementId: string];
   selectFavorites: [];
   search: [query: string];
