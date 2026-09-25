@@ -267,7 +267,12 @@ traduits mot à mot. Tout est rétabli. Seul change le nom interne du schéma Op
 l'URL `/me/scolarite` et les champs JSON sont conservés. Délégué à Codex avec une consigne
 explicite : ni chaîne, ni commentaire, ni remplacement global. Aucune chaîne ni phrase de
 commentaire n'a changé, et le relevé, OpenAPI et le SQL sont identiques à la référence.
-**Reste** Celcat, documents favoris.
+**Celcat fait** `CelcatFakeDatabaseCommand` et `CelcatReport`, et les identifiants internes des
+autres classes en anglais. Les commandes `app:celcat:sync` et `app:celcat:fausse-base`, appelées
+par la CI et la documentation, gardent leur nom. Délégué à Codex. Vérifié : aide des commandes,
+génération de la fausse base, synchronisation (290 créneaux) et contenu de `edt_event` identiques
+à la référence ; aucune chaîne ni phrase de commentaire changée.
+**Reste** documents favoris.
 ### E15 · [back] PHPStan au niveau max, sans baseline · L, à redécouper
 **Pourquoi** le niveau 6 laisse passer le `mixed` et les nullabilités, et 4 identifiants sont
 ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au 9, 2 871 au 10,
