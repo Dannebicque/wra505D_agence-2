@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
-use Doctrine\ORM\EntityManagerInterface;
 use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,7 +18,6 @@ class AuthController extends AbstractController
 {
     public function __construct(
         private RefreshTokenManagerInterface $refreshTokenManager,
-        private EntityManagerInterface $entityManager,
         private ParameterBagInterface $parameterBag
     ) {
     }
@@ -34,8 +32,7 @@ class AuthController extends AbstractController
         if ($refreshToken) {
             $token = $this->refreshTokenManager->get($refreshToken);
             if ($token) {
-                $this->entityManager->remove($token);
-                $this->entityManager->flush();
+                $this->refreshTokenManager->delete($token);
             }
         }
 
