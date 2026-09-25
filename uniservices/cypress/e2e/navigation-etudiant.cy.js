@@ -24,7 +24,7 @@ describe('Navigation de l\'étudiant', () => {
 
         cy.get('.layout-menu').contains('a', 'Documents').click();
         cy.location('pathname').should('eq', '/app/documents');
-        cy.contains('h3', 'Matières', { timeout: 15000 });
+        cy.contains('h2', 'Matières', { timeout: 15000 });
         entrees.forEach(entree => cy.get('.layout-menu').should('contain', entree));
 
         cy.get('.layout-menu').contains('a', 'Notes et absences').click();
