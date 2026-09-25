@@ -3,7 +3,7 @@
 État du projet et suite à donner, pour qu'une nouvelle session reparte sans rien redécouvrir.
 À lire après `CLAUDE.md`. À mettre à jour à chaque étape importante.
 
-Dernière mise à jour : 24/09/2026.
+Dernière mise à jour : 25/09/2026.
 
 ---
 
@@ -232,3 +232,7 @@ Trois failles à leur signaler, car elles sont dans leur code de production :
   front ne peut pas tourner.
 - **Deux relations de groupes** : `Etudiant::groupes` et `EtudiantScolariteSemestre::groupes`.
   L'emploi du temps et les filtres de scolarité lisent la seconde.
+- **`cy.press(Cypress.Keyboard.Keys.ENTER)` n'active pas un bouton** dans Electron, le navigateur
+  de la CI : le focus est bien là, mais le clic ne part pas. `SPACE` l'active.
+- **`[role="status"]` n'est pas unique** : la palette de recherche en porte deux, masquées. Cibler
+  une région par son texte : `cy.contains('[role="status"]', '…')`.
