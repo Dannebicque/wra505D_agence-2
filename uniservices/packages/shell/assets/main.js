@@ -21,21 +21,34 @@ import fr from '@config/fr.json';
 import './assets/styles.scss';
 import './assets/tailwind.css';
 
+// Une seule primaire pour tous les modules : le violet de la DA, #4D3677, en 500. Les autres
+// nuances en sont dérivées en OKLab. En clair, Aura pose du blanc dessus (9,95:1) ; en sombre, il
+// prend la 400, à 6,54:1 sur le fond sombre.
+const VIOLET_IUT = {
+    50: '#F8F5FF',
+    100: '#EFE9FF',
+    200: '#DED4FB',
+    300: '#C7B6F1',
+    400: '#AC95E1',
+    500: '#4D3677',
+    600: '#3D2763',
+    700: '#2E184F',
+    800: '#210C3F',
+    900: '#170331',
+    950: '#0D0023'
+};
+
 const MyPreset = definePreset(Aura, {
     semantic: {
-        primary: {
-            50: '{violet.50}',
-            100: '{violet.100}',
-            200: '{violet.200}',
-            300: '{violet.300}',
-            400: '{violet.400}',
-            500: '{violet.500}',
-            600: '{violet.600}',
-            700: '{violet.700}',
-            800: '{violet.800}',
-            900: '{violet.900}',
-            950: '{violet.950}'
-        },
+        primary: VIOLET_IUT,
+    },
+    // La primaire d'origine de la DA devient l'accent. Seul sur blanc, le jaune ne fait que
+    // 1,88:1 : il porte du texte #4D3677 (5,29:1) et ne délimite jamais un élément sans bordure.
+    extend: {
+        accent: {
+            color: '#F7B000',
+            contrastColor: '#4D3677'
+        }
     },
     components: {
         button: {
