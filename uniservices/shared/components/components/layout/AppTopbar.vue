@@ -360,13 +360,13 @@ const selectAnneeUniversitaire = (annee) => {
         <div class="layout-topbar-menu-content">
           <router-link :to="{ name: 'portail' }" v-if="route.name !== 'portail' && !estEtudiant"
             class="layout-topbar-action layout-topbar-action-text">
-            <i class="pi pi-arrow-left text-primary"></i>
+            <i class="pi pi-arrow-left text-primary" aria-hidden="true"></i>
             <span>Portail</span>
           </router-link>
 
           <button v-if="route.name !== 'portail' && !estEtudiant" type="button" class="layout-topbar-action layout-topbar-action-text"
             @click="toggleToolsMenu" aria-haspopup="true" aria-controls="tools_menu">
-            <i class="pi pi-box text-primary"></i>
+            <i class="pi pi-box text-primary" aria-hidden="true"></i>
             <span>Applications</span>
           </button>
           <Menu ref="toolsMenu" id="tools_menu" :model="tools" :popup="true">
@@ -381,14 +381,14 @@ const selectAnneeUniversitaire = (annee) => {
           <button v-if="userStore.userType === 'personnels'" type="button"
             class="layout-topbar-action layout-topbar-action-text" @click="toggleDeptMenu" aria-haspopup="true"
             aria-controls="dept_menu">
-            <i class="pi pi-arrow-right-arrow-left text-primary"></i>
+            <i class="pi pi-arrow-right-arrow-left text-primary" aria-hidden="true"></i>
             <span>{{ departementLabel }}</span>
           </button>
           <Menu ref="deptMenu" id="dept_menu" :model="deptItems" :popup="true" />
 
           <button v-if="showRolesMenu" type="button" class="layout-topbar-action layout-topbar-action-text"
             @click="toggleRolesMenu" aria-haspopup="true" aria-controls="roles_menu">
-            <i class="pi pi-shield text-primary"></i>
+            <i class="pi pi-shield text-primary" aria-hidden="true"></i>
             <span>Rôles</span>
           </button>
           <Menu ref="rolesMenu" id="roles_menu" :model="rolesItems" :popup="true" />
@@ -396,19 +396,19 @@ const selectAnneeUniversitaire = (annee) => {
           <PermissionGuard permission="isPersonnel">
             <button type="button" class="layout-topbar-action layout-topbar-action-text" @click="toggleAnneeMenu"
               aria-haspopup="true" aria-controls="annee_menu">
-              <i class="pi pi-calendar text-primary"></i>
+              <i class="pi pi-calendar text-primary" aria-hidden="true"></i>
               <span>{{ selectedAnneeUniversitaire?.label }}</span>
             </button>
             <Menu ref="anneeMenu" id="annee_menu" :model="anneeItems" :popup="true" />
           </PermissionGuard>
 
           <button v-if="!estEtudiant" type="button" class="layout-topbar-action">
-            <i class="pi pi-inbox"></i>
+            <i class="pi pi-inbox" aria-hidden="true"></i>
             <span>Messages</span>
           </button>
           <NotificationsCloche v-if="estEtudiant" />
           <button v-else type="button" class="layout-topbar-action">
-            <i class="pi pi-bell"></i>
+            <i class="pi pi-bell" aria-hidden="true"></i>
             <span>Notifications</span>
           </button>
           <div class="layout-config-menu">

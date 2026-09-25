@@ -33,11 +33,11 @@ const copyDebugMessage = async () => {
       <div class="w-full bg-surface-50 dark:bg-surface-950 py-20 px-8 sm:px-20 flex flex-col items-center border border-red-400 rounded-2xl shadow-lg">
         <div class="gap-4 flex flex-col items-center">
           <div class="flex justify-center items-center border-2 border-red-500 rounded-full" style="width: 3.2rem; height: 3.2rem">
-            <i class="text-red-500 pi pi-fw pi-exclamation-triangle !text-2xl"></i>
+            <i class="text-red-500 pi pi-fw pi-exclamation-triangle !text-2xl" aria-hidden="true"></i>
           </div>
           <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">Erreur</h1>
           <span class="text-muted-color text-center">Une erreur est survenue. <br> Veuillez réessayer plus tard ou contacter les administrateurs du site.</span>
-          <a href="mailto:intranet.iut-troyes@univ-reims.fr" class="underline touch-target">Contacter les administrateurs du site &nbsp; <i class="pi pi-external-link !text-xs underline"></i></a>
+          <a href="mailto:intranet.iut-troyes@univ-reims.fr" class="underline touch-target">Contacter les administrateurs du site &nbsp; <i class="pi pi-external-link !text-xs underline" aria-hidden="true"></i></a>
 
           <div v-if="debugMessage" class="w-full max-w-2xl rounded-xl border border-surface-300 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 mt-2">
             <div class="flex items-center justify-between gap-3 mb-2">

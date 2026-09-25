@@ -123,7 +123,7 @@ function getNestedValue(obj, path) {
         <Button label="Ajouter" icon="pi pi-plus" class="mr-2" @click="actionAdd.handler()" v-if="actionAdd" />
         <IconField>
           <InputIcon>
-            <i class="pi pi-search" />
+            <i class="pi pi-search" aria-hidden="true" />
           </InputIcon>
           <InputText v-model="filters.global.value" placeholder="Rechercher..." />
         </IconField>

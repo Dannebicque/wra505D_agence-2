@@ -87,7 +87,7 @@ function checkActiveRoute(item) {
             @focus="relayerSurvol($event, 'mouseenter')" @blur="relayerSurvol($event, 'mouseleave')">
             <i :class="item.icon" class="layout-menuitem-icon" aria-hidden="true"></i>
             <span class="layout-menuitem-text">{{ item.label }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
+            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items" aria-hidden="true"></i>
         </router-link>
         <Transition v-if="item.items && item.visible !== false" name="layout-submenu">
             <ul v-show="root ? true : isActiveMenu" class="layout-submenu">

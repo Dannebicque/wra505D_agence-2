@@ -62,7 +62,7 @@ const onActionClick = (event) => {
 
     <div class="text-muted-color text-sm flex flex-row items-center gap-2">
       <div class="flex items-center gap-1">
-        <i class="pi pi-map-marker"></i>
+        <i class="pi pi-map-marker" aria-hidden="true"></i>
         {{ item.salle }}
       </div>
       <span> - </span>

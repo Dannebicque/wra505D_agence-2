@@ -7,7 +7,7 @@
       <div class="w-full bg-surface-50 dark:bg-surface-950 py-20 px-8 sm:px-20 flex flex-col items-center border border-primary-400 rounded-2xl shadow-lg">
         <div class="gap-4 flex flex-col items-center">
           <div class="flex justify-center items-center border-2 border-primary-500 rounded-full" style="width: 3.2rem; height: 3.2rem">
-            <i class="text-primary-500 pi pi-fw pi-search !text-2xl"></i>
+            <i class="text-primary-500 pi pi-fw pi-search !text-2xl" aria-hidden="true"></i>
           </div>
           <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">Page Introuvable</h1>
           <span class="text-muted-color text-center">La page que vous recherchez n'existe pas.</span>
