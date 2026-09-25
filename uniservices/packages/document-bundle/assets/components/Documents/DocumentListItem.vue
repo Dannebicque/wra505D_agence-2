@@ -10,7 +10,7 @@
 
       <div class="flex-1 min-w-0">
         <div class="flex items-center justify-between">
-          <h3 class="font-medium text-gray-900 truncate group-hover:text-primary-600 transition-colors">
+          <h3 class="text-base! leading-snug! m-0! font-medium text-gray-900 line-clamp-2 break-words group-hover:text-primary-600 transition-colors">
             {{ document.title }}
           </h3>
           <div class="flex items-center space-x-2">

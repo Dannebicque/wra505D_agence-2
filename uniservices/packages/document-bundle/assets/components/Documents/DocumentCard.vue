@@ -5,32 +5,34 @@
   >
     <div>
       <!-- Header -->
-      <div class="flex items-start justify-between md:mb-3">
-        <div class="flex items-center space-x-3 min-w-0">
-          <div :class="['p-2 rounded-lg bg-gray-50 flex items-center justify-center', getFileIconColor(document.type)]">
-            <i :class="[getFileIcon(document.type), 'text-2xl']" aria-hidden="true"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
-              {{ document.title }}
-            </h3>
-            <p class="text-xs text-gray-600 truncate">
+      <!-- Le titre vient en premier dans le code, pour être lu avant le reste, mais s'affiche sous
+           l'icône : à côté d'elle et de l'étoile, il n'avait que 90 px. -->
+      <div class="flex flex-col gap-2 md:mb-3">
+        <h3 class="order-2 text-base! leading-snug! m-0! font-semibold text-gray-900 line-clamp-2 break-words group-hover:text-primary-600 transition-colors">
+          {{ document.title }}
+        </h3>
+        <div class="order-1 flex items-center justify-between gap-2">
+          <div class="flex flex-1 items-center gap-2 min-w-0">
+            <div :class="['p-2 rounded-lg bg-gray-50 flex items-center justify-center shrink-0', getFileIconColor(document.type)]">
+              <i :class="[getFileIcon(document.type), 'text-xl']" aria-hidden="true"></i>
+            </div>
+            <p class="text-xs text-gray-600 whitespace-nowrap m-0">
               {{ getFileExtension(document.type) }} • {{ formatFileSize(document.size) }}
             </p>
           </div>
-        </div>
 
-        <button
-          @click.stop="$emit('toggleFavorite', document.id)"
-          class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
-          :title="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
-          :aria-label="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
-        >
-          <i
-            :class="[document.isFavorite ? 'pi pi-star-fill text-amber-700' : 'pi pi-star text-gray-600 group-hover:text-gray-700', 'text-lg']"
-            aria-hidden="true"
-          ></i>
-        </button>
+          <button
+            @click.stop="$emit('toggleFavorite', document.id)"
+            class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
+            :title="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+            :aria-label="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+          >
+            <i
+              :class="[document.isFavorite ? 'pi pi-star-fill text-amber-700' : 'pi pi-star text-gray-600 group-hover:text-gray-700', 'text-lg']"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </div>
       </div>
 
       <!-- Info badges -->
