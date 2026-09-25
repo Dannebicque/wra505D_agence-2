@@ -265,3 +265,18 @@
         gap: 0.5rem;
     }
 }
+
+// Cloche, thème et profil : une seule taille de cible, centrées sur la même ligne.
+@media (min-width: 992px) {
+    .layout-topbar {
+        .layout-topbar-menu-content,
+        .layout-config-menu {
+            align-items: center;
+        }
+
+        .layout-topbar-menu-content .layout-topbar-action:not(.layout-topbar-action-text) {
+            width: 44px;
+            height: 44px;
+        }
+    }
+}

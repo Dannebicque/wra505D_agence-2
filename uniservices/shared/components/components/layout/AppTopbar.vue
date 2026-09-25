@@ -364,11 +364,11 @@ const selectAnneeUniversitaire = (annee) => {
           </button>
           <div class="layout-config-menu">
             <button type="button" class="layout-topbar-action" aria-label="Mode sombre" :aria-pressed="isDarkTheme" @click="toggleDarkMode">
-              <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
+              <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]" aria-hidden="true"></i>
             </button>
           </div>
           <Button severity="secondary" rounded @click="toggleProfileMenu" aria-haspopup="true"
-            aria-controls="profile_menu" class="layout-topbar-action p-0!">
+            aria-controls="profile_menu" aria-label="Mon profil" class="layout-topbar-action p-0!">
             <template v-if="userStore.userPhoto">
               <img :src="userStore.userPhoto" alt="photo de profil" class="rounded-full max-w-12 mx-auto">
             </template>
