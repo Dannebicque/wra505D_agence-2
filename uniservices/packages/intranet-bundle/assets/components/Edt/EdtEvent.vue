@@ -96,7 +96,7 @@ const openDialog = (dialogType, ev) => {
         </div>
         <div class="flex flex-col items-center">
           <Badge v-if="event.evaluation" severity="danger" class="uppercase">éval.</Badge>
-          <div class="opacity-60">{{ formattedTime }}</div>
+          <div>{{ formattedTime }}</div>
         </div>
       </div>
     </div>
@@ -180,7 +180,7 @@ const openDialog = (dialogType, ev) => {
         </div>
         <div class="flex flex-col items-center">
           <Badge v-if="event.evaluation" severity="danger" class="uppercase">éval.</Badge>
-          <div class="opacity-60">{{ formattedTime }}</div>
+          <div>{{ formattedTime }}</div>
         </div>
       </div>
 
@@ -220,7 +220,7 @@ const openDialog = (dialogType, ev) => {
         </div>
         <div class="flex flex-col items-center">
           <Badge v-if="event.evaluation" severity="danger" class="uppercase">éval.</Badge>
-          <div class="opacity-60">{{ formattedTime }}</div>
+          <div>{{ formattedTime }}</div>
         </div>
       </div>
     </div>
