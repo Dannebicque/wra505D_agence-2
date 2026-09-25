@@ -249,6 +249,7 @@ function getBadgeSeverity(type) {
         <div class="flex justify-center items-center gap-12 mb-4">
           <Button
               icon="pi pi-chevron-circle-left"
+              :aria-label="view.id === 'day' ? 'Jour précédent' : 'Semaine précédente'"
               @click="view.previous"
               class="p-button-text"
           />
@@ -258,6 +259,7 @@ function getBadgeSeverity(type) {
           </div>
           <Button
               icon="pi pi-chevron-circle-right"
+              :aria-label="view.id === 'day' ? 'Jour suivant' : 'Semaine suivante'"
               @click="view.next"
               class="p-button-text"
           />
