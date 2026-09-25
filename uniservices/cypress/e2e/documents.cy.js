@@ -94,6 +94,20 @@ describe('Documents par matière et par SAÉ', () => {
         cy.contains('button', 'Titre, de A à Z', { timeout: 15000 });
     });
 
+    it('affiche des titres de documents lisibles, jamais coupés à quelques lettres', () => {
+        cy.get('#contenu-principal .card h3').should('have.length.greaterThan', 0).each(($titre) => {
+            expect(parseFloat(getComputedStyle($titre[0]).fontSize)).to.be.at.most(16);
+            expect($titre[0].scrollWidth).to.be.at.most($titre[0].clientWidth);
+        });
+        cy.get('input[aria-label="Rechercher des documents"]').should(($champ) => {
+            const style = getComputedStyle($champ[0]);
+            const contexte = document.createElement('canvas').getContext('2d');
+            contexte.font = `${style.fontSize} ${style.fontFamily}`;
+            const place = $champ[0].clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+            expect(contexte.measureText($champ.attr('placeholder')).width).to.be.at.most(place);
+        });
+    });
+
     it('n\'affiche aucun emoji, ni dans les documents ni dans leur détail', () => {
         // Le pied de page commun écrit « Copyright © » : ©, ® et ™ comptent comme pictogrammes.
         const emoji = /(?![©®™])\p{Extended_Pictographic}/u;
