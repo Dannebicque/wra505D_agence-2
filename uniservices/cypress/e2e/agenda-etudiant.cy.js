@@ -44,6 +44,9 @@ describe('Agenda de l\'étudiant', () => {
             // Espace plutôt qu'Entrée : dans Electron, cy.press n'active pas un bouton avec Entrée.
             cy.press(Cypress.Keyboard.Keys.SPACE);
             cy.get('[role="dialog"]').should('be.visible');
+            ['Appel', 'Tous présents', 'Plan de cours', 'Saisir les notes'].forEach((action) => {
+                cy.get('[role="dialog"]').find(`[aria-label="${action}"]`).should('not.exist');
+            });
 
             cy.press(Cypress.Keyboard.Keys.ESC);
             cy.get('[role="dialog"]').should('not.exist');
