@@ -226,6 +226,11 @@ en production ». Quiconque connaît un identifiant peut ouvrir le compte d'un �
 **Terminé quand** un compte créé n'a aucun mot de passe utilisable (l'étudiant passe par le CAS ou
 par la réinitialisation), et qu'un test PHPUnit le vérifie. Écran du personnel : correction de
 bug seulement, rien n'y est ajouté.
+**Fait** le compte importé n'a plus de mot de passe (`null`), et la connexion le refuse avec un
+401. Corrigé dans les deux copies du contrôleur, celle d'`App` étant la seule routée. Le test
+PHPUnit, écrit par Codex, échoue dès qu'un mot de passe est de nouveau attribué. Il a aussi fait
+apparaître une dépréciation PHP 8.4 : `str_getcsv()` reçoit désormais son caractère d'échappement
+explicitement, sans changement de comportement.
 
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,
