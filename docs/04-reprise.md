@@ -310,6 +310,7 @@ Trois failles à leur signaler, car elles sont dans leur code de production :
 - **Deux relations de groupes** : `Etudiant::groupes` et `EtudiantScolariteSemestre::groupes`.
   L'emploi du temps et les filtres de scolarité lisent la seconde.
 - **`cy.press(Cypress.Keyboard.Keys.ENTER)` n'active pas un bouton** dans Electron, le navigateur
-  de la CI : le focus est bien là, mais le clic ne part pas. `SPACE` l'active.
+  de la CI : le focus est bien là, mais le clic ne part pas. `SPACE` l'active. Sur un lien, au
+  contraire, `ENTER` fonctionne, alors que `.type('{enter}')` ne le suit pas.
 - **`[role="status"]` n'est pas unique** : la palette de recherche en porte deux, masquées. Cibler
   une région par son texte : `cy.contains('[role="status"]', '…')`.
