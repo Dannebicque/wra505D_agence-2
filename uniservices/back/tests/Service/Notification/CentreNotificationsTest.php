@@ -18,7 +18,7 @@ final class CentreNotificationsTest extends TestCase
      */
     private function source(array $notifications): SourceNotificationInterface
     {
-        return new class($notifications) implements SourceNotificationInterface {
+        return new class ($notifications) implements SourceNotificationInterface {
             /**
              * @param list<Notification> $notifications
              */

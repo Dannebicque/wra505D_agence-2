@@ -92,7 +92,7 @@ final class CelcatSynchronizerTest extends TestCase
     private function synchroniseur(): CelcatSynchronizer
     {
         $lignes = $this->lignes;
-        $source = new class($lignes) implements CelcatSource {
+        $source = new class ($lignes) implements CelcatSource {
             /** @param list<array<string, mixed>> $lignes */
             public function __construct(private readonly array $lignes)
             {
