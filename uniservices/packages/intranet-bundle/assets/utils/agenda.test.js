@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {annonceAgenda, libelleCours} from './agenda.js';
+import {annonceAgenda, libelleCours, libelleSemaine, titrePeriode} from './agenda.js';
 
 const cours = (jour, debut, fin, champs = {}) => {
     const [hd, md] = debut.split(':').map(Number);
@@ -61,5 +61,35 @@ describe('annonceAgenda', () => {
     it('dit qu\'il n\'y a aucun cours plutôt que « 0 cours »', () => {
         expect(annonceAgenda({vue: 'week', debut: lundi, fin: finVendredi, cours: []}))
             .toBe('Semaine du lundi 21 septembre au vendredi 25 septembre : aucun cours');
+    });
+});
+
+describe('titrePeriode', () => {
+    it('nomme le jour affiché en entier, avec une majuscule', () => {
+        expect(titrePeriode({vue: 'day', debut: new Date(2026, 8, 16)})).toBe('Mercredi 16 septembre 2026');
+        expect(titrePeriode({vue: 'day', debut: new Date(2026, 9, 1)})).toBe('Jeudi 1er octobre 2026');
+    });
+
+    it('ne répète ni le mois ni l\'année d\'une semaine qui tient dans un mois', () => {
+        expect(titrePeriode({vue: 'week', debut: new Date(2026, 8, 14), fin: new Date(2026, 8, 18, 23, 59)}))
+            .toBe('14 – 18 septembre 2026');
+    });
+
+    it('nomme les deux mois, puis les deux années, d\'une semaine à cheval', () => {
+        expect(titrePeriode({vue: 'week', debut: new Date(2026, 8, 28), fin: new Date(2026, 9, 2)}))
+            .toBe('28 septembre – 2 octobre 2026');
+        expect(titrePeriode({vue: 'week', debut: new Date(2026, 11, 28), fin: new Date(2027, 0, 1)}))
+            .toBe('28 décembre 2026 – 1er janvier 2027');
+    });
+});
+
+describe('libelleSemaine', () => {
+    it('explique les deux numérotations sur une ligne', () => {
+        expect(libelleSemaine(38, 2)).toBe('Semaine 38 · 2e semaine de formation');
+        expect(libelleSemaine(37, 1)).toBe('Semaine 37 · 1re semaine de formation');
+    });
+
+    it('garde la seule semaine du calendrier hors des semaines de formation', () => {
+        expect(libelleSemaine(52, 0)).toBe('Semaine 52');
     });
 });

@@ -21,3 +21,31 @@ export function annonceAgenda({vue, debut, fin, cours}) {
 
     return `${periode} : ${nombre === 0 ? 'aucun cours' : `${nombre} cours`}`;
 }
+
+const majuscule = (texte) => texte.charAt(0).toUpperCase() + texte.slice(1);
+
+// « 1er octobre » : toLocaleDateString écrirait « 1 octobre ».
+const jourDuMois = (date) => `${date.getDate() === 1 ? '1er' : date.getDate()} ${date.toLocaleDateString('fr-FR', {month: 'long'})}`;
+
+export function titrePeriode({vue, debut, fin}) {
+    if (vue === 'day') {
+        return majuscule(`${debut.toLocaleDateString('fr-FR', {weekday: 'long'})} ${jourDuMois(debut)} ${debut.getFullYear()}`);
+    }
+    if (debut.getFullYear() !== fin.getFullYear()) {
+        return `${jourDuMois(debut)} ${debut.getFullYear()} – ${jourDuMois(fin)} ${fin.getFullYear()}`;
+    }
+    if (debut.getMonth() !== fin.getMonth()) {
+        return `${jourDuMois(debut)} – ${jourDuMois(fin)} ${fin.getFullYear()}`;
+    }
+    return `${debut.getDate() === 1 ? '1er' : debut.getDate()} – ${jourDuMois(fin)} ${fin.getFullYear()}`;
+}
+
+// L'IUT compte en semaines de formation, le calendrier en semaines ISO : on garde les deux, sur
+// une seule ligne, pour qu'aucun des deux numéros ne reste sans explication.
+export function libelleSemaine(semaineCalendrier, semaineFormation) {
+    const calendrier = `Semaine ${semaineCalendrier}`;
+    if (!semaineFormation) {
+        return calendrier;
+    }
+    return `${calendrier} · ${semaineFormation}${semaineFormation === 1 ? 're' : 'e'} semaine de formation`;
+}
