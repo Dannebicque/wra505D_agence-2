@@ -89,7 +89,7 @@
 
       <!-- Categories -->
       <div class="mt-6">
-        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+        <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
           Catégories
         </h3>
         <div class="space-y-1">

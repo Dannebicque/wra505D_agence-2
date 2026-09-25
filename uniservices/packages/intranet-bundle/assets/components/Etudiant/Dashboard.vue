@@ -151,7 +151,7 @@ const moveWidget = async (widget, direction) => {
             <h2 class="text-2xl! mb-0! font-bold flex items-center gap-2">
               <span class="font-light">Bonjour,</span> {{ userStore.user.prenom }}
             </h2>
-            <small class="text-gray-500">{{ formatDateLong(date) }}</small>
+            <small class="text-muted-color">{{ formatDateLong(date) }}</small>
           </div>
         </div>
         <div class="card flex justify-between items-center gap-6 m-0! p-4!">
