@@ -205,7 +205,7 @@ l'URL de comparaison.
 1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture
    impossible à quiconque (`ROLE_PERSONNEL` jamais attribué).
 2. **P1, fiche matière** : prochains cours, documents, notes et absences d'une matière, réunis.
-   Dernière étape du plan de navigation, les données existent déjà (`ReleveEtudiant`,
+   Dernière étape du plan de navigation, les données existent déjà (`TranscriptBuilder`,
    `Document.enseignement`, `EdtEvent`).
 3. **Colonne B** : B11 (mode sombre de Documents), puis B1, B2, B4, B5, B8 et B9.
 4. **Emploi du temps mobile**, fiche C3 et priorité 4, côté JEREMY ; C6 et C16 ensuite.
