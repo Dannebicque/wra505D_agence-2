@@ -12,7 +12,7 @@
         :show-favorites="showFavorites"
         :total-documents="totalDocuments"
         :favorite-count="favoriteCount"
-        @selectCategory="selectCategory"
+        @selectAll="selectAll"
         @selectEnseignement="selectEnseignement"
         @selectFavorites="selectFavorites"
         @search="handleSearch"
@@ -96,7 +96,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import Toast from 'primevue/toast';
 import ConfirmDialog from 'primevue/confirmdialog';
 import { useToast } from 'primevue/usetoast';
@@ -109,12 +110,15 @@ import DocumentUploadModal from '@/components/Documents/DocumentUploadModal.vue'
 import DocumentDetailDrawer from '@/components/Documents/DocumentDetailDrawer.vue';
 import { documentService } from '@/service/documentService';
 import { classerParEnseignement, libelleEnseignement } from '@/service/utils/enseignementUtils';
+import { categorieDeLAdresse } from '@/service/utils/categorieUtils';
 import { CardSkeleton, ListSkeleton } from '@components';
 import { useSecurity } from '@stores';
 import type { Category, Document, SortField, SortOrder, PaginationInfo, ViewMode } from '@types';
 
 const toast = useToast();
 const confirm = useConfirm();
+const route = useRoute();
+const router = useRouter();
 
 // State
 const loading = ref(true);
@@ -124,7 +128,7 @@ const selectedDocument = ref<Document | null>(null);
 
 const categories = ref<Category[]>([]);
 const documentsList = ref<Document[]>([]);
-const selectedCategory = ref<string | null>(null);
+const selectedCategory = computed(() => categorieDeLAdresse(route.query));
 const selectedEnseignement = ref<string | null>(null);
 const showFavorites = ref(false);
 const searchQuery = ref('');
@@ -282,25 +286,41 @@ const openDetailDrawer = (doc: Document) => {
   showDetailDrawer.value = true;
 };
 
-const selectCategory = (categoryId: string | null) => {
-  selectedCategory.value = categoryId;
+// Une catégorie s'ouvre par son lien : on n'agit qu'à son arrivée dans l'adresse. Les autres
+// vues n'y sont pas encore, elles effacent donc la catégorie en s'ouvrant.
+watch(selectedCategory, (categorie) => {
+  if (categorie) {
+    selectedEnseignement.value = null;
+    showFavorites.value = false;
+    currentPage.value = 1;
+  }
+});
+
+const quitterCategorie = () => {
+  if (selectedCategory.value) {
+    router.push({ query: {} });
+  }
+};
+
+const selectAll = () => {
   selectedEnseignement.value = null;
   showFavorites.value = false;
   currentPage.value = 1;
+  quitterCategorie();
 };
 
 const selectEnseignement = (enseignementId: string) => {
   selectedEnseignement.value = enseignementId;
-  selectedCategory.value = null;
   showFavorites.value = false;
   currentPage.value = 1;
+  quitterCategorie();
 };
 
 const selectFavorites = () => {
   showFavorites.value = true;
-  selectedCategory.value = null;
   selectedEnseignement.value = null;
   currentPage.value = 1;
+  quitterCategorie();
 };
 
 const handleSearch = (query: string) => {
