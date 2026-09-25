@@ -1,6 +1,6 @@
 <script setup>
 import { useLayout } from './composables/layout.js';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { AVAILABLE_ROLES } from "@utils/permissions";
 import Logo from '@components/components/Logo.vue';
 import AppSearch from './AppSearch.vue';
@@ -160,6 +160,43 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme, layoutState } = useLayout();
 // Ce bouton n'apparaît qu'en mobile : sur ordinateur, le menu a son propre bouton de repli.
 const menuOuvert = computed(() => layoutState.staticMenuMobileActive);
 
+// Menu « ⋮ » des écrans étroits : fermé au chargement, il se referme au clic ailleurs, à
+// Échap et au changement de page. En bureau, ses actions restent toujours affichées.
+const actionsOuvertes = ref(false);
+const boutonActions = ref(null);
+const menuActions = ref(null);
+
+const fermerActions = (event) => {
+  if (!actionsOuvertes.value) {
+    return;
+  }
+  if (event.type === 'keydown') {
+    if (event.key !== 'Escape') {
+      return;
+    }
+    actionsOuvertes.value = false;
+    boutonActions.value?.focus();
+    return;
+  }
+  if (!menuActions.value?.contains(event.target) && !boutonActions.value?.contains(event.target)) {
+    actionsOuvertes.value = false;
+  }
+};
+
+watch(() => route.fullPath, () => {
+  actionsOuvertes.value = false;
+});
+
+onMounted(() => {
+  document.addEventListener('click', fermerActions);
+  document.addEventListener('keydown', fermerActions);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', fermerActions);
+  document.removeEventListener('keydown', fermerActions);
+});
+
 const anneeMenu = ref();
 const toolsMenu = ref();
 const profileMenu = ref();
@@ -303,12 +340,23 @@ const selectAnneeUniversitaire = (annee) => {
         <AppSearch input-id="recherche-globale-mobile" />
       </div>
 
-      <button class="layout-topbar-menu-button layout-topbar-action"
-        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }">
-        <i class="pi pi-ellipsis-v"></i>
+      <button
+          ref="boutonActions"
+          type="button"
+          class="layout-topbar-menu-button layout-topbar-action"
+          aria-label="Plus d'actions"
+          :aria-expanded="actionsOuvertes ? 'true' : 'false'"
+          aria-controls="actions-barre-haute"
+          @click="actionsOuvertes = !actionsOuvertes"
+      >
+        <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
       </button>
 
-      <div class="layout-topbar-menu lg:block">
+      <div
+          id="actions-barre-haute"
+          ref="menuActions"
+          :class="['layout-topbar-menu lg:block', actionsOuvertes ? 'animate-scalein' : 'hidden']"
+      >
         <div class="layout-topbar-menu-content">
           <router-link :to="{ name: 'portail' }" v-if="route.name !== 'portail' && !estEtudiant"
             class="layout-topbar-action layout-topbar-action-text">
