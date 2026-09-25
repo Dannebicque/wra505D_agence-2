@@ -23,7 +23,6 @@ export default {
     { label: 'Mes demandes d\'aide', icon: 'pi pi-fw pi-ticket', to: '/helpdesk/mestickets', groupe: 'demarches', ordre: 30 },
     { label: 'Demander de l\'aide', icon: 'pi pi-fw pi-question-circle', to: '/helpdesk/nouveauticket', groupe: 'demarches', ordre: 40 },
   ],
-  primaryColor: 'orange',
   routes: [
     {
       path: '/helpdesk',

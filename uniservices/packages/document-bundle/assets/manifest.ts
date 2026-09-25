@@ -16,7 +16,6 @@ export default {
   studentMenu: [
     { label: 'Documents', icon: 'pi pi-fw pi-folder', to: '/documents', groupe: 'scolarite', ordre: 40, motsCles: ['cours', 'supports', 'fichiers'] },
   ],
-  primaryColor: 'blue',
   registerWidgets,
   routes: [
     {

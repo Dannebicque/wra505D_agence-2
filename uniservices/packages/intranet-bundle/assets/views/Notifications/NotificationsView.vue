@@ -109,7 +109,7 @@ onMounted(() => store.charger());
 
 /* La couleur ne porte pas seule l'état : « Non lue » est écrit dans la ligne. */
 .notification--non-lue {
-  border-left: 4px solid #4d3677;
+  border-left: 4px solid var(--p-primary-color);
 }
 
 .notification-meta {

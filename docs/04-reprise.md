@@ -166,6 +166,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Document et enseignement (B6) | un document se rattache à **un seul** `ScolEnseignement`, matière ou SAÉ, facultatif ; le lien s'efface si l'enseignement est supprimé. Un support commun à plusieurs matières se dépose dans chacune. Question 3 toujours sans réponse | nous |
 | Notifications et messages | un seul fil pour l'étudiant : notes publiées, absences, documents de ses matières, actualités et messages. Les notifications sont recalculées, seule leur lecture est stockée. Les « messages » sont les copies des e-mails que l'intranet envoie (écoute du mailer) : la boîte universitaire n'est pas lue. La décision sur un justificatif n'a pas de date : son état figure dans le texte de l'absence | nous, validé par LCS |
 | Favoris de documents (B7) | propres à chaque utilisateur (table `document_favori`), lus et modifiés par `/api/me/documents-favoris`. L'ancien champ `Document::isFavorite`, partagé par tous, est supprimé : un étudiant qui marquait un favori le marquait pour tout le monde | nous, validé par LCS |
+| Couleur primaire (A6) | une seule primaire pour tous les modules : le violet de la DA `#4D3677`, avec une palette dérivée en OKLab (`VIOLET_IUT`, `packages/shell/assets/main.js`). Le jaune `#F7B000`, primaire d'origine de la DA, devient l'accent (`--accent-color`), toujours avec du texte `#4D3677`. La couleur par module (`primaryColor`) est supprimée | LCS |
 
 ## Questions en attente du client
 

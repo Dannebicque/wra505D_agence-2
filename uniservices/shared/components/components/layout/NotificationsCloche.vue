@@ -108,8 +108,8 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', rafraichi
   height: 1.25rem;
   padding: 0 0.3rem;
   border-radius: 999px;
-  background: #4d3677;
-  color: #ffffff;
+  background: var(--p-primary-color);
+  color: var(--p-primary-contrast-color);
   font-size: 0.7rem;
   font-weight: 700;
   line-height: 1.25rem;
