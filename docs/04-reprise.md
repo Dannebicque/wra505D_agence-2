@@ -29,6 +29,11 @@ Dernière mise à jour : 25/09/2026.
   `git merge-base --is-ancestor origin/<branche> origin/develop`.
 - Corriger un bug dans le code back du client est permis, même hors du périmètre étudiant. On n'y
   ajoute pas de fonctionnalité.
+- **Style PHP : PSR-12 sur les seuls fichiers modifiés.** Depuis `uniservices/back` : `make cs`
+  vérifie, `make cs-fix` corrige, par rapport à `origin/develop` (`BASE=...` pour une autre base).
+  La CI-Back le vérifie sur chaque PR. On ne reformate pas tout le code du client : ses diffs ne
+  s'appliqueraient plus lors des reprises. Un fichier du client que l'on touche passe, lui, à la
+  norme en entier.
 
 ## Lancer le projet en local
 
