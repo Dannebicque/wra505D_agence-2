@@ -34,37 +34,16 @@ const isLoadingWidgets = ref(false);
 const widgetData = ref({});
 const selectedAnneeUniversitaireId = computed(() => anneeUnivStore.selectedAnneeUniv?.id ?? null);
 const etablissement = ref([]);
-const contacts = ref(null);
-
-// Le widget Contacts de l'intranet est la seule source des coordonnées de département : un
-// étudiant y trouve le sien, le personnel n'y a pas accès.
-const departementEtudiant = computed(() =>
-    contacts.value?.items?.find((departement) => departement.id === contacts.value.departementEtudiantId) ?? null
-);
 
 const titrePortail = computed(() => {
-  const libelle = userStore.departementDefaut?.libelle ?? departementEtudiant.value?.libelle;
+  const libelle = userStore.departementDefaut?.libelle;
   return libelle ? `Portail - ${libelle}` : 'Portail';
 });
-
-const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
-
-const getContactsDepartement = async () => {
-  if (!userStore.isEtudiant) {
-    return;
-  }
-  try {
-    contacts.value = await getWidgetDataByCodeService('intranet.contacts');
-  } catch {
-    contacts.value = null;
-  }
-};
 
 onMounted(async () => {
   isLoadingBundles.value = true;
   try {
     etablissement.value = await etablissementStore.etablissement;
-    getContactsDepartement();
     activatedBundles.value = tools.filter((bundle) => isBundleActivated(bundle));
     unactivatedBundles.value = tools.filter((bundle) => !isBundleActivated(bundle));
     // si on a le bundle "intranet" on le place en premier dans le tableau
@@ -382,17 +361,6 @@ watch(() => route.path, async (newPath, oldPath) => {
                   </div>
                 </header>
                 <div class="card-body flex items-start justify-around gap-4">
-                  <div v-if="departementEtudiant" class="w-full flex flex-col items-center justify-center">
-                    <p class="uppercase text-xs font-bold mb-0! text-muted-color">votre département</p>
-                    <div class="font-bold">{{ departementEtudiant.libelle }}</div>
-                    <a v-if="departementEtudiant.telephone" :href="telephoneHref(departementEtudiant.telephone)" class="underline! touch-target justify-center">
-                      <span class="sr-only">Téléphone du département {{ departementEtudiant.libelle }} :</span>
-                      {{ departementEtudiant.telephone }}
-                    </a>
-                    <a v-if="departementEtudiant.siteWeb" :href="departementEtudiant.siteWeb" target="_blank" rel="noopener" class="underline! touch-target justify-center">
-                      Site web<span class="sr-only"> du département {{ departementEtudiant.libelle }}, nouvel onglet</span>
-                    </a>
-                  </div>
                   <div class="w-full flex flex-col items-center justify-center">
                     <p class="uppercase text-xs font-bold mb-0! text-muted-color">établissement</p>
                     <div class="font-bold">Support technique</div>
