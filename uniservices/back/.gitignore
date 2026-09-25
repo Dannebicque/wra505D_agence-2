@@ -8,6 +8,7 @@
 /var/
 /vendor/
 /migrations/
+/config/reference.php
 ###< symfony/framework-bundle ###
 
 ###> lexik/jwt-authentication-bundle ###
