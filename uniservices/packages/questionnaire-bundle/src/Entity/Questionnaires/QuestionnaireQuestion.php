@@ -22,19 +22,22 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: QuestionnaireQuestionRepository::class)]
 #[ApiResource(
-    uriTemplate: '/questionnaire_sections/{questionnaireSectionId}/questionnaire_questions',
     operations: [
-        new GetCollection(),
-        new Post(read: false),
-    ],
-    uriVariables: [
-        'questionnaireSectionId' => new Link(toProperty: 'section', fromClass: QuestionnaireSection::class),
-    ]
-)]
-#[ApiResource(
-    operations: [
+        new GetCollection(
+            uriTemplate: '/questionnaire_sections/{questionnaireSectionId}/questionnaire_questions',
+            uriVariables: [
+                'questionnaireSectionId' => new Link(toProperty: 'section', fromClass: QuestionnaireSection::class),
+            ],
+        ),
+        new Post(
+            uriTemplate: '/questionnaire_sections/{questionnaireSectionId}/questionnaire_questions',
+            uriVariables: [
+                'questionnaireSectionId' => new Link(toProperty: 'section', fromClass: QuestionnaireSection::class),
+            ],
+            read: false,
+        ),
         new Patch(),
-        new Delete()
+        new Delete(),
     ]
 )]
 #[ORM\Index(name: 'idx_question_section_ordre', columns: ['section_id', 'sort_order'])]
