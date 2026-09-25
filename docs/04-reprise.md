@@ -89,10 +89,34 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #38 | ancien format des moyennes par UE retiré : PHPStan à 0 erreur, sans rien masquer |
 | #39 | reprise du `main` amont jusqu'à `ef38ca880` (release 0.1.11) |
 | #40 | CI-Cypress : base de données, configuration, premier vrai parcours E2E |
+| #41 | CI-Cypress : l'API lancée par `php -S` voit enfin la base de CI |
+| #42 | réponses du client et de Cyndel consignées |
+| #43, #46 | palette de recherche accessible et résultats lisibles (fiches D3, D4) |
 | #44 | widget « Maintenant » : la salle s'affiche telle que Celcat la donne (plus de « Salle Salle B204 ») |
+| #45 | second audit, sur uniServices (`docs/05-audit-actuel.md`, LOU) |
 | #47 | widget « Contacts » du tableau de bord : un département par ligne, celui de l'étudiant en premier |
+| #48 | backlog aligné sur le kanban après le second audit |
+| #49, #50 | page Scolarité : notes publiées, moyennes provisoires calculées à la volée, absences (F1) |
 | #51 | widget « Notes » : les cinq dernières notes publiées de l'étudiant, au lieu des pense-bêtes du personnel (fiche C11) |
+| #52 | document relié à une matière ou une SAÉ, classement de l'écran Documents (B6) |
+| #53 | lien d'évitement, un seul `header`, titres continus (A3, LOU) |
+| #54 | emoji remplacés par des icônes dans Documents (B10) |
+| #55, #58 | **navigation étudiante unique** : un seul menu sur chaque page, portail sauté, barre haute allégée, actualités sur l'accueil |
 | #56 | portail nettoyé (fiche C12), une seule barre de défilement par page, widget « Contacts » en cartes |
+| #57, #63 | focus visible et `nav` pour le menu, noms des boutons icônes et étiquettes (A9, A8, LOU) |
+| #59, #60 | **centre de notifications** : notes, absences, documents, actualités et messages dans un seul fil (P3) |
+| #61 | widget « Aujourd'hui » : il annonçait « aucun événement » à tout étudiant (C10) |
+| #62 | favoris de documents propres à chaque utilisateur (B7) |
+| #64, #68 | une seule couleur primaire, le violet de la DA, et le jaune en accent (A6) |
+| #65 | menu latéral repliable en rail d'icônes (JEREMY) |
+| #67 | contrastes des textes secondaires (A7) |
+| #69 | CI-Cypress rouge de #55 à #68 : Vite rechargeait la page en découvrant un composant PrimeVue |
+| #70 | code du portail rendu inutile par #58 retiré (C13 obsolète) |
+| #71, #75 | agenda au clavier, actions enseignant retirées de la vue étudiante (C14, C15, JEREMY) |
+| #72, #76 | la page ne défile plus sous le contenu ; test corrigé pour une base neuve |
+| #73, #74 | PHP-CS-Fixer, PSR-12 sur les fichiers modifiés, code de l'équipe remis à la norme |
+| #77 | bouton « Retour » retiré de l'accueil étudiant (JEREMY) |
+| #78 | `components.d.ts` n'est plus suivi par Git ni surveillé par Vite |
 
 Le connecteur Celcat, en bref :
 
@@ -107,11 +131,9 @@ Le connecteur Celcat, en bref :
 
 ### État de la CI
 
-| Job | État | Pourquoi |
-|---|---|---|
-| CI-Packages (front) | vert | |
-| CI-Back | vert | PHPStan à 0 erreur depuis #38 |
-| CI-Cypress | rouge | toutes les étapes passent sauf le test : l'API lancée par `php -S` ignorait la base de CI. Corrigé par `fix/ci-cypress-serveur`, à merger |
+Les trois workflows sont au vert sur `develop` depuis #76 (détail dans `03-backlog.md`).
+CI-Cypress ne tourne que sur les PR : c'est sur la PR qu'on vérifie qu'il passe, et **une PR
+rouge ne se merge pas**. Pour lire un échec : `gh run view <id> --log-failed`.
 
 La recherche (D1, D2) cherche étudiants, personnels, documents, matières et actualités du
 département de l'utilisateur, en respectant la visibilité des documents et le public des
@@ -134,6 +156,22 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
 
 ---
 
+## Où brancher quoi
+
+Ce que la refonte a mis en place côté étudiant, et où ajouter la suite sans le redécouvrir.
+
+| Pour… | Faire | Où |
+|---|---|---|
+| une page étudiante | l'ajouter au `studentMenu` du manifest de son module (`groupe`, `ordre`, `motsCles`), jamais au menu du personnel ; le menu et la palette de recherche lisent la même liste | `packages/*/assets/manifest.ts`, `shared/helpers/menuEtudiant.js` |
+| les données de l'étudiant connecté | une route `/api/me/…` sans identifiant, 403 pour le personnel : `scolarite`, `notifications`, `notifications/lues`, `documents-favoris` | `back/src/ApiDto/`, `back/src/State/Provider/` |
+| un type de notification | une source `SourceNotificationInterface` ; les e-mails envoyés sont copiés d'office par `MessageEnvoyeListener` | `back/src/Service/Notification/` |
+| un type de résultat de recherche | une source `SourceRechercheInterface` | `back/src/Service/Recherche/Source/` |
+| un widget réservé à l'étudiant | `allowedProfiles: [PROFILE_ETUDIANT]`, et la disposition par défaut si tous doivent le voir | `packages/intranet-bundle/src/Services/Dashboard/` |
+| une couleur | les jetons du preset : palette `VIOLET_IUT`, `--accent-color`, `text-muted-color` ; jamais de couleur en dur, jamais de couleur par module | `packages/shell/assets/main.js` |
+| l'état partagé des notifications | `useNotificationStore` (cloche et page) | `shared/stores/notificationStore.js` |
+
+---
+
 ## Répartition dans l'équipe
 
 Suivie dans le tableau de tâches de l'équipe, hors de ce dépôt.
@@ -144,23 +182,30 @@ Suivie dans le tableau de tâches de l'équipe, hors de ce dépôt.
 | LOU | A, accessibilité transverse |
 | JEREMY | C, tableau de bord et emploi du temps |
 
-La colonne B (documents) n'a encore personne, alors que c'est la priorité 2 du client. D1 et D2
-sont faites, D3 et D4 restent à prendre.
+La colonne B (documents) n'a pas de titulaire : LCS y a fait B6, B7 et B10. La colonne D
+(recherche) est terminée, sauf D6.
+
+`gh` n'est installé et connecté que sur le poste de LCS. Sans lui, pousser la branche et donner
+l'URL de comparaison.
 
 ---
 
 ## Ce qu'il reste à faire, dans l'ordre
 
-1. **Merger `fix/ci-cypress-serveur`**, puis vérifier que CI-Cypress passe au vert sur GitHub.
-2. **D3, la palette de recherche accessible**, branchée sur `/api/recherche`, avec les pages de
-   l'intranet cherchées côté front.
-3. **B6, relier un document à une matière ou à une SAE** : la question 6 reste sans réponse, on
-   tranche nous-mêmes (voir « Décisions »).
-4. **Passe visuelle de l'emploi du temps**, fiche C3 et priorité 4, côté JEREMY.
-5. **Examiner les 18 alertes de sécurité** remontées par `composer audit`, antérieures à nous.
-6. **Import d'étudiants** : il inscrit chaque étudiant dans *tous* les groupes du semestre, TD et
+1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture
+   impossible à quiconque (`ROLE_PERSONNEL` jamais attribué).
+2. **P1, fiche matière** : prochains cours, documents, notes et absences d'une matière, réunis.
+   Dernière étape du plan de navigation, les données existent déjà (`ReleveEtudiant`,
+   `Document.enseignement`, `EdtEvent`).
+3. **Colonne B** : B11 (mode sombre de Documents), puis B1, B2, B4, B5, B8 et B9.
+4. **Emploi du temps mobile**, fiche C3 et priorité 4, côté JEREMY ; C6 et C16 ensuite.
+5. **P5, reste** : le fil d'Ariane dit « Dashboard » quand le menu dit « Accueil ».
+6. **Logo de la page de connexion** : l'image ne se charge pas, son texte de remplacement
+   s'affiche.
+7. **Examiner les 18 alertes de sécurité** remontées par `composer audit`, antérieures à nous.
+8. **Import d'étudiants** : il inscrit chaque étudiant dans *tous* les groupes du semestre, TD et
    TP compris, au lieu des siens.
-7. Le reste du backlog, colonnes A à D et propositions P.
+9. Le reste du backlog, et les questions au client ci-dessous.
 
 ## Décisions
 
@@ -211,7 +256,18 @@ Trois failles à leur signaler, car elles sont dans leur code de production :
   qui en utilise un nouveau fait recharger tout le front et perd la navigation en cours. CI-Cypress
   a échoué ainsi de #55 à #68. `shared/vite.config.base.js` les pré-optimise tous ; pour
   reproduire la CI : `npx vite --port 3100 --force` dans `packages/shell`, puis
-  `CYPRESS_BASE_URL=http://localhost:3100 npx cypress run`.
+  `CYPRESS_BASE_URL=http://localhost:3100 npx cypress run`. Ce second serveur partage le cache du
+  premier et le fait tomber : relancer ensuite `pnpm run dev`.
+- **Les tests E2E partent d'une base neuve.** En CI, les fixtures sont chargées à l'instant :
+  aucune préférence de widget, rien de lu. N'attendre que ce qui existe par défaut (#76 attendait
+  le widget Contacts, absent par défaut), compter 15 s pour un premier chargement, et remettre un
+  état à zéro par `cy.exec` (par exemple `DELETE FROM notification_lue`).
+- **`cy.clock` ne fige que le navigateur.** Le serveur calcule « aujourd'hui » lui-même : un test
+  qui dépend du jour compare deux sources entre elles (`widget-aujourdhui.cy.js`) plutôt qu'un
+  contenu attendu.
+- **Mesurer un contraste** : Tailwind 4 renvoie ses couleurs en `oklch` et PrimeVue ses fonds en
+  `color-mix`. Passer par un `canvas` avant de calculer une luminance, sans quoi la mesure est
+  fausse (`contrastes-secondaires.cy.js`).
 - **`components.d.ts`** est généré par Vite dans chaque module. Il n'est plus suivi par Git
   (`uniservices/.gitignore`) ni surveillé par Vite : il ne bloque plus les changements de branche
   et ne recharge plus la page. Le dépôt du client, lui, le suit : exclure ses modifications lors
