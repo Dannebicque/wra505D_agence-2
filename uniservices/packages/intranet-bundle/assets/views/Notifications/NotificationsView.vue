@@ -53,11 +53,11 @@ onMounted(() => store.charger());
     <div class="flex flex-wrap gap-6 mb-6">
       <fieldset class="border-0 p-0 m-0">
         <legend class="text-sm font-semibold mb-2">Afficher</legend>
-        <SelectButton v-model="etat" :options="etats" option-label="label" option-value="value" :allow-empty="false" />
+        <SelectButton v-model="etat" :options="etats" option-label="label" option-value="value" :allow-empty="false" class="flex-wrap!" />
       </fieldset>
       <fieldset class="border-0 p-0 m-0">
         <legend class="text-sm font-semibold mb-2">Type</legend>
-        <SelectButton v-model="type" :options="types" option-label="label" option-value="value" :allow-empty="false" />
+        <SelectButton v-model="type" :options="types" option-label="label" option-value="value" :allow-empty="false" class="flex-wrap!" />
       </fieldset>
     </div>
 
