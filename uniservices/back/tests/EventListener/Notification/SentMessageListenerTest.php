@@ -2,31 +2,31 @@
 
 namespace App\Tests\EventListener\Notification;
 
-use App\Entity\Notification\MessageEnvoye;
-use App\EventListener\Notification\MessageEnvoyeListener;
-use App\Repository\Notification\MessageEnvoyeRepository;
+use App\Entity\Notification\SentMessage;
+use App\EventListener\Notification\SentMessageListener;
+use App\Repository\Notification\SentMessageRepository;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Event\SentMessageEvent;
-use Symfony\Component\Mailer\SentMessage;
+use Symfony\Component\Mailer\SentMessage as MailerSentMessage;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
-final class MessageEnvoyeListenerTest extends TestCase
+final class SentMessageListenerTest extends TestCase
 {
     /**
-     * @return list<MessageEnvoye>
+     * @return list<SentMessage>
      */
     private function enregistres(Email $email): array
     {
         $enregistres = [];
-        $messages = $this->createMock(MessageEnvoyeRepository::class);
-        $messages->method('enregistrer')->willReturnCallback(function (MessageEnvoye $message) use (&$enregistres) {
+        $messages = $this->createMock(SentMessageRepository::class);
+        $messages->method('save')->willReturnCallback(function (SentMessage $message) use (&$enregistres) {
             $enregistres[] = $message;
         });
 
-        $envoi = new SentMessage($email, new Envelope(new Address('intranet@iut.fr'), [new Address('x@iut.fr')]));
-        (new MessageEnvoyeListener($messages))->onSent(new SentMessageEvent($envoi));
+        $envoi = new MailerSentMessage($email, new Envelope(new Address('intranet@iut.fr'), [new Address('x@iut.fr')]));
+        (new SentMessageListener($messages))->onSent(new SentMessageEvent($envoi));
 
         return $enregistres;
     }
@@ -44,10 +44,10 @@ final class MessageEnvoyeListenerTest extends TestCase
 
         self::assertSame(
             ['jane.doe@etudiant.univ-reims.fr', 'paul@etudiant.univ-reims.fr'],
-            array_map(fn (MessageEnvoye $m) => $m->getDestinataire(), $enregistres),
+            array_map(fn (SentMessage $m) => $m->getRecipient(), $enregistres),
         );
-        self::assertSame('Changement de salle', $enregistres[0]->getSujet());
-        self::assertSame('Le TP a lieu en B204.', $enregistres[0]->getTexte());
+        self::assertSame('Changement de salle', $enregistres[0]->getSubject());
+        self::assertSame('Le TP a lieu en B204.', $enregistres[0]->getText());
     }
 
     public function testTireUnTexteSimpleDuHtmlQuandIlNyAPasDeVersionTexte(): void
@@ -58,6 +58,6 @@ final class MessageEnvoyeListenerTest extends TestCase
             ->subject('Questionnaire')
             ->html('<p>Répondez <strong>avant vendredi</strong>&nbsp;!</p>');
 
-        self::assertSame('Répondez avant vendredi !', $this->enregistres($email)[0]->getTexte());
+        self::assertSame('Répondez avant vendredi !', $this->enregistres($email)[0]->getText());
     }
 }

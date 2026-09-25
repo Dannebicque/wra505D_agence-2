@@ -15,12 +15,12 @@ final class Notification
     public const TYPE_MESSAGE = 'message';
 
     public function __construct(
-        public readonly string $cle,
+        public readonly string $key,
         public readonly string $type,
-        public readonly string $titre,
-        public readonly ?string $texte,
+        public readonly string $title,
+        public readonly ?string $text,
         public readonly \DateTimeImmutable $date,
-        public readonly string $lien,
+        public readonly string $link,
     ) {
     }
 }

@@ -3,29 +3,29 @@
 namespace App\Service\Notification\Source;
 
 use App\Entity\Users\Etudiant;
-use App\Repository\Notification\MessageEnvoyeRepository;
+use App\Repository\Notification\SentMessageRepository;
 use App\Service\Notification\Notification;
 
 /**
  * Un e-mail que l'intranet a envoyé à l'étudiant, sur son adresse universitaire ou personnelle.
  */
-final class SourceMessages implements SourceNotificationInterface
+final class MessageNotificationSource implements NotificationSourceInterface
 {
     public function __construct(
-        private readonly MessageEnvoyeRepository $messages,
+        private readonly SentMessageRepository $messages,
     ) {
     }
 
-    public function notifications(Etudiant $etudiant, \DateTimeImmutable $depuis): iterable
+    public function getNotifications(Etudiant $student, \DateTimeImmutable $since): iterable
     {
         $notifications = [];
-        foreach ($this->messages->recusDepuis(array_filter([$etudiant->getMailUniv(), $etudiant->getMailPerso()]), $depuis) as $message) {
+        foreach ($this->messages->receivedSince(array_filter([$student->getMailUniv(), $student->getMailPerso()]), $since) as $message) {
             $notifications[] = new Notification(
                 'message-'.$message->getId(),
                 Notification::TYPE_MESSAGE,
-                $message->getSujet(),
-                $message->getTexte(),
-                $message->getEnvoyeLe(),
+                $message->getSubject(),
+                $message->getText(),
+                $message->getSentAt(),
                 '/intranet/notifications',
             );
         }

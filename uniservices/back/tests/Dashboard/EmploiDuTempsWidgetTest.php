@@ -7,7 +7,7 @@ use App\Entity\Structure\StructureGroupe;
 use App\Entity\Users\Etudiant;
 use App\Repository\Edt\EdtEventRepository;
 use App\Repository\Structure\StructureDepartementRepository;
-use App\Service\Notification\SemestresEtudiant;
+use App\Service\Notification\StudentSemesters;
 use AuthBundle\Services\Dashboard\Provider\AuthWidgetDataProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use IntranetBundle\Services\Dashboard\Provider\IntranetWidgetDataProvider;
@@ -39,8 +39,8 @@ final class EmploiDuTempsWidgetTest extends TestCase
 
     public function testLitLesCoursDuJourDeTousLesGroupesDeLEtudiant(): void
     {
-        $semestres = $this->createMock(SemestresEtudiant::class);
-        $semestres->method('pour')->willReturn([$this->semestre([3, 4]), $this->semestre([4, 7])]);
+        $semesters = $this->createMock(StudentSemesters::class);
+        $semesters->method('forStudent')->willReturn([$this->semestre([3, 4]), $this->semestre([4, 7])]);
 
         $today = new \DateTimeImmutable('today');
         $edtEvents = $this->createMock(EdtEventRepository::class);
@@ -54,7 +54,7 @@ final class EmploiDuTempsWidgetTest extends TestCase
             $edtEvents,
             $this->createMock(StructureDepartementRepository::class),
             $this->createMock(AuthWidgetDataProvider::class),
-            $semestres,
+            $semesters,
         );
 
         self::assertSame([], $provider->getData('intranet.emploi_du_temps', new Etudiant())['items']);

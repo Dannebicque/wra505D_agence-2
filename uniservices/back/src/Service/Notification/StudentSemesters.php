@@ -11,7 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
  * Les semestres de l'année en cours de l'étudiant, auxquels se rattachent ses notes, ses
  * absences et les matières dont il suit les documents.
  */
-class SemestresEtudiant
+class StudentSemesters
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -21,10 +21,10 @@ class SemestresEtudiant
     /**
      * @return list<EtudiantScolariteSemestre>
      */
-    public function pour(Etudiant $etudiant): array
+    public function forStudent(Etudiant $student): array
     {
         $scolarite = $this->entityManager->getRepository(EtudiantScolarite::class)
-            ->findOneBy(['etudiant' => $etudiant, 'actif' => true]);
+            ->findOneBy(['etudiant' => $student, 'actif' => true]);
         if (null === $scolarite) {
             return [];
         }

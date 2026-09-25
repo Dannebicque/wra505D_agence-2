@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * Un type de notification. Ajouter un type au centre de notifications, c'est ajouter une source.
  */
 #[AutoconfigureTag(self::TAG)]
-interface SourceNotificationInterface
+interface NotificationSourceInterface
 {
     public const TAG = 'app.source_notification';
 
@@ -19,5 +19,5 @@ interface SourceNotificationInterface
      *
      * @return iterable<Notification>
      */
-    public function notifications(Etudiant $etudiant, \DateTimeImmutable $depuis): iterable;
+    public function getNotifications(Etudiant $student, \DateTimeImmutable $since): iterable;
 }
