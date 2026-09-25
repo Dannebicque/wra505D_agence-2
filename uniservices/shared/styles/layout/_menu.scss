@@ -76,7 +76,8 @@
             position: relative;
             min-height: 44px;
             margin: 0.125rem 0.5rem;
-            padding: 0.5rem 0.75rem;
+            // Centre l'icône sur l'axe de la colonne repliée : elle ne bouge pas quand on replie.
+            padding: 0.5rem 0.75rem 0.5rem calc(var(--layout-sidebar-rail-width) / 2 - 0.5rem - 0.625rem);
             border-radius: 6px;
             outline: 0 none;
             color: var(--text-color);

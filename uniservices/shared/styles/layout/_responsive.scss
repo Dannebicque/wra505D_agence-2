@@ -48,6 +48,11 @@
         }
 
         &.layout-static {
+            // Le bouton du menu (2,5rem) se centre sur le même axe que les icônes du menu.
+            .layout-topbar {
+                padding-left: calc(var(--layout-sidebar-rail-width) / 2 - 1.25rem);
+            }
+
             .layout-main-container {
                 background-color: var(--surface-ground);
                 border-top-left-radius: 35px;
