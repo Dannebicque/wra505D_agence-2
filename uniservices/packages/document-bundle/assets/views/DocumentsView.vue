@@ -1,4 +1,9 @@
 <template>
+  <HeaderComponent
+      icon="pi pi-folder"
+      titre="Documents"
+      description="Les documents de vos matières, de vos SAÉ et du département"
+  />
   <div class="min-h-screen flex">
     <Toast />
     <ConfirmDialog />
@@ -111,7 +116,7 @@ import DocumentDetailDrawer from '@/components/Documents/DocumentDetailDrawer.vu
 import { documentService } from '@/service/documentService';
 import { categorieDeLAdresse } from '@/service/utils/categorieUtils';
 import { classerParEnseignement, libelleEnseignement } from '@/service/utils/enseignementUtils';
-import { CardSkeleton, ListSkeleton } from '@components';
+import { CardSkeleton, HeaderComponent, ListSkeleton } from '@components';
 import { useSecurity } from '@stores';
 import type { Category, Document, SortField, SortOrder, PaginationInfo, ViewMode } from '@types';
 

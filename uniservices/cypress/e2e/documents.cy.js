@@ -3,16 +3,27 @@ describe('Documents par matière et par SAÉ', () => {
         cy.viewport(1280, 800);
         cy.connexionInvite('etudiant');
         cy.visit('/app/documents');
-        cy.contains('h3', 'Matières', { timeout: 15000 });
+        cy.contains('h2', 'Matières', { timeout: 15000 });
+    });
+
+    it('suit une hiérarchie de titres sans saut, sous un seul h1', () => {
+        cy.contains('h1', 'Documents');
+        cy.get('#contenu-principal').find('h1, h2, h3, h4, h5, h6').then(($titres) => {
+            const niveaux = [...$titres].map((titre) => Number(titre.tagName[1]));
+            expect(niveaux.filter((niveau) => niveau === 1)).to.have.length(1);
+            niveaux.slice(1).forEach((niveau, index) => {
+                expect(niveau, `titre ${index + 2} après un h${niveaux[index]}`).to.be.at.most(niveaux[index] + 1);
+            });
+        });
     });
 
     it('range les supports de cours par matière et par SAÉ', () => {
-        cy.contains('h3', 'Matières').next().within(() => {
+        cy.contains('h2', 'Matières').next().within(() => {
             cy.contains('button', 'R1.01 Anglais').should('contain', '2 documents');
             cy.contains('button', 'R1.02 Culture numérique').should('contain', '1 document');
             cy.contains('button', 'R1.03').should('not.exist');
         });
-        cy.contains('h3', 'SAÉ').next().should('contain', 'SAE1.01');
+        cy.contains('h2', 'SAÉ').next().should('contain', 'SAE1.01');
     });
 
     it('n\'affiche que les documents de l\'enseignement choisi au clavier', () => {
@@ -63,7 +74,7 @@ describe('Documents par matière et par SAÉ', () => {
 
         cy.exec('cd back && php bin/console dbal:run-sql "DELETE FROM document_favori"');
         cy.reload();
-        cy.contains('h3', 'Matières', { timeout: 15000 });
+        cy.contains('h2', 'Matières', { timeout: 15000 });
         favoris().should('contain', '0');
 
         cy.contains('button', 'SAE1.01').click();
@@ -72,7 +83,7 @@ describe('Documents par matière et par SAÉ', () => {
         favoris().should('contain', '1');
 
         cy.reload();
-        cy.contains('h3', 'Matières', { timeout: 15000 });
+        cy.contains('h2', 'Matières', { timeout: 15000 });
         favoris().should('contain', '1').click();
         cy.contains('.card', document).find('button[aria-label="Retirer des favoris"]').click();
         favoris().should('contain', '0');

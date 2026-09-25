@@ -58,9 +58,9 @@
         :key="section.titre"
         class="mt-6"
       >
-        <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+        <h2 class="text-xs! font-semibold! text-gray-600 uppercase tracking-wide mt-0! mb-2!">
           {{ section.titre }}
-        </h3>
+        </h2>
         <ul class="space-y-1">
           <li v-for="groupe in section.groupes" :key="groupe.enseignement.id">
             <button
@@ -89,9 +89,9 @@
 
       <!-- Categories -->
       <div class="mt-6">
-        <h3 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+        <h2 class="text-xs! font-semibold! text-gray-600 uppercase tracking-wide mt-0! mb-2!">
           Catégories
-        </h3>
+        </h2>
         <div class="space-y-1">
           <CategoryItem
             v-for="category in categories"
