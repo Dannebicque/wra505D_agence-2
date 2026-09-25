@@ -117,7 +117,6 @@ class DocumentFixtures extends Fixture implements OrderedFixtureInterface, Fixtu
                 $title = $titles[array_rand($titles)] . ' (' . $docIndex . ')';
                 $author = $authors[array_rand($authors)];
                 $size = rand(10240, 15728640);
-                $isFav = (rand(1, 10) > 7);
                 $tags = array_intersect_key($tagsList, array_flip((array) array_rand($tagsList, rand(1, 3))));
 
                 $doc = new Document();
@@ -130,7 +129,6 @@ class DocumentFixtures extends Fixture implements OrderedFixtureInterface, Fixtu
                     ->setAuthor($author)
                     ->setVersion('v' . rand(1, 3) . '.' . rand(0, 9))
                     ->setTags(array_values($tags))
-                    ->setIsFavorite($isFav)
                     ->setVisibility('PUBLIC')
                     ->setCategory($category);
 

@@ -35,4 +35,26 @@ describe('Documents par matière et par SAÉ', () => {
         cy.contains('Informations');
         cy.get('body').invoke('text').should('not.match', emoji);
     });
+
+    it('garde les favoris de l\'étudiant d\'un chargement à l\'autre', () => {
+        const favoris = () => cy.get('nav').contains('button', 'Favoris');
+        const document = 'SAÉ 1.01 : sujet et attendus';
+
+        cy.exec('cd back && php bin/console dbal:run-sql "DELETE FROM document_favori"');
+        cy.reload();
+        cy.contains('h3', 'Matières', { timeout: 15000 });
+        favoris().should('contain', '0');
+
+        cy.contains('button', 'SAE1.01').click();
+        cy.contains('.card', document).find('button[aria-label="Ajouter aux favoris"]').click();
+        cy.contains('.card', document).find('button[aria-label="Retirer des favoris"]');
+        favoris().should('contain', '1');
+
+        cy.reload();
+        cy.contains('h3', 'Matières', { timeout: 15000 });
+        favoris().should('contain', '1').click();
+        cy.contains('.card', document).find('button[aria-label="Retirer des favoris"]').click();
+        favoris().should('contain', '0');
+        cy.contains('.card', document).should('not.exist');
+    });
 });

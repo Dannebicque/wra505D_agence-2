@@ -38,7 +38,7 @@
         <button
           @click="$emit('toggleFavorite', document.id)"
           :class="[
-            'px-3 py-2 border rounded-lg text-sm transition-colors flex items-center justify-center',
+            'min-w-[44px] min-h-[44px] px-3 py-2 border rounded-lg text-sm transition-colors flex items-center justify-center',
             document.isFavorite
               ? 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'

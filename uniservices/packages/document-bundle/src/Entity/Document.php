@@ -83,10 +83,6 @@ class Document
     #[Groups(['document:read', 'document:write'])]
     private ?array $tags = [];
 
-    #[ORM\Column]
-    #[Groups(['document:read', 'document:write'])]
-    private bool $isFavorite = false;
-
     #[ORM\Column(length: 50)]
     #[Groups(['document:read', 'document:write'])]
     private string $visibility = 'PUBLIC'; // PUBLIC, ETUDIANT, PERSONNEL, DEPARTEMENT
@@ -231,17 +227,6 @@ class Document
     public function setTags(?array $tags): static
     {
         $this->tags = $tags;
-        return $this;
-    }
-
-    public function isFavorite(): bool
-    {
-        return $this->isFavorite;
-    }
-
-    public function setIsFavorite(bool $isFavorite): static
-    {
-        $this->isFavorite = $isFavorite;
         return $this;
     }
 
