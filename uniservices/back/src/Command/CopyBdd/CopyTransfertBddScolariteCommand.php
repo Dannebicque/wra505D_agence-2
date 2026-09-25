@@ -74,19 +74,19 @@ class CopyTransfertBddScolariteCommand extends Command
     private function effacerTables(): void
     {
         // vider les tables de destination et les réinitialiser
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=0');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE etudiant_scolarite');
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE etudiant_scolarite');
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=0');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE etudiant_scolarite_semestre');
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE etudiant_scolarite_semestre');
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=1');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE etudiant_scolarite_structure_annee');
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE etudiant_scolarite_structure_annee');
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=1');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE etudiant_scolarite_semestre_structure_groupe');
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE etudiant_scolarite_semestre_structure_groupe');
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=1');
     }
 
