@@ -1,10 +1,10 @@
 <template>
-  <div class="flex items-center justify-between mt-8">
+  <div class="flex flex-wrap items-center justify-between gap-3 mt-8">
     <div class="text-sm text-gray-700">
       Affichage de {{ startItem }} à {{ endItem }} sur {{ paginationInfo.totalItems }} documents
     </div>
     
-    <div class="flex items-center space-x-2">
+    <div class="flex flex-wrap items-center gap-2">
       <button
         @click="$emit('pageChange', paginationInfo.currentPage - 1)"
         :disabled="paginationInfo.currentPage <= 1"
