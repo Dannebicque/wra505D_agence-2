@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service\Celcat;
 
 use App\Entity\Edt\EdtEvent;
@@ -20,42 +22,42 @@ use PHPUnit\Framework\TestCase;
 final class CelcatSynchronizerTest extends TestCase
 {
     /** @var list<array<string, mixed>> */
-    private array $lignes = [];
+    private array $rows = [];
 
     /** @var array<class-string, list<object>> */
-    private array $enBase = [];
+    private array $inDatabase = [];
 
     /** @var list<object> */
-    private array $persistes = [];
+    private array $persisted = [];
 
     /** @var list<object> */
-    private array $supprimes = [];
+    private array $deleted = [];
 
-    private StructureAnneeUniversitaire $annee;
+    private StructureAnneeUniversitaire $academicYear;
 
     protected function setUp(): void
     {
-        $this->annee = new StructureAnneeUniversitaire();
-        $this->enBase = [
+        $this->academicYear = new StructureAnneeUniversitaire();
+        $this->inDatabase = [
             EdtEvent::class => [],
-            StructureGroupe::class => [$this->groupe('MMICM', TypeGroupeEnum::TYPE_GROUPE_CM), $this->groupe('MMITDAB', TypeGroupeEnum::TYPE_GROUPE_TD)],
+            StructureGroupe::class => [$this->group('MMICM', TypeGroupeEnum::TYPE_GROUPE_CM), $this->group('MMITDAB', TypeGroupeEnum::TYPE_GROUPE_TD)],
             Personnel::class => [],
             ScolEnseignement::class => [],
             StructureCalendrier::class => [],
         ];
     }
 
-    private function groupe(string $code, TypeGroupeEnum $type): StructureGroupe
+    private function group(string $code, TypeGroupeEnum $type): StructureGroupe
     {
         return (new StructureGroupe())->setLibelle($code)->setType($type)->setCodeApogee($code);
     }
 
     /**
-     * @param array<string, mixed> $surcharge
+     * @param array<string, mixed> $override
      */
-    private function ajouterLigne(array $surcharge = []): void
+    private function addRow(array $override = []): void
     {
-        $this->lignes[] = array_merge([
+        $this->rows[] = array_merge([
             'event_id' => 1,
             'day_of_week' => 0,
             'start_time' => '1899-12-30 08:00:00',
@@ -73,188 +75,188 @@ final class CelcatSynchronizerTest extends TestCase
             'date_change' => '2026-09-01 12:00:00',
             'room_weeks' => null,
             'notes' => null,
-        ], $surcharge);
+        ], $override);
     }
 
-    private function creneauExistant(int $celcatId, string $codeGroupe): EdtEvent
+    private function existingEvent(int $celcatId, string $groupCode): EdtEvent
     {
-        $creneau = (new EdtEvent())
+        $event = (new EdtEvent())
             ->setCelcatId($celcatId)
             ->setSemaineFormation(0)
             ->setJour(0)
-            ->setCodeGroupe($codeGroupe)
+            ->setCodeGroupe($groupCode)
             ->setLibModule('ancien libellé');
-        $this->enBase[EdtEvent::class][] = $creneau;
+        $this->inDatabase[EdtEvent::class][] = $event;
 
-        return $creneau;
+        return $event;
     }
 
-    private function synchroniseur(): CelcatSynchronizer
+    private function synchronizer(): CelcatSynchronizer
     {
-        $lignes = $this->lignes;
-        $source = new class ($lignes) implements CelcatSource {
-            /** @param list<array<string, mixed>> $lignes */
-            public function __construct(private readonly array $lignes)
+        $rows = $this->rows;
+        $source = new class ($rows) implements CelcatSource {
+            /** @param list<array<string, mixed>> $rows */
+            public function __construct(private readonly array $rows)
             {
             }
 
-            public function estConfigure(): bool
+            public function isConfigured(): bool
             {
                 return true;
             }
 
-            public function lireSemaines(): array
+            public function readWeeks(): array
             {
                 return [0 => new \DateTimeImmutable('2026-08-31'), 1 => new \DateTimeImmutable('2026-09-07')];
             }
 
-            public function lireEvenements(int $departement): array
+            public function readEvents(int $department): array
             {
-                return $this->lignes;
+                return $this->rows;
             }
         };
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->method('getRepository')->willReturnCallback(function (string $classe) {
-            $depot = $this->createMock(EntityRepository::class);
-            $depot->method('findAll')->willReturn($this->enBase[$classe]);
-            $depot->method('findBy')->willReturn($this->enBase[$classe]);
+        $entityManager->method('getRepository')->willReturnCallback(function (string $className) {
+            $repository = $this->createMock(EntityRepository::class);
+            $repository->method('findAll')->willReturn($this->inDatabase[$className]);
+            $repository->method('findBy')->willReturn($this->inDatabase[$className]);
 
-            return $depot;
+            return $repository;
         });
-        $entityManager->method('persist')->willReturnCallback(function (object $entite): void {
-            $this->persistes[] = $entite;
+        $entityManager->method('persist')->willReturnCallback(function (object $entity): void {
+            $this->persisted[] = $entity;
         });
-        $entityManager->method('remove')->willReturnCallback(function (object $entite): void {
-            $this->supprimes[] = $entite;
+        $entityManager->method('remove')->willReturnCallback(function (object $entity): void {
+            $this->deleted[] = $entity;
         });
 
         return new CelcatSynchronizer($source, new CelcatEventConverter(), $entityManager);
     }
 
-    private function synchroniser(): \App\Service\Celcat\CelcatRapport
+    private function synchronize(): \App\Service\Celcat\CelcatReport
     {
-        return $this->synchroniseur()->synchroniser($this->annee, 123);
+        return $this->synchronizer()->synchronize($this->academicYear, 123);
     }
 
-    public function testRepriseDuCalendrierAvecLeNumeroDeSemaineIso(): void
+    public function testRestoresCalendarWithIsoWeekNumber(): void
     {
-        $semaines = $this->synchroniseur()->synchroniserCalendrier($this->annee);
+        $weeks = $this->synchronizer()->synchronizeCalendar($this->academicYear);
 
-        /** @var list<StructureCalendrier> $calendrier */
-        $calendrier = $this->persistes;
-        self::assertSame(2, $semaines);
-        self::assertSame(1, $calendrier[1]->getSemaineFormation());
-        self::assertSame('2026-09-07', $calendrier[1]->getDateLundi()?->format('Y-m-d'));
-        self::assertSame(37, $calendrier[1]->getSemaineReelle());
+        /** @var list<StructureCalendrier> $calendar */
+        $calendar = $this->persisted;
+        self::assertSame(2, $weeks);
+        self::assertSame(1, $calendar[1]->getSemaineFormation());
+        self::assertSame('2026-09-07', $calendar[1]->getDateLundi()?->format('Y-m-d'));
+        self::assertSame(37, $calendar[1]->getSemaineReelle());
     }
 
-    public function testNeDupliquePasUneSemaineDejaConnue(): void
+    public function testDoesNotDuplicateKnownWeek(): void
     {
-        $existante = (new StructureCalendrier())->setAnneeUniversitaire($this->annee)->setSemaineFormation(0)->setSemaineReelle(1);
-        $this->enBase[StructureCalendrier::class] = [$existante];
+        $existing = (new StructureCalendrier())->setAnneeUniversitaire($this->academicYear)->setSemaineFormation(0)->setSemaineReelle(1);
+        $this->inDatabase[StructureCalendrier::class] = [$existing];
 
-        $this->synchroniseur()->synchroniserCalendrier($this->annee);
+        $this->synchronizer()->synchronizeCalendar($this->academicYear);
 
-        self::assertCount(1, $this->persistes);
-        self::assertSame(36, $existante->getSemaineReelle());
+        self::assertCount(1, $this->persisted);
+        self::assertSame(36, $existing->getSemaineReelle());
     }
 
-    public function testCreeUnCreneauParSemaineEtParGroupe(): void
+    public function testCreatesSlotPerWeekAndGroup(): void
     {
-        $this->ajouterLigne(['weeks' => 'YY', 'group_code' => 'MMICM']);
-        $this->ajouterLigne(['weeks' => 'YY', 'group_code' => 'MMITDAB']);
+        $this->addRow(['weeks' => 'YY', 'group_code' => 'MMICM']);
+        $this->addRow(['weeks' => 'YY', 'group_code' => 'MMITDAB']);
 
-        $rapport = $this->synchroniser();
+        $report = $this->synchronize();
 
-        self::assertSame(4, $rapport->crees);
-        self::assertCount(4, $this->persistes);
+        self::assertSame(4, $report->created);
+        self::assertCount(4, $this->persisted);
     }
 
-    public function testMetAJourUnCreneauExistantSansLeRecreer(): void
+    public function testUpdatesExistingSlotWithoutRecreating(): void
     {
-        $existant = $this->creneauExistant(1, 'MMICM');
-        $this->ajouterLigne(['module_name' => 'Nouveau libellé']);
+        $existing = $this->existingEvent(1, 'MMICM');
+        $this->addRow(['module_name' => 'Nouveau libellé']);
 
-        $rapport = $this->synchroniser();
+        $report = $this->synchronize();
 
-        self::assertSame(0, $rapport->crees);
-        self::assertSame(1, $rapport->misAJour);
-        self::assertSame([], $this->persistes);
-        self::assertSame('Nouveau libellé', $existant->getLibModule());
+        self::assertSame(0, $report->created);
+        self::assertSame(1, $report->updated);
+        self::assertSame([], $this->persisted);
+        self::assertSame('Nouveau libellé', $existing->getLibModule());
     }
 
-    public function testSupprimeUnCreneauDisparuDeCelcat(): void
+    public function testDeletesRemovedSlot(): void
     {
-        $disparu = $this->creneauExistant(99, 'MMICM');
+        $removed = $this->existingEvent(99, 'MMICM');
 
-        $rapport = $this->synchroniser();
+        $report = $this->synchronize();
 
-        self::assertSame(1, $rapport->supprimes);
-        self::assertSame([$disparu], $this->supprimes);
+        self::assertSame(1, $report->deleted);
+        self::assertSame([$removed], $this->deleted);
     }
 
-    public function testConserveUnCreneauDisparuQuiPorteUneAbsence(): void
+    public function testKeepsRemovedSlotWithAbsence(): void
     {
-        $this->creneauExistant(99, 'MMICM')->addAbsence(new EtudiantAbsence());
+        $this->existingEvent(99, 'MMICM')->addAbsence(new EtudiantAbsence());
 
-        $rapport = $this->synchroniser();
+        $report = $this->synchronize();
 
-        self::assertSame(0, $rapport->supprimes);
-        self::assertSame([], $this->supprimes);
-        self::assertSame(['99_0_0_MMICM'], $rapport->conserves);
+        self::assertSame(0, $report->deleted);
+        self::assertSame([], $this->deleted);
+        self::assertSame(['99_0_0_MMICM'], $report->kept);
     }
 
-    public function testRattacheAuGroupeEtSignaleLesCodesInconnus(): void
+    public function testAttachesGroupAndReportsUnknownCodes(): void
     {
-        $this->ajouterLigne(['group_code' => 'MMITDAB']);
-        $this->ajouterLigne(['event_id' => 2, 'group_code' => 'INCONNU']);
+        $this->addRow(['group_code' => 'MMITDAB']);
+        $this->addRow(['event_id' => 2, 'group_code' => 'INCONNU']);
 
-        $rapport = $this->synchroniser();
+        $report = $this->synchronize();
 
-        /** @var EdtEvent $creneau */
-        $creneau = $this->persistes[0];
-        self::assertSame('MMITDAB', $creneau->getGroupe()?->getCodeApogee());
-        self::assertArrayHasKey('INCONNU', $rapport->groupesInconnus);
-        self::assertArrayHasKey('10001', $rapport->personnelsInconnus);
-        self::assertArrayHasKey('R1.02', $rapport->modulesInconnus);
+        /** @var EdtEvent $event */
+        $event = $this->persisted[0];
+        self::assertSame('MMITDAB', $event->getGroupe()?->getCodeApogee());
+        self::assertArrayHasKey('INCONNU', $report->unknownGroups);
+        self::assertArrayHasKey('10001', $report->unknownStaff);
+        self::assertArrayHasKey('R1.02', $report->unknownModules);
     }
 
-    public function testUnHorsCoursPrendLeTypeDeSonGroupeEtCmADefaut(): void
+    public function testNonCourseUsesGroupTypeAndDefaultsToCm(): void
     {
-        $this->ajouterLigne(['module_code' => null, 'category' => 'Réunion', 'group_code' => 'MMITDAB']);
-        $this->ajouterLigne(['event_id' => 2, 'module_code' => null, 'category' => 'Réunion', 'group_code' => 'INCONNU']);
+        $this->addRow(['module_code' => null, 'category' => 'Réunion', 'group_code' => 'MMITDAB']);
+        $this->addRow(['event_id' => 2, 'module_code' => null, 'category' => 'Réunion', 'group_code' => 'INCONNU']);
 
-        $this->synchroniser();
+        $this->synchronize();
 
-        /** @var list<EdtEvent> $creneaux */
-        $creneaux = $this->persistes;
-        self::assertSame('TD', $creneaux[0]->getType());
-        self::assertSame('CM', $creneaux[1]->getType());
+        /** @var list<EdtEvent> $slots */
+        $slots = $this->persisted;
+        self::assertSame('TD', $slots[0]->getType());
+        self::assertSame('CM', $slots[1]->getType());
     }
 
-    public function testGardeLaVersionLaPlusRecenteDUnCreneauEnDouble(): void
+    public function testKeepsMostRecentDuplicateSlot(): void
     {
         // Celcat trie par date de modification décroissante : la première ligne est la plus récente.
-        $this->ajouterLigne(['module_name' => 'Version récente']);
-        $this->ajouterLigne(['module_name' => 'Version ancienne']);
+        $this->addRow(['module_name' => 'Version récente']);
+        $this->addRow(['module_name' => 'Version ancienne']);
 
-        $rapport = $this->synchroniser();
+        $report = $this->synchronize();
 
-        /** @var EdtEvent $creneau */
-        $creneau = $this->persistes[0];
-        self::assertSame(1, $rapport->crees);
-        self::assertSame('Version récente', $creneau->getLibModule());
+        /** @var EdtEvent $event */
+        $event = $this->persisted[0];
+        self::assertSame(1, $report->created);
+        self::assertSame('Version récente', $event->getLibModule());
     }
 
-    public function testLimiteUnLibelleDeSalleTropLongPourSaColonne(): void
+    public function testTruncatesRoomLabelToColumnLength(): void
     {
-        $this->ajouterLigne(['room_name' => str_repeat('Salle très longue ', 5)]);
+        $this->addRow(['room_name' => str_repeat('Salle très longue ', 5)]);
 
-        $this->synchroniser();
+        $this->synchronize();
 
-        /** @var EdtEvent $creneau */
-        $creneau = $this->persistes[0];
-        self::assertSame(25, mb_strlen($creneau->getSalle()));
+        /** @var EdtEvent $event */
+        $event = $this->persisted[0];
+        self::assertSame(25, mb_strlen($event->getSalle()));
     }
 }

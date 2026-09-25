@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Celcat;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -14,19 +16,19 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 final class CelcatReader implements CelcatSource
 {
-    private ?\PDO $connexion = null;
+    private ?\PDO $connection = null;
 
     public function __construct(
         #[Autowire('%env(resolve:CELCAT_DSN)%')]
         private readonly string $dsn,
         #[Autowire('%env(CELCAT_USER)%')]
-        private readonly string $utilisateur,
+        private readonly string $username,
         #[Autowire('%env(CELCAT_PASSWORD)%')]
-        private readonly string $motDePasse,
+        private readonly string $password,
     ) {
     }
 
-    public function estConfigure(): bool
+    public function isConfigured(): bool
     {
         return '' !== $this->dsn;
     }
@@ -36,14 +38,14 @@ final class CelcatReader implements CelcatSource
      *
      * @return array<int, \DateTimeImmutable>
      */
-    public function lireSemaines(): array
+    public function readWeeks(): array
     {
-        $lundis = [];
-        foreach ($this->executer('SELECT week_no, week_date FROM CT_WEEK_CONFIG ORDER BY week_no') as $ligne) {
-            $lundis[(int) $ligne['week_no']] = new \DateTimeImmutable(substr((string) $ligne['week_date'], 0, 10));
+        $mondays = [];
+        foreach ($this->executeQuery('SELECT week_no, week_date FROM CT_WEEK_CONFIG ORDER BY week_no') as $row) {
+            $mondays[(int) $row['week_no']] = new \DateTimeImmutable(substr((string) $row['week_date'], 0, 10));
         }
 
-        return $lundis;
+        return $mondays;
     }
 
     /**
@@ -55,7 +57,7 @@ final class CelcatReader implements CelcatSource
      *
      * @return list<array<string, mixed>>
      */
-    public function lireEvenements(int $departement): array
+    public function readEvents(int $department): array
     {
         $sql = 'SELECT CT_EVENT.event_id AS event_id, CT_EVENT.day_of_week AS day_of_week,
                 CT_EVENT.start_time AS start_time, CT_EVENT.end_time AS end_time,
@@ -80,35 +82,35 @@ final class CelcatReader implements CelcatSource
             WHERE dept_id = :departement
             ORDER BY CT_EVENT.date_change DESC, CT_EVENT.event_id DESC';
 
-        return $this->executer($sql, ['departement' => $departement]);
+        return $this->executeQuery($sql, ['departement' => $department]);
     }
 
     /**
-     * @param array<string, int|string> $parametres
+     * @param array<string, int|string> $parameters
      *
      * @return list<array<string, mixed>>
      */
-    private function executer(string $sql, array $parametres = []): array
+    private function executeQuery(string $sql, array $parameters = []): array
     {
-        $requete = $this->connexion()->prepare($sql);
-        $requete->execute($parametres);
+        $statement = $this->connection()->prepare($sql);
+        $statement->execute($parameters);
 
-        /** @var list<array<string, mixed>> $lignes */
-        $lignes = $requete->fetchAll(\PDO::FETCH_ASSOC);
+        /** @var list<array<string, mixed>> $rows */
+        $rows = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
-        return $lignes;
+        return $rows;
     }
 
-    private function connexion(): \PDO
+    private function connection(): \PDO
     {
-        if (!$this->estConfigure()) {
+        if (!$this->isConfigured()) {
             throw new \LogicException('Celcat n\'est pas configuré : renseigner CELCAT_DSN.');
         }
 
-        return $this->connexion ??= new \PDO(
+        return $this->connection ??= new \PDO(
             $this->dsn,
-            '' === $this->utilisateur ? null : $this->utilisateur,
-            '' === $this->motDePasse ? null : $this->motDePasse,
+            '' === $this->username ? null : $this->username,
+            '' === $this->password ? null : $this->password,
             [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION],
         );
     }

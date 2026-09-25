@@ -1,25 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Celcat;
 
 /**
  * Bilan d'une synchronisation, lu par la commande pour l'afficher.
  */
-final class CelcatRapport
+final class CelcatReport
 {
-    public int $crees = 0;
-    public int $misAJour = 0;
-    public int $supprimes = 0;
+    public int $created = 0;
+    public int $updated = 0;
+    public int $deleted = 0;
 
     /** @var list<string> créneaux disparus de Celcat mais gardés, car ils portent des absences */
-    public array $conserves = [];
+    public array $kept = [];
 
     /** @var array<string, true> */
-    public array $groupesInconnus = [];
+    public array $unknownGroups = [];
 
     /** @var array<string, true> */
-    public array $personnelsInconnus = [];
+    public array $unknownStaff = [];
 
     /** @var array<string, true> */
-    public array $modulesInconnus = [];
+    public array $unknownModules = [];
 }

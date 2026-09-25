@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command\Celcat;
 
 use App\Entity\Structure\StructureAnneeUniversitaire;
@@ -21,8 +23,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class CelcatSyncCommand extends Command
 {
     public function __construct(
-        private readonly CelcatSource $lecteur,
-        private readonly CelcatSynchronizer $synchroniseur,
+        private readonly CelcatSource $source,
+        private readonly CelcatSynchronizer $synchronizer,
         private readonly EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
@@ -39,57 +41,57 @@ final class CelcatSyncCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        if (!$this->lecteur->estConfigure()) {
+        if (!$this->source->isConfigured()) {
             $io->error('Celcat n\'est pas configuré : renseigner CELCAT_DSN.');
 
             return Command::FAILURE;
         }
 
-        $depots = $this->entityManager->getRepository(StructureAnneeUniversitaire::class);
-        $annee = null !== $input->getOption('annee')
-            ? $depots->find((int) $input->getOption('annee'))
-            : $depots->findOneBy(['actif' => true]);
-        if (null === $annee) {
+        $repositories = $this->entityManager->getRepository(StructureAnneeUniversitaire::class);
+        $academicYear = null !== $input->getOption('annee')
+            ? $repositories->find((int) $input->getOption('annee'))
+            : $repositories->findOneBy(['actif' => true]);
+        if (null === $academicYear) {
             $io->error('Aucune année universitaire trouvée.');
 
             return Command::FAILURE;
         }
 
-        $departements = null !== $input->getOption('departement')
+        $departments = null !== $input->getOption('departement')
             ? [(int) $input->getOption('departement')]
-            : $this->departementsCelcat();
-        if ([] === $departements) {
+            : $this->celcatDepartments();
+        if ([] === $departments) {
             $io->warning('Aucun diplôme n\'a de code de département Celcat.');
 
             return Command::SUCCESS;
         }
 
-        $io->title('Synchronisation Celcat, année '.$annee->getLibelle());
-        $io->text($this->synchroniseur->synchroniserCalendrier($annee).' semaines reprises dans le calendrier.');
+        $io->title('Synchronisation Celcat, année '.$academicYear->getLibelle());
+        $io->text($this->synchronizer->synchronizeCalendar($academicYear).' semaines reprises dans le calendrier.');
 
-        foreach ($departements as $departement) {
-            $rapport = $this->synchroniseur->synchroniser($annee, $departement);
+        foreach ($departments as $department) {
+            $report = $this->synchronizer->synchronize($academicYear, $department);
 
-            $io->section('Département Celcat '.$departement);
+            $io->section('Département Celcat '.$department);
             $io->definitionList(
-                ['Créneaux créés' => $rapport->crees],
-                ['Créneaux mis à jour' => $rapport->misAJour],
-                ['Créneaux supprimés' => $rapport->supprimes],
+                ['Créneaux créés' => $report->created],
+                ['Créneaux mis à jour' => $report->updated],
+                ['Créneaux supprimés' => $report->deleted],
             );
 
-            if ([] !== $rapport->conserves) {
-                $io->warning(count($rapport->conserves).' créneau(x) retiré(s) de Celcat mais conservé(s), car des absences y sont rattachées.');
+            if ([] !== $report->kept) {
+                $io->warning(count($report->kept).' créneau(x) retiré(s) de Celcat mais conservé(s), car des absences y sont rattachées.');
             }
 
             // Ces codes existent dans Celcat mais sont inconnus d'uniServices : tant qu'ils
             // ne sont pas renseignés, les créneaux n'y sont pas rattachés.
             foreach ([
-                'Groupes sans code Apogée correspondant' => $rapport->groupesInconnus,
-                'Enseignants sans numéro Harpège correspondant' => $rapport->personnelsInconnus,
-                'Matières sans code d\'enseignement correspondant' => $rapport->modulesInconnus,
-            ] as $titre => $codes) {
+                'Groupes sans code Apogée correspondant' => $report->unknownGroups,
+                'Enseignants sans numéro Harpège correspondant' => $report->unknownStaff,
+                'Matières sans code d\'enseignement correspondant' => $report->unknownModules,
+            ] as $title => $codes) {
                 if ([] !== $codes) {
-                    $io->note($titre.' : '.implode(', ', array_keys($codes)));
+                    $io->note($title.' : '.implode(', ', array_keys($codes)));
                 }
             }
         }
@@ -100,12 +102,12 @@ final class CelcatSyncCommand extends Command
     /**
      * @return list<int>
      */
-    private function departementsCelcat(): array
+    private function celcatDepartments(): array
     {
         $codes = [];
-        foreach ($this->entityManager->getRepository(StructureDiplome::class)->findAll() as $diplome) {
-            if (null !== $diplome->getCodeCelcatDepartement()) {
-                $codes[$diplome->getCodeCelcatDepartement()] = $diplome->getCodeCelcatDepartement();
+        foreach ($this->entityManager->getRepository(StructureDiplome::class)->findAll() as $degree) {
+            if (null !== $degree->getCodeCelcatDepartement()) {
+                $codes[$degree->getCodeCelcatDepartement()] = $degree->getCodeCelcatDepartement();
             }
         }
 
