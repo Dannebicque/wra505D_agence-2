@@ -1,18 +1,22 @@
 <?php
 
-namespace App\ApiDto\Recherche;
+declare(strict_types=1);
+
+namespace App\ApiDto\Search;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Parameter;
-use App\State\Provider\Recherche\RechercheProvider;
+use App\State\Provider\Search\SearchProvider;
+use Symfony\Component\Serializer\Attribute\SerializedName;
 
 /**
  * Un résultat de la recherche universelle, limitée au département de l'utilisateur connecté.
  */
 #[ApiResource(
+    shortName: 'ResultatRecherche',
     operations: [
         new GetCollection(
             uriTemplate: '/recherche',
@@ -30,31 +34,38 @@ use App\State\Provider\Recherche\RechercheProvider;
                 ],
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
-            provider: RechercheProvider::class,
+            provider: SearchProvider::class,
         ),
     ],
 )]
-final class ResultatRecherche
+final readonly class SearchResult
 {
     public function __construct(
         #[ApiProperty(identifier: true)]
-        private readonly string $cle,
+        #[SerializedName('cle')]
+        private readonly string $key,
+        #[SerializedName('type')]
         private readonly string $type,
         #[ApiProperty(identifier: false)]
+        #[SerializedName('id')]
         private readonly int $id,
-        private readonly string $libelle,
-        private readonly ?string $detail,
+        #[SerializedName('libelle')]
+        private readonly string $label,
+        #[SerializedName('detail')]
+        private readonly ?string $details,
+        #[SerializedName('score')]
         private readonly float $score,
-        private readonly ?string $mail = null,
+        #[SerializedName('mail')]
+        private readonly ?string $email = null,
     ) {
     }
 
     /**
      * Identifiant unique parmi les résultats : deux types différents peuvent partager un id.
      */
-    public function getCle(): string
+    public function getKey(): string
     {
-        return $this->cle;
+        return $this->key;
     }
 
     public function getType(): string
@@ -67,22 +78,22 @@ final class ResultatRecherche
         return $this->id;
     }
 
-    public function getLibelle(): string
+    public function getLabel(): string
     {
-        return $this->libelle;
+        return $this->label;
     }
 
-    public function getDetail(): ?string
+    public function getDetails(): ?string
     {
-        return $this->detail;
+        return $this->details;
     }
 
     /**
      * Adresse universitaire d'une personne, pour lui écrire depuis la recherche.
      */
-    public function getMail(): ?string
+    public function getEmail(): ?string
     {
-        return $this->mail;
+        return $this->email;
     }
 
     public function getScore(): float

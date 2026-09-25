@@ -1,25 +1,27 @@
 <?php
 
-namespace App\Service\Recherche\Source;
+declare(strict_types=1);
+
+namespace App\Service\Search\Source;
 
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
-use App\Service\Recherche\Candidat;
+use App\Service\Search\Candidate;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Un type d'élément cherchable. Ajouter un type à la recherche, c'est ajouter une source.
  */
 #[AutoconfigureTag(self::TAG)]
-interface SourceRechercheInterface
+interface SearchSourceInterface
 {
-    public const TAG = 'app.source_recherche';
+    public const string TAG = 'app.search_source';
 
     /**
      * Les éléments que cet utilisateur a le droit de trouver dans son département.
      *
-     * @return iterable<Candidat>
+     * @return iterable<Candidate>
      */
-    public function candidats(StructureDepartement $departement, Etudiant|Personnel $utilisateur): iterable;
+    public function findCandidates(StructureDepartement $department, Etudiant|Personnel $user): iterable;
 }

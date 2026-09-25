@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Service\Recherche\Source;
+declare(strict_types=1);
+
+namespace App\Service\Search\Source;
 
 use App\Entity\Scolarite\ScolEnseignement;
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Enum\TypeEnseignementEnum;
-use App\Service\Recherche\Candidat;
+use App\Service\Search\Candidate;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -16,16 +18,16 @@ use Doctrine\ORM\EntityManagerInterface;
  * C'est aussi l'entrée de l'emploi du temps dans la recherche : on trouve la matière, pas chacun
  * de ses créneaux.
  */
-final class SourceEnseignements implements SourceRechercheInterface
+final readonly class SubjectSearchSource implements SearchSourceInterface
 {
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {
     }
 
-    public function candidats(StructureDepartement $departement, Etudiant|Personnel $utilisateur): iterable
+    public function findCandidates(StructureDepartement $department, Etudiant|Personnel $user): iterable
     {
         // Un enseignement partagé entre plusieurs UE n'apparaît qu'une fois grâce au DISTINCT.
-        $enseignements = $this->entityManager->createQueryBuilder()
+        $subjects = $this->entityManager->createQueryBuilder()
             ->select('DISTINCT e.id', 'e.libelle', 'e.libelle_court', 'e.codeEnseignement', 'e.motsCles', 'e.type')
             ->from(ScolEnseignement::class, 'e')
             ->join('e.enseignementUes', 'eu')
@@ -35,28 +37,28 @@ final class SourceEnseignements implements SourceRechercheInterface
             ->join('annee.pn', 'pn')
             ->join('pn.diplome', 'diplome')
             ->where('diplome.departement = :departement')
-            ->setParameter('departement', $departement)
+            ->setParameter('departement', $department)
             ->getQuery()
             ->getArrayResult();
 
-        foreach ($enseignements as $enseignement) {
-            if (null === $enseignement['libelle']) {
+        foreach ($subjects as $subject) {
+            if (null === $subject['libelle']) {
                 continue;
             }
 
-            $type = $enseignement['type'] instanceof TypeEnseignementEnum ? $enseignement['type']->getLibelle() : null;
-            $code = $enseignement['codeEnseignement'];
+            $type = $subject['type'] instanceof TypeEnseignementEnum ? $subject['type']->getLibelle() : null;
+            $code = $subject['codeEnseignement'];
 
-            yield new Candidat(
+            yield new Candidate(
                 'enseignement',
-                $enseignement['id'],
-                null === $code ? $enseignement['libelle'] : $code.' '.$enseignement['libelle'],
+                $subject['id'],
+                null === $code ? $subject['libelle'] : $code.' '.$subject['libelle'],
                 $type,
                 implode(' ', array_filter([
                     $code,
-                    $enseignement['libelle'],
-                    $enseignement['libelle_court'],
-                    $enseignement['motsCles'],
+                    $subject['libelle'],
+                    $subject['libelle_court'],
+                    $subject['motsCles'],
                 ])),
             );
         }

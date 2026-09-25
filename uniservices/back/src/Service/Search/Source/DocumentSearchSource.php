@@ -1,18 +1,20 @@
 <?php
 
-namespace App\Service\Recherche\Source;
+declare(strict_types=1);
+
+namespace App\Service\Search\Source;
 
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
-use App\Service\Recherche\Candidat;
+use App\Service\Search\Candidate;
 use Doctrine\ORM\EntityManagerInterface;
 use DocumentBundle\Entity\Document;
 
 /**
  * Documents du département, ou communs à tous, que l'utilisateur a le droit de voir.
  */
-final class SourceDocuments implements SourceRechercheInterface
+final readonly class DocumentSearchSource implements SearchSourceInterface
 {
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {
@@ -24,14 +26,14 @@ final class SourceDocuments implements SourceRechercheInterface
      *
      * @return list<string>
      */
-    public static function visibilitesPour(Etudiant|Personnel $utilisateur): array
+    public static function visibilityFor(Etudiant|Personnel $user): array
     {
-        return $utilisateur instanceof Etudiant
+        return $user instanceof Etudiant
             ? ['PUBLIC', 'ETUDIANT', 'DEPARTEMENT']
             : ['PUBLIC', 'PERSONNEL', 'DEPARTEMENT'];
     }
 
-    public function candidats(StructureDepartement $departement, Etudiant|Personnel $utilisateur): iterable
+    public function findCandidates(StructureDepartement $department, Etudiant|Personnel $user): iterable
     {
         $documents = $this->entityManager->createQueryBuilder()
             ->select('d.id', 'd.titre', 'c.libelle AS categorie')
@@ -39,8 +41,8 @@ final class SourceDocuments implements SourceRechercheInterface
             ->leftJoin('d.category', 'c')
             ->where('d.departement = :departement OR d.departement IS NULL')
             ->andWhere('d.visibility IN (:visibilites)')
-            ->setParameter('departement', $departement)
-            ->setParameter('visibilites', self::visibilitesPour($utilisateur))
+            ->setParameter('departement', $department)
+            ->setParameter('visibilites', self::visibilityFor($user))
             ->getQuery()
             ->getArrayResult();
 
@@ -49,7 +51,7 @@ final class SourceDocuments implements SourceRechercheInterface
                 continue;
             }
 
-            yield new Candidat('document', $document['id'], $document['titre'], $document['categorie'], $document['titre']);
+            yield new Candidate('document', $document['id'], $document['titre'], $document['categorie'], $document['titre']);
         }
     }
 }
