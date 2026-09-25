@@ -45,7 +45,7 @@
           </div>
         </div>
 
-        <div class="flex items-center space-x-4 text-xs text-gray-600 mt-1">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600 mt-1">
           <span class="font-semibold uppercase text-gray-700">{{ getFileExtension(document.type) }}</span>
           <span>{{ formatFileSize(document.size) }}</span>
           <span><i class="pi pi-user text-xs me-1" aria-hidden="true"></i>{{ document.author }}</span>

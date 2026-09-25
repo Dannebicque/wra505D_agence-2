@@ -38,7 +38,7 @@ describe('Agenda de l\'étudiant', () => {
     it('atteint un cours au clavier, ouvre son détail et rend le focus en le fermant', () => {
         cy.get('button.edt-cours', { timeout: 15000 }).should('have.length.greaterThan', 0);
 
-        cy.contains('button', 'aujourd\'hui').focus();
+        cy.contains('button', 'Aujourd\'hui').focus();
         cy.press(Cypress.Keyboard.Keys.TAB);
         cy.focused().should('have.class', 'edt-cours').invoke('attr', 'aria-label').then((libelle) => {
             // Espace plutôt qu'Entrée : dans Electron, cy.press n'active pas un bouton avec Entrée.
@@ -59,6 +59,29 @@ describe('Agenda de l\'étudiant', () => {
             cy.get('button[aria-label="Semaine suivante"]').focus();
             cy.press(Cypress.Keyboard.Keys.SPACE);
             cy.contains('[role="status"]', 'Semaine du', { timeout: 15000 }).should('not.have.text', semaine);
+        });
+    });
+});
+
+describe('Agenda de l\'étudiant sur téléphone', () => {
+    beforeEach(() => {
+        cy.viewport(375, 812);
+        cy.connexionInvite('etudiant');
+        ouvrirAgendaEnSemaineDeCours();
+    });
+
+    it('s\'ouvre sur la journée, lisible sans rien couper', () => {
+        cy.get('.vuecal__event', { timeout: 15000 }).should('have.length.greaterThan', 0);
+        cy.contains('button', 'Jour').should('have.attr', 'aria-pressed', 'true');
+        cy.get('.vuecal h2').invoke('text').should('match', /^Mercredi \d/);
+        cy.contains(/^Semaine \d+ · \d+e semaine de formation$/);
+        cy.contains('Semaine de formation :').should('not.exist');
+
+        cy.contains('button', 'Aujourd\'hui').should(($bouton) => {
+            expect($bouton[0].scrollWidth).to.be.at.most($bouton[0].clientWidth);
+        });
+        cy.get('#contenu-principal').should(($contenu) => {
+            expect($contenu[0].scrollWidth).to.be.at.most($contenu[0].clientWidth);
         });
     });
 });

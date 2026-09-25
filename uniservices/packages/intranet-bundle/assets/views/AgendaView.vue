@@ -1,5 +1,5 @@
 <script setup>
-import {ref, markRaw, onMounted} from 'vue';
+import {ref, markRaw, onMounted, computed} from 'vue';
 import EdtPersonnel from "@/components/Edt/EdtPersonnel.vue";
 import EdtDepartement from "@/components/Edt/EdtDepartement.vue";
 import EdtEtudiant from "../components/Edt/EdtEtudiant.vue";
@@ -10,6 +10,11 @@ import {HeaderComponent} from '@components';
 const store = useUsersStore();
 
 const tabs = ref([]);
+
+// L'étudiant n'a que son propre agenda : ni onglet seul, ni promesse de vues qu'il n'a pas.
+const description = computed(() => (store.isEtudiant
+  ? 'Vos cours, à la journée ou à la semaine'
+  : 'Consultez votre emploi du temps, celui du département et les statistiques'));
 
 onMounted( () => {
   if (store.isPersonnel) {
@@ -32,10 +37,11 @@ onMounted( () => {
   <HeaderComponent
       icon="pi pi-calendar"
       titre="Emploi du temps"
-      description="Consultez votre emploi du temps, celui du département et les statistiques"
+      :description="description"
   />
   <div class="card">
-    <Tabs value="0">
+    <component v-if="tabs.length === 1" :is="tabs[0].component" />
+    <Tabs v-else value="0">
       <TabList>
         <Tab v-for="tab in tabs" :key="tab.value" :value="tab.value">
           {{ tab.title }}
