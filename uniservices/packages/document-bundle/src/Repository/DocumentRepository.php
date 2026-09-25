@@ -19,18 +19,6 @@ class DocumentRepository extends ServiceEntityRepository
     /**
      * @return Document[]
      */
-    public function findFavorites(): array
-    {
-        return $this->createQueryBuilder('d')
-            ->where('d.isFavorite = true')
-            ->orderBy('d.updatedAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @return Document[]
-     */
     public function findByCategory(int $categoryId): array
     {
         return $this->createQueryBuilder('d')
