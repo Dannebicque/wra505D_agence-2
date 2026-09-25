@@ -7,7 +7,7 @@ import EdtEvent from './EdtEvent.vue'
 import {getEdtEventsService, getEtudiantScolariteSemestresService, getSemaineUniversitaireService} from "@requests";
 import {adjustColor, colorNameToRgb, darkenColor} from "@helpers/colors.js";
 import {getISOWeekNumber} from "@helpers/date";
-import {annonceAgenda, libelleCours} from '@/utils/agenda.js';
+import {annonceAgenda, libelleCours, libelleSemaine, titrePeriode} from '@/utils/agenda.js';
 import {useUsersStore} from "@stores";
 import {PhotoUser, ErrorView} from "@components";
 
@@ -20,10 +20,12 @@ const events = ref([]);
 const weekUnivNumber = ref(0);
 const hasError = ref(false);
 const annonce = ref('');
-const viewTranslations = {
-  week: 'SEMAINE',
-  day: 'JOUR',
-};
+const vues = [
+  { id: 'day', libelle: 'Jour' },
+  { id: 'week', libelle: 'Semaine' },
+];
+// Cinq colonnes ne tiennent pas sur un téléphone : il ouvre la journée.
+const vueAffichee = ref(window.matchMedia('(max-width: 767px)').matches ? 'day' : 'week');
 
 watch(() => vuecalRef.value?.view?.start, async (newValue) => {
   if (newValue) {
@@ -246,52 +248,44 @@ function getBadgeSeverity(type) {
       week-numbers
       :stack-events="true"
       :views="['day', 'week']"
-      :default-view="'week'"
+      v-model:view="vueAffichee"
       :theme="false"
       diy
       :events="events"
       @event-click="openDialog">
 
     <!-- En-tête personnalisé -->
-    <template #header="{ view, availableViews, vuecal }">
-      <div class="p-6">
-        <div class="flex justify-center items-center gap-12 mb-4">
+    <template #header="{ view }">
+      <div class="p-3 md:p-6 flex flex-col gap-3 md:gap-4">
+        <div class="flex justify-between md:justify-center items-center gap-2 md:gap-12">
           <Button
               icon="pi pi-chevron-circle-left"
               :aria-label="view.id === 'day' ? 'Jour précédent' : 'Semaine précédente'"
               @click="view.previous"
-              class="p-button-text"
+              class="p-button-text min-w-[44px]! min-h-[44px]!"
           />
-          <div class="flex flex-col items-center">
-            <span v-html="view.title" class="font-bold text-xl flex flex-col items-center"></span>
-            <span class="text-md text-muted-color">Semaine de formation : {{ weekUnivNumber }}</span>
+          <div class="flex flex-col items-center text-center">
+            <h2 class="text-lg! md:text-xl! font-bold m-0!">{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</h2>
+            <span class="text-sm md:text-base text-muted-color">{{ libelleSemaine(getISOWeekNumber(view.firstCellDate), weekUnivNumber) }}</span>
           </div>
           <Button
               icon="pi pi-chevron-circle-right"
               :aria-label="view.id === 'day' ? 'Jour suivant' : 'Semaine suivante'"
               @click="view.next"
-              class="p-button-text"
+              class="p-button-text min-w-[44px]! min-h-[44px]!"
           />
         </div>
 
-        <div class="flex justify-between items-center">
-          <div class="view-buttons flex gap-4">
-            <Button
-                v-for="(grid, viewId) in availableViews"
-                :key="viewId"
-                @click="vuecal.view.switch(viewId)"
-                :class="{ 'p-button-primary': view.id === viewId, 'p-button-outlined': view.id !== viewId }"
-                class="uppercase"
-            >
-              {{ viewTranslations[viewId] || viewId }}
-            </Button>
-          </div>
-
-          <Button
-              @click="view.goToToday()"
-              class="uppercase p-button-outlined"
-              severity="primary"
-          >aujourd'hui</Button>
+        <div class="flex flex-wrap justify-between items-center gap-2">
+          <SelectButton
+              v-model="vueAffichee"
+              :options="vues"
+              option-label="libelle"
+              option-value="id"
+              :allow-empty="false"
+              aria-label="Affichage"
+          />
+          <Button label="Aujourd'hui" outlined class="min-h-[44px]" @click="view.goToToday()" />
         </div>
       </div>
     </template>
