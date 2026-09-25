@@ -254,7 +254,15 @@ notifications, scolarité, Celcat, documents favoris. On y applique aussi les us
 `SearchResult`. Le `shortName` `ResultatRecherche`, l'URL `/recherche` et les champs JSON sont
 conservés, avec `#[SerializedName]`. Renommage délégué à Codex. Vérifié : 20 recherches, en
 étudiant et en personnel, et la partie OpenAPI renvoient un résultat identique à l'octet près.
-**Reste** notifications, scolarité, Celcat, documents favoris.
+**Notifications faites** `NotificationCenter`, `StudentSemesters`, les sources
+`*NotificationSource`, `NotificationFeed`, `MarkAsRead` et leur provider et processor. Côté
+entités : `SentMessage` et `ReadNotification`, dont les tables, colonnes et index gardent leur
+nom. Renommage délégué à Codex. La comparaison avec la référence a trouvé ce que ses tests
+laissaient passer : trois colonnes renommées (500 sur le fil), le type et la clé des actualités
+traduits (des notifications lues redevenaient non lues), des textes d'absence et des commentaires
+traduits mot à mot. Tout est rétabli. Seul change le nom interne du schéma OpenAPI d'entrée
+(`FilNotifications.MarkAsRead`).
+**Reste** scolarité, Celcat, documents favoris.
 ### E15 · [back] PHPStan au niveau max, sans baseline · L, à redécouper
 **Pourquoi** le niveau 6 laisse passer le `mixed` et les nullabilités, et 4 identifiants sont
 ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au 9, 2 871 au 10,
