@@ -86,12 +86,12 @@ describe('Documents par matière et par SAÉ', () => {
     });
 
     it('garde le tri choisi dans l\'adresse', () => {
-        cy.contains('button', 'Plus récent').click();
-        cy.contains('button', 'Titre, de A à Z').click();
+        cy.get('[aria-labelledby="tri-documents"]').click();
+        cy.contains('[role="option"]', 'Titre, de A à Z').click();
         cy.location('search').should('eq', '?tri=titre');
 
         cy.reload();
-        cy.contains('button', 'Titre, de A à Z', { timeout: 15000 });
+        cy.get('[aria-labelledby="tri-documents"]', { timeout: 15000 }).should('contain', 'Titre, de A à Z');
     });
 
     it('affiche des titres de documents lisibles, jamais coupés à quelques lettres', () => {
@@ -105,6 +105,24 @@ describe('Documents par matière et par SAÉ', () => {
             contexte.font = `${style.fontSize} ${style.fontFamily}`;
             const place = $champ[0].clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
             expect(contexte.measureText($champ.attr('placeholder')).width).to.be.at.most(place);
+        });
+    });
+
+    it('ouvre un document au clavier, montre ses actions et rend le focus en fermant sa fiche', () => {
+        cy.get('#contenu-principal .card h3 button').first().then(($titre) => {
+            const titre = $titre.text().trim();
+
+            cy.wrap($titre).focus();
+            cy.wrap($titre).closest('.card').find(`button[aria-label="Télécharger ${titre}"]`)
+                .parent().parent().should('have.css', 'opacity', '1');
+
+            // Espace : dans Electron, cy.press n'active pas un bouton avec Entrée (voir 04-reprise).
+            cy.press(Cypress.Keyboard.Keys.SPACE);
+            cy.get('.p-drawer').should('be.visible').and('contain', titre);
+
+            cy.press(Cypress.Keyboard.Keys.ESC);
+            cy.get('.p-drawer').should('not.exist');
+            cy.focused().should('have.text', $titre.text());
         });
     });
 
@@ -128,14 +146,14 @@ describe('Documents par matière et par SAÉ', () => {
         favoris().should('contain', '0');
 
         cy.contains('a', 'SAE1.01').click();
-        cy.contains('.card', document).find('button[aria-label="Ajouter aux favoris"]').click();
-        cy.contains('.card', document).find('button[aria-label="Retirer des favoris"]');
+        cy.contains('.card', document).find('button[aria-label^="Ajouter"]').click();
+        cy.contains('.card', document).find('button[aria-label^="Retirer"]');
         favoris().should('contain', '1');
 
         cy.reload();
         cy.contains('h2', 'Matières', { timeout: 15000 });
         favoris().should('contain', '1').click();
-        cy.contains('.card', document).find('button[aria-label="Retirer des favoris"]').click();
+        cy.contains('.card', document).find('button[aria-label^="Retirer"]').click();
         favoris().should('contain', '0');
         cy.contains('.card', document).should('not.exist');
     });
