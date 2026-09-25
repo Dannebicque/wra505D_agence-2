@@ -29,7 +29,12 @@ const libelleBouton = computed(() => (replie.value ? 'Déplier le menu' : 'Rédu
             @focus="relayerSurvol($event, 'mouseenter')"
             @blur="relayerSurvol($event, 'mouseleave')"
         >
-            <i :class="replie ? 'pi pi-angle-double-right' : 'pi pi-angle-double-left'" class="layout-menuitem-icon" aria-hidden="true"></i>
+            <!-- Ni PrimeIcons ni Heroicons n'ont d'icône de panneau latéral : la colonne pleine dit que le menu est ouvert. -->
+            <svg class="layout-menuitem-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false">
+                <rect x="3" y="4.5" width="18" height="15" rx="2"></rect>
+                <path v-if="!replie" d="M5 4.5h4v15H5a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2Z" fill="currentColor" stroke="none"></path>
+                <line v-else x1="9" y1="4.5" x2="9" y2="19.5"></line>
+            </svg>
             <span class="layout-menuitem-text">{{ libelleBouton }}</span>
         </button>
     </nav>
