@@ -300,6 +300,10 @@ Trois failles à leur signaler, car elles sont dans leur code de production :
   nom de sa classe. Pour les enseignants de l'emploi du temps, sur une base déjà remplie :
   `php bin/console doctrine:fixtures:load --append --group=StructureEnseignantFixtures`, puis la
   synchro Celcat.
+- **Base locale créée avant DBAL 4 (E11)** : `doctrine:schema:update --dump-sql` propose de
+  retirer les commentaires `(DC2Type:…)` des colonnes. DBAL 4 ne les lit plus : ils sont
+  inoffensifs. `doctrine:schema:update --force` les retire une fois pour toutes, sans toucher aux
+  données ; recharger les fixtures a le même effet.
 - **Tester l'API sans mot de passe** : générer un jeton en console, puis l'envoyer en
   `Authorization: Bearer`.
   `php bin/console lexik:jwt:generate-token -c 'App\Entity\Users\Etudiant' etudiant`

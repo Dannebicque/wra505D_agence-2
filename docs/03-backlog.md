@@ -164,6 +164,12 @@ que rien ne référence chez nous) : E12 la supprime.
 **Pourquoi** DoctrineBundle 3, exigé par Symfony 8, ne fonctionne plus avec DBAL 3.
 **Terminé quand** le SQL généré par `doctrine:schema:create --dump-sql` est identique avant et
 après, et que les fixtures se chargent.
+**Fait** DBAL 4.4, ORM 3.7, doctrine/collections 3, types Doctrine de Carbon 3. Le SQL généré
+compte toujours 225 instructions. Sur une base créée sous DBAL 3, `schema:update` ne propose que
+de retirer 46 anciens commentaires de colonne `(DC2Type:…)`, sans changer aucun type.
+`app:truncate` passe à `introspectTableNames()`, et les `SET` et `TRUNCATE` bruts passent à
+`executeStatement()`. Ce remplacement a été délégué à OpenCode, puis le diff a été vérifié ligne
+à ligne.
 
 ### E12 · [back] Jeton de rafraîchissement : gesdinet 1.5 vers 2.x · S
 **Pourquoi** la version 1.5 ne va pas au-delà de Symfony 7 ; la 2.x accepte la 7.4 et la 8. La 1.5
