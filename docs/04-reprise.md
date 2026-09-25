@@ -29,11 +29,10 @@ Dernière mise à jour : 25/09/2026.
   `git merge-base --is-ancestor origin/<branche> origin/develop`.
 - Corriger un bug dans le code back du client est permis, même hors du périmètre étudiant. On n'y
   ajoute pas de fonctionnalité.
-- **Style PHP : PSR-12 sur les seuls fichiers modifiés.** Depuis `uniservices/back` : `make cs`
-  vérifie, `make cs-fix` corrige, par rapport à `origin/develop` (`BASE=...` pour une autre base).
-  La CI-Back le vérifie sur chaque PR. On ne reformate pas tout le code du client : ses diffs ne
-  s'appliqueraient plus lors des reprises. Un fichier du client que l'on touche passe, lui, à la
-  norme en entier.
+- **Style PHP : PSR-12 sur tout le code** depuis E9. Depuis `uniservices/back` : `make cs`
+  vérifie, `make cs-fix` corrige ; `make check`, donc la CI-Back, lance `make cs`. Le commit de
+  reformatage est ignoré par `git blame` (`git config blame.ignoreRevsFile .git-blame-ignore-revs`
+  en local).
 
 ## Lancer le projet en local
 
@@ -150,9 +149,12 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
 - Dernier commit examiné : noté dans `.github/uniservices-amont-examine`, aujourd'hui `ef38ca880`.
 - Le workflow « Veille uniServices » ouvre une issue chaque matin de semaine s'il y a du nouveau.
   Il ne tourne que depuis la branche par défaut, `main` : pas avant le prochain passage vers `main`.
-- Procédure : dans le clone `Reference/uniServices`, `git fetch` puis `git diff`, appliquer ce qui
-  est retenu avec `git apply --directory=uniservices -3 --exclude='*components.d.ts'` sur une branche `chore/amont-<version>`,
-  puis PHPStan et PHPUnit.
+- Procédure : `git fetch` dans le clone `Reference/uniServices`, puis, depuis `uniservices/back`,
+  `bin/upstream-diff <ancien> <nouveau> > amont.patch`. Le script formate les deux côtés en PSR-12
+  avant le diff : un diff brut entrerait en conflit sur chaque ligne que E9 a reformatée. Appliquer
+  ce qui est retenu, depuis la racine, avec
+  `git apply --directory=uniservices -3 --exclude='*components.d.ts' amont.patch` sur une branche
+  `chore/amont-<version>`, puis `make check`.
 
 ---
 

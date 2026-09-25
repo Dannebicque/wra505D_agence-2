@@ -74,8 +74,8 @@ On adopte les conventions du client. Le code doit se fondre dans le sien, pas co
 - Les alias existent, on s'en sert : `@components`, `@stores`, `@requests`, `@helpers`,
   `@styles`, `@config`, `@images`, `@types`.
 - Côté PHP : PSR-12, classes en PascalCase, PHPDoc sur les classes et méthodes. `make cs` (depuis
-  `uniservices/back`) le vérifie sur les seuls fichiers modifiés ; on ne reformate jamais le code
-  du client en bloc, ses diffs ne s'appliqueraient plus.
+  `uniservices/back`) le vérifie sur tout le code. Une reprise du dépôt du client passe par
+  `bin/upstream-diff`, jamais par un diff brut : notre code est reformaté, le sien non.
 - Une page étudiante entre dans le `studentMenu` du manifest de son module, jamais dans le menu du
   personnel. Les données de l'étudiant connecté passent par une route `/api/me/…` sans
   identifiant. Un nouveau type de notification ou de résultat de recherche est une nouvelle
