@@ -129,7 +129,7 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
 - Le workflow « Veille uniServices » ouvre une issue chaque matin de semaine s'il y a du nouveau.
   Il ne tourne que depuis la branche par défaut, `main` : pas avant le prochain passage vers `main`.
 - Procédure : dans le clone `Reference/uniServices`, `git fetch` puis `git diff`, appliquer ce qui
-  est retenu avec `git apply --directory=uniservices -3` sur une branche `chore/amont-<version>`,
+  est retenu avec `git apply --directory=uniservices -3 --exclude='*components.d.ts'` sur une branche `chore/amont-<version>`,
   puis PHPStan et PHPUnit.
 
 ---
@@ -212,8 +212,10 @@ Trois failles à leur signaler, car elles sont dans leur code de production :
   a échoué ainsi de #55 à #68. `shared/vite.config.base.js` les pré-optimise tous ; pour
   reproduire la CI : `npx vite --port 3100 --force` dans `packages/shell`, puis
   `CYPRESS_BASE_URL=http://localhost:3100 npx cypress run`.
-- **`components.d.ts`** est régénéré par Vite et bloque les changements de branche :
-  `git checkout -- .` puis recommencer.
+- **`components.d.ts`** est généré par Vite dans chaque module. Il n'est plus suivi par Git
+  (`uniservices/.gitignore`) ni surveillé par Vite : il ne bloque plus les changements de branche
+  et ne recharge plus la page. Le dépôt du client, lui, le suit : exclure ses modifications lors
+  d'une reprise (`--exclude='*components.d.ts'`).
 - **Deux `AuthController`**, dans `back/src` et dans `auth-bundle`, au code identique. Une
   correction faite dans l'un doit l'être dans l'autre.
 - **`failOnDeprecation`** est activé dans PHPUnit : une dépréciation dans leur code fait échouer

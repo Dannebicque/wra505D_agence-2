@@ -68,6 +68,11 @@ export function getBaseConfig(bundleDir, baseName, customConfig = {}) {
         emptyOutDir: true,
       },
       server: {
+        // unplugin-vue-components réécrit ce fichier dès qu'il découvre un composant : surveillé, il
+        // faisait recharger toute la page, en perdant la navigation en cours.
+        watch: {
+          ignored: ["**/components.d.ts"],
+        },
         proxy: {
           "/api": {
             target: apiUrl,

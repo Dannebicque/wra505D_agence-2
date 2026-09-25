@@ -56,3 +56,6 @@ packages/*/assets/node_modules/
 /.github/workflows/CI-front.yml
 /.github/workflows/CI-cypress.yml
 
+# Déclarations générées par unplugin-vue-components au démarrage de Vite : suivies, elles
+# changeaient à chaque lancement et bloquaient les changements de branche.
+components.d.ts
