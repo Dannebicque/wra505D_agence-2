@@ -63,12 +63,14 @@ function itemClick(event, item) {
     setActiveMenuItem(foundItemKey);
 }
 
+const sansBarreFinale = (chemin) => String(chemin).replace(/\/+$/, '');
+
 // La directive tooltip de PrimeVue écoute soit le survol, soit le focus, jamais les deux : le focus
 // clavier est relayé en survol pour que le menu replié nomme aussi ses icônes au clavier.
 const relayerSurvol = (event, type) => event.currentTarget.dispatchEvent(new MouseEvent(type));
 
 function checkActiveRoute(item) {
-    return route.path === item.to;
+    return sansBarreFinale(route.path) === sansBarreFinale(item.to);
 }
 </script>
 
