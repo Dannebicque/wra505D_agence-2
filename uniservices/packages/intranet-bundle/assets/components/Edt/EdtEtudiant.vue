@@ -7,6 +7,7 @@ import EdtEvent from './EdtEvent.vue'
 import {getEdtEventsService, getEtudiantScolariteSemestresService, getSemaineUniversitaireService} from "@requests";
 import {adjustColor, colorNameToRgb, darkenColor} from "@helpers/colors.js";
 import {getISOWeekNumber} from "@helpers/date";
+import {libelleCours} from '@/utils/agenda.js';
 import {useUsersStore} from "@stores";
 import {PhotoUser, ErrorView} from "@components";
 
@@ -294,6 +295,9 @@ function getBadgeSeverity(type) {
 
     <template #event="{ event }">
       <EdtEvent :event="event" type="etudiant" />
+      <!-- Sans gestionnaire propre : son clic remonte jusqu'à vue-cal, qui émet event-click. La souris
+           et le clavier ouvrent ainsi le détail par le même chemin. -->
+      <button type="button" class="edt-cours" :aria-label="libelleCours(event)"></button>
     </template>
   </vue-cal>
 </template>
@@ -310,6 +314,16 @@ function getBadgeSeverity(type) {
 
 :deep(.vuecal__event-details) {
   @apply h-full;
+}
+
+.edt-cours {
+  @apply absolute inset-0 rounded-xl cursor-pointer;
+  /* Les cours gardent un fond pâle en thème sombre, où --p-primary-color s'éclaircit : l'anneau
+     reste le violet de la DA, au moins 7:1 sur chacun de ces fonds. */
+  &:focus-visible {
+    outline: 3px solid var(--p-primary-500);
+    outline-offset: -3px;
+  }
 }
 
 :deep(.vuecal__body) {
