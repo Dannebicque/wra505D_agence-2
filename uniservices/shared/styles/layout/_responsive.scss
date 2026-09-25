@@ -53,9 +53,9 @@
                 display: none;
             }
 
-            // Le logo (et sa marge intérieure de 0,5rem) démarre au bord du contenu, menu replié.
+            // Le logo (4rem de large, marge intérieure comprise) se centre sur l'axe des icônes du menu.
             .layout-topbar {
-                padding-left: calc(var(--layout-sidebar-rail-width) - 0.5rem);
+                padding-left: calc(var(--layout-sidebar-rail-width) / 2 - 2rem);
             }
 
             .layout-main-container {
