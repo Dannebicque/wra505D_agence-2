@@ -62,10 +62,10 @@ class CopyTransfertBddPrevisionnelCommand extends Command
     private function effacerTables(): void
     {
         // vider les tables de destination et les réinitialiser
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=0');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE previsionnel');
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE previsionnel');
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=1');
     }
 

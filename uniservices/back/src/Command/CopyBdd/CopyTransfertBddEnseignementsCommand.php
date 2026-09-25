@@ -71,13 +71,13 @@ class CopyTransfertBddEnseignementsCommand extends Command
     private function effacerTables(): void
     {
         // vider les tables de destination et les réinitialiser
-        $this->entityManager->getConnection()->executeQuery('SET FOREIGN_KEY_CHECKS=0');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE scol_enseignement');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE scol_enseignement_ue');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE scol_enseignement_apc_apprentissage_critique');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE scol_evaluation');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE etudiant_note');
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('SET FOREIGN_KEY_CHECKS=0');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE scol_enseignement');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE scol_enseignement_ue');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE scol_enseignement_apc_apprentissage_critique');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE scol_evaluation');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE etudiant_note');
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=1');
     }
 
