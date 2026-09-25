@@ -164,6 +164,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Voter des questionnaires | raccourci de développement retiré, règles normales appliquées | client |
 | Navigation étudiante | un seul menu, le même sur chaque page, assemblé depuis le `studentMenu` des modules actifs (`shared/helpers/menuEtudiant.js`) ; l'étudiant arrive sur l'Accueil sans passer par le portail ; Portail, Applications et Messages retirés de sa barre haute, Messages rejoindra le centre de notifications. Rien ne change pour le personnel | nous |
 | Document et enseignement (B6) | un document se rattache à **un seul** `ScolEnseignement`, matière ou SAÉ, facultatif ; le lien s'efface si l'enseignement est supprimé. Un support commun à plusieurs matières se dépose dans chacune. Question 3 toujours sans réponse | nous |
+| Notifications et messages | un seul fil pour l'étudiant : notes publiées, absences, documents de ses matières, actualités et messages. Les notifications sont recalculées, seule leur lecture est stockée. Les « messages » sont les copies des e-mails que l'intranet envoie (écoute du mailer) : la boîte universitaire n'est pas lue. La décision sur un justificatif n'a pas de date : son état figure dans le texte de l'absence | nous, validé par LCS |
 
 ## Questions en attente du client
 
