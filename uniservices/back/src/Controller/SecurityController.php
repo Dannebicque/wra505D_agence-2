@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -75,7 +75,7 @@ class SecurityController extends AbstractController
     public function changePassword(
         Request $request,
         MailerInterface $mailer,
-        RateLimiterFactory $passwordResetLimiter
+        RateLimiterFactoryInterface $passwordResetLimiter
     ): JsonResponse {
         // Rate limiting : max 3 demandes par IP par heure
         $limiter = $passwordResetLimiter->create($request->getClientIp());
@@ -154,7 +154,7 @@ class SecurityController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         ValidatorInterface $validator,
-        RateLimiterFactory $passwordResetLimiter,
+        RateLimiterFactoryInterface $passwordResetLimiter,
         EntityManagerInterface $entityManager,
     ): JsonResponse {
         // Rate limiting : protection contre le brute force
