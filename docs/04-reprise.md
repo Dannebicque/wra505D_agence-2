@@ -137,7 +137,7 @@ rouge ne se merge pas**. Pour lire un échec : `gh run view <id> --log-failed`.
 La recherche (D1, D2) cherche étudiants, personnels, documents, matières et actualités du
 département de l'utilisateur, en respectant la visibilité des documents et le public des
 actualités. Les pages de l'intranet seront cherchées par la palette front (D3), qui connaît la
-navigation. Le code est dans `back/src/Service/Recherche/` : un nouveau type se branche en
+navigation. Le code est dans `back/src/Service/Search/` : un nouveau type se branche en
 ajoutant une source.
 
 ### Dépôt du client
@@ -175,7 +175,7 @@ Ce que la refonte a mis en place côté étudiant, et où ajouter la suite sans 
 | une page étudiante | l'ajouter au `studentMenu` du manifest de son module (`groupe`, `ordre`, `motsCles`), jamais au menu du personnel ; le menu et la palette de recherche lisent la même liste | `packages/*/assets/manifest.ts`, `shared/helpers/menuEtudiant.js` |
 | les données de l'étudiant connecté | une route `/api/me/…` sans identifiant, 403 pour le personnel : `scolarite`, `notifications`, `notifications/lues`, `documents-favoris` | `back/src/ApiDto/`, `back/src/State/Provider/` |
 | un type de notification | une source `SourceNotificationInterface` ; les e-mails envoyés sont copiés d'office par `MessageEnvoyeListener` | `back/src/Service/Notification/` |
-| un type de résultat de recherche | une source `SourceRechercheInterface` | `back/src/Service/Recherche/Source/` |
+| un type de résultat de recherche | une source `SearchSourceInterface` | `back/src/Service/Search/Source/` |
 | un widget réservé à l'étudiant | `allowedProfiles: [PROFILE_ETUDIANT]`, et la disposition par défaut si tous doivent le voir | `packages/intranet-bundle/src/Services/Dashboard/` |
 | une couleur | les jetons du preset : palette `VIOLET_IUT`, `--accent-color`, `text-muted-color` ; jamais de couleur en dur, jamais de couleur par module | `packages/shell/assets/main.js` |
 | l'état partagé des notifications | `useNotificationStore` (cloche et page) | `shared/stores/notificationStore.js` |
