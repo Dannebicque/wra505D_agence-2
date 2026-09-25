@@ -18,6 +18,10 @@ const layoutState = reactive({
     activeMenuItem: null
 });
 
+// La directive tooltip de PrimeVue écoute soit le survol, soit le focus, jamais les deux : le focus
+// clavier est relayé en survol pour que le menu replié nomme aussi ses icônes au clavier.
+export const relayerSurvol = (event, type) => event.currentTarget.dispatchEvent(new MouseEvent(type));
+
 export function useLayout() {
     const setPrimary = (value) => {
         layoutConfig.primary = value;

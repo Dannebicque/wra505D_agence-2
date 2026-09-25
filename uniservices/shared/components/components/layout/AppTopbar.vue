@@ -1,6 +1,6 @@
 <script setup>
 import { useLayout } from './composables/layout.js';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { AVAILABLE_ROLES } from "@utils/permissions";
 import Logo from '@components/components/Logo.vue';
 import AppSearch from './AppSearch.vue';
@@ -157,16 +157,8 @@ const props = defineProps({
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme, layoutState } = useLayout();
 
-// Même seuil que onMenuToggle : au-delà, le bouton replie le menu, en deçà il ouvre le tiroir.
-const requeteBureau = window.matchMedia('(min-width: 992px)');
-const estBureau = ref(requeteBureau.matches);
-const suivreLargeur = (event) => {
-  estBureau.value = event.matches;
-};
-onMounted(() => requeteBureau.addEventListener('change', suivreLargeur));
-onUnmounted(() => requeteBureau.removeEventListener('change', suivreLargeur));
-
-const menuDeplie = computed(() => (estBureau.value ? !layoutState.staticMenuDesktopInactive : layoutState.staticMenuMobileActive));
+// Ce bouton n'apparaît qu'en mobile : sur ordinateur, le menu a son propre bouton de repli.
+const menuOuvert = computed(() => layoutState.staticMenuMobileActive);
 
 const anneeMenu = ref();
 const toolsMenu = ref();
@@ -288,8 +280,8 @@ const selectAnneeUniversitaire = (annee) => {
       <button
           v-if="route.name !== 'portail'"
           class="layout-menu-button layout-topbar-action"
-          :aria-label="menuDeplie ? 'Replier le menu' : 'Déplier le menu'"
-          :aria-expanded="menuDeplie ? 'true' : 'false'"
+          :aria-label="menuOuvert ? 'Fermer le menu' : 'Ouvrir le menu'"
+          :aria-expanded="menuOuvert ? 'true' : 'false'"
           aria-controls="menu-principal"
           @click="onMenuToggle"
       >

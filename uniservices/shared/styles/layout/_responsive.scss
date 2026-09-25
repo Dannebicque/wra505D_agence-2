@@ -48,9 +48,9 @@
         }
 
         &.layout-static {
-            // Le bouton du menu (2,5rem) se centre sur le même axe que les icônes du menu.
-            .layout-topbar {
-                padding-left: calc(var(--layout-sidebar-rail-width) / 2 - 1.25rem);
+            // Sur ordinateur, le menu se replie depuis son propre bouton, en bas de la barre latérale.
+            .layout-menu-button {
+                display: none;
             }
 
             .layout-main-container {
@@ -67,17 +67,16 @@
             &.layout-static-inactive {
                 .layout-sidebar {
                     width: var(--layout-sidebar-rail-width);
-                }
-
-                .layout-menu {
-                    ul a {
-                        justify-content: center;
-                        margin-left: 0.5rem;
-                        padding: 0.5rem;
-                    }
 
                     .layout-menuitem-text {
                         @include mixins.visually-hidden();
+                    }
+                }
+
+                // Les icônes gardent leur position : elles ne se déplacent pas pendant l'animation.
+                .layout-menu {
+                    ul a {
+                        margin-left: 0.5rem;
                     }
 
                     .layout-submenu-toggler {
@@ -100,6 +99,10 @@
 @media (max-width: 991px) {
     .blocked-scroll {
         overflow: hidden;
+    }
+
+    .layout-sidebar-toggle {
+        display: none;
     }
 
     .layout-wrapper {
