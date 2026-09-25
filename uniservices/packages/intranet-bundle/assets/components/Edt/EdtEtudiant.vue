@@ -7,7 +7,7 @@ import EdtEvent from './EdtEvent.vue'
 import {getEdtEventsService, getEtudiantScolariteSemestresService, getSemaineUniversitaireService} from "@requests";
 import {adjustColor, colorNameToRgb, darkenColor} from "@helpers/colors.js";
 import {getISOWeekNumber} from "@helpers/date";
-import {libelleCours} from '@/utils/agenda.js';
+import {annonceAgenda, libelleCours} from '@/utils/agenda.js';
 import {useUsersStore} from "@stores";
 import {PhotoUser, ErrorView} from "@components";
 
@@ -19,6 +19,7 @@ const vuecalRef = ref(null)
 const events = ref([]);
 const weekUnivNumber = ref(0);
 const hasError = ref(false);
+const annonce = ref('');
 const viewTranslations = {
   week: 'SEMAINE',
   day: 'JOUR',
@@ -28,9 +29,23 @@ watch(() => vuecalRef.value?.view?.start, async (newValue) => {
   if (newValue) {
     const startDate = new Date(newValue);
     await getWeekUnivNumber(startDate); // Récupère le numéro de semaine de formation
-    getEventsEtudiantWeek(); // Met à jour les événements pour la semaine
+    await getEventsEtudiantWeek(); // Met à jour les événements pour la semaine
+    annoncerPeriode();
   }
 }, { immediate: true });
+
+const annoncerPeriode = () => {
+  const view = vuecalRef.value?.view;
+  if (!view) {
+    return;
+  }
+  annonce.value = annonceAgenda({
+    vue: view.id,
+    debut: view.firstCellDate,
+    fin: view.lastCellDate,
+    cours: events.value,
+  });
+};
 
 const getWeekUnivNumber = async (date) => {
   const calendarWeekNumber = getISOWeekNumber(date); // Calcule le numéro de semaine ISO
@@ -224,6 +239,8 @@ function getBadgeSeverity(type) {
       </div>
     </div>
   </Dialog>
+
+  <p role="status" class="sr-only">{{ annonce }}</p>
 
   <ErrorView v-if="hasError" message="Une erreur est survenue lors du chargement de l'emploi du temps. Veuillez réessayer plus tard." />
   <vue-cal

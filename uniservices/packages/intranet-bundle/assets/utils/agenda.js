@@ -12,3 +12,12 @@ export function libelleCours(cours) {
         cours.evaluation ? 'évaluation' : null,
     ].filter(Boolean).join(', ');
 }
+
+export function annonceAgenda({vue, debut, fin, cours}) {
+    const nombre = cours.filter(({start}) => start >= debut && start <= fin).length;
+    const periode = vue === 'day'
+        ? `Journée du ${formatJour(debut)}`
+        : `Semaine du ${formatJour(debut)} au ${formatJour(fin)}`;
+
+    return `${periode} : ${nombre === 0 ? 'aucun cours' : `${nombre} cours`}`;
+}
