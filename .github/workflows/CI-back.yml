@@ -32,9 +32,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-        with:
-          # L'historique complet permet de trouver les fichiers modifiés par la PR.
-          fetch-depth: 0
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -46,7 +43,3 @@ jobs:
 
       - name: Run backend quality checks
         run: make check
-
-      - name: Check PSR-12 style of the changed PHP files
-        if: github.event_name == 'pull_request'
-        run: BASE=origin/${{ github.base_ref }} bin/cs-diff

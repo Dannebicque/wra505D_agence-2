@@ -1,8 +1,8 @@
 <?php
 
 /*
- * PSR-12, la norme de CLAUDE.md. Ne s'applique qu'aux fichiers qu'une PR modifie (bin/cs-diff) :
- * reformater tout le code du client rendrait illisibles les reprises de son dépôt.
+ * PSR-12, la norme de CLAUDE.md, sur tout le code. Les reprises du dépôt du client passent par
+ * bin/upstream-diff, qui applique cette même configuration aux deux côtés de son diff.
  */
 $finder = (new PhpCsFixer\Finder())
     ->in([__DIR__.'/src', __DIR__.'/tests'])
