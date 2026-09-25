@@ -14,7 +14,7 @@
             <h3 class="font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
               {{ document.title }}
             </h3>
-            <p class="text-xs text-gray-500 truncate">
+            <p class="text-xs text-gray-600 truncate">
               {{ getFileExtension(document.type) }} • {{ formatFileSize(document.size) }}
             </p>
           </div>
@@ -27,14 +27,14 @@
           :aria-label="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
         >
           <i
-            :class="[document.isFavorite ? 'pi pi-star-fill text-amber-700' : 'pi pi-star text-gray-500 group-hover:text-gray-700', 'text-lg']"
+            :class="[document.isFavorite ? 'pi pi-star-fill text-amber-700' : 'pi pi-star text-gray-600 group-hover:text-gray-700', 'text-lg']"
             aria-hidden="true"
           ></i>
         </button>
       </div>
 
       <!-- Info badges -->
-      <div class="space-y-1.5 text-xs text-gray-500 my-2">
+      <div class="space-y-1.5 text-xs text-gray-600 my-2">
         <div class="flex items-center">
           <i class="pi pi-user w-4 me-1 opacity-70" aria-hidden="true"></i>
           <span class="truncate">{{ document.author }}</span>
@@ -76,7 +76,7 @@
       <div class="flex items-center space-x-1">
         <button
           @click.stop="$emit('downloadDocument', document)"
-          class="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+          class="p-1.5 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
           title="Télécharger"
           aria-label="Télécharger"
         >
@@ -85,7 +85,7 @@
         <button
           v-permission="'isPersonnel'"
           @click.stop="$emit('deleteDocument', document)"
-          class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+          class="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
           title="Supprimer"
           aria-label="Supprimer"
         >

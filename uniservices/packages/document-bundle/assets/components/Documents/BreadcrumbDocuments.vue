@@ -1,5 +1,5 @@
 <template>
-  <nav class="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+  <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-4">
     <button
       @click="$emit('navigate', null)"
       class="hover:text-gray-700 transition-colors"

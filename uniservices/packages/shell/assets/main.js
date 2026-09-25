@@ -41,6 +41,15 @@ const VIOLET_IUT = {
 const MyPreset = definePreset(Aura, {
     semantic: {
         primary: VIOLET_IUT,
+        // Texte atténué de CLAUDE.md : le gris d'Aura tombait à 4,34:1 sur le fond des pages.
+        colorScheme: {
+            light: {
+                text: { mutedColor: '#676D75' }
+            },
+            dark: {
+                text: { mutedColor: '#A7ACB4' }
+            }
+        }
     },
     // La primaire d'origine de la DA devient l'accent. Seul sur blanc, le jaune ne fait que
     // 1,88:1 : il porte du texte #4D3677 (5,29:1) et ne délimite jamais un élément sans bordure.
@@ -84,6 +93,15 @@ const MyPreset = definePreset(Aura, {
                 light: {
                     success: { background: '#15C377', color: '#0B3D26' },
                     danger: { background: '#F96868', color: '#4A1010' }
+                }
+            }
+        },
+        // Les boutons non choisis d'un SelectButton prennent un gris à 4,34:1 sur le fond des pages.
+        togglebutton: {
+            colorScheme: {
+                light: {
+                    root: { color: '#676D75' },
+                    icon: { color: '#676D75' }
                 }
             }
         },

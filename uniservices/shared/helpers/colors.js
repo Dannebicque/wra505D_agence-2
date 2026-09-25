@@ -80,3 +80,18 @@ export function hexToRgb(hex) {
   const num = parseInt(c, 16);
   return `rgb(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, 1)`;
 }
+
+const luminanceRelative = (rgb) => {
+  const [r, g, b] = rgb.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+// Noir ou blanc, selon celui qui contraste le plus avec ce fond au format « rgb(r, g, b) » : une
+// pastille prend la couleur de son groupe, qui peut être claire ou foncée.
+export function couleurTexteLisible(fond) {
+  const l = luminanceRelative(fond);
+  return (l + 0.05) / 0.05 >= 1.05 / (l + 0.05) ? '#000000' : '#FFFFFF';
+}

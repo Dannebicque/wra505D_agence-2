@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted} from 'vue';
-import { adjustColor, colorNameToRgb } from '@helpers';
+import { adjustColor, colorNameToRgb, couleurTexteLisible } from '@helpers';
 
 const props = defineProps({
   item: {
@@ -27,9 +27,10 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'action']);
 
-const badgeStyle = computed(() => ({
-  backgroundColor: adjustColor(colorNameToRgb(props.item?.color), 0.6, 0.1),
-}));
+const badgeStyle = computed(() => {
+  const fond = adjustColor(colorNameToRgb(props.item?.color), 0.6, 0.1);
+  return { backgroundColor: fond, color: couleurTexteLisible(fond) };
+});
 
 const onRowClick = () => {
   if (!props.selectable) {
@@ -53,7 +54,7 @@ const onActionClick = (event) => {
   >
     <div class="flex flex-row items-center gap-2">
       <div class="max-w-40 font-bold text-primary-600 dark:text-primary-300">{{ item.heure }}</div>
-      <span class="rounded-lg px-2.5 py-1 text-xs font-semibold dark:text-black" :style="badgeStyle">
+      <span class="rounded-lg px-2.5 py-1 text-xs font-semibold" :style="badgeStyle">
       {{ item.groupe }}
     </span>
       <div class="min-w-48 flex-1 font-bold">{{ item.cours }}</div>
