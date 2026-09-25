@@ -43,8 +43,10 @@ describe('Navigation de l\'étudiant', () => {
             expect(doc.scrollingElement.scrollHeight).to.be.at.most(doc.defaultView.innerHeight);
         };
 
+        // Le widget Contacts n'est pas dans la disposition par défaut : sur une base neuve, comme en
+        // CI, seuls les widgets par défaut prouvent que l'accueil a fini de se charger.
         cy.visit('/app/intranet/');
-        cy.contains('Votre département', { timeout: 15000 });
+        cy.contains('Actualités du département', { timeout: 15000 });
         cy.document().should(pageTientDansLaFenetre);
 
         cy.visit('/app/intranet/notifications');
