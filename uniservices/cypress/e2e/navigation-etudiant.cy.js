@@ -74,3 +74,25 @@ describe('Navigation de l\'étudiant', () => {
             .and('not.contain', 'Paramètres');
     });
 });
+
+describe('Barre du haut de l\'étudiant sur téléphone', () => {
+    beforeEach(() => {
+        cy.viewport(375, 812);
+        cy.connexionInvite('etudiant');
+        cy.visit('/app/intranet/');
+    });
+
+    it('garde le menu d\'actions fermé jusqu\'à ce qu\'on l\'ouvre, et le referme avec Échap', () => {
+        cy.get('button[aria-label="Plus d\'actions"]', { timeout: 15000 }).as('actions')
+            .should('have.attr', 'aria-expanded', 'false');
+        cy.get('#actions-barre-haute').should('not.be.visible');
+
+        cy.get('@actions').click();
+        cy.get('@actions').should('have.attr', 'aria-expanded', 'true');
+        cy.get('#actions-barre-haute').should('be.visible').find('[aria-controls="profile_menu"]').should('be.visible');
+
+        cy.press(Cypress.Keyboard.Keys.ESC);
+        cy.get('#actions-barre-haute').should('not.be.visible');
+        cy.focused().should('have.attr', 'aria-label', 'Plus d\'actions');
+    });
+});
