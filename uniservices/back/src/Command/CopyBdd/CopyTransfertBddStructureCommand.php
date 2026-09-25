@@ -92,23 +92,23 @@ class CopyTransfertBddStructureCommand extends Command
     private function effacerTables(): void
     {
         // vider les tables de destination et les réinitialiser
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=0');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_calendrier');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_type_diplome');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_departement');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_diplome');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_diplome_annee_universitaire');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_pn');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_annee');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_semestre');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_ue');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_annee_universitaire');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE scol_enseignement');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE scol_enseignement_ue');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_groupe');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE structure_groupe_structure_semestre');
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_calendrier');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_type_diplome');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_departement');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_diplome');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_diplome_annee_universitaire');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_pn');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_annee');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_semestre');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_ue');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_annee_universitaire');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE scol_enseignement');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE scol_enseignement_ue');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_groupe');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE structure_groupe_structure_semestre');
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=1');
     }
 

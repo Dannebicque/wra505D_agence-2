@@ -48,15 +48,15 @@ class CopyTransfertBddApcCommand extends Command
     private function effacerTables(): void
     {
         // vider les tables de destination et les réinitialiser
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=0');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE apc_referentiel');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE apc_competence');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE apc_niveau');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE apc_parcours');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE apc_niveau_apc_parcours');
-        $this->entityManager->getConnection()->executeQuery('TRUNCATE TABLE apc_apprentissage_critique');
-        $this->entityManager->getConnection()->executeQuery('SET
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE apc_referentiel');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE apc_competence');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE apc_niveau');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE apc_parcours');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE apc_niveau_apc_parcours');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE apc_apprentissage_critique');
+        $this->entityManager->getConnection()->executeStatement('SET
 FOREIGN_KEY_CHECKS=1');
     }
 

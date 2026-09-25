@@ -27,13 +27,14 @@ class TruncateDatabaseCommand extends Command
         $connection = $this->entityManager->getConnection();
         $schemaManager = $connection->createSchemaManager();
 
-        $connection->executeQuery('SET FOREIGN_KEY_CHECKS=0');
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS=0');
 
-        foreach ($schemaManager->listTableNames() as $tableName) {
-            $connection->executeQuery('TRUNCATE TABLE ' . $tableName);
+        $platform = $connection->getDatabasePlatform();
+        foreach ($schemaManager->introspectTableNames() as $tableName) {
+            $connection->executeStatement('TRUNCATE TABLE ' . $tableName->toSQL($platform));
         }
 
-        $connection->executeQuery('SET FOREIGN_KEY_CHECKS=1');
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS=1');
 
         $io->success('La base de données a été vidée avec succès.');
 

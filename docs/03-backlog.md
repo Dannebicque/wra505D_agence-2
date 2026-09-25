@@ -164,6 +164,21 @@ que rien ne référence chez nous) : E12 la supprime.
 **Pourquoi** DoctrineBundle 3, exigé par Symfony 8, ne fonctionne plus avec DBAL 3.
 **Terminé quand** le SQL généré par `doctrine:schema:create --dump-sql` est identique avant et
 après, et que les fixtures se chargent.
+**Fait** DBAL 4.4, ORM 3.7, doctrine/collections 3, types Doctrine de Carbon 3.
+
+Régression trouvée par CI-Cypress, qui tourne sur MySQL 8. DBAL 4 n'impose plus aux tables la
+collation `utf8mb4_unicode_ci`, et MySQL 8 applique alors `utf8mb4_0900_ai_ci`, qui tient compte
+des espaces finales. La fixture du PN MMI, stocké avec une espace finale, n'était plus trouvée :
+l'année perdait son PN, et la recherche comme la page Documents perdaient toutes les matières.
+`default_table_options` restaure la collation et le moteur de DBAL 3. Le SQL généré est de
+nouveau identique, à la largeur d'affichage de `TINYINT` près, que MySQL 8 ignore. MariaDB,
+utilisé en local, masquait le problème.
+
+Sur une base créée sous DBAL 3, `schema:update` ne propose que de retirer 46 anciens
+commentaires de colonne `(DC2Type:…)`, sans changer aucun type.
+`app:truncate` passe à `introspectTableNames()`, et les `SET` et `TRUNCATE` bruts passent à
+`executeStatement()`. Ce remplacement a été délégué à OpenCode, puis le diff a été vérifié ligne
+à ligne.
 
 ### E12 · [back] Jeton de rafraîchissement : gesdinet 1.5 vers 2.x · S
 **Pourquoi** la version 1.5 ne va pas au-delà de Symfony 7 ; la 2.x accepte la 7.4 et la 8. La 1.5
