@@ -54,10 +54,16 @@ describe('Navigation de l\'étudiant', () => {
         cy.document().should(pageTientDansLaFenetre);
     });
 
-    it('ne propose pas de « Retour » sur l\'accueil, sa page d\'arrivée', () => {
+    it('ne propose de « Retour » sur aucune page de son menu', () => {
         cy.visit('/app/intranet/');
-        cy.contains('h1', 'Dashboard', { timeout: 15000 });
-        cy.get('#contenu-principal').contains('button', 'Retour').should('not.exist');
+        [...entrees, 'Notifications'].forEach((entree) => {
+            cy.get('.layout-menu', { timeout: 15000 }).contains('a', entree).invoke('attr', 'href').then((href) => {
+                cy.get('.layout-menu').contains('a', entree).click();
+                cy.location('pathname').should('match', new RegExp(`^${href.replace(/\/$/, '')}/?$`));
+                cy.get('#contenu-principal > *', { timeout: 15000 }).should('be.visible');
+                cy.get('#contenu-principal').contains('button', 'Retour').should('not.exist');
+            });
+        });
     });
 
     it('range le département et retire « Paramètres » dans le menu du profil', () => {

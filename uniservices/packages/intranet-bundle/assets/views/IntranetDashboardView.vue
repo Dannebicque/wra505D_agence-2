@@ -15,7 +15,6 @@ const route = useRoute();
         icon="pi pi-home"
         titre="Dashboard"
         description="Retrouvez vos informations clés et vos accès rapides"
-        :show-back="!userStore.isEtudiant"
     />
     <PermissionGuard permission="isPersonnel">
       <DashboardPersonnel v-if="userStore.isPersonnel"/>

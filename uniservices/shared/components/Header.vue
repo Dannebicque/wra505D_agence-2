@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps, computed } from "vue";
+import { useUsersStore } from "@stores";
 
 const props = defineProps({
   icon: {
@@ -35,6 +36,12 @@ const props = defineProps({
     default: ''
   }
 });
+
+const userStore = useUsersStore();
+
+// L'étudiant retrouve le même menu et le fil d'Ariane sur chaque page : un « Retour » qui
+// rejoue l'historique ne lui apprend rien, et depuis sa page d'arrivée il le renvoie à la connexion.
+const afficherRetour = computed(() => props.showBack && !userStore.isEtudiant);
 
 const colorMap = {
   blue: {
@@ -131,7 +138,7 @@ const colorClasses = computed(() => {
         </p>
       </div>
       <div class="flex items-center gap-3 shrink-0">
-        <Button v-if="props.showBack" severity="primary" label="Retour" icon="pi pi-arrow-left" @click="props.backUrl ? $router.push(props.backUrl) : $router.go(-1)" />
+        <Button v-if="afficherRetour" severity="primary" label="Retour" icon="pi pi-arrow-left" @click="props.backUrl ? $router.push(props.backUrl) : $router.go(-1)" />
       </div>
     </div>
     <template class="w-full flex justify-end items-center gap-2">
