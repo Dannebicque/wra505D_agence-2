@@ -149,6 +149,8 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
 - Depuis E13, notre back est en Symfony 8.1 et le leur en 7.3 : une modification de leurs
   `composer.json` se réécrit à la main, elle ne s'applique pas telle quelle.
 - **Symfony 8.1 n'est maintenu que jusqu'à fin janvier 2027** : passer en 8.2 avant.
+- **14 jours après le déploiement de E16**, passer `accept_stored_in_the_clear` à `false` dans
+  `config/packages/gesdinet_jwt_refresh_token.yaml` : les derniers jetons en clair auront expiré.
 - **Au déploiement**, vider aussi les pools de cache :
   `php bin/console cache:pool:clear cache.global_clearer`. Le cache de métadonnées d'API Platform
   survit à `cache:clear` et garde des groupes de sérialisation périmés.
