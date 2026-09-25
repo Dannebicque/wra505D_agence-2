@@ -6,7 +6,7 @@
         <h2 class="text-2xl font-bold text-gray-900">
           {{ title }}
         </h2>
-        <p class="text-gray-500 mt-1">
+        <p class="text-gray-600 mt-1">
           {{ paginatedDocuments.length }} documents
           <span v-if="paginationInfo.totalItems > paginationInfo.itemsPerPage">
             ({{ paginationInfo.totalItems }} au total)

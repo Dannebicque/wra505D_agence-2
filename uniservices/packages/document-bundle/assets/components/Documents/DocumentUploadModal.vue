@@ -81,7 +81,7 @@
       >
         <i class="pi pi-folder text-3xl mb-2" aria-hidden="true"></i>
         <p class="text-sm font-medium text-gray-700">Glissez-déposez votre fichier ici, ou parcourez vos dossiers</p>
-        <p class="text-xs text-gray-500 mt-1">Formats acceptés : PDF, DOCX, XLSX, PNG, ZIP (Max 50 Mo)</p>
+        <p class="text-xs text-gray-600 mt-1">Formats acceptés : PDF, DOCX, XLSX, PNG, ZIP (Max 50 Mo)</p>
       </div>
 
       <!-- Actions -->

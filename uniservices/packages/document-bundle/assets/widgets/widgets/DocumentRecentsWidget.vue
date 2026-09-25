@@ -35,7 +35,7 @@ const items = computed(() => props.data?.items || []);
           <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
             {{ item.title }}
           </p>
-          <div class="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <div class="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400 mt-0.5">
             <span class="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-1.5 py-0.5 rounded font-medium text-[10px]">
               {{ item.category }}
             </span>
@@ -55,7 +55,7 @@ const items = computed(() => props.data?.items || []);
     </div>
   </div>
 
-  <div v-else class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+  <div v-else class="text-sm text-gray-600 dark:text-gray-400 text-center py-4">
     Aucun document récent disponible.
   </div>
 </template>

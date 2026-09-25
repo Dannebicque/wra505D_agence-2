@@ -10,7 +10,7 @@
         <i :class="[getFileIcon(document?.type || 'pdf'), 'text-2xl']" aria-hidden="true"></i>
         <div class="min-w-0">
           <h3 class="font-bold text-gray-900 truncate">{{ document?.title }}</h3>
-          <p class="text-xs text-gray-500">{{ getFileExtension(document?.type || 'pdf') }}</p>
+          <p class="text-xs text-gray-600">{{ getFileExtension(document?.type || 'pdf') }}</p>
         </div>
       </div>
     </template>
@@ -22,7 +22,7 @@
           <i :class="[getFileIcon(document.type), 'text-5xl']" aria-hidden="true"></i>
         </div>
         <p class="font-semibold text-gray-800 text-sm truncate">{{ document.title }}</p>
-        <p class="text-xs text-gray-500 mt-1">{{ formatFileSize(document.size) }}</p>
+        <p class="text-xs text-gray-600 mt-1">{{ formatFileSize(document.size) }}</p>
       </div>
 
       <!-- Quick Actions -->
@@ -58,42 +58,42 @@
 
       <!-- Metadata List -->
       <div class="space-y-3 pt-2 text-sm border-t border-gray-100">
-        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Informations</h4>
+        <h4 class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Informations</h4>
 
         <div class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-500">Auteur</span>
+          <span class="text-gray-600">Auteur</span>
           <span class="font-medium text-gray-800">{{ document.author }}</span>
         </div>
 
         <div class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-500">Dernière modification</span>
+          <span class="text-gray-600">Dernière modification</span>
           <span class="font-medium text-gray-800">{{ formatDate(document.lastModified) }}</span>
         </div>
 
         <div class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-500">Version</span>
+          <span class="text-gray-600">Version</span>
           <span class="font-medium text-gray-800">{{ document.version }}</span>
         </div>
 
         <div class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-500">Taille</span>
+          <span class="text-gray-600">Taille</span>
           <span class="font-medium text-gray-800">{{ formatFileSize(document.size) }}</span>
         </div>
 
         <div v-if="document.enseignement" class="flex justify-between gap-4 py-1 border-b border-gray-50">
-          <span class="text-gray-500">{{ document.enseignement.type === 'sae' ? 'SAÉ' : 'Matière' }}</span>
+          <span class="text-gray-600">{{ document.enseignement.type === 'sae' ? 'SAÉ' : 'Matière' }}</span>
           <span class="font-medium text-gray-800 text-right">{{ libelleEnseignement(document.enseignement) }}</span>
         </div>
 
         <div v-if="categoryName" class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-500">Catégorie</span>
+          <span class="text-gray-600">Catégorie</span>
           <span class="font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded text-xs">{{ categoryName }}</span>
         </div>
       </div>
 
       <!-- Description -->
       <div v-if="document.description" class="pt-2 border-t border-gray-100">
-        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Description</h4>
+        <h4 class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Description</h4>
         <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-200">
           {{ document.description }}
         </p>
@@ -101,7 +101,7 @@
 
       <!-- Tags -->
       <div v-if="document.tags.length > 0" class="pt-2 border-t border-gray-100">
-        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Étiquettes</h4>
+        <h4 class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Étiquettes</h4>
         <div class="flex flex-wrap gap-1.5">
           <span
             v-for="tag in document.tags"
