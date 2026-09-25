@@ -14,7 +14,8 @@ import {
     hslToRgb,
     colorNameToRgb,
     hexToRgb,
-    darkenColor
+    darkenColor,
+    couleurTexteLisible
 } from './colors.js'
 
 // API & Authentication
@@ -53,6 +54,7 @@ export {
     hslToRgb,
     hexToRgb,
     darkenColor,
+    couleurTexteLisible,
     adjustColor,
     colorNameToRgb
 }
