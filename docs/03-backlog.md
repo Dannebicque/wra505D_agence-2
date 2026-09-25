@@ -24,21 +24,18 @@ commencer.
 
 ## État de la CI
 
-Les workflows du client sont maintenant à la racine et s'exécutent sur chaque PR vers `develop`.
-Trois échouent dès le premier passage, sur des défauts **antérieurs à notre reprise** : ils
-n'avaient jamais tourné, les fichiers étant rangés dans `uniservices/.github/`, répertoire que
-GitHub ne lit pas.
+Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** depuis #76.
+**Une PR rouge ne se merge pas** : #72 l'a été, et toutes les PR suivantes ont hérité de son
+échec.
 
-| Contrôle | État | Fiche |
-|---|---|---|
-| `make check-front` | passe | — |
-| `composer validate` | passe, deux avertissements | — |
-| `lint:container` | passe | — |
-| `doctrine:schema:validate` | passe | — |
-| `phpstan` | 0 erreur, aucune masquée | E6 |
-| Cypress | un parcours E2E ; la CI attend `fix/ci-cypress-serveur` | E7 |
-
-E1 à E6 sont faites, CI-Back et CI-Packages sont au vert. E7 finit CI-Cypress.
+| Contrôle | État |
+|---|---|
+| CI-Packages (front) | vert |
+| CI-Back : `composer validate`, `lint:container`, `doctrine:schema:validate` | vert |
+| CI-Back : PHPStan | 0 erreur, aucune masquée (E6) |
+| CI-Back : PHPUnit | vert |
+| CI-Back : style PSR-12 des fichiers PHP modifiés par la PR (`make cs`) | vert, depuis #73 |
+| CI-Cypress : 9 fichiers, 33 tests, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
@@ -92,6 +89,7 @@ suivant récupère la session du précédent pendant toute la durée de vie du j
 **Où** `uniservices/back/config/services.yaml`
 **Terminé quand** la déconnexion répond 200, efface les deux cookies, et que `/api/auth/me`
 répond « non authentifié » juste après.
+**Fait** #15 : les cookies sont effacés, la déconnexion déconnecte.
 
 ### E4 · Traiter les 271 erreurs PHPStan · L
 **Pourquoi** révélées par E3, toutes antérieures à notre reprise. 271 erreurs dans 117 fichiers :
@@ -120,7 +118,18 @@ supprimé. PHPStan est à 0 erreur et `phpstan.neon` ne masque plus rien.
 **Fait** PR #40 : adresse de la base passée en variable d'environnement, `cypress.config.js`
 ajouté, exemples de Cypress remplacés par un parcours réel (connexion du compte invité, puis
 cours de l'étudiant dans l'agenda), fausse base Celcat générée en CI.
-**Reste** `fix/ci-cypress-serveur` : l'API lancée par `php -S` ne voyait pas cette variable.
+Complété par #41 (l'API lancée par `php -S` voit la base de CI) et #69 (composants PrimeVue
+pré-optimisés : sans cela, Vite rechargeait la page en CI et perdait la navigation en cours).
+
+### E8 · [back] Lecture et écriture des documents sécurisées · M
+**Pourquoi** Constaté pendant B6. `security.yaml` ouvre `^/api` en `PUBLIC_ACCESS`, et
+`Document` n'a aucune règle en lecture : `GET /api/documents` répond sans connexion, avec les
+documents `PERSONNEL` et `DEPARTEMENT` de tous les départements. À l'inverse, `Post`, `Patch` et
+`Delete` exigent `ROLE_PERSONNEL`, que personne ne reçoit (`Personnel::getRoles()` renvoie les
+permissions du département) : personne ne peut créer ni modifier un document.
+**Terminé quand** la lecture exige une connexion et suit les règles de visibilité de
+`back/src/Service/Recherche/Source/SourceDocuments.php`, et qu'une règle d'écriture défendable
+est choisie, notée dans les décisions de `04-reprise.md` et couverte par PHPUnit.
 
 ---
 
@@ -151,6 +160,7 @@ que l'audit n'avait pas pu mesurer.
 hiérarchie de titres discontinue.
 **Terminé quand** un lien d'évitement visible au focus ouvre la page, qu'il n'y a qu'un `banner`
 par page et qu'aucun niveau de titre n'est sauté.
+**Fait** #53 (LOU) : lien d'évitement, un seul `header`, titres continus. Documents exclu, reste à B2.
 
 ### A4 · Cibles tactiles de 44 px · M
 **Pourquoi** MOB-4. 26 éléments interactifs sur 66 mesurent moins de 44 px dans au moins une
@@ -168,18 +178,22 @@ possible, et que le texte rendu correspond à la DA.
 (jaune, violet, bleu…), posée avec du texte blanc : 1,92:1 au portail, 4,23:1 dans l'intranet.
 **Terminé quand** un seul preset porte les jetons de la DA pour tous les modules, et qu'aucun
 texte sur primaire ne passe sous 4,5:1.
+**Fait** #64 : une seule primaire, le violet de la DA `#4D3677` (palette `VIOLET_IUT` du preset), le jaune `#F7B000` en accent (`--accent-color`) ; `primaryColor` par module supprimé. `CLAUDE.md` mis à jour par #68.
 
 ### A7 · Contrastes des textes secondaires · S
 **Pourquoi** A11Y-12 : heures de l'agenda à 2,64:1, métadonnées des documents à 2,75:1, date du
 jour à 4,41:1. La couleur « texte atténué » de `CLAUDE.md` passe partout.
+**Fait** #67 : texte atténué de `CLAUDE.md` dans le preset (`#676D75` / `#A7ACB4`), heures de vue-cal non estompées, pastilles de groupe en noir ou blanc selon leur fond, gris de Documents foncés. Test : `contrastes-secondaires.cy.js`.
 
 ### A8 · Noms des boutons icônes, étiquettes des champs · M
 **Pourquoi** A11Y-14, A11Y-15, NAV-2, EDT-3, TROMBI-3. Menu, thème, flèches de l'agenda,
 chevrons des catégories sans nom ; recherche des documents, filtres du trombinoscope et case
 « Se souvenir de moi » sans étiquette. La recherche de la barre haute est réglée par D3.
+**Fait** #63 (LOU).
 
 ### A9 · Focus visible dans le menu, menu en `nav` · S
 **Pourquoi** A11Y-16, NAV-3. Les liens du menu latéral n'ont aucun indicateur de focus.
+**Fait** #57 (LOU). Le menu a ensuite été redessiné par #65 (JEREMY).
 
 ### A10 · Masquer les icônes décoratives · S
 **Pourquoi** A11Y-18 : 12 à 21 PrimeIcons par page, aucune avec `aria-hidden`. Remplace A1.
@@ -199,6 +213,7 @@ rognés sur le tableau de bord, le trombinoscope et le profil.
 
 ### A14 · Retirer « Messages » et « Notifications », sans action · S
 **Pourquoi** NAV-1 : deux entrées mortes sur chaque page. La vraie fonction reste P3.
+**Fait** #58 et #60 : « Messages » retiré de la barre de l'étudiant, la cloche mène au centre de notifications (voir P3).
 
 ---
 
@@ -254,12 +269,14 @@ champs sont : `author`, `category`, `createdAt`, `departement`, `description`, `
 **Terminé quand** un document peut être rattaché à un `ScolEnseignement`, que l'API l'expose et
 permet d'y filtrer, et que l'écran propose le classement par matière et par SAE.
 **Attention** à redécouper : migration, exposition API, filtres serveur, puis interface.
+**Fait** #52 : `Document.enseignement` (un seul `ScolEnseignement`, facultatif), filtres `enseignement` et `enseignement.type` sur `/api/documents`, sections « Matières » et « SAÉ » de l'écran. Au passage, l'écran chargeait seulement les 30 premiers documents.
 
 ### B7 · [back + front] Exposer les favoris · M
 **Pourquoi** `isFavorite` existe dans le schéma mais n'est **pas sérialisé** dans la réponse
 servie à l'étudiant. La fonctionnalité est inutilisable côté interface.
 **Terminé quand** un étudiant voit ses favoris, peut en ajouter et en retirer, et que l'état
 survit à un rechargement.
+**Fait** #62 : favoris propres à chaque utilisateur (table `document_favori`, `/api/me/documents-favoris`). L'ancien `Document::isFavorite`, partagé par tous, est supprimé.
 
 ### B8 · Documents utilisables au clavier · M
 **Pourquoi** DOC-7, **Critique** : 80 cartes et étiquettes sont des `div` non focalisables.
@@ -271,6 +288,15 @@ DOC-8 : « Télécharger » reçoit le focus en restant invisible.
 ### B10 · Remplacer les emoji par des icônes · S
 **Pourquoi** DOC-11 : les emoji servent d'icônes et sont lus par les lecteurs d'écran.
 `CLAUDE.md` les proscrit de l'interface.
+**Fait** #54 : PrimeIcons à la place des emoji, test `documents.cy.js` qui échoue si un emoji revient.
+
+### B11 · Documents en mode sombre · M
+**Pourquoi** Constaté pendant A7. L'écran code en dur des fonds clairs (`bg-white`, `bg-gray-50`)
+alors que le mode sombre éclaircit le texte : « Matières », « SAÉ » et « Catégories » sortent
+blanc sur blanc, les descriptions de cartes à 1,93:1.
+**Terminé quand** l'écran suit les jetons du thème et que tous ses textes passent 4,5:1 dans les
+deux thèmes, vérifié par un test Cypress en mode sombre. Mesurer après conversion par un
+`canvas` : Tailwind 4 renvoie ses couleurs en `oklch`, PrimeVue ses fonds en `color-mix`.
 
 ---
 
@@ -284,6 +310,7 @@ l'information la plus demandée est « mon prochain cours, à quelle heure, dans
 le cours en cours ni le jour courant ne sont mis en évidence.
 **Terminé quand** le haut du tableau de bord annonce le prochain cours, sa salle et le temps
 restant, et dit explicitement qu'il n'y en a plus quand la journée est finie.
+**Fait** #23, salle corrigée par #44 (JEREMY).
 
 ### C2 · Ne plus rendre les tableaux vides · S
 **Obsolète** sans objet : il n'y a plus de tableaux de notes (TB-3, audit 05).
@@ -359,24 +386,30 @@ TB-7, un bouton flottant orange sans libellé se superpose au contenu.
 **Pourquoi** TB-8, **Critique** : le widget annonce « Aucun événement aujourd'hui » alors qu'un
 cours a lieu. `edt_events?day=` renvoie 0 créneau quand `semaineFormation=` renvoie bien le cours.
 TB-9 : il contredit le widget « Maintenant ».
+**Fait** #61 : le fournisseur renvoyait une liste vide à tout étudiant ; il lit les cours du jour de ses groupes, avec la règle du widget « Maintenant ». Bouton « Faire l'appel » masqué. Test : `widget-aujourdhui.cy.js`.
 
 ### C11 · Widget « Notes » : notes de l'étudiant, ou retiré · S
 **Pourquoi** TB-10 : le widget montre des pense-bêtes destinés au personnel, en barres grises.
+**Fait** #51 (JEREMY).
 
 ### C12 · Nettoyer le portail · S
 **Pourquoi** POR-2 : contacts « JOHN DOE » écrits en dur, liens utiles sans destination. POR-3 :
 le bouton « Retour » du portail renvoie à la connexion. Remplace C7.
+**Fait** #56 (JEREMY), puis #70 : l'étudiant ne passe plus par le portail depuis #58.
 
 ### C13 · Portail : applications non activées · S
 **Pourquoi** POR-1 : six applications grisées, sous leur nom de code, occupent le premier écran
 en mobile.
+**Obsolète** depuis #58 : l'étudiant ne voit plus le portail ; la liste « Non activé » ne concerne plus que le personnel (#70).
 
 ### C14 · Agenda utilisable au clavier · M
 **Pourquoi** EDT-1 : les cours ne sont pas atteignables au clavier. EDT-3 : flèches sans nom. Le
 changement de semaine n'est pas annoncé (A11Y-17).
+**Fait** #71 (JEREMY).
 
 ### C15 · Retirer les actions enseignant de la vue étudiante · S
 **Pourquoi** EDT-2 : « Appel » et « Tous présents » sont proposés à l'étudiant, sans effet.
+**Fait** #75 (JEREMY).
 
 ### C16 · [back] Intervenants de l'agenda présents dans l'annuaire · S
 **Pourquoi** EDT-6 : les intervenants de la fausse base Celcat n'existent pas dans les fixtures,
@@ -446,6 +479,7 @@ l'audit 05 : ces écrans existent mais sont vides ou cassés.
 ### F1 · [back + front] Page Scolarité : notes, absences, moyennes · L
 **Pourquoi** SCO-1, **Critique** : la page est un gabarit « Semestre : OK », l'étudiant n'a accès à
 aucune note, absence ni moyenne. Reprend C4.
+**Fait** #49 (`GET /api/me/scolarite`, moyennes calculées à la volée) et #50 (page). Test : `scolarite.cy.js`.
 
 ### F2 · Cahier de texte · M
 **Pourquoi** SCO-2 : même gabarit inachevé.
@@ -483,6 +517,7 @@ Back et front.
 ### P3 · Notifications distinctes de la messagerie · M
 Demandé dans l'audit informel. **Aucune API de notification ni de messagerie n'existe** : seul le
 helpdesk expose des messages. À cadrer avec le client avant toute estimation.
+**Fait autrement** #59 et #60, sur décision de LCS : notifications et messages **réunis** dans un seul centre (cloche de la barre haute, page `/intranet/notifications`). Les messages sont les copies des e-mails que l'intranet envoie à l'étudiant, captées à l'envoi ; la boîte universitaire n'est pas lue.
 
 ### P4 · Page contact explicative et liens utiles redessinés · M
 Demandés dans l'audit informel. `/api/lien_utiles` existe déjà et expose les opérations
@@ -494,6 +529,7 @@ nécessaires, le travail est surtout d'interface.
 L'audit relève que la navigation nomme des objets administratifs — « Trombinoscope »,
 « Applications », « Modalités de Contrôle des Connaissances » — quand l'étudiant cherche un cours,
 une salle, une note, une personne. Renommer coûte peu et se remarque tout de suite.
+**Fait en partie** #58 : menu étudiant « Accueil », « Emploi du temps », « Notes et absences ». Reste le fil d'Ariane, qui dit encore « Dashboard » sur plusieurs pages.
 
 ---
 
