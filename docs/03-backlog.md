@@ -186,6 +186,22 @@ charge aussi une classe dépréciée, dernière dépréciation du conteneur apr�
 **Terminé quand** la connexion, le rafraîchissement et la déconnexion fonctionnent, avec le
 critère de E5 pour la déconnexion.
 
+**Fait** gesdinet 2.2.2, sans changement de code. Vérifié sur l'API : connexion, rafraîchissement,
+rotation (un ancien jeton rejoué est refusé), déconnexion puis refus du rafraîchissement.
+L'analyse du guide de migration a été déléguée à Codex, puis vérifiée : 2 de ses 15 constats
+étaient faux, dont un doublon de jeton à la connexion qui n'existe pas. `single_use_ttl_update`,
+actif par défaut, garde le comportement de la 1.5 : chaque rotation redonne 14 jours.
+
+### E16 · [back] Jetons de rafraîchissement hachés en base · S
+**Pourquoi** Constaté pendant E12. Les jetons de rafraîchissement sont stockés en clair : une copie
+de la base suffit pour ouvrir la session de n'importe qui. gesdinet 2.2 propose `hash_tokens`.
+`AuthenticationSuccessListener` enregistre le jeton puis le recopie dans le cookie : avec le
+hachage, le cookie recevrait le haché. Il faut donc laisser le bundle poser le cookie, ce que sa
+configuration `cookie` sait déjà faire.
+**Terminé quand** la base ne contient plus que des jetons `sha256$…` ; que la connexion, la
+rotation et la déconnexion fonctionnent ; et que les jetons en clair encore valides sont acceptés le
+temps de leur expiration (`accept_stored_in_the_clear`), puis refusés.
+
 ### E13 · [back] Symfony 8.1 · M
 **Pourquoi** dernière version stable. Elle n'est maintenue que jusqu'à fin janvier 2027 : il
 faudra passer en 8.2, attendue en novembre 2026.
