@@ -63,6 +63,10 @@ function itemClick(event, item) {
     setActiveMenuItem(foundItemKey);
 }
 
+// La directive tooltip de PrimeVue écoute soit le survol, soit le focus, jamais les deux : le focus
+// clavier est relayé en survol pour que le menu replié nomme aussi ses icônes au clavier.
+const relayerSurvol = (event, type) => event.currentTarget.dispatchEvent(new MouseEvent(type));
+
 function checkActiveRoute(item) {
     return route.path === item.to;
 }
@@ -72,15 +76,19 @@ function checkActiveRoute(item) {
     <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }">
         <!-- <div v-if="root && item.visible !== false" class="layout-menuitem-root-text">{{ item.label }}</div>-->
         <a v-if="(!item.to || item.items) && item.visible !== false" :href="item.url"
-            @click="itemClick($event, item, index)" :class="item.class" :target="item.target" tabindex="0">
-            <i :class="item.icon" class="layout-menuitem-icon"></i>
+            @click="itemClick($event, item, index)" :class="item.class" :target="item.target" tabindex="0"
+            v-tooltip.right="{ value: item.label, disabled: !layoutState.staticMenuDesktopInactive }"
+            @focus="relayerSurvol($event, 'mouseenter')" @blur="relayerSurvol($event, 'mouseleave')">
+            <i :class="item.icon" class="layout-menuitem-icon" aria-hidden="true"></i>
             <span class="layout-menuitem-text">{{ item.label }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
+            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items" aria-hidden="true"></i>
         </a>
         <router-link v-if="item.to && !item.items && item.visible !== false" @click="itemClick($event, item, index)"
-            :class="[item.class, { 'active-route': checkActiveRoute(item) }]" tabindex="0" :to="item.to">
-            <i :class="item.icon" class="layout-menuitem-icon"></i>
-            <span class="layout-menuitem-text text-center">{{ item.label }}</span>
+            :class="[item.class, { 'active-route': checkActiveRoute(item) }]" tabindex="0" :to="item.to"
+            v-tooltip.right="{ value: item.label, disabled: !layoutState.staticMenuDesktopInactive }"
+            @focus="relayerSurvol($event, 'mouseenter')" @blur="relayerSurvol($event, 'mouseleave')">
+            <i :class="item.icon" class="layout-menuitem-icon" aria-hidden="true"></i>
+            <span class="layout-menuitem-text">{{ item.label }}</span>
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
         </router-link>
         <Transition v-if="item.items && item.visible !== false" name="layout-submenu">

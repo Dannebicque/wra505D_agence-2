@@ -2,7 +2,7 @@
 
 .layout-sidebar {
     position: fixed;
-    width: 8rem;
+    width: var(--layout-sidebar-width);
     height: calc(100vh - 6rem);
     z-index: 999;
     overflow-y: auto;
@@ -13,6 +13,7 @@
     top: 6rem;
     left: 0;
     transition:
+        width var(--layout-section-transition-duration),
         transform var(--layout-section-transition-duration),
         left var(--layout-section-transition-duration);
     background-color: var(--surface-overlay);
@@ -26,6 +27,12 @@
     list-style-type: none;
 
     .layout-root-menuitem {
+        + .layout-root-menuitem {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--surface-border);
+        }
+
         > .layout-menuitem-root-text {
             font-size: 0.857rem;
             text-transform: uppercase;
@@ -64,18 +71,33 @@
 
         a {
             display: flex;
-            flex-direction: column;
             align-items: center;
+            gap: 0.75rem;
             position: relative;
+            min-height: 44px;
+            margin: 0.125rem 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
             outline: 0 none;
             color: var(--text-color);
             cursor: pointer;
-            padding: 0.75rem 1rem;
             transition:
                 background-color var(--element-transition-duration),
                 box-shadow var(--element-transition-duration);
 
             .layout-menuitem-icon {
+                flex-shrink: 0;
+                width: 1.25rem;
+                font-size: 1.125rem;
+                text-align: center;
+            }
+
+            .layout-menuitem-text {
+                flex: 1 1 auto;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             .layout-submenu-toggler {
@@ -84,9 +106,26 @@
                 transition: transform var(--element-transition-duration);
             }
 
+            // Le texte garde sa couleur : la primaire du module n'atteint pas 4,5:1 sur le fond.
+            // Elle ne sert qu'au repère et à l'icône.
             &.active-route {
-                font-weight: 700;
-                color: var(--primary-color);
+                font-weight: 600;
+                background-color: color-mix(in srgb, var(--primary-color) 12%, transparent);
+
+                .layout-menuitem-icon {
+                    color: var(--primary-color);
+                }
+
+                &::before {
+                    content: '';
+                    position: absolute;
+                    left: -0.5rem;
+                    top: 0.375rem;
+                    bottom: 0.375rem;
+                    width: 3px;
+                    border-radius: 0 3px 3px 0;
+                    background-color: var(--primary-color);
+                }
             }
 
             &:hover {
