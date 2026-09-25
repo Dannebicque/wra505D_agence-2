@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Structure\StructureAnnee;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 
 #[ApiFilter(UeFilter::class)]
 class UeFilter extends AbstractFilter
@@ -34,7 +34,7 @@ class UeFilter extends AbstractFilter
         return [
             'semestre' => [
                 'property' => 'semestre',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by semestre',
             ],

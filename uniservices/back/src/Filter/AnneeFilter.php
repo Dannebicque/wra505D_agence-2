@@ -7,7 +7,7 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 
 #[ApiFilter(AnneeFilter::class)]
 class AnneeFilter extends AbstractFilter
@@ -79,31 +79,31 @@ class AnneeFilter extends AbstractFilter
         return [
             'departement' => [
                 'property' => 'departement',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by departement',
             ],
             'pn' => [
                 'property' => 'pn',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by pn',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by anneeUniversitaire',
             ],
             'diplome' => [
                 'property' => 'diplome',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by diploma',
             ],
             'actif' => [
                 'property' => 'actif',
-                'type' => Type::BUILTIN_TYPE_BOOL,
+                'type' => TypeIdentifier::BOOL->value,
                 'required' => false,
                 'description' => 'Filter by actif status',
             ]

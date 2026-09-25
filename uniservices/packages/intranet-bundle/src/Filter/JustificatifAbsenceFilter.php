@@ -6,7 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 
 class JustificatifAbsenceFilter extends AbstractFilter
 {
@@ -107,43 +107,43 @@ class JustificatifAbsenceFilter extends AbstractFilter
         return [
             'annee' => [
                 'property' => 'annee',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by annee',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by anneeUniversitaire',
             ],
             'etat' => [
                 'property' => 'etat',
-                'type' => Type::BUILTIN_TYPE_STRING,
+                'type' => TypeIdentifier::STRING->value,
                 'required' => false,
                 'description' => 'Filter by etat',
             ],
             'motif' => [
                 'property' => 'motif',
-                'type' => Type::BUILTIN_TYPE_STRING,
+                'type' => TypeIdentifier::STRING->value,
                 'required' => false,
                 'description' => 'Filter by motif',
             ],
             'etudiant' => [
                 'property' => 'etudiant',
-                'type' => Type::BUILTIN_TYPE_STRING,
+                'type' => TypeIdentifier::STRING->value,
                 'required' => false,
                 'description' => 'Filter by etudiant display',
             ],
             'debut' => [
                 'property' => 'debut',
-                'type' => Type::BUILTIN_TYPE_STRING,
+                'type' => TypeIdentifier::STRING->value,
                 'required' => false,
                 'description' => 'Filter by start date',
             ],
             'fin' => [
                 'property' => 'fin',
-                'type' => Type::BUILTIN_TYPE_STRING,
+                'type' => TypeIdentifier::STRING->value,
                 'required' => false,
                 'description' => 'Filter by end date',
             ],

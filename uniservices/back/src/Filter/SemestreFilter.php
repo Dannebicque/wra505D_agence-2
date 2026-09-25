@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Structure\StructureAnnee;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 
 #[ApiFilter(SemestreFilter::class)]
 class SemestreFilter extends AbstractFilter
@@ -63,25 +63,25 @@ class SemestreFilter extends AbstractFilter
         return [
             'departement' => [
                 'property' => 'departement',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by département',
             ],
             'diplome' => [
                 'property' => 'diplome',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by diplôme',
             ],
             'annee' => [
                 'property' => 'annee',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by year',
             ],
             'actif' => [
                 'property' => 'actif',
-                'type' => Type::BUILTIN_TYPE_BOOL,
+                'type' => TypeIdentifier::BOOL->value,
                 'required' => false,
                 'description' => 'Filter by active semesters',
             ],

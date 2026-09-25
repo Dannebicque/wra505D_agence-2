@@ -7,7 +7,7 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 
 #[ApiFilter(EtudiantScolariteSemestreFilter::class)]
 class EtudiantScolariteSemestreFilter extends AbstractFilter
@@ -89,31 +89,31 @@ class EtudiantScolariteSemestreFilter extends AbstractFilter
         return [
             'scolarite' => [
                 'property' => 'scolarite',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by scolarite',
             ],
             'groupe' => [
                 'property' => 'groupe',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by groupe',
             ],
             'semestre' => [
                 'property' => 'semestre',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by semestre',
             ],
             'etudiant' => [
                 'property' => 'etudiant',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by etudiant',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by anneeUniversitaire',
             ]

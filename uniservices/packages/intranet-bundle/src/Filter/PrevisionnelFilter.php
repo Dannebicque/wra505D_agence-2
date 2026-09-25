@@ -14,7 +14,7 @@ use App\Entity\Structure\StructurePn;
 use App\Entity\Structure\StructureSemestre;
 use App\Entity\Structure\StructureUe;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 
 #[ApiFilter(PrevisionnelFilter::class)]
 class PrevisionnelFilter extends AbstractFilter
@@ -117,43 +117,43 @@ class PrevisionnelFilter extends AbstractFilter
         return [
             'personnel' => [
                 'property' => 'personnel',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by personnel',
             ],
             'anneeUniversitaire' => [
                 'property' => 'anneeUniversitaire',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by anneeUniversitaire',
             ],
             'departement' => [
                 'property' => 'departement',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by departement',
             ],
             'diplome' => [
                 'property' => 'diplome',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by diplome',
             ],
             'semestre' => [
                 'property' => 'semestre',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by semestre',
             ],
             'enseignement' => [
                 'property' => 'enseignement',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by enseignement',
             ],
             'annee' => [
                 'property' => 'annee',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by annee',
             ],
