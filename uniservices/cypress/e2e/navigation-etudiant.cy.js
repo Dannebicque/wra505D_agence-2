@@ -1,16 +1,48 @@
 describe('Navigation de l\'étudiant', () => {
+    const entrees = ['Accueil', 'Emploi du temps', 'Notes et absences', 'Documents', 'Cahier de texte'];
+
     beforeEach(() => {
         cy.viewport(1280, 800);
         cy.connexionInvite('etudiant');
-        cy.visit('/app/intranet/');
     });
 
-    it('ouvre les documents depuis le menu et garde le menu sur leur page', () => {
-        cy.get('.layout-menu', { timeout: 15000 }).contains('a', 'Documents').click();
+    it('arrive sur l\'accueil, sans passer par le portail', () => {
+        cy.location('pathname').should('match', /^\/app\/intranet\/?$/);
+        cy.visit('/app/auth/portail');
+        cy.location('pathname').should('match', /^\/app\/intranet\/?$/);
+    });
+
+    it('retrouve sur l\'accueil les actualités que portait le portail', () => {
+        cy.contains('Actualités du département', { timeout: 15000 });
+        cy.contains('Réunion de rentrée des MMI 1');
+    });
+
+    it('garde le même menu sur chaque module', () => {
+        cy.visit('/app/intranet/');
+        cy.get('.layout-menu', { timeout: 15000 }).should('contain', 'Mon espace');
+        entrees.forEach(entree => cy.get('.layout-menu').should('contain', entree));
+
+        cy.get('.layout-menu').contains('a', 'Documents').click();
         cy.location('pathname').should('eq', '/app/documents');
         cy.contains('h3', 'Matières', { timeout: 15000 });
-        cy.get('.layout-menu').should('contain', 'Scolarité').and('contain', 'Documents');
-        cy.get('.layout-menu').contains('a', 'Scolarité').click();
+        entrees.forEach(entree => cy.get('.layout-menu').should('contain', entree));
+
+        cy.get('.layout-menu').contains('a', 'Notes et absences').click();
         cy.location('pathname').should('eq', '/app/intranet/scolarite');
+    });
+
+    it('ne montre ni portail, ni applications, ni messagerie vide dans la barre du haut', () => {
+        cy.visit('/app/intranet/');
+        cy.get('.layout-topbar', { timeout: 15000 }).should('not.contain', 'Portail')
+            .and('not.contain', 'Applications')
+            .and('not.contain', 'Messages');
+    });
+
+    it('range le département et retire « Paramètres » dans le menu du profil', () => {
+        cy.visit('/app/intranet/');
+        cy.get('[aria-controls="profile_menu"]', { timeout: 15000 }).click();
+        cy.get('#profile_menu').should('contain', 'MMI')
+            .and('contain', 'Profil')
+            .and('not.contain', 'Paramètres');
     });
 });

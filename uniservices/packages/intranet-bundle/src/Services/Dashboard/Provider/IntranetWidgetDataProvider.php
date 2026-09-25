@@ -7,12 +7,14 @@ use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Repository\Edt\EdtEventRepository;
 use App\Repository\Structure\StructureDepartementRepository;
+use AuthBundle\Services\Dashboard\Provider\AuthWidgetDataProvider;
 
 class IntranetWidgetDataProvider implements WidgetDataProviderInterface
 {
     public function __construct(
         private readonly EdtEventRepository $edtEventRepository,
         private readonly StructureDepartementRepository $structureDepartementRepository,
+        private readonly AuthWidgetDataProvider $authWidgetDataProvider,
     ) {}
 
     public function supports(string $code): bool
@@ -25,6 +27,8 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         return match ($code) {
             'intranet.emploi_du_temps' => $this->getEmploiDuTemps($user),
             'intranet.contacts' => $this->getContacts($user),
+            'intranet.actualites' => $this->authWidgetDataProvider->getData('auth.actus_int', $user),
+            'intranet.actualites_iut' => $this->authWidgetDataProvider->getData('auth.actus_ext', $user),
             'intranet.actions_urgentes' => [
                 'items' => [
                     ['label' => '3 validations de stages en attente', 'priority' => 'high'],

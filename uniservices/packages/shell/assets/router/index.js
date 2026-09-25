@@ -111,6 +111,11 @@ router.beforeEach(async (to, from) => {
       return '/app/access';
     }
 
+    // L'étudiant n'a qu'une application : le portail ne lui propose rien, il arrive sur son accueil.
+    if (to.name === 'portail' && hasPermission('isEtudiant')) {
+      return { name: 'IntranetDashboard' };
+    }
+
     return true;
   } catch (error) {
     console.error('Auth error in router guard:', error);
