@@ -238,6 +238,10 @@ Trois failles à leur signaler, car elles sont dans leur code de production :
 - **`php -S` n'expose pas l'environnement du processus** à Symfony sans
   `-d variables_order=EGPCS` : l'API retombe alors sur les `.env`, et en local sur
   `back/.env.local`, alors que la console voit bien les variables. Piège rencontré sur CI-Cypress.
+- **Ajouter une fixture sans vider la base** : Doctrine range chaque fixture dans un groupe au
+  nom de sa classe. Pour les enseignants de l'emploi du temps, sur une base déjà remplie :
+  `php bin/console doctrine:fixtures:load --append --group=StructureEnseignantFixtures`, puis la
+  synchro Celcat.
 - **Tester l'API sans mot de passe** : générer un jeton en console, puis l'envoyer en
   `Authorization: Bearer`.
   `php bin/console lexik:jwt:generate-token -c 'App\Entity\Users\Etudiant' etudiant`

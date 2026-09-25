@@ -2,6 +2,7 @@
 
 namespace App\Command\Celcat;
 
+use App\DataFixtures\StructureEnseignantFixtures;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,8 +15,8 @@ use Symfony\Component\Filesystem\Filesystem;
 /**
  * Crée une base SQLite qui imite Celcat, pour développer sans accès à la vraie.
  *
- * Seules les tables et colonnes lues par CelcatReader existent. Les codes de groupes et de
- * département sont ceux des fixtures, pour que les créneaux s'y rattachent.
+ * Seules les tables et colonnes lues par CelcatReader existent. Les codes de groupes, de
+ * département et d'enseignants sont ceux des fixtures, pour que les créneaux s'y rattachent.
  */
 #[When(env: 'dev')]
 #[AsCommand(
@@ -51,14 +52,6 @@ final class CelcatFausseBaseCommand extends Command
         'R1.10' => 'Intégration',
         'R1.11' => 'Développement web',
         'SAE1.01' => 'Recommandation de communication numérique',
-    ];
-
-    private const ENSEIGNANTS = [
-        '10001' => 'Martin Claire',
-        '10002' => 'Lefèvre Hélène',
-        '10003' => 'Garnier Thomas',
-        '10004' => 'Roussel Inès',
-        '10005' => 'Chevalier Marc',
     ];
 
     private const SALLES = [
@@ -180,7 +173,8 @@ final class CelcatFausseBaseCommand extends Command
             ++$evenement;
             $this->inserer($base, $evenement, $categories[$categorie], $jour, $debut, $fin, $masque, $modifie, null);
             $this->ressource($base, 'MODULE', $evenement, $matiere, self::MATIERES[$matiere]);
-            $this->ressource($base, 'STAFF', $evenement, $enseignant, self::ENSEIGNANTS[$enseignant]);
+            ['nom' => $nom, 'prenom' => $prenom] = StructureEnseignantFixtures::ENSEIGNANTS[$enseignant];
+            $this->ressource($base, 'STAFF', $evenement, $enseignant, $nom.' '.$prenom);
             $base->prepare('INSERT INTO CT_VIEW_EVENT_ROOM001 VALUES (?, ?, ?, NULL)')
                 ->execute([$evenement, $salle, self::SALLES[$salle]]);
             foreach ($groupes as $groupe) {

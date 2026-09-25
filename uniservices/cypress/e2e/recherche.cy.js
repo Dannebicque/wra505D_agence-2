@@ -40,6 +40,12 @@ describe('Recherche de la barre du haut', () => {
             .and('contain', 'Écrire');
     });
 
+    it('trouve un intervenant de l\'emploi du temps dans l\'annuaire', () => {
+        cy.get('#recherche-globale').type('martin');
+
+        cy.contains('[role="option"]', 'Claire MARTIN').and('contain', '@univ-reims.fr');
+    });
+
     it('garde lisible une requête longue', () => {
         cy.get('#recherche-globale').type('recommandation de communication numerique');
 
