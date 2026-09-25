@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-wrap items-center justify-between gap-3 mt-8">
+  <nav aria-label="Pagination" class="flex flex-wrap items-center justify-between gap-3 mt-8">
     <div class="text-sm text-gray-700">
       Affichage de {{ startItem }} à {{ endItem }} sur {{ paginationInfo.totalItems }} documents
     </div>
@@ -8,7 +8,7 @@
       <button
         @click="$emit('pageChange', paginationInfo.currentPage - 1)"
         :disabled="paginationInfo.currentPage <= 1"
-        class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="min-h-[44px] px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Précédent
       </button>
@@ -18,8 +18,10 @@
           v-for="page in visiblePages"
           :key="page"
           @click="$emit('pageChange', page)"
+          :aria-label="`Page ${page}`"
+          :aria-current="page === paginationInfo.currentPage ? 'page' : undefined"
           :class="[
-            'px-3 py-2 text-sm font-medium rounded-md',
+            'min-w-[44px] min-h-[44px] px-3 py-2 text-sm font-medium rounded-md',
             page === paginationInfo.currentPage
               ? 'bg-primary-600 text-white'
               : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
@@ -32,12 +34,12 @@
       <button
         @click="$emit('pageChange', paginationInfo.currentPage + 1)"
         :disabled="paginationInfo.currentPage >= paginationInfo.totalPages"
-        class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="min-h-[44px] px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Suivant
       </button>
     </div>
-  </div>
+  </nav>
 </template>
 
 <script setup lang="ts">

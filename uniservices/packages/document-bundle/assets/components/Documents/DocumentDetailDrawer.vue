@@ -29,7 +29,7 @@
       <div class="flex space-x-2">
         <button
           @click="$emit('download', document)"
-          class="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm"
+          class="flex-1 min-h-[44px] bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm"
         >
           <i class="pi pi-download" aria-hidden="true"></i>
           <span>Télécharger</span>
