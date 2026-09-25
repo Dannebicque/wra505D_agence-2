@@ -1,6 +1,6 @@
 <script setup>
 import { useLayout } from './composables/layout.js';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { AVAILABLE_ROLES } from "@utils/permissions";
 import Logo from '@components/components/Logo.vue';
 import AppSearch from './AppSearch.vue';
@@ -155,7 +155,18 @@ const props = defineProps({
   },
 });
 
-const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
+const { onMenuToggle, toggleDarkMode, isDarkTheme, layoutState } = useLayout();
+
+// Même seuil que onMenuToggle : au-delà, le bouton replie le menu, en deçà il ouvre le tiroir.
+const requeteBureau = window.matchMedia('(min-width: 992px)');
+const estBureau = ref(requeteBureau.matches);
+const suivreLargeur = (event) => {
+  estBureau.value = event.matches;
+};
+onMounted(() => requeteBureau.addEventListener('change', suivreLargeur));
+onUnmounted(() => requeteBureau.removeEventListener('change', suivreLargeur));
+
+const menuDeplie = computed(() => (estBureau.value ? !layoutState.staticMenuDesktopInactive : layoutState.staticMenuMobileActive));
 
 const anneeMenu = ref();
 const toolsMenu = ref();
@@ -274,8 +285,15 @@ const selectAnneeUniversitaire = (annee) => {
 <template>
   <header class="layout-topbar">
     <div class="layout-topbar-logo-container">
-      <button v-if="route.name !== 'portail'" class="layout-menu-button layout-topbar-action" aria-label="Menu" @click="onMenuToggle">
-        <i class="pi pi-bars"></i>
+      <button
+          v-if="route.name !== 'portail'"
+          class="layout-menu-button layout-topbar-action"
+          :aria-label="menuDeplie ? 'Replier le menu' : 'Déplier le menu'"
+          :aria-expanded="menuDeplie ? 'true' : 'false'"
+          aria-controls="menu-principal"
+          @click="onMenuToggle"
+      >
+        <i class="pi pi-bars" aria-hidden="true"></i>
       </button>
 
       <router-link to="/" class="layout-topbar-logo">

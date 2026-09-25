@@ -10,7 +10,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <nav class="layout-sidebar" aria-label="Menu principal">
+    <nav id="menu-principal" class="layout-sidebar" aria-label="Menu principal">
         <app-menu :model="menuItems"></app-menu>
     </nav>
 </template>
