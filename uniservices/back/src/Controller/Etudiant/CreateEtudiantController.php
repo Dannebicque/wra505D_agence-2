@@ -19,7 +19,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 class CreateEtudiantController extends AbstractController
@@ -29,8 +28,7 @@ class CreateEtudiantController extends AbstractController
         private readonly EtudiantRepository $etudiantRepository,
         private readonly StructureAnneeRepository $structureAnneeRepository,
         private readonly StructureSemestreRepository $structureSemestreRepository,
-        private readonly StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository,
-        private readonly UserPasswordHasherInterface $passwordHasher
+        private readonly StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository
     ) {
     }
 
@@ -175,11 +173,9 @@ class CreateEtudiantController extends AbstractController
         $mailUniv = $username . '@etudiant.univ-reims.fr';
         $etudiant->setMailUniv($mailUniv);
 
-        // Définir un mot de passe par défaut
-        // todo: À changer en production
-        $plainPassword = 'test';
-        $hashedPassword = $this->passwordHasher->hashPassword($etudiant, $plainPassword);
-        $etudiant->setPassword($hashedPassword);
+        // Aucun mot de passe : l'étudiant se connecte par le CAS ou choisit le sien par la
+        // réinitialisation. Un mot de passe commun ouvrirait tous les comptes importés.
+        $etudiant->setPassword(null);
 
         // Définir les rôles
         $etudiant->setRoles(['ROLE_ETUDIANT']);
