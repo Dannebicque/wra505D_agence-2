@@ -7,7 +7,7 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
 use ApiPlatform\Metadata\ApiFilter;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 
 #[ApiFilter(SemaineFormationFilter::class)]
 class SemaineFormationFilter extends AbstractFilter
@@ -31,7 +31,7 @@ class SemaineFormationFilter extends AbstractFilter
         return [
             'semaineFormation' => [
                 'property' => 'semaineFormation',
-                'type' => Type::BUILTIN_TYPE_INT,
+                'type' => TypeIdentifier::INT->value,
                 'required' => false,
                 'description' => 'Filter by semaineFormation',
             ],

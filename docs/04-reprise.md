@@ -12,7 +12,7 @@ Dernière mise à jour : 25/09/2026.
 - **Volet 1**, le site de l'agence : Next.js, en ligne sur <https://figmium.vercel.app>. Hors de
   ce dépôt. C'est lui qui porte la contrainte Jamstack du sujet.
 - **Volet 2**, l'espace étudiant : on reprend la base du client, uniServices, importée dans
-  `uniservices/`. Front Vue 3 + Vite + PrimeVue, back Symfony 7 + API Platform, MariaDB.
+  `uniservices/`. Front Vue 3 + Vite + PrimeVue, back Symfony 7.4 + API Platform, MariaDB.
 - Le détail des tâches est dans `docs/03-backlog.md`, les constats d'audit dans
   `docs/01-audit-existant.md`, l'audit informel de l'équipe dans le `.docx` du dossier Drive.
 

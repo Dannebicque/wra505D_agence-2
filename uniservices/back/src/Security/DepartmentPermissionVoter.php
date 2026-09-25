@@ -7,6 +7,7 @@ use App\Entity\Users\Personnel;
 use App\Entity\Structure\StructureDepartement;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 
 class DepartmentPermissionVoter extends Voter
 {
@@ -22,7 +23,7 @@ class DepartmentPermissionVoter extends Voter
             ($this->registry->getPermissionByRole($attribute) !== null || str_starts_with($attribute, 'ROLE_'));
     }
 
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         $user = $token->getUser();
         if (!$user instanceof Etudiant && !$user instanceof Personnel) {

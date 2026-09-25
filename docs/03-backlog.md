@@ -146,6 +146,19 @@ vers la 8. `debug:container --deprecations` en signale 14 : signature du voteur
 **Terminé quand** `debug:container --deprecations` ne signale plus rien, et que PHPStan, avec
 `phpstan-deprecation-rules`, trouve 0 erreur. Rector (dépendance de dev) fait les réécritures
 mécaniques ; chacune est relue.
+**Fait** Symfony 7.4.19. Deux défauts révélés par la montée :
+- deux fournisseurs pour le planning `default` : la 7.3 ne gardait que le second en silence, la
+  7.4 refuse le conteneur. Le premier, `App\Schedule`, était le squelette vide du maker ;
+- la recette `routing` importerait aussi les contrôleurs des bundles, ce qui changerait le
+  contrôleur de 7 routes en double (dont `api_logout`). L'import explicite est conservé.
+
+Les `shortName` en double du questionnaire sont corrigés en un seul `#[ApiResource]` par classe.
+L'option globale de déduplication aurait renommé `/api/questionnaire_questions/{uuid}` en
+`/api/questionnaire_question2s/{uuid}`. Les 390 routes et le document OpenAPI sont identiques
+avant et après. La connexion ne lit plus les identifiants dans la query string.
+
+Reste une dépréciation, déclenchée par le bundle gesdinet lui-même (`Entity\AbstractRefreshToken`,
+que rien ne référence chez nous) : E12 la supprime.
 
 ### E11 · [back] Doctrine DBAL 4 · M
 **Pourquoi** DoctrineBundle 3, exigé par Symfony 8, ne fonctionne plus avec DBAL 3.
@@ -153,7 +166,8 @@ mécaniques ; chacune est relue.
 après, et que les fixtures se chargent.
 
 ### E12 · [back] Jeton de rafraîchissement : gesdinet 1.5 vers 2.x · S
-**Pourquoi** la version 1.5 ne va pas au-delà de Symfony 7 ; la 2.x accepte la 7.4 et la 8.
+**Pourquoi** la version 1.5 ne va pas au-delà de Symfony 7 ; la 2.x accepte la 7.4 et la 8. La 1.5
+charge aussi une classe dépréciée, dernière dépréciation du conteneur après E10.
 **Terminé quand** la connexion, le rafraîchissement et la déconnexion fonctionnent, avec le
 critère de E5 pour la déconnexion.
 

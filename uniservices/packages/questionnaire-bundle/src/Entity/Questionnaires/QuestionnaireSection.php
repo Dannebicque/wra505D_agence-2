@@ -23,27 +23,37 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: QuestionnaireSectionRepository::class)]
 #[ApiResource(
-    uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections',
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['questionnaire_section:read']]),
-        new Post(
-            read: false,
-            normalizationContext: ['groups' => ['questionnaire_section:read']]
+        new GetCollection(
+            uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections',
+            uriVariables: [
+                'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
+            ],
+            normalizationContext: ['groups' => ['questionnaire_section:read']],
         ),
-    ],
-    uriVariables: [
-        'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
-    ]
-)]
-#[ApiResource(
-    uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections/{uuid}',
-    operations: [
-        new Patch(normalizationContext: ['groups' => ['questionnaire_section:read']]),
-        new Delete(),
-    ],
-    uriVariables: [
-        'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
-        'uuid' => new Link(fromClass: QuestionnaireSection::class),
+        new Post(
+            uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections',
+            uriVariables: [
+                'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
+            ],
+            read: false,
+            normalizationContext: ['groups' => ['questionnaire_section:read']],
+        ),
+        new Patch(
+            uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections/{uuid}',
+            uriVariables: [
+                'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
+                'uuid' => new Link(fromClass: QuestionnaireSection::class),
+            ],
+            normalizationContext: ['groups' => ['questionnaire_section:read']],
+        ),
+        new Delete(
+            uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections/{uuid}',
+            uriVariables: [
+                'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
+                'uuid' => new Link(fromClass: QuestionnaireSection::class),
+            ],
+        ),
     ]
 )]
 #[ORM\Index(name: 'idx_section_questionnaire_ordre', columns: ['questionnaire_id', 'sort_order'])]

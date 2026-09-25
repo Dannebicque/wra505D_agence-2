@@ -32,8 +32,8 @@ class LoginFormAuthenticator extends AbstractAuthenticator
     public function authenticate(Request $request): Passport
     {
         $data = json_decode($request->getContent(), true);
-        $username = $data['username'] ?? $request->get('username') ?? '';
-        $password = $data['password'] ?? $request->get('password') ?? '';
+        $username = $data['username'] ?? $request->request->get('username') ?? '';
+        $password = $data['password'] ?? $request->request->get('password') ?? '';
 
         // Validation basique des entrées
         if (empty($username) || empty($password)) {
