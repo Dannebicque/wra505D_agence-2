@@ -1,7 +1,7 @@
 PHPSTAN = vendor/bin/phpstan
 PHPSTAN_CONFIG = phpstan.neon
 
-.PHONY: all check install composer-validate lint-container doctrine-validate phpstan test
+.PHONY: all check install composer-validate lint-container doctrine-validate phpstan test cs cs-fix
 
 all: check
 
@@ -21,6 +21,13 @@ doctrine-validate:
 
 phpstan:
 	$(PHPSTAN) analyse -c $(PHPSTAN_CONFIG) --memory-limit=1G
+
+# PSR-12 des seuls fichiers PHP modifiés depuis origin/develop (BASE=... pour une autre base).
+cs:
+	bin/cs-diff
+
+cs-fix:
+	bin/cs-diff --fix
 
 test:
 	@if [ -x vendor/bin/phpunit ]; then \
