@@ -38,6 +38,20 @@ describe('Navigation de l\'étudiant', () => {
             .and('not.contain', 'Messages');
     });
 
+    it('fait défiler le contenu seul, sans que la page ne s\'allonge sous lui', () => {
+        const pageTientDansLaFenetre = (doc) => {
+            expect(doc.scrollingElement.scrollHeight).to.be.at.most(doc.defaultView.innerHeight);
+        };
+
+        cy.visit('/app/intranet/');
+        cy.contains('Votre département', { timeout: 15000 });
+        cy.document().should(pageTientDansLaFenetre);
+
+        cy.visit('/app/intranet/notifications');
+        cy.get('.notification-lien', { timeout: 15000 }).should('exist');
+        cy.document().should(pageTientDansLaFenetre);
+    });
+
     it('range le département et retire « Paramètres » dans le menu du profil', () => {
         cy.visit('/app/intranet/');
         cy.get('[aria-controls="profile_menu"]', { timeout: 15000 }).click();

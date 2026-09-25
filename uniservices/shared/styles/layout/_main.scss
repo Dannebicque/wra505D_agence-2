@@ -1,4 +1,8 @@
+// Le conteneur défile seul : positionné, il devient le repère des éléments absolus qu'il contient,
+// comme les textes réservés aux lecteurs d'écran. Sans cela, ils se placent sur la page, qu'ils
+// allongent sans défiler avec le contenu.
 .layout-main-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     height: calc(100vh - 4rem);

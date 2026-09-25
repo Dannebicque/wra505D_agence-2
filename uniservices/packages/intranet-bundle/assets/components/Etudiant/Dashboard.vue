@@ -185,7 +185,6 @@ const moveWidget = async (widget, direction) => {
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 1fr;
   gap: 1rem;
 }
 </style>
