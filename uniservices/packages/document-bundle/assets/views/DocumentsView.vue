@@ -261,12 +261,13 @@ const loadData = async () => {
     const activePackages = security.activePackages || [];
     const currentDepartmentId = security.currentDepartment?.id ? String(security.currentDepartment.id) : undefined;
 
-    const [fetchedCategories, fetchedDocs] = await Promise.all([
+    const [fetchedCategories, fetchedDocs, favoris] = await Promise.all([
       documentService.fetchCategories({ activePackages, currentDepartmentId }),
-      documentService.fetchDocuments()
+      documentService.fetchDocuments(),
+      documentService.fetchFavoris()
     ]);
     categories.value = fetchedCategories;
-    documentsList.value = fetchedDocs;
+    documentsList.value = fetchedDocs.map(doc => ({ ...doc, isFavorite: favoris.has(doc.id) }));
     documentService.updateCategoryCounts(categories.value, documentsList.value);
   } catch (e) {
     console.error('Error loading documents:', e);

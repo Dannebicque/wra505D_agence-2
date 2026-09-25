@@ -94,7 +94,7 @@ export const documentService = {
     }
   },
 
-  async fetchDocuments(params?: { categoryId?: string; isFavorite?: boolean; query?: string }): Promise<Document[]> {
+  async fetchDocuments(params?: { categoryId?: string; query?: string }): Promise<Document[]> {
     try {
       // L'écran filtre et compte côté client : il lui faut toutes les pages, pas seulement la première.
       const rawItems: any[] = [];
@@ -145,7 +145,7 @@ export const documentService = {
           description: item.description,
           categoryId,
           departementId,
-          isFavorite: !!item.isFavorite,
+          isFavorite: false,
           author: item.author || 'Inconnu',
           version: item.version || 'v1.0',
           tags: Array.isArray(item.tags) ? item.tags : [],
@@ -163,9 +163,6 @@ export const documentService = {
       if (params?.categoryId) {
         docs = docs.filter(d => d.categoryId === params.categoryId);
       }
-      if (params?.isFavorite) {
-        docs = docs.filter(d => d.isFavorite);
-      }
       if (params?.query) {
         const q = params.query.toLowerCase();
         docs = docs.filter(d =>
@@ -182,13 +179,26 @@ export const documentService = {
     }
   },
 
+  // Les favoris sont propres à chaque utilisateur : ils ne font pas partie du document.
+  async fetchFavoris(): Promise<Set<string>> {
+    try {
+      const response = await api.get('/api/me/documents-favoris', { headers: defaultHeaders });
+      const ids: unknown[] = Array.isArray(response.data?.documents) ? response.data.documents : [];
+      return new Set(ids.map(id => String(id)));
+    } catch (e) {
+      console.error('API Error fetching favorite documents:', e);
+      return new Set();
+    }
+  },
+
   async toggleFavorite(documentId: string, currentStatus: boolean): Promise<boolean> {
-    const response = await api.patch(`/api/documents/${documentId}`, {
-      isFavorite: !currentStatus
-    }, {
-      headers: { ...defaultHeaders, 'Content-Type': 'application/merge-patch+json' }
-    });
-    return !!response.data.isFavorite;
+    const url = `/api/me/documents-favoris/${documentId}`;
+    if (currentStatus) {
+      await api.delete(url, { headers: defaultHeaders });
+    } else {
+      await api.put(url, null, { headers: defaultHeaders });
+    }
+    return !currentStatus;
   },
 
   async createDocument(newDoc: {
@@ -210,7 +220,6 @@ export const documentService = {
       author: newDoc.author || 'Utilisateur Connecté',
       version: 'v1.0',
       tags: newDoc.tags || [],
-      isFavorite: false,
       visibility: 'PUBLIC',
       category: newDoc.categoryId ? `/api/document_categories/${newDoc.categoryId}` : null,
       departement: newDoc.departementId ? `/api/structure_departements/${newDoc.departementId}` : null
@@ -237,7 +246,7 @@ export const documentService = {
       description: item.description,
       categoryId,
       departementId: newDoc.departementId,
-      isFavorite: item.isFavorite,
+      isFavorite: false,
       author: item.author,
       version: item.version,
       tags: item.tags || []

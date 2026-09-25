@@ -22,12 +22,12 @@
 
         <button
           @click.stop="$emit('toggleFavorite', document.id)"
-          class="p-1 hover:bg-gray-100 rounded transition-colors"
+          class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
           :title="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
           :aria-label="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
         >
           <i
-            :class="[document.isFavorite ? 'pi pi-star-fill text-yellow-500' : 'pi pi-star text-gray-300 group-hover:text-gray-400', 'text-lg']"
+            :class="[document.isFavorite ? 'pi pi-star-fill text-amber-700' : 'pi pi-star text-gray-500 group-hover:text-gray-700', 'text-lg']"
             aria-hidden="true"
           ></i>
         </button>
