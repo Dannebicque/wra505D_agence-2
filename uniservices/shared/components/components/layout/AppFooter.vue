@@ -6,8 +6,8 @@ const { version } = useVersion();
 </script>
 
 <template>
-  <div class="flex justify-between items-center border-t pt-6">
-    <div class="flex items-center gap-2">
+  <div class="flex flex-wrap justify-between items-center gap-x-4 gap-y-2 border-t pt-6">
+    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
       <span class="font-bold">UniServices</span>
       <span>Copyright &copy; 2026</span>
       <span><a class="underline touch-target" href="">@David Annebicque</a></span>
@@ -18,8 +18,8 @@ const { version } = useVersion();
       <span>Version {{ version }}</span>
     </div>
 
-    <div class="">
-      <span>Contact : <a href="" class="underline touch-target">intranet.iut-troyes@univ-reims.fr</a></span>
+    <div>
+      <span>Contact : <a href="mailto:intranet.iut-troyes@univ-reims.fr" class="underline touch-target">intranet.iut-troyes@univ-reims.fr</a></span>
     </div>
   </div>
 </template>

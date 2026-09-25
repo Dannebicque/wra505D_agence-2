@@ -14,7 +14,7 @@
         </p>
       </div>
       
-      <div class="flex items-center space-x-3">
+      <div class="flex flex-wrap items-center gap-3">
         <!-- View Mode Toggle -->
         <ViewModeToggle
           :view-mode="viewMode"

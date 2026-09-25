@@ -27,7 +27,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
       >
         <div class="flex items-center gap-3">
           <span class="w-10 h-10 shrink-0 rounded-full hidden @3xs:flex items-center justify-center bg-surface-100 dark:bg-surface-800" aria-hidden="true">
-            <i class="pi pi-building text-primary-500"/>
+            <i class="pi pi-building text-primary-500" aria-hidden="true"/>
           </span>
           <div class="flex flex-col min-w-0 break-words">
             <span class="font-semibold">{{ departement.libelle }}</span>

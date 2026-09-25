@@ -128,7 +128,7 @@ const colorClasses = computed(() => {
           iconBgClass
         ]">
           <!-- Support PrimeIcons string and Heroicons component -->
-          <i v-if="typeof icon === 'string'" :class="[icon, colorClasses ? 'text-lg' : 'text-primary-500 text-2xl!', colorClasses ? '' : iconClass]" />
+          <i v-if="typeof icon === 'string'" :class="[icon, colorClasses ? 'text-lg' : 'text-primary-500 text-2xl!', colorClasses ? '' : iconClass]" aria-hidden="true" />
           <component v-else :is="icon" :class="[colorClasses ? 'w-5 h-5' : 'w-7 h-7 text-primary-500', colorClasses ? '' : iconClass]" />
         </span>
           <span>{{ props.titre }}</span>

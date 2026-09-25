@@ -132,6 +132,13 @@ app.use(PrimeVue, {
             darkModeSelector: '.app-dark'
         }
     },
+    // Les icônes de ces composants accompagnent un libellé ou un nom accessible : décoratives,
+    // elles sont masquées aux lecteurs d'écran une fois pour toutes.
+    pt: {
+        button: { icon: { 'aria-hidden': 'true' } },
+        message: { icon: { 'aria-hidden': 'true' } },
+        tag: { icon: { 'aria-hidden': 'true' } },
+    },
     ripple: true
 });
 app.directive('ripple', Ripple);

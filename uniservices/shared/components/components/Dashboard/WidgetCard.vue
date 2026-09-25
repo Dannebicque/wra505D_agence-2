@@ -88,7 +88,7 @@ const toggleWidget = () => {
     <div class="mb-3 flex items-start justify-between gap-2">
         <div class="flex flex-col">
             <div class="font-semibold flex items-start gap-2">
-                <i :class="`${widget.icon} text-primary-500`"/>
+                <i :class="`${widget.icon} text-primary-500`" aria-hidden="true"/>
                 <span>{{ widget.label }}</span>
             </div>
             <div v-if="widget.bundle && props.isPortail" class="mt-1">

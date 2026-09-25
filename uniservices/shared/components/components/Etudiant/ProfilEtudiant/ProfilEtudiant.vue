@@ -207,7 +207,7 @@ const updateEtudiantData = async () => {
             <div class="uppercase">{{ etudiant.nom }}</div>
           </div>
           <div class="text-center underline hover:cursor-pointer" @click="copyToClipboard(etudiant.mailUniv)">
-            {{ etudiant.mailUniv }} <i class="pi pi-copy"></i>
+            {{ etudiant.mailUniv }} <i class="pi pi-copy" aria-hidden="true"></i>
           </div>
           <hr>
         </div>

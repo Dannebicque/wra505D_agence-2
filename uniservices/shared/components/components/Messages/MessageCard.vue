@@ -14,7 +14,7 @@ const props = defineProps({
 <template>
 <div class="w-full bg-white shadow-sm border border-neutral-200 rounded-lg p-6 flex items-center justify-center gap-4">
     <div class="flex-shrink-0">
-      <i class="pi pi-info-circle"></i>
+      <i class="pi pi-info-circle" aria-hidden="true"></i>
     </div>
     <div class="text-sm text-gray-800 leading-relaxed">
       {{content}}

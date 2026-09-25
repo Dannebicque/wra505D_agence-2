@@ -1,6 +1,6 @@
 <script setup>
 import { useLayout } from './composables/layout.js';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { AVAILABLE_ROLES } from "@utils/permissions";
 import Logo from '@components/components/Logo.vue';
 import AppSearch from './AppSearch.vue';
@@ -160,6 +160,43 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme, layoutState } = useLayout();
 // Ce bouton n'apparaît qu'en mobile : sur ordinateur, le menu a son propre bouton de repli.
 const menuOuvert = computed(() => layoutState.staticMenuMobileActive);
 
+// Menu « ⋮ » des écrans étroits : fermé au chargement, il se referme au clic ailleurs, à
+// Échap et au changement de page. En bureau, ses actions restent toujours affichées.
+const actionsOuvertes = ref(false);
+const boutonActions = ref(null);
+const menuActions = ref(null);
+
+const fermerActions = (event) => {
+  if (!actionsOuvertes.value) {
+    return;
+  }
+  if (event.type === 'keydown') {
+    if (event.key !== 'Escape') {
+      return;
+    }
+    actionsOuvertes.value = false;
+    boutonActions.value?.focus();
+    return;
+  }
+  if (!menuActions.value?.contains(event.target) && !boutonActions.value?.contains(event.target)) {
+    actionsOuvertes.value = false;
+  }
+};
+
+watch(() => route.fullPath, () => {
+  actionsOuvertes.value = false;
+});
+
+onMounted(() => {
+  document.addEventListener('click', fermerActions);
+  document.addEventListener('keydown', fermerActions);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', fermerActions);
+  document.removeEventListener('keydown', fermerActions);
+});
+
 const anneeMenu = ref();
 const toolsMenu = ref();
 const profileMenu = ref();
@@ -303,22 +340,33 @@ const selectAnneeUniversitaire = (annee) => {
         <AppSearch input-id="recherche-globale-mobile" />
       </div>
 
-      <button class="layout-topbar-menu-button layout-topbar-action"
-        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }">
-        <i class="pi pi-ellipsis-v"></i>
+      <button
+          ref="boutonActions"
+          type="button"
+          class="layout-topbar-menu-button layout-topbar-action"
+          aria-label="Plus d'actions"
+          :aria-expanded="actionsOuvertes ? 'true' : 'false'"
+          aria-controls="actions-barre-haute"
+          @click="actionsOuvertes = !actionsOuvertes"
+      >
+        <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
       </button>
 
-      <div class="layout-topbar-menu lg:block">
+      <div
+          id="actions-barre-haute"
+          ref="menuActions"
+          :class="['layout-topbar-menu lg:block', actionsOuvertes ? 'animate-scalein' : 'hidden']"
+      >
         <div class="layout-topbar-menu-content">
           <router-link :to="{ name: 'portail' }" v-if="route.name !== 'portail' && !estEtudiant"
             class="layout-topbar-action layout-topbar-action-text">
-            <i class="pi pi-arrow-left text-primary"></i>
+            <i class="pi pi-arrow-left text-primary" aria-hidden="true"></i>
             <span>Portail</span>
           </router-link>
 
           <button v-if="route.name !== 'portail' && !estEtudiant" type="button" class="layout-topbar-action layout-topbar-action-text"
             @click="toggleToolsMenu" aria-haspopup="true" aria-controls="tools_menu">
-            <i class="pi pi-box text-primary"></i>
+            <i class="pi pi-box text-primary" aria-hidden="true"></i>
             <span>Applications</span>
           </button>
           <Menu ref="toolsMenu" id="tools_menu" :model="tools" :popup="true">
@@ -333,14 +381,14 @@ const selectAnneeUniversitaire = (annee) => {
           <button v-if="userStore.userType === 'personnels'" type="button"
             class="layout-topbar-action layout-topbar-action-text" @click="toggleDeptMenu" aria-haspopup="true"
             aria-controls="dept_menu">
-            <i class="pi pi-arrow-right-arrow-left text-primary"></i>
+            <i class="pi pi-arrow-right-arrow-left text-primary" aria-hidden="true"></i>
             <span>{{ departementLabel }}</span>
           </button>
           <Menu ref="deptMenu" id="dept_menu" :model="deptItems" :popup="true" />
 
           <button v-if="showRolesMenu" type="button" class="layout-topbar-action layout-topbar-action-text"
             @click="toggleRolesMenu" aria-haspopup="true" aria-controls="roles_menu">
-            <i class="pi pi-shield text-primary"></i>
+            <i class="pi pi-shield text-primary" aria-hidden="true"></i>
             <span>Rôles</span>
           </button>
           <Menu ref="rolesMenu" id="roles_menu" :model="rolesItems" :popup="true" />
@@ -348,19 +396,19 @@ const selectAnneeUniversitaire = (annee) => {
           <PermissionGuard permission="isPersonnel">
             <button type="button" class="layout-topbar-action layout-topbar-action-text" @click="toggleAnneeMenu"
               aria-haspopup="true" aria-controls="annee_menu">
-              <i class="pi pi-calendar text-primary"></i>
+              <i class="pi pi-calendar text-primary" aria-hidden="true"></i>
               <span>{{ selectedAnneeUniversitaire?.label }}</span>
             </button>
             <Menu ref="anneeMenu" id="annee_menu" :model="anneeItems" :popup="true" />
           </PermissionGuard>
 
           <button v-if="!estEtudiant" type="button" class="layout-topbar-action">
-            <i class="pi pi-inbox"></i>
+            <i class="pi pi-inbox" aria-hidden="true"></i>
             <span>Messages</span>
           </button>
           <NotificationsCloche v-if="estEtudiant" />
           <button v-else type="button" class="layout-topbar-action">
-            <i class="pi pi-bell"></i>
+            <i class="pi pi-bell" aria-hidden="true"></i>
             <span>Notifications</span>
           </button>
           <div class="layout-config-menu">
