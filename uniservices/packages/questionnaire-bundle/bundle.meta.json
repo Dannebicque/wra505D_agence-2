@@ -1,6 +1,6 @@
 {
-    "name": "QuestionnaireBundle",
-    "description": "Application QuestionnaireBundle",
+    "name": "Questionnaires",
+    "description": "Enquêtes et questionnaires",
     "urlSlug": "questionnaire",
     "url": "http://localhost:3005/questionnaire/"
 }
