@@ -5,6 +5,12 @@ doctrine:
                 url: '%env(resolve:DATABASE_URL)%'
                 profiling_collect_backtrace: '%kernel.debug%'
                 use_savepoints: true
+                # Options que DBAL 3 imposait. Sans la collation, DBAL 4 laisse MySQL 8 appliquer
+                # utf8mb4_0900_ai_ci, qui tient compte des espaces finales dans les comparaisons.
+                default_table_options:
+                    charset: utf8mb4
+                    collation: utf8mb4_unicode_ci
+                    engine: InnoDB
             copy:
                 url: '%env(resolve:DATABASE_URL_ORIGINAL)%'
         default_connection: default
