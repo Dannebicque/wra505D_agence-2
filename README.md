@@ -6,7 +6,7 @@ amenée à évoluer.
 
 ```
 .
-├── uniservices/   la base reprise : API Symfony 7 + API Platform, front Vue 3 + Vite
+├── uniservices/   la base reprise : API Symfony 7.4 + API Platform, front Vue 3 + Vite
 ├── docs/          contexte, audit de l'existant, questions client
 └── CLAUDE.md      règles de travail : stack, GitFlow, conventions, accessibilité
 ```
