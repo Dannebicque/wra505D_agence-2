@@ -1,10 +1,38 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import fs from "fs";
 import path from "path";
 import Components from "unplugin-vue-components/vite";
 import { PrimeVueResolver } from "@primevue/auto-import-resolver";
 import tailwindcss from "@tailwindcss/vite";
 import { loadEnv } from "vite";
+
+/**
+ * Tous les composants de PrimeVue, sous leur chemin d'import (« primevue/accordion »).
+ *
+ * unplugin-vue-components n'ajoute leurs imports qu'à la compilation : l'analyse de Vite ne les
+ * voit pas au démarrage. La première page qui utilise un composant encore inconnu le fait
+ * pré-optimiser, et Vite recharge alors toute la page, en perdant la navigation en cours. On les
+ * pré-optimise donc d'emblée. Seul le serveur de développement est concerné, pas le build.
+ */
+function composantsPrimeVue(rootDir) {
+  const modules = path.resolve(rootDir, "node_modules");
+  const racine = path.join(modules, "primevue");
+  if (!fs.existsSync(racine)) {
+    return [];
+  }
+
+  // Editor charge quill à la demande, que le projet n'installe pas : un composant dont un
+  // chargement à la demande vise un paquet absent ne peut pas être pré-optimisé.
+  const chargeUnPaquetAbsent = (fichier) => [...fs.readFileSync(fichier, "utf8").matchAll(/import\(\s*["']([^"'.][^"']*)["']\s*\)/g)]
+    .some(([, paquet]) => !fs.existsSync(path.join(modules, paquet)));
+
+  return fs.readdirSync(racine, { withFileTypes: true })
+    .filter((entree) => entree.isDirectory())
+    .map((entree) => ({ nom: entree.name, fichier: path.join(racine, entree.name, "index.mjs") }))
+    .filter(({ fichier }) => fs.existsSync(fichier) && !chargeUnPaquetAbsent(fichier))
+    .map(({ nom }) => `primevue/${nom}`);
+}
 
 /**
  * Returns a Vite configuration customized for a bundle.
@@ -30,6 +58,9 @@ export function getBaseConfig(bundleDir, baseName, customConfig = {}) {
           dts: path.resolve(bundleDir, "assets/components.d.ts"),
         }),
       ],
+      optimizeDeps: {
+        include: composantsPrimeVue(rootDir),
+      },
       root: path.resolve(bundleDir, "assets"),
       base: `/${baseName}/`,
       build: {

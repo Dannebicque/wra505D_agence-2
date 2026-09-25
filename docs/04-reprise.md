@@ -20,8 +20,10 @@ Dernière mise à jour : 24/09/2026.
 
 - Tout part de `develop`. **`main` n'est jamais touchée.**
 - Une tâche, une branche, une PR vers `develop`. Commits en anglais, Conventional Commits.
-- **Claude ne peut pas merger.** `gh` n'est pas installé, et le ruleset du dépôt exige une PR et
-  une approbation. On pousse la branche, on donne l'URL de comparaison, et l'utilisateur merge.
+- **Claude ouvre les PR, l'utilisateur les merge.** `gh` est installé et connecté au compte de
+  LCS depuis le 25/09/2026 : Claude pousse la branche, ouvre la PR et lit la CI
+  (`gh run view <id> --log-failed`). Le ruleset du dépôt exige une approbation : le merge reste
+  à l'utilisateur.
 - Après un merge annoncé, vérifier qu'il a bien eu lieu, puis supprimer la branche des deux
   côtés :
   `git merge-base --is-ancestor origin/<branche> origin/develop`.
@@ -199,6 +201,12 @@ Trois failles à leur signaler, car elles sont dans leur code de production :
 
 ## Pièges connus
 
+- **Vite recharge la page quand il découvre une dépendance.** Les composants PrimeVue sont
+  importés à la compilation (`unplugin-vue-components`) : sans pré-optimisation, la première page
+  qui en utilise un nouveau fait recharger tout le front et perd la navigation en cours. CI-Cypress
+  a échoué ainsi de #55 à #68. `shared/vite.config.base.js` les pré-optimise tous ; pour
+  reproduire la CI : `npx vite --port 3100 --force` dans `packages/shell`, puis
+  `CYPRESS_BASE_URL=http://localhost:3100 npx cypress run`.
 - **`components.d.ts`** est régénéré par Vite et bloque les changements de branche :
   `git checkout -- .` puis recommencer.
 - **Deux `AuthController`**, dans `back/src` et dans `auth-bundle`, au code identique. Une
