@@ -31,7 +31,8 @@ class CreateEtudiantController extends AbstractController
         private readonly StructureSemestreRepository $structureSemestreRepository,
         private readonly StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository,
         private readonly UserPasswordHasherInterface $passwordHasher
-    ) {}
+    ) {
+    }
 
     #[Route('/api/etudiants/new', methods: ['POST'], name: 'create_etudiant')]
     public function create(Request $request): Response

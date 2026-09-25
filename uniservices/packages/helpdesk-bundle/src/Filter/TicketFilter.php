@@ -23,20 +23,20 @@ class TicketFilter extends AbstractFilter
 
         if ('latest' === $property) {
             $queryBuilder
-                ->orderBy(sprintf('%s.created', $alias),'DESC')
+                ->orderBy(sprintf('%s.created', $alias), 'DESC')
                 ->setMaxResults($value);
             ;
         }
 
         if ('auteur' === $property) {
             $queryBuilder
-                ->andWhere(sprintf('%s.auteur = :%s', $alias,$property))
+                ->andWhere(sprintf('%s.auteur = :%s', $alias, $property))
                 ->setParameter($property, $value);
         }
 
         if ('statut' === $property) {
             $queryBuilder
-                ->andWhere(sprintf('%s.statut = :%s', $alias,$property))
+                ->andWhere(sprintf('%s.statut = :%s', $alias, $property))
                 ->setParameter($property, $value);
         }
         if ('hasRecentMessage' === $property && $value) {

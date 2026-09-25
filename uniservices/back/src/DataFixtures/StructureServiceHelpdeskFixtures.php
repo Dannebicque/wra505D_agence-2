@@ -29,7 +29,7 @@ class StructureServiceHelpdeskFixtures extends Fixture implements OrderedFixture
         for ($i = 0; $i < 2; $i++) {
             $service = new StructureService();
 
-            if ($i===0) {
+            if ($i === 0) {
                 foreach ($listePersonnel as $index => $personne) {
                     if ($index % 2 === 0) {
                         $service->addPersonnel($personne);

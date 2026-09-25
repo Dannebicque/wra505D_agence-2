@@ -366,7 +366,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setAdresseParentale(Adresse $adresse): void
     {
-        $this->adresseParentale= $adresse->toArray();
+        $this->adresseParentale = $adresse->toArray();
     }
 
     public function getAdresseParentale(): ?Adresse

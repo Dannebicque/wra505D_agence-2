@@ -17,8 +17,7 @@ class StructureAnneeUniversitaireFixtures extends Fixture implements OrderedFixt
     public function __construct(
         PersonnelRepository          $personnelRepository,
         StructurePnRepository        $pnRepository
-    )
-    {
+    ) {
         $this->personnelRepository = $personnelRepository;
         $this->pnRepository = $pnRepository;
     }
@@ -71,7 +70,7 @@ class StructureAnneeUniversitaireFixtures extends Fixture implements OrderedFixt
             ->addPn($pn2)
             ->addPersonnel($personnel)
             ->setActif(false)
-            ;
+        ;
         $manager->persist($anneeUniversitaire1);
 
         $anneeUniversitaire2 = new StructureAnneeUniversitaire();
@@ -81,7 +80,7 @@ class StructureAnneeUniversitaireFixtures extends Fixture implements OrderedFixt
             ->addPn($pn2)
             ->addPersonnel($personnel)
             ->setActif(true)
-            ;
+        ;
         $manager->persist($anneeUniversitaire2);
 
         $manager->flush();

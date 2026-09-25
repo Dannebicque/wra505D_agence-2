@@ -5,7 +5,8 @@ namespace App\Enum;
 use App\Enum\BadgeEnumInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-enum TypeEnseignementEnum: string implements BadgeEnumInterface {
+enum TypeEnseignementEnum: string implements BadgeEnumInterface
+{
     case TYPE_RESSOURCE = 'ressource';
     case TYPE_SAE = 'sae';
     case TYPE_MATIERE = 'matiere';

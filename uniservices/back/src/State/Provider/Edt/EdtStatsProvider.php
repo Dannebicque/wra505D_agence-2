@@ -12,12 +12,11 @@ use App\ApiDto\Edt\EdtStatsDto;
 
 class EdtStatsProvider implements ProviderInterface
 {
-
     public function __construct(
         private CollectionProvider $collectionProvider,
-
         private ItemProvider $itemProvider,
-    ) {}
+    ) {
+    }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
@@ -58,7 +57,9 @@ class EdtStatsProvider implements ProviderInterface
                 $start = $item->getDebut();
                 $end = $item->getFin();
 
-                if (!$start || !$end) continue;
+                if (!$start || !$end) {
+                    continue;
+                }
 
                 $interval = $start->diff($end);
                 $duration = $interval->h + ($interval->days * 24) + ($interval->i / 60); // durée en heures
@@ -66,13 +67,19 @@ class EdtStatsProvider implements ProviderInterface
                 $totals['totalHeures'] += $duration;
 
                 $type = (string) $item->getType();
-                if ($type === '') $type = 'Type inconnu';
+                if ($type === '') {
+                    $type = 'Type inconnu';
+                }
 
-                if (!isset($byType[$type])) $byType[$type] = 0.0;
+                if (!isset($byType[$type])) {
+                    $byType[$type] = 0.0;
+                }
                 $byType[$type] += $duration;
 
                 $semestre = (string) $item->getSemestre()->getLibelle();
-                if (!isset($bySemestre[$semestre])) $bySemestre[$semestre] = 0.0;
+                if (!isset($bySemestre[$semestre])) {
+                    $bySemestre[$semestre] = 0.0;
+                }
                 $bySemestre[$semestre] += $duration;
 
                 $enseignement = $item->getEnseignement();

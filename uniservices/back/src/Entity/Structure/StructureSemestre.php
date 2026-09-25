@@ -487,7 +487,7 @@ class StructureSemestre
         $this->scolariteSemestre = $scolariteSemestre;
     }
 
-    
+
 
 
     /**
@@ -521,14 +521,14 @@ class StructureSemestre
     }
 
     #[Groups(['semestre:detail', 'semestre:light'])]
-        public function getTypesGroupe(): array
-        {
-            $types = [];
+    public function getTypesGroupe(): array
+    {
+        $types = [];
 
-            foreach ($this->groupes as $groupe) {
-                $types[] = $groupe->getType()->value;
-            }
-
-            return array_values(array_unique($types));
+        foreach ($this->groupes as $groupe) {
+            $types[] = $groupe->getType()->value;
         }
+
+        return array_values(array_unique($types));
+    }
 }

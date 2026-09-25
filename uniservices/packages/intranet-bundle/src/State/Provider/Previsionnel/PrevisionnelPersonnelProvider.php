@@ -12,13 +12,11 @@ use App\Repository\Structure\StructureDepartementPersonnelRepository;
 
 class PrevisionnelPersonnelProvider implements ProviderInterface
 {
-
     public function __construct(
         private CollectionProvider $collectionProvider,
         private ItemProvider $itemProvider,
         private StructureDepartementPersonnelRepository $structureDepartementPersonnelRepository,
-    )
-    {
+    ) {
     }
 
     /**

@@ -27,7 +27,7 @@ class ExportTablerController extends AbstractController
     {
         $content = (string) $request->getContent();
         $data = json_decode($content, true) ?? [];
-//        dd($data);
+        //        dd($data);
 
         // Passer les données brutes au template Twig, la construction des feuilles se fait côté vue
         return $this->renderSpreadsheet(

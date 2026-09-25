@@ -29,7 +29,8 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
         private readonly StructureSemestreRepository $structureSemestreRepository,
         private readonly StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository,
         private readonly StructureDepartementRepository $structureDepartementRepository,
-    ){}
+    ) {
+    }
 
     public function load(ObjectManager $manager): void
     {
@@ -46,7 +47,7 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
             ->setCodeApogee('MMICM')
             ->setType(TypeGroupeEnum::TYPE_GROUPE_CM)
             ->setOrdre(1)
-            ;
+        ;
         $groupe1->addSemestre($s1);
         $s1->addGroupe($groupe1);
 
@@ -56,7 +57,7 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
             ->setType(TypeGroupeEnum::TYPE_GROUPE_TD)
             ->setOrdre(2)
             ->setParent($groupe1)
-            ;
+        ;
 
         $groupe2->addSemestre($s1);
         $s1->addGroupe($groupe2);
@@ -67,7 +68,7 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
             ->setType(TypeGroupeEnum::TYPE_GROUPE_TD)
             ->setOrdre(3)
             ->setParent($groupe1)
-            ;
+        ;
 
         $groupe3->addSemestre($s1);
         $s1->addGroupe($groupe3);
@@ -78,7 +79,7 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
             ->setType(TypeGroupeEnum::TYPE_GROUPE_TP)
             ->setOrdre(4)
             ->setParent($groupe2)
-            ;
+        ;
 
         $groupe4->addSemestre($s1);
         $s1->addGroupe($groupe4);
@@ -89,7 +90,7 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
             ->setType(TypeGroupeEnum::TYPE_GROUPE_TP)
             ->setOrdre(5)
             ->setParent($groupe2)
-            ;
+        ;
 
         $groupe5->addSemestre($s1);
         $s1->addGroupe($groupe5);
@@ -100,7 +101,7 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
             ->setType(TypeGroupeEnum::TYPE_GROUPE_TP)
             ->setOrdre(6)
             ->setParent($groupe2)
-            ;
+        ;
 
         $groupe6->addSemestre($s1);
         $s1->addGroupe($groupe6);
@@ -111,7 +112,7 @@ class StructureGroupeFixtures extends Fixture implements OrderedFixtureInterface
             ->setType(TypeGroupeEnum::TYPE_GROUPE_TP)
             ->setOrdre(7)
             ->setParent($groupe2)
-            ;
+        ;
 
         $groupe7->addSemestre($s1);
         $s1->addGroupe($groupe7);

@@ -33,7 +33,7 @@ class SemestreFilter extends AbstractFilter
                 ->orderBy(sprintf('%s.ordreLmd', $alias), 'ASC')
                 ->addOrderBy(sprintf('%s.libelle', $alias), 'ASC')
             ;
-        } else if ('departement' === $property) {
+        } elseif ('departement' === $property) {
             $queryBuilder
                 ->innerJoin(StructureAnnee::class, 'sa', 'WITH', sprintf('%s.annee = sa.id', $alias))
                 ->innerJoin('sa.pn', 'pn')

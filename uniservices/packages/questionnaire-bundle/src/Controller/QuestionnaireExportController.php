@@ -17,7 +17,8 @@ class QuestionnaireExportController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly QuestionnaireAnalyticsService $analyticsService
-    ) {}
+    ) {
+    }
 
     public function __invoke(string $uuid): Response
     {

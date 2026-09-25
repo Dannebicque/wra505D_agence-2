@@ -58,7 +58,9 @@ final class QuestionRuntimeMapper
 
             $ruleList = isset($rules[0]) && is_array($rules[0]) ? $rules : [$rules];
             foreach ($ruleList as $r) {
-                if (!is_array($r)) continue;
+                if (!is_array($r)) {
+                    continue;
+                }
 
                 $targetIds = $r['targetQuestionIds'] ?? [];
                 $isTargeted = false;
@@ -92,7 +94,9 @@ final class QuestionRuntimeMapper
 
             if (!empty($targetedRule['conditions']) && is_array($targetedRule['conditions'])) {
                 foreach ($targetedRule['conditions'] as $cond) {
-                    if (!is_array($cond)) continue;
+                    if (!is_array($cond)) {
+                        continue;
+                    }
                     $dep = $cond['dependsOnQuestionId'] ?? $cond['dependsOn'] ?? null;
                     if ($dep !== null) {
                         $conditions[] = [

@@ -15,7 +15,9 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Analytics\QuestionStatsDto;
 
 class QuestionnaireAnalyticsService
 {
-    public function __construct(private readonly EntityManagerInterface $em) {}
+    public function __construct(private readonly EntityManagerInterface $em)
+    {
+    }
 
     public function getAnalytics(Questionnaire $q): QuestionnaireAnalyticsDto
     {
@@ -251,12 +253,18 @@ class QuestionnaireAnalyticsService
                     }
 
                     $defaultColumns = ['Pas du tout', 'Peu', 'Moyennement', 'Beaucoup', 'Énormément'];
-                    usort($columns, function($a, $b) use ($defaultColumns) {
+                    usort($columns, function ($a, $b) use ($defaultColumns) {
                         $posA = array_search($a, $defaultColumns, true);
                         $posB = array_search($b, $defaultColumns, true);
-                        if ($posA === false && $posB === false) return strcmp($a, $b);
-                        if ($posA === false) return 1;
-                        if ($posB === false) return -1;
+                        if ($posA === false && $posB === false) {
+                            return strcmp($a, $b);
+                        }
+                        if ($posA === false) {
+                            return 1;
+                        }
+                        if ($posB === false) {
+                            return -1;
+                        }
                         return $posA <=> $posB;
                     });
 

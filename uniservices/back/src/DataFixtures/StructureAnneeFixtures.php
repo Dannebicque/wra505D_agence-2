@@ -18,8 +18,7 @@ class StructureAnneeFixtures extends Fixture implements OrderedFixtureInterface
     public function __construct(
         StructurePnRepository $pnRepository,
         PersonnelRepository $personnelRepository
-    )
-    {
+    ) {
         $this->pnRepository = $pnRepository;
         $this->personnelRepository = $personnelRepository;
     }
@@ -60,7 +59,7 @@ class StructureAnneeFixtures extends Fixture implements OrderedFixtureInterface
             ->setActif(true)
             ->setCouleur('purple')
             ->setPn($pn2)
-            ;
+        ;
         $manager->persist($annee2);
 
         $manager->flush();

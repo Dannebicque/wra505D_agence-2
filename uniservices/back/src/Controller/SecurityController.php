@@ -44,8 +44,7 @@ class SecurityController extends AbstractController
         Request $request,
         JWTTokenManagerInterface $jwtManager,
         EventDispatcherInterface $dispatcher,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $user = $this->getUser();
         if (!$user) {
             // HelpdeskMessage générique pour ne pas révéler si l'utilisateur existe ou non
@@ -77,8 +76,7 @@ class SecurityController extends AbstractController
         Request $request,
         MailerInterface $mailer,
         RateLimiterFactory $passwordResetLimiter
-    ): JsonResponse
-    {
+    ): JsonResponse {
         // Rate limiting : max 3 demandes par IP par heure
         $limiter = $passwordResetLimiter->create($request->getClientIp());
         if (false === $limiter->consume(1)->isAccepted()) {
@@ -158,8 +156,7 @@ class SecurityController extends AbstractController
         ValidatorInterface $validator,
         RateLimiterFactory $passwordResetLimiter,
         EntityManagerInterface $entityManager,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         // Rate limiting : protection contre le brute force
         $limiter = $passwordResetLimiter->create($request->getClientIp());
         if (false === $limiter->consume(1)->isAccepted()) {
@@ -236,8 +233,7 @@ class SecurityController extends AbstractController
         StructureDepartementPersonnelRepository $sdpRepo,
         PermissionResolver $resolver,
         UserEffectivePermissionService $effectivePermissionService
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $user = $this->getUser();
         if (!$user instanceof Etudiant && !$user instanceof Personnel) {
             return new JsonResponse(['message' => 'Non authentifié'], JsonResponse::HTTP_UNAUTHORIZED);

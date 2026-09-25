@@ -42,8 +42,7 @@ class CopyTransfertBddPrevisionnelCommand extends Command
         PersonnelRepository                $personnelRepository,
         ScolEnseignementRepository         $scolEnseignementRepository,
         StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository
-    )
-    {
+    ) {
         parent::__construct();
         $this->tPersonnels = $personnelRepository->findAllByOldIdArray();
         $this->tAnneeUniversitaire = $structureAnneeUniversitaireRepository->findAllByOldIdArray();
@@ -70,8 +69,7 @@ FOREIGN_KEY_CHECKS=0');
 FOREIGN_KEY_CHECKS=1');
     }
 
-    protected
-    function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
 

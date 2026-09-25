@@ -50,8 +50,7 @@ class CopyTransfertBddEnseignementsCommand extends Command
         StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository,
         protected HttpClientInterface      $httpClient,
         ParameterBagInterface              $params
-    )
-    {
+    ) {
         parent::__construct();
         $this->tCompetences = $apcCompetenceRepository->findAllByOldIdArray();
         $this->tApprentissages = $apcApprentissageCritiqueRepository->findAllByOldIdArray();
@@ -82,8 +81,7 @@ class CopyTransfertBddEnseignementsCommand extends Command
 FOREIGN_KEY_CHECKS=1');
     }
 
-    protected
-    function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
 
@@ -130,16 +128,16 @@ FOREIGN_KEY_CHECKS=1');
                 $matiere->setOldId($mat['id']);
 
                 $nbNotes = (int)$mat['nb_notes'];
-                    for ($i = 1; $i <= $nbNotes; $i++) {
-                        $evaluation = new ScolEvaluation();
-                        $evaluation->setLibelle('Évaluation ' . $i);
-                        $evaluation->setEnseignement($matiere);
-                        $evaluation->setVisible(false);
-                        $evaluation->setModifiable(false);
-                        $evaluation->setUuid(new UuidV4());
-                        $evaluation->setAnneeUniversitaire($this->anneeUniv);
-                        $this->entityManager->persist($evaluation);
-                    }
+                for ($i = 1; $i <= $nbNotes; $i++) {
+                    $evaluation = new ScolEvaluation();
+                    $evaluation->setLibelle('Évaluation ' . $i);
+                    $evaluation->setEnseignement($matiere);
+                    $evaluation->setVisible(false);
+                    $evaluation->setModifiable(false);
+                    $evaluation->setUuid(new UuidV4());
+                    $evaluation->setAnneeUniversitaire($this->anneeUniv);
+                    $this->entityManager->persist($evaluation);
+                }
 
                 /*
                  * array:30 [
@@ -282,7 +280,7 @@ FOREIGN_KEY_CHECKS=1');
             $taddUes = [];
             if (array_key_exists('ues', $mat)) {
                 foreach ($mat['ues'] as $apcCompetence) {
-//                    dd($apcCompetence);
+                    //                    dd($apcCompetence);
                     if (array_key_exists($apcCompetence['ue_id'], $this->tUes) &&
                         !array_key_exists($this->tUes[$apcCompetence['ue_id']]->getId(), $taddUes)
                     ) {
@@ -316,67 +314,67 @@ FOREIGN_KEY_CHECKS=1');
             $this->io->info('Ressource : ' . $mat['libelle'] . ' ajouté pour insertion');
         }
 
-//        $sql = 'SELECT * FROM apc_ressource WHERE ressource_parent = true';
-//        $matieres = $this->em->executeQuery($sql)->fetchAllAssociative();
-//
-//        foreach ($matieres as $mat) {
-//            $matiere = new ScolEnseignement();
-//            $matiere->setLibelle($mat['libelle']);
-//            $matiere->setCodeEnseignement($mat['code_matiere']);
-//            $matiere->setCodeApogee($mat['code_element']);
-//            $matiere->setHeures([
-//                'heures' => [
-//                    'CM' => ['PN' => (float)$mat['cm_ppn'], 'IUT' => (float)$mat['cm_formation']],
-//                    'TD' => ['PN' => (float)$mat['td_ppn'], 'IUT' => (float)$mat['td_formation']],
-//                    'TP' => ['PN' => (float)$mat['tp_ppn'], 'IUT' => (float)$mat['tp_formation']],
-//                    'Projet' => ['PN' => 0, 'IUT' => 0],
-//                ],
-//            ]);
-//            $matiere->setType(TypeEnseignementEnum::TYPE_MATIERE);
-//            $matiere->setBonification((bool)$mat['pac']);
-//            $matiere->setDescription($mat['description']);
-//            $matiere->setNbNotes((int)$mat['nb_notes']);
-//            $matiere->setLibelleCourt($mat['libelle_court']);
-//            $matiere->setSuspendu((bool)$mat['suspendu']);
-//            $matiere->setMutualisee((bool)$mat['mutualisee']);
-//            $matiere->setMotsCles($mat['mots_cles']);
-//            $matiere->setObjectif($mat['objectifs_module']);
-//            $matiere->setPrerequis($mat['pre_requis']);
-//            $matiere->setParent($this->tMatieres[$mat['matiere_parent_id']]);
-//
-//            /*
-//             * array:30 [
-//  "ppn_id" => 1
-//  "parcours_id" => null
-//]
-//             */
-//            $this->entityManager->persist($matiere);
-//
-//            if ($mat['ue_id'] !== '') {
-//
-//                $matiereUe = new ScolEnseignementUe(
-//                    $matiere,
-//                    $this->tUes[$mat['ue_id']],
-//                );
-//                $matiereUe->setCoefficient((float)$mat['coefficient']);
-//                $matiereUe->setEcts((float)$mat['nb_ects']);
-//                $this->entityManager->persist($matiereUe);
-//
-//            }
-//
-//            $sqlApcCritique = 'SELECT * FROM apc_ressource_apprentissage_critique WHERE ressource_id = ' . $mat['id'];
-//            $apcCritiques = $this->em->executeQuery($sqlApcCritique)->fetchAllAssociative();
-//
-//            foreach ($apcCritiques as $apcCritique) {
-//                if (array_key_exists($apcCritique['apprentissage_critique_id'], $this->tApprentissages) &&
-//                    !$matiere->getApcApprentissageCritique()->contains($this->tApprentissages[$apcCritique['apprentissage_critique_id']])
-//                ) {
-//                    $matiere->addApcApprentissageCritique($this->tApprentissages[$apcCritique['apprentissage_critique_id']]);
-//                }
-//            }
-//
-//            $this->io->info('Ressource enfant : ' . $mat['libelle'] . ' ajouté pour insertion');
-//        }
+        //        $sql = 'SELECT * FROM apc_ressource WHERE ressource_parent = true';
+        //        $matieres = $this->em->executeQuery($sql)->fetchAllAssociative();
+        //
+        //        foreach ($matieres as $mat) {
+        //            $matiere = new ScolEnseignement();
+        //            $matiere->setLibelle($mat['libelle']);
+        //            $matiere->setCodeEnseignement($mat['code_matiere']);
+        //            $matiere->setCodeApogee($mat['code_element']);
+        //            $matiere->setHeures([
+        //                'heures' => [
+        //                    'CM' => ['PN' => (float)$mat['cm_ppn'], 'IUT' => (float)$mat['cm_formation']],
+        //                    'TD' => ['PN' => (float)$mat['td_ppn'], 'IUT' => (float)$mat['td_formation']],
+        //                    'TP' => ['PN' => (float)$mat['tp_ppn'], 'IUT' => (float)$mat['tp_formation']],
+        //                    'Projet' => ['PN' => 0, 'IUT' => 0],
+        //                ],
+        //            ]);
+        //            $matiere->setType(TypeEnseignementEnum::TYPE_MATIERE);
+        //            $matiere->setBonification((bool)$mat['pac']);
+        //            $matiere->setDescription($mat['description']);
+        //            $matiere->setNbNotes((int)$mat['nb_notes']);
+        //            $matiere->setLibelleCourt($mat['libelle_court']);
+        //            $matiere->setSuspendu((bool)$mat['suspendu']);
+        //            $matiere->setMutualisee((bool)$mat['mutualisee']);
+        //            $matiere->setMotsCles($mat['mots_cles']);
+        //            $matiere->setObjectif($mat['objectifs_module']);
+        //            $matiere->setPrerequis($mat['pre_requis']);
+        //            $matiere->setParent($this->tMatieres[$mat['matiere_parent_id']]);
+        //
+        //            /*
+        //             * array:30 [
+        //  "ppn_id" => 1
+        //  "parcours_id" => null
+        //]
+        //             */
+        //            $this->entityManager->persist($matiere);
+        //
+        //            if ($mat['ue_id'] !== '') {
+        //
+        //                $matiereUe = new ScolEnseignementUe(
+        //                    $matiere,
+        //                    $this->tUes[$mat['ue_id']],
+        //                );
+        //                $matiereUe->setCoefficient((float)$mat['coefficient']);
+        //                $matiereUe->setEcts((float)$mat['nb_ects']);
+        //                $this->entityManager->persist($matiereUe);
+        //
+        //            }
+        //
+        //            $sqlApcCritique = 'SELECT * FROM apc_ressource_apprentissage_critique WHERE ressource_id = ' . $mat['id'];
+        //            $apcCritiques = $this->em->executeQuery($sqlApcCritique)->fetchAllAssociative();
+        //
+        //            foreach ($apcCritiques as $apcCritique) {
+        //                if (array_key_exists($apcCritique['apprentissage_critique_id'], $this->tApprentissages) &&
+        //                    !$matiere->getApcApprentissageCritique()->contains($this->tApprentissages[$apcCritique['apprentissage_critique_id']])
+        //                ) {
+        //                    $matiere->addApcApprentissageCritique($this->tApprentissages[$apcCritique['apprentissage_critique_id']]);
+        //                }
+        //            }
+        //
+        //            $this->io->info('Ressource enfant : ' . $mat['libelle'] . ' ajouté pour insertion');
+        //        }
 
         $this->entityManager->flush();
 
@@ -386,7 +384,8 @@ FOREIGN_KEY_CHECKS=1');
     private function addSaes(): void
     {
         $response = $this->httpClient->request('GET', $this->base_url . '/saes');
-        $matieres = json_decode($response->getContent(), true);;
+        $matieres = json_decode($response->getContent(), true);
+        ;
         // matières, ressources, SAE
 
         foreach ($matieres as $mat) {

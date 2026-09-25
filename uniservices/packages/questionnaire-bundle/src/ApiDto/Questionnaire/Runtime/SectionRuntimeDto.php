@@ -12,7 +12,6 @@ final class SectionRuntimeDto
         public ?string $repeatItemType,
         public ?string $repeatItemId,
         public array   $questions
-    )
-    {
+    ) {
     }
 }

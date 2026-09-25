@@ -17,7 +17,8 @@ class EtudiantAnneesStatsProvider implements ProviderInterface
         private CollectionProvider $collectionProvider,
         private ItemProvider $itemProvider,
         private EntityManagerInterface $entityManager,
-    ) {}
+    ) {
+    }
 
     /**
      * Renvoie des tableaux, qu'API Platform sérialise tels quels, et non des ressources.

@@ -11,5 +11,6 @@ final class SectionIndexDto
         public int $order,
         public ?string $repeatItemType,
         public ?string $repeatItemId
-    ) {}
+    ) {
+    }
 }

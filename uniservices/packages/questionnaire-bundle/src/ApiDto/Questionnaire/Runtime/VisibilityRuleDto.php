@@ -11,7 +11,6 @@ final class VisibilityRuleDto
         public string          $action = 'show',
         public string          $logicalOperator = 'AND',
         public ?array          $conditions = null
-    )
-    {
+    ) {
     }
 }

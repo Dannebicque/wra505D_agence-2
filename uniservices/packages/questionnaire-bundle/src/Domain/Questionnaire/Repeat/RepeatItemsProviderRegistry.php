@@ -8,7 +8,9 @@ use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
 final readonly class RepeatItemsProviderRegistry
 {
     /** @param iterable<RepeatItemsProviderInterface> $providers */
-    public function __construct(private iterable $providers) {}
+    public function __construct(private iterable $providers)
+    {
+    }
 
     /** @return list<RepeatItemView> */
     public function getItems(Questionnaire $q, QuestionnaireSection $section): array

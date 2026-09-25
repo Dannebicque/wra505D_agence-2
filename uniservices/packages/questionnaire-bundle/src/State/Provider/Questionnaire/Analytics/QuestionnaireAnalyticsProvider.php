@@ -14,7 +14,8 @@ final class QuestionnaireAnalyticsProvider implements ProviderInterface
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly QuestionnaireAnalyticsService $analyticsService
-    ) {}
+    ) {
+    }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): QuestionnaireAnalyticsDto
     {

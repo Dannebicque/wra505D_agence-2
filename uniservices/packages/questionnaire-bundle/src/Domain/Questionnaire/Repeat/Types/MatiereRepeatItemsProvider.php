@@ -7,10 +7,12 @@ use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
 use QuestionnaireBundle\Enum\QuestTypeRepeatEnum;
 
-
 final class MatiereRepeatItemsProvider implements RepeatItemsProviderInterface
 {
-    public function supports(QuestTypeRepeatEnum $source): bool { return $source === QuestTypeRepeatEnum::MATIERE; }
+    public function supports(QuestTypeRepeatEnum $source): bool
+    {
+        return $source === QuestTypeRepeatEnum::MATIERE;
+    }
 
     public function getItems(Questionnaire $questionnaire, QuestionnaireSection $section): array
     {

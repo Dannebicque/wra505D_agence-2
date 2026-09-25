@@ -17,4 +17,6 @@ use QuestionnaireBundle\State\Provider\Questionnaire\Runtime\SaveAnswersProcesso
         ),
     ],
 )]
-final class SaveAnswersResource {}
+final class SaveAnswersResource
+{
+}

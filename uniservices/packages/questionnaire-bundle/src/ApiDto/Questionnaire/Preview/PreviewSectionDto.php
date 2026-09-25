@@ -12,7 +12,6 @@ use QuestionnaireBundle\State\Provider\Questionnaire\Preview\PreviewSectionProvi
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\QuestionRuntimeDto;
 use QuestionnaireBundle\Enum\QuestTypeRepeatEnum;
 
-
 #[ApiResource(
     operations: [
         new Get(
@@ -45,7 +44,6 @@ final class PreviewSectionDto
         public ?QuestTypeRepeatEnum $repeatItemType,
         public ?string $repeatItemId,
         public array   $questions
-    )
-    {
+    ) {
     }
 }

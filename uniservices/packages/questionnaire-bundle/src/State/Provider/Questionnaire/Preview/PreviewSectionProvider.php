@@ -16,7 +16,8 @@ final readonly class PreviewSectionProvider implements ProviderInterface
     public function __construct(
         private EntityManagerInterface $em,
         private QuestionRuntimeMapper  $mapper
-    ) {}
+    ) {
+    }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PreviewSectionDto
     {
@@ -33,7 +34,10 @@ final readonly class PreviewSectionProvider implements ProviderInterface
 
         $sectionTemplate = null;
         foreach ($q->getSections() as $st) {
-            if ((int)$st->getId() === $tplId) { $sectionTemplate = $st; break; }
+            if ((int)$st->getId() === $tplId) {
+                $sectionTemplate = $st;
+                break;
+            }
         }
         if (!$sectionTemplate) {
             throw new \RuntimeException('Section template not found');
@@ -61,7 +65,9 @@ final readonly class PreviewSectionProvider implements ProviderInterface
     {
         // "tpl:12|matiere:45"
         $parts = explode('|', $key);
-        if (count($parts) !== 2) { throw new \RuntimeException('Invalid key'); }
+        if (count($parts) !== 2) {
+            throw new \RuntimeException('Invalid key');
+        }
 
         $tpl = (int) str_replace('tpl:', '', $parts[0]);
         [$t, $id] = explode(':', $parts[1], 2);

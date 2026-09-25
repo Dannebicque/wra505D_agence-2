@@ -6,7 +6,6 @@ use App\Entity\Traits\LifeCycleTrait;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireReponseRepository;
 use Carbon\CarbonImmutable;
 use Doctrine\ORM\Mapping as ORM;
-
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: QuestionnaireReponseRepository::class)]

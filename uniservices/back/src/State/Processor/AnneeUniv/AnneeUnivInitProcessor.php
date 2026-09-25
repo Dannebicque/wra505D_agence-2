@@ -21,7 +21,8 @@ class AnneeUnivInitProcessor implements ProcessorInterface
     public function __construct(
         private readonly EntityManagerInterface                $em,
         private readonly StructureAnneeUniversitaireRepository $anneeUniversitaireRepository,
-        private readonly StructurePnRepository                 $structurePnRepository, private readonly StructureDiplomeRepository $structureDiplomeRepository,
+        private readonly StructurePnRepository                 $structurePnRepository,
+        private readonly StructureDiplomeRepository $structureDiplomeRepository,
     ) {
     }
 

@@ -19,7 +19,8 @@ class TicketProcessor implements ProcessorInterface
         private readonly SluggerInterface $slugger,
         #[Autowire('%env(string:HELPDESK_TICKETS_UPLOAD_DIR)%')]
         private readonly string $uploadsDirectory,
-    ) {}
+    ) {
+    }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {

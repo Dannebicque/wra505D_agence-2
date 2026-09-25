@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum StatutEnum : string implements BadgeEnumInterface
+enum StatutEnum: string implements BadgeEnumInterface
 {
     case MCF = 'MCF';
     case PU = 'PU';

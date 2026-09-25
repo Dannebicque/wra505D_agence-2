@@ -11,12 +11,10 @@ use App\ApiDto\Edt\EdtAgendaDto;
 
 class EdtAgendaProvider implements ProviderInterface
 {
-
     public function __construct(
         private CollectionProvider $collectionProvider,
         private ItemProvider $itemProvider,
-    )
-    {
+    ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null

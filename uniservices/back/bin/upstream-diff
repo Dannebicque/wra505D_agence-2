@@ -1,0 +1,59 @@
+#!/usr/bin/env sh
+# Diff du main du client (IUTTroyes/uniServices) entre deux commits, les deux côtés passés au style
+# PSR-12 du dépôt. Notre code PHP ayant été reformaté en entier, un diff brut du client ne
+# s'appliquerait plus sur les lignes qu'il a reformatées.
+#
+# Usage, depuis uniservices/back : bin/upstream-diff <ancien> <nouveau> > amont.patch
+# puis, depuis la racine du dépôt :
+#   git apply --directory=uniservices -3 --exclude='*components.d.ts' amont.patch
+# CLONE=... pour un clone du client ailleurs que dans Reference/uniServices.
+set -e
+
+if [ $# -ne 2 ]; then
+    echo "Usage : bin/upstream-diff <ancien> <nouveau>" >&2
+    exit 2
+fi
+
+cd "$(dirname "$0")/.."
+back=$(pwd)
+racine=$(git rev-parse --show-toplevel)
+clone=${CLONE:-$racine/../Reference/uniServices}
+tmp=$(mktemp -d)
+
+nettoyer() {
+    for cote in ancien nouveau; do
+        git -C "$clone" worktree remove --force "$tmp/$cote" 2>/dev/null || true
+        git -C "$clone" update-ref -d "refs/normalisation/$cote" 2>/dev/null || true
+    done
+    rm -rf "$tmp"
+}
+trap nettoyer EXIT
+
+# Extrait <commit> dans $tmp/<côté>, reformate son PHP et fige le résultat sous refs/normalisation/<côté>.
+normaliser() {
+    dossier="$tmp/$2"
+    git -C "$clone" worktree add -q --detach "$dossier" "$1"
+    chemins=""
+    for chemin in "$dossier/back/src" "$dossier/back/tests" "$dossier"/packages/*/src; do
+        [ -d "$chemin" ] && chemins="$chemins
+$chemin"
+    done
+    # Un chemin par ligne : le chemin du projet contient des espaces.
+    IFS='
+'
+    # shellcheck disable=SC2086
+    "$back/vendor/bin/php-cs-fixer" fix --config="$back/.php-cs-fixer.dist.php" --using-cache=no -q -- $chemins
+    unset IFS
+    git -C "$dossier" add -A
+    git -C "$dossier" -c user.name=normalisation -c user.email=normalisation@localhost \
+        commit -q --allow-empty --no-verify -m "normalisation PSR-12 de $1"
+    git -C "$clone" update-ref "refs/normalisation/$2" "$(git -C "$dossier" rev-parse HEAD)"
+}
+
+normaliser "$1" ancien
+normaliser "$2" nouveau
+
+# git apply -3 retrouve l'ancienne version de chaque fichier par son empreinte : on importe les
+# deux commits normalisés, sans créer de branche, pour qu'elle soit présente dans notre dépôt.
+git -C "$racine" fetch -q --no-tags "$clone" refs/normalisation/ancien refs/normalisation/nouveau
+git -C "$clone" diff --binary refs/normalisation/ancien refs/normalisation/nouveau

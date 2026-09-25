@@ -13,8 +13,7 @@ class DemissionEtudiantController extends AbstractController
     public function __construct(
         private readonly EtudiantScolariteRepository $etudiantScolariteRepository,
         private readonly EtudiantRepository $etudiantRepository,
-    )
-    {
+    ) {
     }
 
     #[Route('/api/etudiant_scolarites/demission/{id}', name: 'app_etudiant_demission', methods: ['PATCH'])]

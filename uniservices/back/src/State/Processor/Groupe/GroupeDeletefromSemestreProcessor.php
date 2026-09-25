@@ -14,7 +14,8 @@ class GroupeDeletefromSemestreProcessor implements ProcessorInterface
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EtudiantScolariteSemestreRepository $etudiantScolariteSemestreRepository
-    ) {}
+    ) {
+    }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
@@ -53,7 +54,7 @@ class GroupeDeletefromSemestreProcessor implements ProcessorInterface
 
         // Traiter récursivement les enfants qui appartiennent au même semestre
         foreach ($groupe->getEnfants() as $enfant) {
-            if ($enfant->getSemestres()->exists(fn(int $k, $s) => $s->getId() === $semestreId)) {
+            if ($enfant->getSemestres()->exists(fn (int $k, $s) => $s->getId() === $semestreId)) {
                 $this->removeGroupeFromSemestre($enfant, $semestreId);
                 $enfant->removeSemestre(
                     $this->em->getRepository(StructureSemestre::class)->find($semestreId)

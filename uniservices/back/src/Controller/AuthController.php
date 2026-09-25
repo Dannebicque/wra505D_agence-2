@@ -40,7 +40,7 @@ class AuthController extends AbstractController
         }
 
         $secure = (bool) $this->parameterBag->get('JWT_COOKIE_SECURE');
-        
+
         // Supprimer les cookies
         $response->headers->setCookie(
             Cookie::create('BEARER')
@@ -101,5 +101,3 @@ class AuthController extends AbstractController
         ]);
     }
 }
-
-

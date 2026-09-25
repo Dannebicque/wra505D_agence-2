@@ -9,7 +9,6 @@ final class ScaleDto
         public int     $max,
         public ?string $minLabel = null,
         public ?string $maxLabel = null
-    )
-    {
+    ) {
     }
 }

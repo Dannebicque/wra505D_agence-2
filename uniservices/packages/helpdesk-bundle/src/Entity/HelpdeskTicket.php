@@ -70,9 +70,9 @@ class HelpdeskTicket
     #[Groups(['ticket:write','ticket:read','ticket:delete'])]
     private ?string $description = null;
 
-    #[ORM\Column(length: 20, enumType: StatutTicketEnum::class )]
+    #[ORM\Column(length: 20, enumType: StatutTicketEnum::class)]
     #[Groups(['ticket:read','ticket:write','ticket:delete'])]
-    private StatutTicketEnum $statut=StatutTicketEnum::A_TRAITER;
+    private StatutTicketEnum $statut = StatutTicketEnum::A_TRAITER;
 
     #[Groups(['ticket:read'])]
     public function getTransitionsAutorisees(): array
@@ -84,9 +84,9 @@ class HelpdeskTicket
     #[Groups(['ticket:write','ticket:read','ticket:delete'])]
     private ?string $priority = null;
 
-    #[ORM\Column( nullable: true)]
+    #[ORM\Column(nullable: true)]
     #[Groups(['ticket:write','ticket:read','ticket:delete'])]
-        private ?array $files_names = null;
+    private ?array $files_names = null;
 
     #[ORM\ManyToOne(inversedBy: 'ticket')]
     #[ORM\JoinColumn(nullable: false)]

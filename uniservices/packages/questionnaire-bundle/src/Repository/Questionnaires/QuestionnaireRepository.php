@@ -5,7 +5,6 @@ namespace QuestionnaireBundle\Repository\Questionnaires;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-
 use QuestionnaireBundle\Enum\QuestStatutEnum;
 
 class QuestionnaireRepository extends ServiceEntityRepository

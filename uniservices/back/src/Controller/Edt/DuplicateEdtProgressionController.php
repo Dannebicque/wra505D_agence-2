@@ -12,8 +12,8 @@ class DuplicateEdtProgressionController extends AbstractController
 {
     public function __construct(
         protected EdtProgressionRepository $edtProgressionRepository,
-        protected EntityManagerInterface $entityManager)
-    {
+        protected EntityManagerInterface $entityManager
+    ) {
     }
 
     public function __invoke(Request $request, int $id): JsonResponse

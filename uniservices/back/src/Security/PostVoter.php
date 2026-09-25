@@ -96,7 +96,8 @@ class PostVoter extends Voter
 
     public function __construct(
         private readonly UserEffectivePermissionService $effectivePermissionService
-    ) {}
+    ) {
+    }
 
     /**
      * @inheritDoc

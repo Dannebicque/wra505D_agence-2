@@ -15,8 +15,7 @@ class StructureDiplomeFixtures extends Fixture implements OrderedFixtureInterfac
 
     public function __construct(
         StructureDepartementRepository $departementRepository
-    )
-    {
+    ) {
         $this->departementRepository = $departementRepository;
     }
 

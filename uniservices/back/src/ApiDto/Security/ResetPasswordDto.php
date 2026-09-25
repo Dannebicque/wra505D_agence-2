@@ -32,4 +32,3 @@ class ResetPasswordDto
     )]
     public string $password;
 }
-

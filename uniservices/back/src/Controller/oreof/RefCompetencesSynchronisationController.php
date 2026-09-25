@@ -16,8 +16,7 @@ class RefCompetencesSynchronisationController extends AbstractController
     public function __invoke(
         SynchroRefCompetences $synchroRefCompetences,
         Request               $request
-    ): Response
-    {
+    ): Response {
         $data = JsonRequest::getValuesFromString($request->getContent());
         $synchro = $synchroRefCompetences->synchroniser($data['departementId'], $data['diplomeId']);
 

@@ -5,7 +5,6 @@ namespace IntranetBundle\Services\Dashboard\Definition;
 use App\Domain\Dashboard\DashboardDefinitionInterface;
 use App\Domain\Dashboard\DashboardWidgetLayout;
 
-
 class IntranetDashboardDefinition implements DashboardDefinitionInterface
 {
     public function getCode(): string

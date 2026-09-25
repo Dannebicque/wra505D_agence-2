@@ -14,7 +14,9 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SaveAnswersOutput;
 
 final class SaveAnswersProcessor implements ProcessorInterface
 {
-    public function __construct(private EntityManagerInterface $em) {}
+    public function __construct(private EntityManagerInterface $em)
+    {
+    }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): SaveAnswersOutput
     {
@@ -22,30 +24,40 @@ final class SaveAnswersProcessor implements ProcessorInterface
         $token = (string) $uriVariables['token'];
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv) { throw new \RuntimeException('Invitation not found'); }
-        if ($inv->isSubmitted()) { throw new \RuntimeException('Already submitted'); }
+        if (!$inv) {
+            throw new \RuntimeException('Invitation not found');
+        }
+        if ($inv->isSubmitted()) {
+            throw new \RuntimeException('Already submitted');
+        }
 
         $psi = $this->em->getRepository(QuestionnaireSectionInstance::class)->find($data->publishedSectionInstanceId);
         if (!$psi || $psi->getQuestionnaire()->getId() !== $inv->getQuestionnaire()->getId()) {
             throw new \RuntimeException('Invalid section');
         }
 
-        $questionIds = array_map(fn($a) => (int) ((array) $a)['questionId'], $data->answers);
+        $questionIds = array_map(fn ($a) => (int) ((array) $a)['questionId'], $data->answers);
         $questions = $this->em->getRepository(QuestionnaireQuestion::class)->findBy(['id' => $questionIds]);
         $qById = [];
-        foreach ($questions as $q) { $qById[$q->getId()] = $q; }
+        foreach ($questions as $q) {
+            $qById[$q->getId()] = $q;
+        }
 
         $existing = $this->em->getRepository(QuestionnaireAnswer::class)->findBy([
             'invitation' => $inv,
             'section' => $psi,
         ]);
         $aByQid = [];
-        foreach ($existing as $a) { $aByQid[$a->getQuestion()->getId()] = $a; }
+        foreach ($existing as $a) {
+            $aByQid[$a->getQuestion()->getId()] = $a;
+        }
 
         foreach ($data->answers as $incoming) {
             $incomingArr = (array) $incoming;
             $qid = (int) $incomingArr['questionId'];
-            if (!isset($qById[$qid])) { continue; }
+            if (!isset($qById[$qid])) {
+                continue;
+            }
 
             $incomingVal = $incomingArr['value'] ?? null;
             if (isset($aByQid[$qid])) {

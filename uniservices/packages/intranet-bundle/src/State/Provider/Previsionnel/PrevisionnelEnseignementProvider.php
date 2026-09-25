@@ -12,12 +12,10 @@ use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 
 class PrevisionnelEnseignementProvider implements ProviderInterface
 {
-
     public function __construct(
         private CollectionProvider $collectionProvider,
         private ItemProvider $itemProvider
-    )
-    {
+    ) {
     }
 
     /**

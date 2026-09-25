@@ -20,7 +20,8 @@ class SynchroRefCompetences
         protected StructureDiplomeRepository $structureDiplomeRepository,
         protected HttpClientInterface $httpClient,
         protected EntityManagerInterface $entityManager
-    ){}
+    ) {
+    }
 
     public function synchroniser(int $departementId, int $diplomeId): bool
     {
@@ -76,7 +77,7 @@ class SynchroRefCompetences
             $comp->setLibelle($competence['libelle']);
             $comp->setCouleur($competence['couleur']);
             $tabComposantes = [];
-            forEach ($competence['apcComposanteEssentielles'] as $composanteEssentielle) {
+            foreach ($competence['apcComposanteEssentielles'] as $composanteEssentielle) {
                 $tabComposantes[] = [
                     'libelle' => $composanteEssentielle['libelle'],
                     'code' => $composanteEssentielle['code'],

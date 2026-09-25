@@ -57,8 +57,7 @@ class ApcApprentissageCritique
 
     public function __construct(
         ?ApcNiveau $niveau = null,
-    )
-    {
+    ) {
         $this->niveau = $niveau;
         $this->enseignements = new ArrayCollection();
     }

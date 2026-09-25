@@ -45,7 +45,7 @@ class EnseignementFilter extends AbstractFilter
                 ->join("$alias.enseignementUes", "enseignementUe")
                 ->join("enseignementUe.ue", "ue")
                 ->join("ue.semestre", "semestre")
-                ->join("semestre.annee" , "annee")
+                ->join("semestre.annee", "annee")
                 ->join("annee.pn", "pn")
                 ->join("pn.anneeUniversitaire", "anneeUniversitaire")
                 ->join("pn.diplome", "diplome")

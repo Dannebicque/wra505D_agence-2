@@ -23,7 +23,7 @@ class JWTCreatedListener
         }
 
         // Ajoutez l'ID de l'utilisateur au payload
-        $payload['userId'] = $user->getId()??0;
+        $payload['userId'] = $user->getId() ?? 0;
         $payload['type'] = $type;
 
         $event->setData($payload);

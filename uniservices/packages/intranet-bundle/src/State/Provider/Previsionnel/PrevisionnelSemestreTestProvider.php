@@ -10,11 +10,9 @@ use IntranetBundle\Dto\Previsionnel\PrevisionnelSemestreDto;
 
 class PrevisionnelSemestreTestProvider implements ProviderInterface
 {
-
     public function __construct(
         private CollectionProvider $collectionProvider,
-    )
-    {
+    ) {
     }
 
     /**
@@ -79,19 +77,19 @@ class PrevisionnelSemestreTestProvider implements ProviderInterface
         $prevSem->setHeures(
             [
                 'CM' => [
-                    'NbHrGrp' => round($item->getGroupes()['CM'] !== 0 ? $item->getHeures()['CM']/$item->getGroupes()['CM'] : $item->getHeures()['CM'], 1),
+                    'NbHrGrp' => round($item->getGroupes()['CM'] !== 0 ? $item->getHeures()['CM'] / $item->getGroupes()['CM'] : $item->getHeures()['CM'], 1),
                     'NbGrp' => $item->getGroupes()['CM'],
-                    'NbSeanceGrp' => round((($item->getGroupes()['CM'] !== 0 ? $item->getHeures()['CM']/$item->getGroupes()['CM'] : $item->getHeures()['CM']) / $item::DUREE_SEANCE) * $item->getGroupes()['CM'], 0),
+                    'NbSeanceGrp' => round((($item->getGroupes()['CM'] !== 0 ? $item->getHeures()['CM'] / $item->getGroupes()['CM'] : $item->getHeures()['CM']) / $item::DUREE_SEANCE) * $item->getGroupes()['CM'], 0),
                 ],
                 'TD' => [
-                    'NbHrGrp' => round($item->getGroupes()['TD'] !== 0 ? $item->getHeures()['TD']/$item->getGroupes()['TD'] : $item->getHeures()['TD'], 1),
+                    'NbHrGrp' => round($item->getGroupes()['TD'] !== 0 ? $item->getHeures()['TD'] / $item->getGroupes()['TD'] : $item->getHeures()['TD'], 1),
                     'NbGrp' => $item->getGroupes()['TD'],
-                    'NbSeanceGrp' => round((($item->getGroupes()['TD'] !== 0 ? $item->getHeures()['TD']/$item->getGroupes()['TD'] : $item->getHeures()['TD']) / $item::DUREE_SEANCE) * $item->getGroupes()['TD'], 0),
+                    'NbSeanceGrp' => round((($item->getGroupes()['TD'] !== 0 ? $item->getHeures()['TD'] / $item->getGroupes()['TD'] : $item->getHeures()['TD']) / $item::DUREE_SEANCE) * $item->getGroupes()['TD'], 0),
                 ],
                 'TP' => [
-                    'NbHrGrp' => round($item->getGroupes()['TP'] !== 0 ? $item->getHeures()['TP']/$item->getGroupes()['TP'] : $item->getHeures()['TP'], 1),
+                    'NbHrGrp' => round($item->getGroupes()['TP'] !== 0 ? $item->getHeures()['TP'] / $item->getGroupes()['TP'] : $item->getHeures()['TP'], 1),
                     'NbGrp' => $item->getGroupes()['TP'],
-                    'NbSeanceGrp' => round((($item->getGroupes()['TP'] !== 0 ? $item->getHeures()['TP']/$item->getGroupes()['TP'] : $item->getHeures()['TP']) / $item::DUREE_SEANCE) * $item->getGroupes()['TP'], 0),
+                    'NbSeanceGrp' => round((($item->getGroupes()['TP'] !== 0 ? $item->getHeures()['TP'] / $item->getGroupes()['TP'] : $item->getHeures()['TP']) / $item::DUREE_SEANCE) * $item->getGroupes()['TP'], 0),
                 ],
                 'Projet' => [
                     'NbHrGrp' => $item->getHeures()['Projet'],

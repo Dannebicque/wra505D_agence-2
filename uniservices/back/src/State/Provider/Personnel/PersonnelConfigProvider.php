@@ -18,7 +18,6 @@ class PersonnelConfigProvider implements ProviderInterface
         private CollectionProvider $collectionProvider,
         private ItemProvider $itemProvider,
         private UserEffectivePermissionService $effectivePermissionService,
-
     ) {
     }
 

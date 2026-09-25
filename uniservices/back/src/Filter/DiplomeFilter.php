@@ -25,8 +25,7 @@ class DiplomeFilter extends AbstractFilter
                 ->andWhere(sprintf('%s.departement = :departement', $alias))
                 ->setParameter('departement', $value)
             ;
-        }
-        elseif ('anneeUniversitaire' === $property) {
+        } elseif ('anneeUniversitaire' === $property) {
             $queryBuilder
                 ->join(sprintf('%s.pns', $alias), 'pn')
                 ->join('pn.anneeUniversitaire', 'anneeUniv')

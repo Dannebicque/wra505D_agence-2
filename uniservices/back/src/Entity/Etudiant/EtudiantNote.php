@@ -18,7 +18,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-
 #[ORM\Entity(repositoryClass: EtudiantNoteRepository::class)]
 #[ApiFilter(EtudiantNoteFilter::class)]
 #[ApiResource(
@@ -48,13 +47,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\HasLifecycleCallbacks]
 class EtudiantNote
 {
+    use LifeCycleTrait;
+    use UuidTrait;
     public const STATUT_PRESENT = 'present';
     public const STATUT_ABSENT_JUSTIFIE = 'absent_justifie';
     public const STATUT_DISPENSE = 'dispense';
     public const STATUT_ABSENT_INJUSTIFIE = 'absent_injustifie';
-
-    use LifeCycleTrait;
-    use UuidTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

@@ -173,7 +173,7 @@ class EmailTemplateController extends AbstractController
         return $this->json([
             'id'         => $template->getId(),
             'emailKey'   => $template->getEmailKey(),
-            'departement'=> $departement?->getId(),
+            'departement' => $departement?->getId(),
             'subject'    => $template->getSubject(),
             'bodyHtml'   => $template->getBodyHtml(),
         ], Response::HTTP_OK);

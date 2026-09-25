@@ -433,7 +433,7 @@ class ScolEvaluation
     public function getTypeGroupeChoices(): array
     {
         return array_map(
-            fn(TypeGroupeEnum $case): string => $case->value,
+            fn (TypeGroupeEnum $case): string => $case->value,
             TypeGroupeEnum::getTypes()
         );
     }
@@ -442,7 +442,7 @@ class ScolEvaluation
     public function getTypeChoices(): array
     {
         return array_map(
-            fn(TypeEvaluationEnum $case): string => $case->value,
+            fn (TypeEvaluationEnum $case): string => $case->value,
             TypeEvaluationEnum::getTypes()
         );
     }

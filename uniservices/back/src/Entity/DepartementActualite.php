@@ -115,7 +115,7 @@ class DepartementActualite
     public function setPublic(array $public): static
     {
         $this->public = array_map(
-            fn($item) => $item instanceof TypePublicEnum ? $item->value : $item,
+            fn ($item) => $item instanceof TypePublicEnum ? $item->value : $item,
             $public
         );
 
@@ -125,7 +125,7 @@ class DepartementActualite
     public function getPublicEnums(): array
     {
         return array_map(
-            fn(string $value) => TypePublicEnum::from($value),
+            fn (string $value) => TypePublicEnum::from($value),
             $this->public
         );
     }

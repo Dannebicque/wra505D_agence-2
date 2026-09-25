@@ -15,7 +15,8 @@ final class StudentInvitationsProvider implements ProviderInterface
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly Security $security
-    ) {}
+    ) {
+    }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {

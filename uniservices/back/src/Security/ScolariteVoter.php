@@ -46,7 +46,8 @@ class ScolariteVoter extends Voter
 
     public function __construct(
         private readonly UserEffectivePermissionService $effectivePermissionService
-    ) {}
+    ) {
+    }
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -171,4 +172,3 @@ class ScolariteVoter extends Voter
         ]);
     }
 }
-

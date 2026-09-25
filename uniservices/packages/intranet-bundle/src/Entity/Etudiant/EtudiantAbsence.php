@@ -2,7 +2,6 @@
 
 namespace IntranetBundle\Entity\Etudiant;
 
-
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;

@@ -101,5 +101,3 @@ class AuthController extends AbstractController
         ]);
     }
 }
-
-

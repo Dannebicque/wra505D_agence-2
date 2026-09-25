@@ -16,7 +16,8 @@ class SchedulerEventListener
     public function __construct(
         private readonly EntityManagerInterface   $em,
         private readonly SchedulerTaskRepository $taskRepository
-    ) {}
+    ) {
+    }
 
     #[AsEventListener(event: PostRunEvent::class)]
     public function onPostRun(PostRunEvent $event): void

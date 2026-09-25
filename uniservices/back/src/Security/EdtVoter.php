@@ -2,7 +2,6 @@
 
 namespace App\Security;
 
-
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
@@ -53,7 +52,8 @@ class EdtVoter extends Voter
 
     public function __construct(
         private readonly UserEffectivePermissionService $effectivePermissionService
-    ) {}
+    ) {
+    }
 
     /**
      * @inheritDoc
@@ -264,5 +264,3 @@ class EdtVoter extends Voter
         ]);
     }
 }
-
-

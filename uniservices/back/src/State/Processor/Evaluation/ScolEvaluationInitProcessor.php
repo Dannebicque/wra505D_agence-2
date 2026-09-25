@@ -22,7 +22,8 @@ class ScolEvaluationInitProcessor implements ProcessorInterface
         private readonly EntityManagerInterface $em,
         private readonly StructureGroupeRepository $groupeRepository,
         private readonly EtudiantNoteRepository $noteRepository,
-    ) {}
+    ) {
+    }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {

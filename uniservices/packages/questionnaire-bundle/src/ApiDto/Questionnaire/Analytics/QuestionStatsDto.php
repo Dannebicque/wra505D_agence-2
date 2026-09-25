@@ -20,5 +20,6 @@ final class QuestionStatsDto
         public int $totalResponses,
         #[Groups(['questionnaire:read'])]
         public array $stats
-    ) {}
+    ) {
+    }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (c) 2024. | David Annebicque | ORéOF  - All Rights Reserved
  * @file /Users/davidannebicque/Sites/oreof/src/Enums/BadgeEnumInterface.php
@@ -9,7 +10,8 @@
 
 namespace App\Enum;
 
-interface BadgeEnumInterface {
+interface BadgeEnumInterface
+{
     public function getLibelle(): string;
     public function getBadge(): string;
 }

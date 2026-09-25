@@ -48,8 +48,7 @@ class CopyTransfertBddEdtCommand extends Command
         ScolEnseignementRepository       $scolEnseignementRepository,
         protected HttpClientInterface    $httpClient,
         ParameterBagInterface            $params
-    )
-    {
+    ) {
         parent::__construct();
         $this->em = $managerRegistry->getConnection('copy');
         $this->tPersonnels = $personnelRepository->findAllByOldIdArray();
@@ -84,8 +83,7 @@ FOREIGN_KEY_CHECKS=0');
 FOREIGN_KEY_CHECKS=1');
     }
 
-    protected
-    function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
 

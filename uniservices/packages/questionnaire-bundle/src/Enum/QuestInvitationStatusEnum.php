@@ -37,4 +37,3 @@ enum QuestInvitationStatusEnum: string implements BadgeEnumInterface
         };
     }
 }
-

@@ -17,8 +17,7 @@ class RefProgrammeSynchronisationController extends AbstractController
     public function __invoke(
         SynchroRefFormation $synchroRefFormation,
         Request               $request
-    ): Response
-    {
+    ): Response {
         $data = JsonRequest::getValuesFromString($request->getContent());
         $synchro = $synchroRefFormation->synchroniser($data['selectedDiplome'], $data['anneeUniversitaire'], $data['oreofId']);
 

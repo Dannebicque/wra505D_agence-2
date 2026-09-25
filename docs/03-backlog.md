@@ -32,9 +32,9 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 |---|---|
 | CI-Packages (front) | vert |
 | CI-Back : `composer validate`, `lint:container`, `doctrine:schema:validate` | vert |
-| CI-Back : PHPStan | 0 erreur, aucune masquée (E6) |
+| CI-Back : PHPStan | niveau 6, 0 erreur ; 4 identifiants ignorés en bloc dans `phpstan.neon` (E15) |
 | CI-Back : PHPUnit | vert |
-| CI-Back : style PSR-12 des fichiers PHP modifiés par la PR (`make cs`) | vert, depuis #73 |
+| CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
 | CI-Cypress : 9 fichiers, 33 tests, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
@@ -130,6 +130,56 @@ permissions du département) : personne ne peut créer ni modifier un document.
 **Terminé quand** la lecture exige une connexion et suit les règles de visibilité de
 `back/src/Service/Recherche/Source/SourceDocuments.php`, et qu'une règle d'écriture défendable
 est choisie, notée dans les décisions de `04-reprise.md` et couverte par PHPUnit.
+
+### E9 · [back] Code client au format PSR-12 · S
+**Pourquoi** 170 fichiers PHP sur 451 hors PSR-12 : `make cs` ne vérifiait que les fichiers
+modifiés, et chaque PR qui touchait un fichier du client mêlait reformatage et correction.
+**Fait** un commit mécanique, ignoré par `git blame` (`.git-blame-ignore-revs`). `make cs`
+vérifie tout l'arbre et fait partie de `make check`. Les reprises du dépôt du client passent par
+`bin/upstream-diff`, qui formate les deux côtés de leur diff avant de l'appliquer.
+
+### E10 · [back] Symfony 7.4 LTS, zéro dépréciation · M
+**Pourquoi** Symfony 7.3 n'est plus maintenu depuis janvier 2026, et la 7.4 est le passage obligé
+vers la 8. `debug:container --deprecations` en signale 14 : signature du voteur
+`DepartmentPermissionVoter`, `TaggedIterator`, `RateLimiterFactory`, configuration de gesdinet,
+`shortName` en double dans le questionnaire, `errors.xml`, `PropertyInfo\Type`.
+**Terminé quand** `debug:container --deprecations` ne signale plus rien, et que PHPStan, avec
+`phpstan-deprecation-rules`, trouve 0 erreur. Rector (dépendance de dev) fait les réécritures
+mécaniques ; chacune est relue.
+
+### E11 · [back] Doctrine DBAL 4 · M
+**Pourquoi** DoctrineBundle 3, exigé par Symfony 8, ne fonctionne plus avec DBAL 3.
+**Terminé quand** le SQL généré par `doctrine:schema:create --dump-sql` est identique avant et
+après, et que les fixtures se chargent.
+
+### E12 · [back] Jeton de rafraîchissement : gesdinet 1.5 vers 2.x · S
+**Pourquoi** la version 1.5 ne va pas au-delà de Symfony 7 ; la 2.x accepte la 7.4 et la 8.
+**Terminé quand** la connexion, le rafraîchissement et la déconnexion fonctionnent, avec le
+critère de E5 pour la déconnexion.
+
+### E13 · [back] Symfony 8.1 · M
+**Pourquoi** dernière version stable. Elle n'est maintenue que jusqu'à fin janvier 2027 : il
+faudra passer en 8.2, attendue en novembre 2026.
+**Terminé quand** CI-Back et CI-Cypress sont vertes, et que les réponses des routes `/api/me/…`
+et de la recherche sont identiques avant et après.
+
+### E14 · [back] Notre code back en anglais · M par module
+**Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,
+`CentreNotifications`, `marquerLues()`, `synchroniserCalendrier()`.
+**Périmètre** nos classes, méthodes et variables PHP. Les entités du client, les URL et les
+champs JSON ne changent pas : le front n'est pas touché. Une PR par module : recherche,
+notifications, scolarité, Celcat, documents favoris. On y applique aussi les usages actuels
+(services `final readonly`, repositories injectés, `#[CurrentUser]`, pas de requête N+1).
+
+### E15 · [back] PHPStan au niveau max, sans baseline · L, à redécouper
+**Pourquoi** le niveau 6 laisse passer le `mixed` et les nullabilités, et 4 identifiants sont
+ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au 9, 2 871 au 10,
+3 481 au 10 sans les exclusions. 193 des 229 du niveau 7 sont un seul motif dans
+`Command/CopyBdd`.
+**Méthode** un niveau à la fois, une PR par répertoire. Le niveau de `phpstan.neon` ne monte que
+quand le niveau visé est à 0 ; les exclusions sont retirées entre le 8 et le 9 ; les
+`phpstan-strict-rules` en dernier. Un type PHP s'aligne sur le mapping Doctrine, jamais l'inverse,
+sauf migration décidée et notée.
 
 ---
 
