@@ -155,7 +155,10 @@ const props = defineProps({
   },
 });
 
-const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
+const { onMenuToggle, toggleDarkMode, isDarkTheme, layoutState } = useLayout();
+
+// Ce bouton n'apparaît qu'en mobile : sur ordinateur, le menu a son propre bouton de repli.
+const menuOuvert = computed(() => layoutState.staticMenuMobileActive);
 
 const anneeMenu = ref();
 const toolsMenu = ref();
@@ -274,12 +277,20 @@ const selectAnneeUniversitaire = (annee) => {
 <template>
   <header class="layout-topbar">
     <div class="layout-topbar-logo-container">
-      <button v-if="route.name !== 'portail'" class="layout-menu-button layout-topbar-action" aria-label="Menu" @click="onMenuToggle">
-        <i class="pi pi-bars"></i>
+      <button
+          v-if="route.name !== 'portail'"
+          class="layout-menu-button layout-topbar-action"
+          :aria-label="menuOuvert ? 'Fermer le menu' : 'Ouvrir le menu'"
+          :aria-expanded="menuOuvert ? 'true' : 'false'"
+          aria-controls="menu-principal"
+          @click="onMenuToggle"
+      >
+        <i class="pi pi-bars" aria-hidden="true"></i>
       </button>
 
-      <router-link to="/" class="layout-topbar-logo">
-        <Logo :logo-url="logoUrl" alt="logo" class="rounded-xl p-2" /> <span class="text-lg">{{ appName }}</span>
+      <!-- L'étudiant a un seul menu : le nom du module ne lui apprend rien, le logo mène à l'accueil. -->
+      <router-link to="/" class="layout-topbar-logo" :aria-label="estEtudiant ? 'Accueil' : undefined">
+        <Logo :logo-url="logoUrl" alt="logo" class="rounded-xl p-2" /> <span v-if="!estEtudiant" class="text-lg">{{ appName }}</span>
       </router-link>
     </div>
 
@@ -354,11 +365,11 @@ const selectAnneeUniversitaire = (annee) => {
           </button>
           <div class="layout-config-menu">
             <button type="button" class="layout-topbar-action" aria-label="Mode sombre" :aria-pressed="isDarkTheme" @click="toggleDarkMode">
-              <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
+              <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]" aria-hidden="true"></i>
             </button>
           </div>
           <Button severity="secondary" rounded @click="toggleProfileMenu" aria-haspopup="true"
-            aria-controls="profile_menu" class="layout-topbar-action p-0!">
+            aria-controls="profile_menu" aria-label="Mon profil" class="layout-topbar-action p-0!">
             <template v-if="userStore.userPhoto">
               <img :src="userStore.userPhoto" alt="photo de profil" class="rounded-full max-w-12 mx-auto">
             </template>

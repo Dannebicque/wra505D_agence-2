@@ -2,17 +2,17 @@
 
 .layout-sidebar {
     position: fixed;
-    width: 8rem;
+    display: flex;
+    flex-direction: column;
+    width: var(--layout-sidebar-width);
     height: calc(100vh - 6rem);
     z-index: 999;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--p-primary-100) var(--surface-card);
-    scrollbar-track-color: var(--surface-card);
+    overflow: hidden;
     user-select: none;
     top: 6rem;
     left: 0;
     transition:
+        width var(--layout-section-transition-duration),
         transform var(--layout-section-transition-duration),
         left var(--layout-section-transition-duration);
     background-color: var(--surface-overlay);
@@ -21,11 +21,22 @@
 }
 
 .layout-menu {
+    flex: 1 1 auto;
     margin: 0;
     padding: 0;
     list-style-type: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--p-primary-100) var(--surface-card);
 
     .layout-root-menuitem {
+        + .layout-root-menuitem {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--surface-border);
+        }
+
         > .layout-menuitem-root-text {
             font-size: 0.857rem;
             text-transform: uppercase;
@@ -64,18 +75,34 @@
 
         a {
             display: flex;
-            flex-direction: column;
             align-items: center;
+            gap: 0.75rem;
             position: relative;
+            min-height: 44px;
+            margin: 0.125rem 0.5rem;
+            // Centre l'icône sur l'axe de la colonne repliée : elle ne bouge pas quand on replie.
+            padding: 0.5rem 0.75rem 0.5rem calc(var(--layout-sidebar-rail-width) / 2 - 0.5rem - 0.625rem);
+            border-radius: 6px;
             outline: 0 none;
             color: var(--text-color);
             cursor: pointer;
-            padding: 0.75rem 1rem;
             transition:
                 background-color var(--element-transition-duration),
                 box-shadow var(--element-transition-duration);
 
             .layout-menuitem-icon {
+                flex-shrink: 0;
+                width: 1.25rem;
+                font-size: 1.125rem;
+                text-align: center;
+            }
+
+            .layout-menuitem-text {
+                flex: 1 1 auto;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
 
             .layout-submenu-toggler {
@@ -85,8 +112,23 @@
             }
 
             &.active-route {
-                font-weight: 700;
-                color: var(--primary-color);
+                font-weight: 600;
+                background-color: color-mix(in srgb, var(--primary-color) 12%, transparent);
+
+                .layout-menuitem-icon {
+                    color: var(--primary-color);
+                }
+
+                &::before {
+                    content: '';
+                    position: absolute;
+                    left: -0.5rem;
+                    top: 0.375rem;
+                    bottom: 0.375rem;
+                    width: 3px;
+                    border-radius: 0 3px 3px 0;
+                    background-color: var(--primary-color);
+                }
             }
 
             &:hover {
@@ -159,4 +201,43 @@
 .layout-submenu-enter-active {
     overflow: hidden;
     transition: max-height 1s ease-in-out;
+}
+
+.layout-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    min-height: 44px;
+    margin: 0.5rem 0.5rem 0;
+    padding: 0.5rem 0.75rem 0.5rem calc(var(--layout-sidebar-rail-width) / 2 - 0.5rem - 0.625rem);
+    border: 0;
+    border-top: 1px solid var(--surface-border);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-color);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--element-transition-duration);
+
+    .layout-menuitem-icon {
+        flex-shrink: 0;
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .layout-menuitem-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &:hover {
+        background-color: var(--surface-hover);
+    }
+
+    &:focus-visible {
+        @include mixins.focused-inset();
+    }
 }

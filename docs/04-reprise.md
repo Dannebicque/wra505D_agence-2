@@ -82,6 +82,10 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #38 | ancien format des moyennes par UE retiré : PHPStan à 0 erreur, sans rien masquer |
 | #39 | reprise du `main` amont jusqu'à `ef38ca880` (release 0.1.11) |
 | #40 | CI-Cypress : base de données, configuration, premier vrai parcours E2E |
+| #44 | widget « Maintenant » : la salle s'affiche telle que Celcat la donne (plus de « Salle Salle B204 ») |
+| #47 | widget « Contacts » du tableau de bord : un département par ligne, celui de l'étudiant en premier |
+| #51 | widget « Notes » : les cinq dernières notes publiées de l'étudiant, au lieu des pense-bêtes du personnel (fiche C11) |
+| #56 | portail nettoyé (fiche C12), une seule barre de défilement par page, widget « Contacts » en cartes |
 
 Le connecteur Celcat, en bref :
 
@@ -167,6 +171,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Notifications et messages | un seul fil pour l'étudiant : notes publiées, absences, documents de ses matières, actualités et messages. Les notifications sont recalculées, seule leur lecture est stockée. Les « messages » sont les copies des e-mails que l'intranet envoie (écoute du mailer) : la boîte universitaire n'est pas lue. La décision sur un justificatif n'a pas de date : son état figure dans le texte de l'absence | nous, validé par LCS |
 | Favoris de documents (B7) | propres à chaque utilisateur (table `document_favori`), lus et modifiés par `/api/me/documents-favoris`. L'ancien champ `Document::isFavorite`, partagé par tous, est supprimé : un étudiant qui marquait un favori le marquait pour tout le monde | nous, validé par LCS |
 | Couleur primaire (A6) | une seule primaire pour tous les modules : le violet de la DA `#4D3677`, avec une palette dérivée en OKLab (`VIOLET_IUT`, `packages/shell/assets/main.js`). Le jaune `#F7B000`, primaire d'origine de la DA, devient l'accent (`--accent-color`), toujours avec du texte `#4D3677`. La couleur par module (`primaryColor`) est supprimée | LCS |
+| Barre latérale | façon GitHub : chaque entrée montre son icône puis son libellé ; repliée, la barre devient une colonne d'icônes, nommées par une infobulle au survol comme au focus, les libellés restant lus par les lecteurs d'écran. Le repli se fait depuis un bouton en bas de la barre, avec une icône de panneau latéral ; le ☰ de la barre haute ne sert plus qu'en mobile, pour ouvrir le tiroir. Icônes, bouton de repli et logo sont centrés sur un même axe. Le nom du module (« INTRANET ») est retiré de la barre haute de l'étudiant. La barre latérale est partagée : elle change aussi pour le personnel | nous |
 
 ## Questions en attente du client
 

@@ -1,3 +1,5 @@
+@use "mixins";
+
 @media screen and (min-width: 1960px) {
     .layout-main,
     .landing-wrapper {
@@ -46,29 +48,49 @@
         }
 
         &.layout-static {
+            // Sur ordinateur, le menu se replie depuis son propre bouton, en bas de la barre latérale.
+            .layout-menu-button {
+                display: none;
+            }
+
+            // Le logo (4rem de large, marge intérieure comprise) se centre sur l'axe des icônes du menu.
+            .layout-topbar {
+                padding-left: calc(var(--layout-sidebar-rail-width) / 2 - 2rem);
+            }
+
             .layout-main-container {
                 background-color: var(--surface-ground);
                 border-top-left-radius: 35px;
                 margin-top: 4rem;
-                margin-left: 8rem;
+                margin-left: var(--layout-sidebar-width);
                 border-top: solid .5px var(--primary-color);
                 border-left: solid .5px var(--primary-color);
             }
 
+            // Replié, le menu reste une colonne d'icônes : les libellés sont masqués à l'écran
+            // mais restent lus, et une infobulle les affiche au survol et au focus.
             &.layout-static-inactive {
                 .layout-sidebar {
-                    transform: translateX(-100%);
-                    visibility: hidden;
-                    left: 0;
-                    transition:
-                        transform var(--layout-section-transition-duration),
-                        left var(--layout-section-transition-duration),
-                        visibility 0s linear var(--layout-section-transition-duration);
+                    width: var(--layout-sidebar-rail-width);
+
+                    .layout-menuitem-text {
+                        @include mixins.visually-hidden();
+                    }
+                }
+
+                // Les icônes gardent leur position : elles ne se déplacent pas pendant l'animation.
+                .layout-menu {
+                    ul a {
+                        margin-left: 0.5rem;
+                    }
+
+                    .layout-submenu-toggler {
+                        display: none;
+                    }
                 }
 
                 .layout-main-container {
-                    margin-left: 0;
-                    padding-left: 2rem;
+                    margin-left: var(--layout-sidebar-rail-width);
                 }
             }
         }
@@ -82,6 +104,10 @@
 @media (max-width: 991px) {
     .blocked-scroll {
         overflow: hidden;
+    }
+
+    .layout-sidebar-toggle {
+        display: none;
     }
 
     .layout-wrapper {
