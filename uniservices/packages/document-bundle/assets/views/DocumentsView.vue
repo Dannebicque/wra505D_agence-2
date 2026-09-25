@@ -4,25 +4,27 @@
       titre="Documents"
       description="Les documents de vos matières, de vos SAÉ et du département"
   />
-  <div class="min-h-screen flex">
+  <div class="min-h-screen lg:flex">
     <Toast />
     <ConfirmDialog />
 
     <!-- Sidebar -->
     <Sidebar
-        :categories="categories"
-        :enseignements="classementEnseignements"
-        :selected-category="selectedCategory"
-        :selected-enseignement="selectedEnseignement"
-        :show-favorites="showFavorites"
-        :recherche="searchQuery"
-        :lien="lienFiltres"
-        :total-documents="totalDocuments"
-        :favorite-count="favoriteCount"
+        v-bind="panneau"
         @search="handleSearch"
         @openUploadModal="showUploadModal = true"
-        class="me-3"
+        class="max-lg:hidden! me-3"
     />
+
+    <!-- Sur un écran étroit, le panneau prendrait la place de la liste : il s'ouvre à la demande. -->
+    <Drawer v-model:visible="filtresOuverts" header="Filtres" class="w-full! sm:w-80!">
+      <Sidebar
+          v-bind="panneau"
+          @search="handleSearch"
+          @openUploadModal="showUploadModal = true"
+          class="w-full! border-r-0!"
+      />
+    </Drawer>
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
@@ -41,8 +43,18 @@
       </div>
 
       <!-- Content -->
-      <div v-else class="flex-1 overflow-y-auto p-4">
+      <div v-else class="flex-1 overflow-y-auto lg:p-4">
         <p role="status" class="sr-only">{{ annonceResultats }}</p>
+        <Button
+            class="lg:hidden! mb-3"
+            icon="pi pi-filter"
+            label="Filtres"
+            outlined
+            aria-haspopup="dialog"
+            :badge="nombreFiltresPanneau > 0 ? String(nombreFiltresPanneau) : undefined"
+            :aria-label="nombreFiltresPanneau > 0 ? `Filtres, ${nombreFiltresPanneau} actif${nombreFiltresPanneau > 1 ? 's' : ''}` : 'Filtres'"
+            @click="filtresOuverts = true"
+        />
         <FiltresActifs :filtres="filtresActifs" :tout-effacer="lienFiltres(SANS_FILTRE)" />
         <DocumentGrid
             v-if="viewMode === 'grid'"
@@ -106,6 +118,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router';
 import Toast from 'primevue/toast';
 import ConfirmDialog from 'primevue/confirmdialog';
+import Drawer from 'primevue/drawer';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 
@@ -152,6 +165,7 @@ const searchQuery = computed(() => filtres.value.recherche);
 const sortField = computed(() => filtres.value.tri.field);
 const sortOrder = computed(() => filtres.value.tri.order);
 const currentPage = ref(1);
+const filtresOuverts = ref(false);
 const itemsPerPage = ref(20);
 const viewMode = ref<ViewMode>('grid');
 
@@ -159,6 +173,7 @@ const viewMode = ref<ViewMode>('grid');
 const totalDocuments = computed(() => documentsList.value.length);
 const favoriteCount = computed(() => documentsList.value.filter(d => d.isFavorite).length);
 const classementEnseignements = computed(() => classerParEnseignement(documentsList.value));
+const nombreFiltresPanneau = computed(() => [selectedCategory.value, selectedEnseignement.value, showFavorites.value].filter(Boolean).length);
 
 const selectedDocumentCategoryName = computed(() => {
   if (!selectedDocument.value?.categoryId) return undefined;
@@ -236,6 +251,23 @@ const lienFiltres = (modifications: Partial<FiltresDocuments>): RouteLocationRaw
 watch(() => route.query, () => {
   currentPage.value = 1;
 });
+
+// Choisir un filtre referme le panneau mobile sur la liste. Taper une recherche ne le ferme pas.
+watch([selectedCategory, selectedEnseignement, showFavorites], () => {
+  filtresOuverts.value = false;
+});
+
+const panneau = computed(() => ({
+  categories: categories.value,
+  enseignements: classementEnseignements.value,
+  selectedCategory: selectedCategory.value,
+  selectedEnseignement: selectedEnseignement.value,
+  showFavorites: showFavorites.value,
+  recherche: searchQuery.value,
+  lien: lienFiltres,
+  totalDocuments: totalDocuments.value,
+  favoriteCount: favoriteCount.value,
+}));
 
 // Remplacer plutôt qu'empiler : une entrée d'historique par lettre tapée rendrait « Précédent »
 // inutilisable.

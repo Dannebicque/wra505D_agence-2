@@ -126,3 +126,29 @@ describe('Documents par matière et par SAÉ', () => {
         cy.contains('.card', document).should('not.exist');
     });
 });
+
+describe('Documents sur téléphone', () => {
+    beforeEach(() => {
+        cy.viewport(375, 812);
+        cy.connexionInvite('etudiant');
+        cy.visit('/app/documents');
+        cy.get('#contenu-principal .card', { timeout: 15000 }).should('have.length.greaterThan', 0);
+    });
+
+    it('donne toute la largeur à la liste, sans débordement', () => {
+        cy.contains('h2', 'Matières').should('not.be.visible');
+        cy.get('#contenu-principal').should(($contenu) => {
+            expect($contenu[0].scrollWidth).to.be.at.most($contenu[0].clientWidth);
+        });
+    });
+
+    it('ouvre les filtres dans un panneau qui se referme sur la liste filtrée', () => {
+        cy.contains('button', 'Filtres').should('have.attr', 'aria-label', 'Filtres').click();
+        cy.get('[role="dialog"]').should('be.visible').contains('a', 'R1.01 Anglais').click();
+
+        cy.get('[role="dialog"]').should('not.exist');
+        cy.location('search').should('match', /enseignement=/);
+        cy.contains('button', 'Filtres').should('have.attr', 'aria-label', 'Filtres, 1 actif');
+        cy.get('a[aria-label="Retirer le filtre R1.01 Anglais"]').should('be.visible');
+    });
+});
