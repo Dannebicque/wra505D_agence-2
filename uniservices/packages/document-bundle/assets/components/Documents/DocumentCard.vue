@@ -1,6 +1,5 @@
 <template>
   <div
-    @click="$emit('selectDocument', document)"
     class="card p-3 md:p-4 hover:shadow-lg border border-gray-200 hover:border-primary-300 transition-all duration-200 group cursor-pointer flex flex-col justify-between relative bg-white rounded-xl"
   >
     <div>
@@ -9,7 +8,9 @@
            l'icône : à côté d'elle et de l'étoile, il n'avait que 90 px. -->
       <div class="flex flex-col gap-2 md:mb-3">
         <h3 class="order-2 text-base! leading-snug! m-0! font-semibold text-gray-900 line-clamp-2 break-words group-hover:text-primary-600 transition-colors">
-          {{ document.title }}
+          <button type="button" class="ouvrir-document text-left" @click="$emit('selectDocument', document)">
+            {{ document.title }}
+          </button>
         </h3>
         <div class="order-1 flex items-center justify-between gap-2">
           <div class="flex flex-1 items-center gap-2 min-w-0">
@@ -23,9 +24,9 @@
 
           <button
             @click.stop="$emit('toggleFavorite', document.id)"
-            class="min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
+            class="action-document relative z-10 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
             :title="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
-            :aria-label="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+            :aria-label="document.isFavorite ? `Retirer ${document.title} des favoris` : `Ajouter ${document.title} aux favoris`"
           >
             <i
               :class="[document.isFavorite ? 'pi pi-star-fill text-amber-700' : 'pi pi-star text-gray-600 group-hover:text-gray-700', 'text-lg']"
@@ -71,25 +72,25 @@
     </div>
 
     <!-- Quick Footer Actions -->
-    <div class="max-md:hidden mt-4 pt-3 border-t border-gray-100 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-      <span class="text-xs font-medium text-primary-600 hover:underline">
+    <div class="max-md:hidden mt-4 pt-3 border-t border-gray-100 flex items-center justify-between opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+      <span class="text-xs font-medium text-primary-600 hover:underline" aria-hidden="true">
         Voir détails <i class="pi pi-arrow-right text-xs" aria-hidden="true"></i>
       </span>
       <div class="flex items-center space-x-1">
         <button
           @click.stop="$emit('downloadDocument', document)"
-          class="p-1.5 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+          class="action-document relative z-10 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
           title="Télécharger"
-          aria-label="Télécharger"
+          :aria-label="`Télécharger ${document.title}`"
         >
           <i class="pi pi-download" aria-hidden="true"></i>
         </button>
         <button
           v-permission="'isPersonnel'"
           @click.stop="$emit('deleteDocument', document)"
-          class="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+          class="action-document relative z-10 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
           title="Supprimer"
-          aria-label="Supprimer"
+          :aria-label="`Supprimer ${document.title}`"
         >
           <i class="pi pi-trash" aria-hidden="true"></i>
         </button>
@@ -115,3 +116,24 @@ defineEmits<{
   toggleFavorite: [documentId: string];
 }>();
 </script>
+
+<style scoped>
+/* Le titre est le bouton qui ouvre la fiche. Son pseudo-élément couvre toute la carte : un clic
+   n'importe où l'ouvre, et le focus entoure la carte entière. */
+.ouvrir-document::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+}
+
+.ouvrir-document:focus-visible {
+  outline: none;
+}
+
+.ouvrir-document:focus-visible::after,
+.action-document:focus-visible {
+  outline: 2px solid var(--p-primary-500);
+  outline-offset: 2px;
+}
+</style>
