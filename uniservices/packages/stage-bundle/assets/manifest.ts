@@ -21,7 +21,6 @@ export default {
     { label: 'Mon stage', icon: 'pi pi-fw pi-briefcase', to: '/stage/etudiant', groupe: 'demarches', ordre: 10 },
     { label: 'Demande de convention', icon: 'pi pi-fw pi-file-edit', to: '/stage/demande', groupe: 'demarches', ordre: 20 },
   ],
-  primaryColor: 'teal',
   routes: [
     {
       path: '/stage',

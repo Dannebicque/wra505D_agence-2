@@ -61,7 +61,6 @@ const studentMenu = [
 export default {
   name: 'intranet',
   studentMenu,
-  primaryColor: 'violet',
   registerWidgets,
   routes: [
     {
