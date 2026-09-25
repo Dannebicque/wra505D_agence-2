@@ -15,11 +15,10 @@
         :selected-category="selectedCategory"
         :selected-enseignement="selectedEnseignement"
         :show-favorites="showFavorites"
+        :recherche="searchQuery"
+        :lien="lienFiltres"
         :total-documents="totalDocuments"
         :favorite-count="favoriteCount"
-        @selectAll="selectAll"
-        @selectEnseignement="selectEnseignement"
-        @selectFavorites="selectFavorites"
         @search="handleSearch"
         @openUploadModal="showUploadModal = true"
         class="me-3"
@@ -43,6 +42,8 @@
 
       <!-- Content -->
       <div v-else class="flex-1 overflow-y-auto p-4">
+        <p role="status" class="sr-only">{{ annonceResultats }}</p>
+        <FiltresActifs :filtres="filtresActifs" :tout-effacer="lienFiltres(SANS_FILTRE)" />
         <DocumentGrid
             v-if="viewMode === 'grid'"
             :documents="filteredDocuments"
@@ -102,7 +103,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router';
 import Toast from 'primevue/toast';
 import ConfirmDialog from 'primevue/confirmdialog';
 import { useToast } from 'primevue/usetoast';
@@ -113,9 +114,19 @@ import DocumentGrid from '@/components/Documents/DocumentGrid.vue';
 import DocumentList from '@/components/Documents/DocumentList.vue';
 import DocumentUploadModal from '@/components/Documents/DocumentUploadModal.vue';
 import DocumentDetailDrawer from '@/components/Documents/DocumentDetailDrawer.vue';
+import FiltresActifs, { type FiltreActif } from '@/components/Documents/FiltresActifs.vue';
 import { documentService } from '@/service/documentService';
-import { categorieDeLAdresse } from '@/service/utils/categorieUtils';
 import { classerParEnseignement, libelleEnseignement } from '@/service/utils/enseignementUtils';
+import {
+  aDesFiltres,
+  ecrireFiltres,
+  filtrerDocuments,
+  lireFiltres,
+  texteDuDocument,
+  trierDocuments,
+  type FiltresDocuments,
+} from '@/service/utils/filtresDocuments';
+import { correspond } from '@helpers/recherche';
 import { CardSkeleton, HeaderComponent, ListSkeleton } from '@components';
 import { useSecurity } from '@stores';
 import type { Category, Document, SortField, SortOrder, PaginationInfo, ViewMode } from '@types';
@@ -133,12 +144,13 @@ const selectedDocument = ref<Document | null>(null);
 
 const categories = ref<Category[]>([]);
 const documentsList = ref<Document[]>([]);
-const selectedCategory = computed(() => categorieDeLAdresse(route.query));
-const selectedEnseignement = ref<string | null>(null);
-const showFavorites = ref(false);
-const searchQuery = ref('');
-const sortField = ref<SortField>('lastModified');
-const sortOrder = ref<SortOrder>('desc');
+const filtres = computed(() => lireFiltres(route.query));
+const selectedCategory = computed(() => filtres.value.categorie);
+const selectedEnseignement = computed(() => filtres.value.enseignement);
+const showFavorites = computed(() => filtres.value.favoris);
+const searchQuery = computed(() => filtres.value.recherche);
+const sortField = computed(() => filtres.value.tri.field);
+const sortOrder = computed(() => filtres.value.tri.order);
 const currentPage = ref(1);
 const itemsPerPage = ref(20);
 const viewMode = ref<ViewMode>('grid');
@@ -163,92 +175,15 @@ const selectedDocumentCategoryName = computed(() => {
   return findCat(categories.value)?.name;
 });
 
-const currentDocuments = computed(() => {
-  if (showFavorites.value) {
-    return documentsList.value.filter(d => d.isFavorite);
-  }
+const filteredDocuments = computed(() => {
+  const retenus = filtrerDocuments(documentsList.value, categories.value, filtres.value);
+  const recherche = filtres.value.recherche;
+  const trouves = recherche.trim() === ''
+    ? retenus
+    : retenus.filter(document => correspond(recherche, texteDuDocument(document)));
 
-  if (selectedEnseignement.value) {
-    return documentsList.value.filter(d => d.enseignement?.id === selectedEnseignement.value);
-  }
-
-  if (selectedCategory.value) {
-    // Collect all subcategory IDs including selectedCategory
-    const categoryIds = new Set<string>([selectedCategory.value]);
-    const collectChildIds = (cats: Category[]) => {
-      for (const c of cats) {
-        if (categoryIds.has(c.id)) {
-          if (c.children) {
-            c.children.forEach(child => {
-              categoryIds.add(child.id);
-              if (child.children) collectChildIds([child]);
-            });
-          }
-        } else if (c.children) {
-          collectChildIds(c.children);
-        }
-      }
-    };
-    collectChildIds(categories.value);
-    return documentsList.value.filter(d => categoryIds.has(d.categoryId));
-  }
-
-  return documentsList.value;
+  return trierDocuments(trouves, filtres.value.tri);
 });
-
-const searchedDocuments = computed(() => {
-  if (!searchQuery.value) {
-    return currentDocuments.value;
-  }
-
-  const q = searchQuery.value.toLowerCase();
-  return currentDocuments.value.filter(doc =>
-    doc.title.toLowerCase().includes(q) ||
-    doc.description?.toLowerCase().includes(q) ||
-    doc.author.toLowerCase().includes(q) ||
-    doc.tags.some(t => t.toLowerCase().includes(q))
-  );
-});
-
-const sortedDocuments = computed(() => {
-  const docs = [...searchedDocuments.value];
-
-  docs.sort((a, b) => {
-    let aValue: any;
-    let bValue: any;
-
-    switch (sortField.value) {
-      case 'title':
-        aValue = a.title.toLowerCase();
-        bValue = b.title.toLowerCase();
-        break;
-      case 'lastModified':
-        aValue = a.lastModified instanceof Date ? a.lastModified.getTime() : new Date(a.lastModified).getTime();
-        bValue = b.lastModified instanceof Date ? b.lastModified.getTime() : new Date(b.lastModified).getTime();
-        break;
-      case 'size':
-        aValue = a.size;
-        bValue = b.size;
-        break;
-      case 'type':
-        aValue = a.type;
-        bValue = b.type;
-        break;
-      default:
-        return 0;
-    }
-
-    if (sortOrder.value === 'asc') {
-      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-    } else {
-      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-    }
-  });
-
-  return docs;
-});
-
-const filteredDocuments = computed(() => sortedDocuments.value);
 
 const paginationInfo = computed((): PaginationInfo => {
   const totalItems = filteredDocuments.value.length;
@@ -291,52 +226,25 @@ const openDetailDrawer = (doc: Document) => {
   showDetailDrawer.value = true;
 };
 
-// Une catégorie s'ouvre par son lien : on n'agit qu'à son arrivée dans l'adresse. Les autres
-// vues n'y sont pas encore, elles effacent donc la catégorie en s'ouvrant.
-watch(selectedCategory, (categorie) => {
-  if (categorie) {
-    selectedEnseignement.value = null;
-    showFavorites.value = false;
-    currentPage.value = 1;
-  }
+const SANS_FILTRE: Partial<FiltresDocuments> = { categorie: null, enseignement: null, favoris: false, recherche: '' };
+
+// L'adresse porte les filtres : chaque lien la modifie, et la liste la suit.
+const lienFiltres = (modifications: Partial<FiltresDocuments>): RouteLocationRaw => ({
+  query: ecrireFiltres({ ...filtres.value, ...modifications }),
 });
 
-const quitterCategorie = () => {
-  if (selectedCategory.value) {
-    router.push({ query: {} });
-  }
-};
-
-const selectAll = () => {
-  selectedEnseignement.value = null;
-  showFavorites.value = false;
+watch(() => route.query, () => {
   currentPage.value = 1;
-  quitterCategorie();
-};
+});
 
-const selectEnseignement = (enseignementId: string) => {
-  selectedEnseignement.value = enseignementId;
-  showFavorites.value = false;
-  currentPage.value = 1;
-  quitterCategorie();
-};
-
-const selectFavorites = () => {
-  showFavorites.value = true;
-  selectedEnseignement.value = null;
-  currentPage.value = 1;
-  quitterCategorie();
-};
-
+// Remplacer plutôt qu'empiler : une entrée d'historique par lettre tapée rendrait « Précédent »
+// inutilisable.
 const handleSearch = (query: string) => {
-  searchQuery.value = query;
-  currentPage.value = 1;
+  router.replace(lienFiltres({ recherche: query }));
 };
 
 const handleSort = ({ field, order }: { field: SortField; order: SortOrder }) => {
-  sortField.value = field;
-  sortOrder.value = order;
-  currentPage.value = 1;
+  router.push(lienFiltres({ tri: { field, order } }));
 };
 
 const handlePageChange = (page: number) => {
@@ -415,48 +323,54 @@ const handleCreateDocument = async (docData: { titre: string; description?: stri
   }
 };
 
-const getTitle = () => {
-  if (showFavorites.value) {
-    return 'Documents favoris';
+const trouverCategorie = (liste: Category[], id: string): Category | undefined => {
+  for (const categorie of liste) {
+    const trouvee = categorie.id === id ? categorie : trouverCategorie(categorie.children ?? [], id);
+    if (trouvee) {
+      return trouvee;
+    }
   }
-
-  if (selectedEnseignement.value) {
-    const document = documentsList.value.find(d => d.enseignement?.id === selectedEnseignement.value);
-    return document?.enseignement ? libelleEnseignement(document.enseignement) : 'Enseignement inconnu';
-  }
-
-  if (selectedCategory.value) {
-    const findCategory = (cats: Category[]): Category | null => {
-      for (const cat of cats) {
-        if (cat.id === selectedCategory.value) {
-          return cat;
-        }
-        if (cat.children) {
-          const found = findCategory(cat.children);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-
-    const category = findCategory(categories.value);
-    return category ? category.name : 'Catégorie inconnue';
-  }
-
-  return 'Tous les documents';
+  return undefined;
 };
 
-const getEmptyMessage = () => {
-  if (searchQuery.value) {
-    return `Aucun document ne correspond à "${searchQuery.value}"`;
+const libelleEnseignementChoisi = computed(() => {
+  if (!selectedEnseignement.value) {
+    return null;
   }
+  const enseignement = documentsList.value.find(d => d.enseignement?.id === selectedEnseignement.value)?.enseignement;
+  return enseignement ? libelleEnseignement(enseignement) : 'Enseignement inconnu';
+});
 
-  if (showFavorites.value) {
-    return 'Aucun document n\'est marqué comme favori';
+const nomCategorieChoisie = computed(() => {
+  if (!selectedCategory.value) {
+    return null;
   }
+  return trouverCategorie(categories.value, selectedCategory.value)?.name ?? 'Catégorie inconnue';
+});
 
-  return 'Aucun document dans cette catégorie';
-};
+const filtresActifs = computed((): FiltreActif[] => [
+  showFavorites.value ? { cle: 'favoris', libelle: 'Favoris', retrait: lienFiltres({ favoris: false }) } : null,
+  libelleEnseignementChoisi.value ? { cle: 'enseignement', libelle: libelleEnseignementChoisi.value, retrait: lienFiltres({ enseignement: null }) } : null,
+  nomCategorieChoisie.value ? { cle: 'categorie', libelle: nomCategorieChoisie.value, retrait: lienFiltres({ categorie: null }) } : null,
+  searchQuery.value.trim() ? { cle: 'recherche', libelle: `« ${searchQuery.value.trim()} »`, retrait: lienFiltres({ recherche: '' }) } : null,
+].filter((filtre): filtre is FiltreActif => filtre !== null));
+
+const annonceResultats = computed(() => {
+  const nombre = filteredDocuments.value.length;
+  const documents = nombre > 1 ? `${nombre} documents` : `${nombre} document`;
+  if (!aDesFiltres(filtres.value)) {
+    return documents;
+  }
+  return nombre > 1 ? `${documents} correspondent aux filtres` : `${documents} correspond aux filtres`;
+});
+
+const getTitle = () => [showFavorites.value ? 'Favoris' : null, libelleEnseignementChoisi.value, nomCategorieChoisie.value]
+  .filter(Boolean)
+  .join(' · ') || 'Tous les documents';
+
+const getEmptyMessage = () => (aDesFiltres(filtres.value)
+  ? 'Aucun document ne correspond à ces filtres. Retirez-en un pour élargir la liste.'
+  : 'Aucun document pour le moment.');
 
 // Lifecycle
 onMounted(() => {

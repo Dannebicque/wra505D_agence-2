@@ -37,9 +37,9 @@
       <div v-else class="w-[44px] shrink-0"></div>
 
       <RouterLink
-        :to="{ query: { categorie: category.id } }"
+        :to="lien({ categorie: category.id })"
         :aria-current="selectedCategory === category.id ? 'page' : undefined"
-        class="flex items-center space-x-2 flex-1 min-h-[44px] rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+        class="flex items-center gap-2 flex-1 min-h-[44px] rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
       >
         <i :class="[category.icon, 'text-lg']" aria-hidden="true"></i>
         <span class="flex-1 text-left">{{ category.name }}</span>
@@ -60,6 +60,7 @@
         :key="child.id"
         :category="child"
         :selected-category="selectedCategory"
+        :lien="lien"
       />
     </div>
   </div>
@@ -67,12 +68,15 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import type { RouteLocationRaw } from 'vue-router';
 import type { Category } from '@types';
 import { contientCategorie } from '@/service/utils/categorieUtils';
+import type { FiltresDocuments } from '@/service/utils/filtresDocuments';
 
 interface Props {
   category: Category;
   selectedCategory: string | null;
+  lien: (modifications: Partial<FiltresDocuments>) => RouteLocationRaw;
 }
 
 const props = defineProps<Props>();
