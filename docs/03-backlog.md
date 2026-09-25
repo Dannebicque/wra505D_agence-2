@@ -201,6 +201,16 @@ configuration `cookie` sait déjà faire.
 **Terminé quand** la base ne contient plus que des jetons `sha256$…` ; que la connexion, la
 rotation et la déconnexion fonctionnent ; et que les jetons en clair encore valides sont acceptés le
 temps de leur expiration (`accept_stored_in_the_clear`), puis refusés.
+**Fait** `hash_tokens` activé. La base ne stocke plus que `sha256$…`, le client garde la valeur en
+clair. `AuthenticationSuccessListener` est supprimé : il émettait une seconde fois le jeton et
+les deux cookies, avec `Secure` codé en dur à `false`. Il écrasait ainsi ceux que Lexik et le
+bundle posaient déjà selon `JWT_COOKIE_SECURE` : en production sous HTTPS, les cookies de session
+partaient sans `Secure`. La déconnexion supprime le jeton par le gestionnaire du bundle, qui connaît
+le hachage.
+
+Vérifié sur l'API : un jeton haché par connexion, rotation, rejeu refusé, déconnexion, ancien jeton
+en clair accepté une fois puis réécrit haché, `Secure` présent avec `JWT_COOKIE_SECURE=true`.
+**Reste** passer `accept_stored_in_the_clear` à `false` 14 jours après le déploiement.
 
 ### E13 · [back] Symfony 8.1 · M
 **Pourquoi** dernière version stable. Elle n'est maintenue que jusqu'à fin janvier 2027 : il
