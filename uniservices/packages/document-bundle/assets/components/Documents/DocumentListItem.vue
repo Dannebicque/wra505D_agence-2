@@ -16,7 +16,7 @@
           <div class="flex items-center space-x-2">
             <button
               @click.stop="$emit('downloadDocument', document)"
-              class="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded"
+              class="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-gray-600 hover:text-primary-600 hover:bg-gray-100 rounded"
               title="Télécharger"
               aria-label="Télécharger"
             >
@@ -25,7 +25,7 @@
             <button
               v-permission="'isPersonnel'"
               @click.stop="$emit('deleteDocument', document)"
-              class="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded"
+              class="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded"
               title="Supprimer"
               aria-label="Supprimer"
             >
@@ -38,14 +38,14 @@
               :aria-label="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
             >
               <i
-                :class="document.isFavorite ? 'pi pi-star-fill text-amber-700' : 'pi pi-star text-gray-500 group-hover:text-gray-700'"
+                :class="document.isFavorite ? 'pi pi-star-fill text-amber-700' : 'pi pi-star text-gray-600 group-hover:text-gray-700'"
                 aria-hidden="true"
               ></i>
             </button>
           </div>
         </div>
 
-        <div class="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+        <div class="flex items-center space-x-4 text-xs text-gray-600 mt-1">
           <span class="font-semibold uppercase text-gray-700">{{ getFileExtension(document.type) }}</span>
           <span>{{ formatFileSize(document.size) }}</span>
           <span><i class="pi pi-user text-xs me-1" aria-hidden="true"></i>{{ document.author }}</span>

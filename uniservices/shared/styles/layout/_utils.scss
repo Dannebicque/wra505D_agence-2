@@ -71,3 +71,15 @@
 .p-autocomplete-input {
     width: 100%;
 }
+
+/* vue-cal estompe les heures de l'emploi du temps et l'heure courante (opacité 0,4 à 0,7) :
+   jusqu'à 2,64:1. Ses propres sélecteurs sont plus précis que tout ce qu'on peut écrire ici sans
+   !important. */
+.vuecal__time-cell label,
+.vuecal__now-line span {
+    opacity: 1 !important;
+}
+
+.vuecal__time-cell label {
+    color: var(--text-color-secondary);
+}
