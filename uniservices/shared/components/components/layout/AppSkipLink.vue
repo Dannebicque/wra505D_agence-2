@@ -26,10 +26,10 @@ const goToContent = () => {
   align-items: center;
   min-height: 44px;
   padding: 0 1rem;
-  border: 2px solid #4d3677;
+  border: 2px solid var(--accent-contrast-color);
   border-radius: 6px;
-  background-color: #f7b000;
-  color: #4d3677;
+  background-color: var(--accent-color);
+  color: var(--accent-contrast-color);
   font-weight: 700;
   text-decoration: underline;
   transform: translateY(calc(-100% - 1rem));
@@ -37,7 +37,7 @@ const goToContent = () => {
 
 .skip-link:focus {
   transform: none;
-  outline: 2px solid #4d3677;
+  outline: 2px solid var(--accent-contrast-color);
   outline-offset: 2px;
 }
 
