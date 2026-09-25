@@ -73,7 +73,14 @@ On adopte les conventions du client. Le code doit se fondre dans le sien, pas co
 - Types partagés dans `shared/types/`. Jamais le même type écrit à deux endroits.
 - Les alias existent, on s'en sert : `@components`, `@stores`, `@requests`, `@helpers`,
   `@styles`, `@config`, `@images`, `@types`.
-- Côté PHP : PSR-12, classes en PascalCase, PHPDoc sur les classes et méthodes.
+- Côté PHP : PSR-12, classes en PascalCase, PHPDoc sur les classes et méthodes. `make cs` (depuis
+  `uniservices/back`) le vérifie sur les seuls fichiers modifiés ; on ne reformate jamais le code
+  du client en bloc, ses diffs ne s'appliqueraient plus.
+- Une page étudiante entre dans le `studentMenu` du manifest de son module, jamais dans le menu du
+  personnel. Les données de l'étudiant connecté passent par une route `/api/me/…` sans
+  identifiant. Un nouveau type de notification ou de résultat de recherche est une nouvelle
+  source. Détail dans `docs/04-reprise.md`, section « Où brancher quoi ».
+- Aucune couleur en dur : les jetons du preset (`packages/shell/assets/main.js`).
 
 ## Accessibilité
 
@@ -90,13 +97,15 @@ Non négociable : l'IUT est un établissement public, le RGAA s'applique.
 ## Tests
 
 - Toute logique métier a un test unitaire.
-- Tout parcours utilisateur majeur a un test E2E.
+- Tout parcours utilisateur majeur a un test E2E. Il doit passer sur une base de fixtures neuve
+  et un Vite froid, comme en CI : n'attendre que ce qui existe par défaut.
 - On ne corrige pas un test pour le faire passer : on corrige le code.
 
 ## Terminé
 
-Une tâche est terminée quand : le build passe, le lint passe, les tests passent, le clavier et
-les contrastes ont été vérifiés, et la PR est ouverte avec son template rempli.
+Une tâche est terminée quand : le build passe, le lint passe, `make cs` passe, les tests passent,
+le clavier et les contrastes ont été vérifiés, la PR est ouverte avec son template rempli et sa
+CI est verte. Une PR rouge ne se merge pas : toutes les suivantes héritent de son échec.
 
 ## Comportement attendu
 
