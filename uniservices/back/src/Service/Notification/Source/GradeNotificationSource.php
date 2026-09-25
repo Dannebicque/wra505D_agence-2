@@ -6,24 +6,24 @@ use App\Entity\Etudiant\EtudiantNote;
 use App\Entity\Users\Etudiant;
 use App\Enum\EtatEvaluationEnum;
 use App\Service\Notification\Notification;
-use App\Service\Notification\SemestresEtudiant;
+use App\Service\Notification\StudentSemesters;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Une note d'une évaluation publiée. Une note saisie mais pas publiée ne se signale pas.
  */
-final class SourceNotes implements SourceNotificationInterface
+final class GradeNotificationSource implements NotificationSourceInterface
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly SemestresEtudiant $semestres,
+        private readonly StudentSemesters $semesters,
     ) {
     }
 
-    public function notifications(Etudiant $etudiant, \DateTimeImmutable $depuis): iterable
+    public function getNotifications(Etudiant $student, \DateTimeImmutable $since): iterable
     {
-        $scolariteSemestres = $this->semestres->pour($etudiant);
-        if ([] === $scolariteSemestres) {
+        $scolariteSemesters = $this->semesters->forStudent($student);
+        if ([] === $scolariteSemesters) {
             return [];
         }
 
@@ -33,29 +33,29 @@ final class SourceNotes implements SourceNotificationInterface
             ->from(EtudiantNote::class, 'n')
             ->join('n.evaluation', 'e')
             ->leftJoin('e.enseignement', 'ens')
-            ->where('n.scolariteSemestre IN (:scolariteSemestres)')
+            ->where('n.scolariteSemestre IN (:scolariteSemesters)')
             ->andWhere('e.etat = :publiee')
-            ->setParameter('scolariteSemestres', $scolariteSemestres)
+            ->setParameter('scolariteSemesters', $scolariteSemesters)
             ->setParameter('publiee', EtatEvaluationEnum::ETAT_PUBLIEE)
             ->getQuery()
             ->getResult();
 
         $notifications = [];
         foreach ($notes as $note) {
-            $date = self::derniereModification($note);
-            if (null === $date || $date < $depuis) {
+            $date = self::lastModified($note);
+            if (null === $date || $date < $since) {
                 continue;
             }
 
             $evaluation = $note->getEvaluation();
             $enseignement = $evaluation?->getEnseignement();
-            $matiere = null === $enseignement ? null : trim($enseignement->getCodeEnseignement().' '.$enseignement->getLibelle());
+            $subjectName = null === $enseignement ? null : trim($enseignement->getCodeEnseignement().' '.$enseignement->getLibelle());
 
             $notifications[] = new Notification(
                 'note-'.$note->getId(),
                 Notification::TYPE_NOTE,
-                null === $matiere ? 'Nouvelle note' : 'Nouvelle note en '.$matiere,
-                sprintf('%s : %s', $evaluation?->getLibelle() ?? 'Évaluation', self::resultat($note)),
+                null === $subjectName ? 'Nouvelle note' : 'Nouvelle note en '.$subjectName,
+                sprintf('%s : %s', $evaluation?->getLibelle() ?? 'Évaluation', self::formatResult($note)),
                 $date,
                 '/intranet/scolarite',
             );
@@ -67,7 +67,7 @@ final class SourceNotes implements SourceNotificationInterface
     /**
      * Même lecture que la page Notes et absences : le statut dit ce que vaut la note.
      */
-    public static function resultat(EtudiantNote $note): string
+    public static function formatResult(EtudiantNote $note): string
     {
         return match ($note->getPresenceStatut() ?? EtudiantNote::STATUT_PRESENT) {
             EtudiantNote::STATUT_ABSENT_INJUSTIFIE => 'absence injustifiée, compte 0',
@@ -79,7 +79,7 @@ final class SourceNotes implements SourceNotificationInterface
         };
     }
 
-    private static function derniereModification(EtudiantNote $note): ?\DateTimeImmutable
+    private static function lastModified(EtudiantNote $note): ?\DateTimeImmutable
     {
         $date = $note->getUpdated() ?? $note->getCreated();
 

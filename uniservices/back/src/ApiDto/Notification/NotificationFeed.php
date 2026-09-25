@@ -6,15 +6,17 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
+use Symfony\Component\Serializer\Attribute\SerializedName;
 use App\Service\Notification\Notification;
-use App\State\Processor\Notification\MarquageLectureProcessor;
-use App\State\Provider\Notification\FilNotificationsProvider;
+use App\State\Processor\Notification\MarkAsReadProcessor;
+use App\State\Provider\Notification\NotificationFeedProvider;
 
 /**
  * Les notifications de l'étudiant connecté, messages compris. L'adresse ne porte aucun
  * identifiant : on ne peut lire et marquer que les siennes.
  */
 #[ApiResource(
+    shortName: 'FilNotifications',
     operations: [
         new Get(
             uriTemplate: '/me/notifications',
@@ -23,7 +25,7 @@ use App\State\Provider\Notification\FilNotificationsProvider;
                 summary: 'Notes, absences, documents, actualités et messages de l\'étudiant connecté, des 90 derniers jours',
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
-            provider: FilNotificationsProvider::class,
+            provider: NotificationFeedProvider::class,
         ),
         new Post(
             uriTemplate: '/me/notifications/lues',
@@ -32,52 +34,54 @@ use App\State\Provider\Notification\FilNotificationsProvider;
                 summary: 'Marque des notifications comme lues (toutes si aucune clé n\'est donnée) et renvoie le fil à jour',
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
-            input: MarquageLecture::class,
+            input: MarkAsRead::class,
             read: false,
-            processor: MarquageLectureProcessor::class,
+            processor: MarkAsReadProcessor::class,
         ),
     ],
 )]
-final class FilNotifications
+final class NotificationFeed
 {
     /**
-     * @param list<array{cle: string, type: string, titre: string, texte: ?string, date: string, lien: string, lue: bool}> $notifications
+     * @param list<array{cle: string, type: string, titre: string, texte: ?string, date: string, lien: string, lue: bool}> $items
      */
     public function __construct(
-        private readonly int $nonLues,
-        private readonly array $notifications,
+        #[SerializedName('nonLues')]
+        private readonly int $unreadCount,
+        #[SerializedName('notifications')]
+        private readonly array $items,
     ) {
     }
 
     /**
-     * @param list<array{notification: Notification, lue: bool}> $fil
+     * @param list<array{notification: Notification, lue: bool}> $feed
      */
-    public static function depuis(array $fil): self
+    public static function fromFeed(array $feed): self
     {
         return new self(
-            count(array_filter($fil, fn (array $element) => !$element['lue'])),
+            count(array_filter($feed, fn (array $element) => !$element['lue'])),
             array_map(fn (array $element) => [
-                'cle' => $element['notification']->cle,
+                'cle' => $element['notification']->key,
                 'type' => $element['notification']->type,
-                'titre' => $element['notification']->titre,
-                'texte' => $element['notification']->texte,
+                'titre' => $element['notification']->title,
+                'texte' => $element['notification']->text,
                 'date' => $element['notification']->date->format(\DateTimeInterface::ATOM),
-                'lien' => $element['notification']->lien,
+                'lien' => $element['notification']->link,
                 'lue' => $element['lue'],
-            ], $fil),
+            ], $feed),
         );
     }
 
-    public function getNonLues(): int
+    public function getUnreadCount(): int
     {
-        return $this->nonLues;
+        return $this->unreadCount;
     }
 
     /**
      * @return list<array{cle: string, type: string, titre: string, texte: ?string, date: string, lien: string, lue: bool}>
      */
-    public function getNotifications(): array
+    public function getItems(): array
     {
-        return $this->notifications;
+        return $this->items;
     }
 }

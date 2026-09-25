@@ -7,7 +7,7 @@ use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Repository\Edt\EdtEventRepository;
 use App\Repository\Structure\StructureDepartementRepository;
-use App\Service\Notification\SemestresEtudiant;
+use App\Service\Notification\StudentSemesters;
 use AuthBundle\Services\Dashboard\Provider\AuthWidgetDataProvider;
 
 class IntranetWidgetDataProvider implements WidgetDataProviderInterface
@@ -16,7 +16,7 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         private readonly EdtEventRepository $edtEventRepository,
         private readonly StructureDepartementRepository $structureDepartementRepository,
         private readonly AuthWidgetDataProvider $authWidgetDataProvider,
-        private readonly SemestresEtudiant $semestresEtudiant,
+        private readonly StudentSemesters $semestersEtudiant,
     ) {
     }
 
@@ -98,10 +98,10 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
      *
      * @return list<int>
      */
-    private function groupes(Etudiant $etudiant): array
+    private function groupes(Etudiant $student): array
     {
         $ids = [];
-        foreach ($this->semestresEtudiant->pour($etudiant) as $scolariteSemestre) {
+        foreach ($this->semestersEtudiant->forStudent($student) as $scolariteSemestre) {
             foreach ($scolariteSemestre->getGroupes() as $groupe) {
                 $ids[] = $groupe->getId();
             }

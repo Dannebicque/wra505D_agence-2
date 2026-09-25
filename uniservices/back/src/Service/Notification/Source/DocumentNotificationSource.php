@@ -5,31 +5,31 @@ namespace App\Service\Notification\Source;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Users\Etudiant;
 use App\Service\Notification\Notification;
-use App\Service\Notification\SemestresEtudiant;
+use App\Service\Notification\StudentSemesters;
 use Doctrine\ORM\EntityManagerInterface;
 use DocumentBundle\Entity\Document;
 
 /**
  * Un document ajouté dans l'une des matières ou SAÉ de ses semestres, qu'il a le droit de voir.
  */
-final class SourceDocuments implements SourceNotificationInterface
+final class DocumentNotificationSource implements NotificationSourceInterface
 {
     /** Valeurs de Document::$visibility ouvertes aux étudiants, comme dans la recherche. */
-    private const VISIBILITES = ['PUBLIC', 'ETUDIANT'];
+    private const VISIBILITIES = ['PUBLIC', 'ETUDIANT'];
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly SemestresEtudiant $semestres,
+        private readonly StudentSemesters $semesters,
     ) {
     }
 
-    public function notifications(Etudiant $etudiant, \DateTimeImmutable $depuis): iterable
+    public function getNotifications(Etudiant $student, \DateTimeImmutable $since): iterable
     {
-        $semestres = array_map(
+        $semesters = array_map(
             fn (EtudiantScolariteSemestre $scolariteSemestre) => $scolariteSemestre->getSemestre(),
-            $this->semestres->pour($etudiant),
+            $this->semesters->forStudent($student),
         );
-        if ([] === $semestres) {
+        if ([] === $semesters) {
             return [];
         }
 
@@ -40,12 +40,12 @@ final class SourceDocuments implements SourceNotificationInterface
             ->join('d.enseignement', 'ens')
             ->join('ens.enseignementUes', 'eu')
             ->join('eu.ue', 'ue')
-            ->where('ue.semestre IN (:semestres)')
+            ->where('ue.semestre IN (:semesters)')
             ->andWhere('d.visibility IN (:visibilites)')
-            ->andWhere('d.createdAt >= :depuis')
-            ->setParameter('semestres', $semestres)
-            ->setParameter('visibilites', self::VISIBILITES)
-            ->setParameter('depuis', $depuis)
+            ->andWhere('d.createdAt >= :since')
+            ->setParameter('semesters', $semesters)
+            ->setParameter('visibilites', self::VISIBILITIES)
+            ->setParameter('since', $since)
             ->getQuery()
             ->getResult();
 

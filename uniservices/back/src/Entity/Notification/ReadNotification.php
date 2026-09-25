@@ -3,7 +3,7 @@
 namespace App\Entity\Notification;
 
 use App\Entity\Users\Etudiant;
-use App\Repository\Notification\NotificationLueRepository;
+use App\Repository\Notification\ReadNotificationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -11,27 +11,27 @@ use Doctrine\ORM\Mapping as ORM;
  * Une notification que l'étudiant a lue. Les notifications ne sont pas stockées, elles sont
  * recalculées : seule leur lecture l'est, par leur clé.
  */
-#[ORM\Entity(repositoryClass: NotificationLueRepository::class)]
+#[ORM\Entity(repositoryClass: ReadNotificationRepository::class)]
 #[ORM\Table(name: 'notification_lue')]
 #[ORM\UniqueConstraint(name: 'uq_notification_lue', columns: ['etudiant_id', 'cle'])]
-class NotificationLue
+final class ReadNotification
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private \DateTimeImmutable $lueLe;
+    #[ORM\Column(name: 'lue_le', type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $readAt;
 
     public function __construct(
         #[ORM\ManyToOne(targetEntity: Etudiant::class)]
-        #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-        private Etudiant $etudiant,
-        #[ORM\Column(length: 100)]
-        private string $cle,
+        #[ORM\JoinColumn(name: 'etudiant_id', nullable: false, onDelete: 'CASCADE')]
+        private Etudiant $student,
+        #[ORM\Column(name: 'cle', length: 100)]
+        private string $key,
     ) {
-        $this->lueLe = new \DateTimeImmutable();
+        $this->readAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -39,18 +39,18 @@ class NotificationLue
         return $this->id;
     }
 
-    public function getEtudiant(): Etudiant
+    public function getStudent(): Etudiant
     {
-        return $this->etudiant;
+        return $this->student;
     }
 
-    public function getCle(): string
+    public function getKey(): string
     {
-        return $this->cle;
+        return $this->key;
     }
 
-    public function getLueLe(): \DateTimeImmutable
+    public function getReadAt(): \DateTimeImmutable
     {
-        return $this->lueLe;
+        return $this->readAt;
     }
 }
