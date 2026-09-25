@@ -262,7 +262,12 @@ laissaient passer : trois colonnes renommées (500 sur le fil), le type et la cl
 traduits (des notifications lues redevenaient non lues), des textes d'absence et des commentaires
 traduits mot à mot. Tout est rétabli. Seul change le nom interne du schéma OpenAPI d'entrée
 (`FilNotifications.MarkAsRead`).
-**Reste** scolarité, Celcat, documents favoris.
+**Scolarité faite** `Service/Scolarite` devient `Service/Transcript` : `GradeAverageCalculator`,
+`TranscriptBuilder`, `Transcript` et `TranscriptProvider`. Le `shortName` `ReleveScolarite`,
+l'URL `/me/scolarite` et les champs JSON sont conservés. Délégué à Codex avec une consigne
+explicite : ni chaîne, ni commentaire, ni remplacement global. Aucune chaîne ni phrase de
+commentaire n'a changé, et le relevé, OpenAPI et le SQL sont identiques à la référence.
+**Reste** Celcat, documents favoris.
 ### E15 · [back] PHPStan au niveau max, sans baseline · L, à redécouper
 **Pourquoi** le niveau 6 laisse passer le `mixed` et les nullabilités, et 4 identifiants sont
 ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au 9, 2 871 au 10,
