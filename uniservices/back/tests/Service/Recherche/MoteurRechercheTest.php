@@ -19,7 +19,7 @@ final class MoteurRechercheTest extends TestCase
      */
     private function source(array $candidats): SourceRechercheInterface
     {
-        return new class($candidats) implements SourceRechercheInterface {
+        return new class ($candidats) implements SourceRechercheInterface {
             /**
              * @param list<Candidat> $candidats
              */
