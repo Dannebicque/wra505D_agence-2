@@ -288,8 +288,9 @@ const selectAnneeUniversitaire = (annee) => {
         <i class="pi pi-bars" aria-hidden="true"></i>
       </button>
 
-      <router-link to="/" class="layout-topbar-logo">
-        <Logo :logo-url="logoUrl" alt="logo" class="rounded-xl p-2" /> <span class="text-lg">{{ appName }}</span>
+      <!-- L'étudiant a un seul menu : le nom du module ne lui apprend rien, le logo mène à l'accueil. -->
+      <router-link to="/" class="layout-topbar-logo" :aria-label="estEtudiant ? 'Accueil' : undefined">
+        <Logo :logo-url="logoUrl" alt="logo" class="rounded-xl p-2" /> <span v-if="!estEtudiant" class="text-lg">{{ appName }}</span>
       </router-link>
     </div>
 
