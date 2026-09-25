@@ -72,6 +72,33 @@ class EdtEventRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * Créneaux de ces groupes qui commencent dans l'intervalle, comme le filtre groupe et day de
+     * l'API que lit le widget « Maintenant » : les deux widgets ne peuvent pas se contredire.
+     *
+     * @param list<int> $groupeIds
+     *
+     * @return list<EdtEvent>
+     */
+    public function findByGroupesAndRange(array $groupeIds, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    {
+        if ([] === $groupeIds) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('e')
+            ->join('e.groupe', 'g')
+            ->andWhere('g.id IN (:groupes)')
+            ->andWhere('e.debut >= :start')
+            ->andWhere('e.debut < :end')
+            ->setParameter('groupes', $groupeIds)
+            ->setParameter('start', $startDate)
+            ->setParameter('end', $endDate)
+            ->orderBy('e.debut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findByPersonnelAndRange(int $personnelId, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
     {
         $qb = $this->createQueryBuilder('e')

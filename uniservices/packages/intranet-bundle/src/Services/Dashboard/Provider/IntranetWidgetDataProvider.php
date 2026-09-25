@@ -7,6 +7,7 @@ use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Repository\Edt\EdtEventRepository;
 use App\Repository\Structure\StructureDepartementRepository;
+use App\Service\Notification\SemestresEtudiant;
 use AuthBundle\Services\Dashboard\Provider\AuthWidgetDataProvider;
 
 class IntranetWidgetDataProvider implements WidgetDataProviderInterface
@@ -15,6 +16,7 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         private readonly EdtEventRepository $edtEventRepository,
         private readonly StructureDepartementRepository $structureDepartementRepository,
         private readonly AuthWidgetDataProvider $authWidgetDataProvider,
+        private readonly SemestresEtudiant $semestresEtudiant,
     ) {}
 
     public function supports(string $code): bool
@@ -71,16 +73,11 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
 
     private function getEmploiDuTemps(Personnel|Etudiant $user): array
     {
-        if (!$user instanceof Personnel) {
-            return [
-                'todayLabel' => (new \IntlDateFormatter('fr_FR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, \IntlDateFormatter::GREGORIAN, 'EEEE d MMMM yyyy'))->format(new \DateTimeImmutable('today')),
-                'items' => [],
-            ];
-        }
-
         $today = new \DateTimeImmutable('today');
         $tomorrow = $today->modify('+1 day');
-        $events = $this->edtEventRepository->findByPersonnelAndRange($user->getId(), $today, $tomorrow);
+        $events = $user instanceof Personnel
+            ? $this->edtEventRepository->findByPersonnelAndRange($user->getId(), $today, $tomorrow)
+            : $this->edtEventRepository->findByGroupesAndRange($this->groupes($user), $today, $tomorrow);
         $formatter = new \IntlDateFormatter('fr_FR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, \IntlDateFormatter::GREGORIAN, 'EEEE d MMMM yyyy');
         return [
             'todayLabel' => $formatter->format($today),
@@ -93,5 +90,22 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
                 'eval'   => $e->isEvaluation(),
             ], $events),
         ];
+    }
+
+    /**
+     * Les groupes de l'étudiant dans ses semestres de l'année, ceux que lit son emploi du temps.
+     *
+     * @return list<int>
+     */
+    private function groupes(Etudiant $etudiant): array
+    {
+        $ids = [];
+        foreach ($this->semestresEtudiant->pour($etudiant) as $scolariteSemestre) {
+            foreach ($scolariteSemestre->getGroupes() as $groupe) {
+                $ids[] = $groupe->getId();
+            }
+        }
+
+        return array_values(array_unique(array_filter($ids)));
     }
 }

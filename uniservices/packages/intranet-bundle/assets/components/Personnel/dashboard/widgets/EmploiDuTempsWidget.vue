@@ -1,8 +1,10 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { EdtEventRow } from '@components';
+import { useUsersStore } from '@stores';
 
 const router = useRouter();
+const userStore = useUsersStore();
 
 defineProps({
   data: {
@@ -19,7 +21,7 @@ defineProps({
           v-for="item in data.items || []"
           :key="`${item.heure}-${item.cours}`"
           :item="item"
-          show-action-button
+          :show-action-button="!userStore.isEtudiant"
           action-tooltip="Faire l'appel"
       />
       <div v-if="data.items?.length === 0" class="flex justify-center text-center py-4 text-muted-color flex flex-col items-center min-h-36 max-h-36 overflow-y-hidden relative">
