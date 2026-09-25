@@ -2,6 +2,7 @@ import dashboardRoutes from './router/modules/dashboardRoutes.js';
 import agendaRoutes from './router/modules/agendaRoutes.js';
 import trombinoscopeRoutes from './router/modules/trombinoscopeRoutes.js';
 import scolariteRoutes from './router/modules/scolariteRoutes.js';
+import notificationsRoutes from './router/modules/notificationsRoutes.js';
 import cahierDeTexteRoutes from './router/modules/cahierDeTexteRoutes.js';
 import profilRoutes from './router/modules/profilRoutes.js';
 import administrationRoutes from './router/modules/administrationRoutes.js';
@@ -54,6 +55,7 @@ const studentMenu = [
   { label: 'Emploi du temps', icon: 'pi pi-fw pi-calendar', to: '/intranet/agenda', groupe: 'scolarite', ordre: 20, motsCles: ['agenda', 'edt', 'planning', 'cours'] },
   { label: 'Notes et absences', icon: 'pi pi-fw pi-graduation-cap', to: '/intranet/scolarite', groupe: 'scolarite', ordre: 30, motsCles: ['scolarité', 'moyennes', 'bulletin', 'relevé'] },
   { label: 'Cahier de texte', icon: 'pi pi-fw pi-book', to: '/intranet/cahier-de-texte', groupe: 'scolarite', ordre: 50, motsCles: ['devoirs', 'travail à faire'] },
+  { label: 'Notifications', icon: 'pi pi-fw pi-bell', to: '/intranet/notifications', groupe: 'scolarite', ordre: 60, motsCles: ['messages', 'mails', 'e-mails', 'messagerie', 'alertes'] },
 ];
 
 export default {
@@ -77,6 +79,7 @@ export default {
         ...agendaRoutes,
         ...trombinoscopeRoutes,
         ...scolariteRoutes,
+        ...notificationsRoutes,
         ...cahierDeTexteRoutes,
         ...profilRoutes,
         ...administrationRoutes,
