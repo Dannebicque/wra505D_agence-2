@@ -126,8 +126,13 @@ autres.
 | `docs/04-reprise.md` | état du projet, ce qui est fait et ce qui reste | **au début de chaque session** |
 
 Jetons de direction artistique à respecter, volet 2 uniquement :
-primaire `#F7B000`, texte sur primaire `#4D3677`, texte courant `#4D5259`,
-fond `#F5F6FA`, succès `#15C377`, danger `#F96868`, rayon `6px`, police Roboto.
+primaire `#4D3677`, accent `#F7B000`, texte courant `#4D5259`, fond `#F5F6FA`,
+succès `#15C377`, danger `#F96868`, rayon `6px`, police Roboto.
+
+Une seule primaire pour tous les modules, jamais une couleur par module : la palette
+`VIOLET_IUT` du preset (`packages/shell/assets/main.js`), dont `#4D3677` est la nuance 500.
+Le jaune, primaire d'origine de la DA, sert d'accent (`--accent-color`) : choix de l'équipe,
+à revoir si le client s'y oppose.
 
 Le client ne fournit ni valeurs sombres, ni bordures, ni couleurs de texte sur le vert et le
 rouge. Celles-ci sont dérivées et mesurées, chaque rapport vérifié contre le seuil RGAA :
@@ -138,10 +143,11 @@ rouge. Celles-ci sont dérivées et mesurées, chaque rapport vérifié contre l
 | Texte atténué | `#676D75` | `#A7ACB4` | 7,40:1 en sombre |
 | Surface | `#FFFFFF` | `#25282D` | — |
 | Bordure d'élément d'interface | `#7E848D` | `#666B73` | 3,49:1 et 3,15:1 |
-| Texte sur primaire | `#4D3677` | idem | 5,29:1 |
+| Primaire | `#4D3677`, texte blanc dessus | `#AC95E1` (nuance 400) | 9,95:1 et 6,54:1 sur le fond sombre |
+| Texte sur accent | `#4D3677` sur `#F7B000` | idem | 5,29:1 |
 | Texte sur succès | `#0B3D26` | idem | 5,33:1 |
 | Texte sur danger | `#4A1010` | idem | 5,25:1 |
 
 Le vert et le rouge ne portent jamais de texte blanc : 2,31:1 et 2,91:1, très en dessous du
-seuil. La primaire ne fait que 1,74:1 sur le fond clair : elle ne peut pas délimiter seule un
+seuil. L'accent jaune ne fait que 1,74:1 sur le fond clair : il ne peut pas délimiter seul un
 élément d'interface, il lui faut une bordure. Cible tactile minimale : 44 px.
