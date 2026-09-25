@@ -12,7 +12,7 @@
       </button>
 
       <SearchBar
-          v-model="searchQuery"
+          :model-value="recherche"
           @search="handleSearch"
       />
     </div>
@@ -20,27 +20,30 @@
     <!-- Navigation -->
     <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
       <!-- All Documents -->
-      <button
-        @click="$emit('selectAll')"
+      <RouterLink
+        :to="lien({ categorie: null, enseignement: null, favoris: false })"
+        :aria-current="toutAfficher ? 'page' : undefined"
         :class="[
-          'w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
-          selectedCategory === null && selectedEnseignement === null && !showFavorites
+          'lien-filtre w-full min-h-[44px] flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+          toutAfficher
             ? 'bg-primary-50 text-primary-700 border border-primary-200'
             : 'text-gray-700 hover:bg-gray-50'
         ]"
       >
         <i class="pi pi-folder text-lg" aria-hidden="true"></i>
         <span>Tous les documents</span>
-        <span class="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+        <span class="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" aria-hidden="true">
           {{ totalDocuments }}
         </span>
-      </button>
+        <span class="sr-only">{{ totalDocuments }} {{ totalDocuments > 1 ? 'documents' : 'document' }}</span>
+      </RouterLink>
 
       <!-- Favorites -->
-      <button
-        @click="$emit('selectFavorites')"
+      <RouterLink
+        :to="lien({ favoris: true })"
+        :aria-current="showFavorites ? 'page' : undefined"
         :class="[
-          'w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+          'lien-filtre w-full min-h-[44px] flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
           showFavorites
             ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
             : 'text-gray-700 hover:bg-gray-50'
@@ -48,10 +51,11 @@
       >
         <i class="pi pi-star text-lg" aria-hidden="true"></i>
         <span>Favoris</span>
-        <span class="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+        <span class="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" aria-hidden="true">
           {{ favoriteCount }}
         </span>
-      </button>
+        <span class="sr-only">{{ favoriteCount }} {{ favoriteCount > 1 ? 'documents' : 'document' }}</span>
+      </RouterLink>
 
       <div
         v-for="section in sectionsEnseignements"
@@ -63,12 +67,11 @@
         </h2>
         <ul class="space-y-1">
           <li v-for="groupe in section.groupes" :key="groupe.enseignement.id">
-            <button
-              type="button"
-              :aria-current="selectedEnseignement === groupe.enseignement.id ? 'true' : undefined"
-              @click="$emit('selectEnseignement', groupe.enseignement.id)"
+            <RouterLink
+              :to="lien({ enseignement: groupe.enseignement.id })"
+              :aria-current="selectedEnseignement === groupe.enseignement.id ? 'page' : undefined"
               :class="[
-                'w-full min-h-[44px] flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md text-left transition-colors',
+                'lien-filtre w-full min-h-[44px] flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md text-left transition-colors',
                 selectedEnseignement === groupe.enseignement.id
                   ? 'bg-primary-50 text-primary-700 border border-primary-600'
                   : 'text-gray-700 hover:bg-gray-50'
@@ -82,7 +85,7 @@
                 {{ groupe.documentCount }}
               </span>
               <span class="sr-only">{{ groupe.documentCount }} {{ groupe.documentCount > 1 ? 'documents' : 'document' }}</span>
-            </button>
+            </RouterLink>
           </li>
         </ul>
       </div>
@@ -98,6 +101,7 @@
             :key="category.id"
             :category="category"
             :selected-category="selectedCategory"
+            :lien="lien"
           />
         </div>
       </div>
@@ -106,11 +110,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
+import type { RouteLocationRaw } from 'vue-router';
 import CategoryItem from './CategoryItem.vue';
 import SearchBar from './SearchBar.vue';
 import type { Category } from '@types';
 import type { ClassementEnseignements } from '@/service/utils/enseignementUtils';
+import type { FiltresDocuments } from '@/service/utils/filtresDocuments';
 
 interface Props {
   categories: Category[];
@@ -118,6 +124,8 @@ interface Props {
   selectedCategory: string | null;
   selectedEnseignement: string | null;
   showFavorites: boolean;
+  recherche: string;
+  lien: (modifications: Partial<FiltresDocuments>) => RouteLocationRaw;
   totalDocuments: number;
   favoriteCount: number;
 }
@@ -125,14 +133,11 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  selectAll: [];
-  selectEnseignement: [enseignementId: string];
-  selectFavorites: [];
   search: [query: string];
   openUploadModal: [];
 }>();
 
-const searchQuery = ref('');
+const toutAfficher = computed(() => props.selectedCategory === null && props.selectedEnseignement === null && !props.showFavorites);
 
 const sectionsEnseignements = computed(() =>
   [
@@ -145,3 +150,10 @@ const handleSearch = (query: string) => {
   emit('search', query);
 };
 </script>
+
+<style scoped>
+.lien-filtre:focus-visible {
+  outline: 2px solid var(--p-primary-500);
+  outline-offset: 2px;
+}
+</style>

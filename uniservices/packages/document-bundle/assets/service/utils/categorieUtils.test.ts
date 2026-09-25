@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Category } from '@types';
-import { categorieDeLAdresse, contientCategorie } from './categorieUtils';
+import { contientCategorie, idsDeLaCategorie } from './categorieUtils';
 
 const categorie = (id: string, children: Category[] = []): Category => ({
   id,
@@ -16,18 +16,6 @@ const arbre = [
   categorie('4'),
 ];
 
-describe('categorieDeLAdresse', () => {
-  it('lit la catégorie de l\'adresse', () => {
-    expect(categorieDeLAdresse({ categorie: '3' })).toBe('3');
-  });
-
-  it('renvoie null sans catégorie, avec une catégorie vide ou répétée', () => {
-    expect(categorieDeLAdresse({})).toBeNull();
-    expect(categorieDeLAdresse({ categorie: '' })).toBeNull();
-    expect(categorieDeLAdresse({ categorie: ['3', '4'] })).toBeNull();
-  });
-});
-
 describe('contientCategorie', () => {
   it('trouve une catégorie à n\'importe quelle profondeur', () => {
     expect(contientCategorie(arbre, '4')).toBe(true);
@@ -42,5 +30,16 @@ describe('contientCategorie', () => {
   it('ne cherche que dans les catégories données', () => {
     expect(contientCategorie(arbre[0].children ?? [], '3')).toBe(true);
     expect(contientCategorie(arbre[0].children ?? [], '4')).toBe(false);
+  });
+});
+
+describe('idsDeLaCategorie', () => {
+  it('rassemble la catégorie et toutes ses descendantes', () => {
+    expect([...idsDeLaCategorie(arbre, '1')].sort()).toEqual(['1', '2', '3']);
+    expect([...idsDeLaCategorie(arbre, '4')]).toEqual(['4']);
+  });
+
+  it('garde une catégorie inconnue seule, sans rien y ajouter', () => {
+    expect([...idsDeLaCategorie(arbre, '9')]).toEqual(['9']);
   });
 });
