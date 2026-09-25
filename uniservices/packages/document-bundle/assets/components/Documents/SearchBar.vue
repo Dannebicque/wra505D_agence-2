@@ -9,6 +9,7 @@
       v-model="searchQuery"
       @input="handleSearch"
       type="text"
+      aria-label="Rechercher des documents"
       placeholder="Rechercher des documents..."
       class="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
     />
@@ -18,6 +19,7 @@
     >
       <button
         @click="clearSearch"
+        aria-label="Effacer la recherche"
         class="h-5 w-5 text-gray-400 hover:text-gray-600"
       >
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
