@@ -7,6 +7,7 @@ import EdtEvent from './EdtEvent.vue'
 import {getEdtEventsService, getEtudiantScolariteSemestresService, getSemaineUniversitaireService} from "@requests";
 import {adjustColor, colorNameToRgb, darkenColor} from "@helpers/colors.js";
 import {getISOWeekNumber} from "@helpers/date";
+import {annonceAgenda, libelleCours} from '@/utils/agenda.js';
 import {useUsersStore} from "@stores";
 import {PhotoUser, ErrorView} from "@components";
 
@@ -18,6 +19,7 @@ const vuecalRef = ref(null)
 const events = ref([]);
 const weekUnivNumber = ref(0);
 const hasError = ref(false);
+const annonce = ref('');
 const viewTranslations = {
   week: 'SEMAINE',
   day: 'JOUR',
@@ -27,9 +29,23 @@ watch(() => vuecalRef.value?.view?.start, async (newValue) => {
   if (newValue) {
     const startDate = new Date(newValue);
     await getWeekUnivNumber(startDate); // Récupère le numéro de semaine de formation
-    getEventsEtudiantWeek(); // Met à jour les événements pour la semaine
+    await getEventsEtudiantWeek(); // Met à jour les événements pour la semaine
+    annoncerPeriode();
   }
 }, { immediate: true });
+
+const annoncerPeriode = () => {
+  const view = vuecalRef.value?.view;
+  if (!view) {
+    return;
+  }
+  annonce.value = annonceAgenda({
+    vue: view.id,
+    debut: view.firstCellDate,
+    fin: view.lastCellDate,
+    cours: events.value,
+  });
+};
 
 const getWeekUnivNumber = async (date) => {
   const calendarWeekNumber = getISOWeekNumber(date); // Calcule le numéro de semaine ISO
@@ -224,6 +240,8 @@ function getBadgeSeverity(type) {
     </div>
   </Dialog>
 
+  <p role="status" class="sr-only">{{ annonce }}</p>
+
   <ErrorView v-if="hasError" message="Une erreur est survenue lors du chargement de l'emploi du temps. Veuillez réessayer plus tard." />
   <vue-cal
       v-else
@@ -294,6 +312,9 @@ function getBadgeSeverity(type) {
 
     <template #event="{ event }">
       <EdtEvent :event="event" type="etudiant" />
+      <!-- Sans gestionnaire propre : son clic remonte jusqu'à vue-cal, qui émet event-click. La souris
+           et le clavier ouvrent ainsi le détail par le même chemin. -->
+      <button type="button" class="edt-cours" :aria-label="libelleCours(event)"></button>
     </template>
   </vue-cal>
 </template>
@@ -310,6 +331,16 @@ function getBadgeSeverity(type) {
 
 :deep(.vuecal__event-details) {
   @apply h-full;
+}
+
+.edt-cours {
+  @apply absolute inset-0 rounded-xl cursor-pointer;
+  /* Les cours gardent un fond pâle en thème sombre, où --p-primary-color s'éclaircit : l'anneau
+     reste le violet de la DA, au moins 7:1 sur chacun de ces fonds. */
+  &:focus-visible {
+    outline: 3px solid var(--p-primary-500);
+    outline-offset: -3px;
+  }
 }
 
 :deep(.vuecal__body) {
