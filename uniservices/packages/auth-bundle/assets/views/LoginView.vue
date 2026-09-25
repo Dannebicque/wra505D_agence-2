@@ -181,7 +181,7 @@ onMounted(async () => {
           />
           <div class="flex flex-col justify-between gap-4">
             <div class="flex items-center">
-              <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
+              <Checkbox v-model="checked" input-id="rememberme1" binary class="mr-2"></Checkbox>
               <label for="rememberme1">Se souvenir de moi</label>
             </div>
             <div class="flex justify-end items-center">

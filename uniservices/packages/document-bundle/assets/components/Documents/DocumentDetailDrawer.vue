@@ -51,6 +51,7 @@
 
         <ButtonDelete
           v-permission="'isPersonnel'"
+          tooltip="Supprimer le document"
           @confirm="$emit('delete', document)"
         />
       </div>

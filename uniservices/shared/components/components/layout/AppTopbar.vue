@@ -353,7 +353,7 @@ const selectAnneeUniversitaire = (annee) => {
             <span>Notifications</span>
           </button>
           <div class="layout-config-menu">
-            <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
+            <button type="button" class="layout-topbar-action" aria-label="Mode sombre" :aria-pressed="isDarkTheme" @click="toggleDarkMode">
               <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
             </button>
           </div>

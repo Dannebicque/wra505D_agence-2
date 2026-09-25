@@ -178,6 +178,7 @@ const updateViewMode = (viewMode: 'grid' | 'list') => {
               type="text"
               :value="filters.searchTerm"
               @input="updateSearch(($event.target as HTMLInputElement).value)"
+              aria-label="Rechercher par nom ou prénom"
               placeholder="Nom, prénom..."
               class="input-field pl-10"
           />
@@ -193,8 +194,9 @@ const updateViewMode = (viewMode: 'grid' | 'list') => {
         <div class="space-y-4">
           <!-- Semester -->
           <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">Semestre</label>
+            <label for="filtre-semestre" class="block text-xs font-medium text-gray-700 mb-1">Semestre</label>
             <select
+                id="filtre-semestre"
                 :value="filters.studentFilters.semester || ''"
                 @change="updateStudentSemester($event.target.value ? parseInt($event.target.value) : null)"
                 class="input-field text-sm"
@@ -208,8 +210,9 @@ const updateViewMode = (viewMode: 'grid' | 'list') => {
 
           <!-- Group Type -->
           <div v-if="filters.studentFilters.semester">
-            <label class="block text-xs font-medium text-gray-700 mb-1">Type de groupe</label>
+            <label for="filtre-type-groupe" class="block text-xs font-medium text-gray-700 mb-1">Type de groupe</label>
             <select
+                id="filtre-type-groupe"
                 :value="filters.studentFilters.groupType || ''"
                 @change="updateStudentGroupType($event.target.value || null)"
                 class="input-field text-sm"
@@ -223,8 +226,9 @@ const updateViewMode = (viewMode: 'grid' | 'list') => {
 
           <!-- Specific Group -->
           <div v-if="filters.studentFilters.groupType && availableGroups.length > 0">
-            <label class="block text-xs font-medium text-gray-700 mb-1">Groupe spécifique</label>
+            <label for="filtre-groupe" class="block text-xs font-medium text-gray-700 mb-1">Groupe spécifique</label>
             <select
+                id="filtre-groupe"
                 :value="filters.studentFilters.group || ''"
                 @change="updateStudentGroup($event.target.value || null)"
                 class="input-field text-sm"
@@ -244,8 +248,9 @@ const updateViewMode = (viewMode: 'grid' | 'list') => {
         <div class="space-y-4">
           <!-- statut -->
           <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">Statut</label>
+            <label for="filtre-statut" class="block text-xs font-medium text-gray-700 mb-1">Statut</label>
             <select
+                id="filtre-statut"
                 :value="filters.staffFilters.statut || ''"
                 @change="updateStaffStatut($event.target.value || null)"
                 class="input-field text-sm"

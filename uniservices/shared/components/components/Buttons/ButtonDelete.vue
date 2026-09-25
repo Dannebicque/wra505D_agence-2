@@ -44,6 +44,7 @@ const showConfirmDialog = () => {
           severity="danger"
           rounded
           v-tooltip.bottom="tooltip"
+          :aria-label="label ? undefined : tooltip"
           class="mr-2"
           @click="showConfirmDialog"
           :label="label"
