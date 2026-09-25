@@ -54,6 +54,12 @@ describe('Navigation de l\'étudiant', () => {
         cy.document().should(pageTientDansLaFenetre);
     });
 
+    it('ne propose pas de « Retour » sur l\'accueil, sa page d\'arrivée', () => {
+        cy.visit('/app/intranet/');
+        cy.contains('h1', 'Dashboard', { timeout: 15000 });
+        cy.get('#contenu-principal').contains('button', 'Retour').should('not.exist');
+    });
+
     it('range le département et retire « Paramètres » dans le menu du profil', () => {
         cy.visit('/app/intranet/');
         cy.get('[aria-controls="profile_menu"]', { timeout: 15000 }).click();
