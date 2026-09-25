@@ -137,7 +137,7 @@ const moveWidget = async (widget, direction) => {
 <template>
   <section class="col-span-12 lg:col-span-10 pb-14">
     <div>
-      <div v-if="!userStore.isLoading" class="flex items-center justify-between mb-4">
+      <div v-if="!userStore.isLoading" class="flex flex-wrap items-center justify-between gap-4 mb-4">
         <div class="flex items-center">
           <div class="w-20 h-20 bg-primary-400 rounded-full flex items-center justify-center shrink-0">
             <template v-if="userStore.userPhoto">
@@ -154,7 +154,7 @@ const moveWidget = async (widget, direction) => {
             <small class="text-muted-color">{{ formatDateLong(date) }}</small>
           </div>
         </div>
-        <div class="card flex justify-between items-center gap-6 m-0! p-4!">
+        <div class="card flex justify-between items-center gap-6 m-0! p-4! max-md:w-full">
           <div>
             <div class="text-xl font-semibold">Mon dashboard</div>
             <div class="text-sm text-color-secondary">Personnalisez vos widgets.</div>
@@ -186,5 +186,17 @@ const moveWidget = async (widget, direction) => {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
+}
+
+/* Sur un téléphone, quatre colonnes écraseraient les widgets : un par ligne, à pleine largeur.
+   Chaque widget porte sa largeur en style en ligne, d'où le !important. */
+@media (max-width: 767px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid > :deep(*) {
+    grid-column: auto !important;
+  }
 }
 </style>
