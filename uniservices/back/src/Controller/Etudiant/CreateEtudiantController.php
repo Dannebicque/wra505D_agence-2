@@ -53,7 +53,7 @@ class CreateEtudiantController extends AbstractController
         }
 
         // Récupérer les en-têtes
-        $headers = str_getcsv($lines[0], ';');
+        $headers = str_getcsv($lines[0], ';', '"', '\\');
 
         $createdEtudiants = [];
         $errors = [];
@@ -66,7 +66,7 @@ class CreateEtudiantController extends AbstractController
                 continue; // Ignorer les lignes vides
             }
 
-            $values = str_getcsv($line, ';');
+            $values = str_getcsv($line, ';', '"', '\\');
 
             // Initialiser l'entrée pour cette ligne
             $lineInfo = [
