@@ -111,8 +111,6 @@
                 transition: transform var(--element-transition-duration);
             }
 
-            // Le texte garde sa couleur : la primaire du module n'atteint pas 4,5:1 sur le fond.
-            // Elle ne sert qu'au repère et à l'icône.
             &.active-route {
                 font-weight: 600;
                 background-color: color-mix(in srgb, var(--primary-color) 12%, transparent);
