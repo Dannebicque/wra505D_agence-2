@@ -272,10 +272,6 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->prenom . ' ' . $this->nom;
     }
 
-    public function eraseCredentials(): void
-    {
-    }
-
     public function getUserIdentifier(): string
     {
         return $this->username;
