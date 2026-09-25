@@ -207,6 +207,25 @@ temps de leur expiration (`accept_stored_in_the_clear`), puis refusés.
 faudra passer en 8.2, attendue en novembre 2026.
 **Terminé quand** CI-Back et CI-Cypress sont vertes, et que les réponses des routes `/api/me/…`
 et de la recherche sont identiques avant et après.
+**Fait** Symfony 8.1.7, DoctrineBundle 3.3, fixtures 4, migrations 4. Le conteneur ne signale plus
+aucune dépréciation. Défauts révélés par la montée :
+- `Serializer\Annotation\Groups` n'existe plus. PHP ignore un attribut dont la classe manque :
+  cinq classes perdaient leurs groupes, et les actualités revenaient sans titre ni contenu. PHPStan
+  l'a signalé.
+- DoctrineBundle 3 refuse les réglages de proxy et les caches déclarés au niveau `orm` : les caches
+  de production passent sous le gestionnaire d'entités `default`.
+
+Vérifié : 19 routes, dont `/api/me/…`, la recherche et les documents, renvoient un JSON identique
+sous 7.4 et sous 8.1, sur la même base. Le noyau refuse désormais tout `APP_ENV` autre que `prod`,
+`dev` et `test`. Les contraintes des `composer.json` des bundles ont été mises à jour par OpenCode.
+
+### E17 · [back] Mot de passe fixe des étudiants créés par le personnel · S
+**Pourquoi** Constaté pendant E13. `CreateEtudiantController`, présent en double dans `App` et dans
+`intranet-bundle`, donne à chaque étudiant créé le mot de passe `test`, avec un « todo : à changer
+en production ». Quiconque connaît un identifiant peut ouvrir le compte d'un étudiant ainsi créé.
+**Terminé quand** un compte créé n'a aucun mot de passe utilisable (l'étudiant passe par le CAS ou
+par la réinitialisation), et qu'un test PHPUnit le vérifie. Écran du personnel : correction de
+bug seulement, rien n'y est ajouté.
 
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,

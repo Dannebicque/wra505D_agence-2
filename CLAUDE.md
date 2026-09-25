@@ -29,7 +29,7 @@ On ne réécrit pas ce qui marche, on l'améliore.
 Vue 3 Composition API · Vite · PrimeVue · Tailwind · Pinia · axios ·
 Vitest pour l'unitaire · Cypress pour l'E2E · ESLint + Prettier.
 
-Côté serveur : Symfony 7.4 et API Platform, MariaDB, données de fixtures. Jamais la production.
+Côté serveur : Symfony 8.1 et API Platform, MariaDB, données de fixtures. Jamais la production.
 
 Pas de framework supplémentaire, pas de seconde librairie de composants : on utilise PrimeVue,
 déjà en place. Un composant n'est écrit à la main que si PrimeVue n'a pas d'équivalent.

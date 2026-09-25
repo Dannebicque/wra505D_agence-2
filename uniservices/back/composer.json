@@ -13,35 +13,35 @@
         "api-platform/symfony": "^4.0",
         "davidannebicque/html-to-spreadsheet-bundle": "^0.2.0",
         "doctrine/dbal": "^4",
-        "doctrine/doctrine-bundle": "*",
-        "doctrine/doctrine-migrations-bundle": "^3.3",
+        "doctrine/doctrine-bundle": "^3.0",
+        "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "*",
         "dragonmantank/cron-expression": "^3.6",
         "gesdinet/jwt-refresh-token-bundle": "^2.2",
         "lexik/jwt-authentication-bundle": "^3.1",
         "nelmio/cors-bundle": "^2.5",
         "nesbot/carbon": "^3.8",
-        "symfony/asset": "7.4.*",
-        "symfony/console": "7.4.*",
-        "symfony/dotenv": "7.4.*",
-        "symfony/expression-language": "7.4.*",
+        "symfony/asset": "8.1.*",
+        "symfony/console": "8.1.*",
+        "symfony/dotenv": "8.1.*",
+        "symfony/expression-language": "8.1.*",
         "symfony/flex": "^2",
-        "symfony/framework-bundle": "7.4.*",
-        "symfony/http-client": "7.4.*",
-        "symfony/mailer": "7.4.*",
-        "symfony/messenger": "7.4.*",
-        "symfony/options-resolver": "7.4.*",
-        "symfony/property-access": "7.4.*",
-        "symfony/property-info": "7.4.*",
-        "symfony/rate-limiter": "7.4.*",
-        "symfony/runtime": "7.4.*",
-        "symfony/scheduler": "7.4.*",
-        "symfony/security-bundle": "7.4.*",
-        "symfony/serializer": "7.4.*",
-        "symfony/twig-bundle": "7.4.*",
-        "symfony/uid": "7.4.*",
-        "symfony/validator": "7.4.*",
-        "symfony/yaml": "7.4.*"
+        "symfony/framework-bundle": "8.1.*",
+        "symfony/http-client": "8.1.*",
+        "symfony/mailer": "8.1.*",
+        "symfony/messenger": "8.1.*",
+        "symfony/options-resolver": "8.1.*",
+        "symfony/property-access": "8.1.*",
+        "symfony/property-info": "8.1.*",
+        "symfony/rate-limiter": "8.1.*",
+        "symfony/runtime": "8.1.*",
+        "symfony/scheduler": "8.1.*",
+        "symfony/security-bundle": "8.1.*",
+        "symfony/serializer": "8.1.*",
+        "symfony/twig-bundle": "8.1.*",
+        "symfony/uid": "8.1.*",
+        "symfony/validator": "8.1.*",
+        "symfony/yaml": "8.1.*"
     },
     "config": {
         "allow-plugins": {
@@ -97,13 +97,13 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "7.4.*"
+            "require": "8.1.*"
         }
     },
     "require-dev": {
-        "doctrine/doctrine-fixtures-bundle": "^3.6",
+        "doctrine/doctrine-fixtures-bundle": "^4.0",
         "friendsofphp/php-cs-fixer": "^3.95",
-        "jawira/doctrine-diagram-bundle": "^1.2",
+        "jawira/doctrine-diagram-bundle": "^2.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
@@ -112,6 +112,6 @@
         "phpunit/phpunit": "^11.5",
         "rector/rector": "^2.5",
         "symfony/maker-bundle": "^1.61",
-        "symfony/phpunit-bridge": "7.4.*"
+        "symfony/phpunit-bridge": "8.1.*"
     }
 }
