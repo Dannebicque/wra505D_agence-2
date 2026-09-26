@@ -32,7 +32,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 |---|---|
 | CI-Packages (front) | vert |
 | CI-Back : `composer validate`, `lint:container`, `doctrine:schema:validate` | vert |
-| CI-Back : PHPStan | niveau 6, 0 erreur ; 4 identifiants ignorés en bloc dans `phpstan.neon` (E15) |
+| CI-Back : PHPStan | niveau 9, 0 erreur, aucun identifiant ignoré (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
 | CI-Cypress : 9 fichiers, 33 tests, sur une base de fixtures neuve et un Vite froid | vert |
@@ -342,7 +342,15 @@ la V3 en reproduisant la conversion de PHP sans `strict_types`. Ces commandes de
 preuve par construction, le diff de jetons contre `develop`, appels `LegacyValue` retirés, ne
 montre que les filtres `instanceof`, les imports et deux branches décrites en E19. Codex a épuisé
 son quota en cours de lot (jusqu'au 25/10/2026) ; OpenCode puis la main ont pris le relais.
-**Reste** niveau 9 hors `CopyBdd` (environ 680), niveau 10, puis `phpstan-strict-rules`.
+**Niveau 9 fait** 684 erreurs hors `CopyBdd`. `LegacyValue` devient `App\Utils\LooseValue`,
+avec `number()` et `nullableInstance()`. Les appels aux fonctions natives passent par les `cast*`,
+qui gardent la conversion de null. Là où le code d'origine plantait toujours, une `LogicException`
+dit pourquoi. `EdtAgendaProvider` et son DTO, référencés nulle part et incapables de tourner, sont
+supprimés. Preuve : les 195 appels GET sans paramètre (étudiant, personnel, superadmin) rendent
+le même code et le même JSON que `develop`. Deux écarts sur des entrées invalides : un filtre
+texte reçu en tableau lève une erreur au lieu de chercher « Array », et un volume horaire absent
+arrête la synchronisation ORéOF. Les providers du prévisionnel ont été confiés à OpenCode, relus.
+**Reste** niveau 10, puis `phpstan-strict-rules`.
 ### A1 · Masquer les ligatures d'icônes aux lecteurs d'écran · S
 **Obsolète** corrigé : plus aucune ligature n'est lue (A11Y-1, audit 05). La suite est A10.
 **Pourquoi** A11Y-1. Les libellés de navigation contiennent la ligature de l'icône, non masquée.
