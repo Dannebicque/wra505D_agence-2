@@ -3,11 +3,11 @@
 namespace IntranetBundle\State\Provider\Previsionnel;
 
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
-use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Scolarite\ScolEnseignement;
+use App\Utils\LooseValue;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelSemestreDto;
 use App\Repository\Structure\StructureSemestreRepository;
 
@@ -16,7 +16,6 @@ class PrevisionnelSemestreProvider implements ProviderInterface
 {
     public function __construct(
         private CollectionProvider $collectionProvider,
-        private ItemProvider $itemProvider,
         private StructureSemestreRepository $semestreRepository
     ) {
     }
@@ -134,7 +133,8 @@ class PrevisionnelSemestreProvider implements ProviderInterface
 
                     $output['previForm'][] = $this->formToDto($item);
 
-                    $semestre = $this->semestreRepository->find($context['filters']['semestre']);
+                    $semestreId = LooseValue::row($context['filters'] ?? [])['semestre'] ?? null;
+                    $semestre = null === $semestreId ? null : $this->semestreRepository->find($semestreId);
                     if ($semestre === null) {
                         throw new \LogicException('Semestre is required');
                     }
@@ -231,18 +231,29 @@ class PrevisionnelSemestreProvider implements ProviderInterface
             ];
 
             return array_values($output);
-        } else {
-            $data = $this->itemProvider->provide($operation, $uriVariables, $context);
         }
 
-        return $this->syntheseToDto($data);
+        throw new \LogicException('PrevisionnelSemestreProvider only serves collections.');
     }
 
-    public function syntheseToDto(mixed $group): PrevisionnelSemestreDto
+    /**
+     * @param array{
+     *     enseignement: \App\Entity\Scolarite\ScolEnseignement,
+     *     personnels: list<\App\Entity\Users\Personnel>,
+     *     heures: array{CM: float|int, TD: float|int, TP: float|int, Projet: float|int},
+     *     groupes: array{CM: int, TD: int, TP: int, Projet: int}
+     * } $group
+     */
+    public function syntheseToDto(array $group): PrevisionnelSemestreDto
     {
+        $codeEnseignement = $group['enseignement']->getCodeEnseignement();
+        $libelle = $group['enseignement']->getLibelle();
+        if (null === $codeEnseignement || null === $libelle) {
+            throw new \LogicException('Enseignement without code or libelle.');
+        }
         $prevSem = new PrevisionnelSemestreDto();
-        $prevSem->setCodeEnseignement($group['enseignement']->getCodeEnseignement());
-        $prevSem->setLibelleEnseignement($group['enseignement']->getLibelle());
+        $prevSem->setCodeEnseignement($codeEnseignement);
+        $prevSem->setLibelleEnseignement($libelle);
         $prevSem->setTypeEnseignement($group['enseignement']->getType());
         $prevSem->setPersonnels($group['personnels']);
         $prevSem->setHeures(
@@ -273,17 +284,36 @@ class PrevisionnelSemestreProvider implements ProviderInterface
         return $prevSem;
     }
 
-    public function formToDto(mixed $item): PrevisionnelSemestreDto
+    public function formToDto(\IntranetBundle\Entity\Previsionnel\Previsionnel $item): PrevisionnelSemestreDto
     {
+        $enseignement = $item->getEnseignement();
+        $personnel = $item->getPersonnel();
+        if (null === $enseignement || null === $personnel) {
+            throw new \LogicException('Previsionnel without enseignement or personnel.');
+        }
+
+        $id = $item->getId();
+        $idEnseignement = $enseignement->getId();
+        $codeEnseignement = $enseignement->getCodeEnseignement();
+        $idPersonnel = $personnel->getId();
+        if (null === $id || null === $idEnseignement || null === $codeEnseignement || null === $idPersonnel) {
+            throw new \LogicException('Previsionnel, enseignement or personnel without id.');
+        }
+
+        $anneeUniversitaire = $item->getAnneeUniversitaire();
+        if (null === $anneeUniversitaire) {
+            throw new \LogicException('Previsionnel without annee universitaire.');
+        }
+
         $prevSem = new PrevisionnelSemestreDto();
-        $prevSem->setId($item->getId());
-        $prevSem->setIdEnseignement($item->getEnseignement()->getId());
-        $prevSem->setCodeEnseignement($item->getEnseignement()->getCodeEnseignement());
-        $prevSem->setLibelleEnseignement($item->getEnseignement()->getDisplay());
-        $prevSem->setTypeEnseignement($item->getEnseignement()->getType());
-        $prevSem->setIdPersonnel($item->getPersonnel()->getId());
-        $prevSem->setPersonnels([$item->getPersonnel()]);
-        $prevSem->setIntervenant($item->getPersonnel()->getDisplay());
+        $prevSem->setId($id);
+        $prevSem->setIdEnseignement($idEnseignement);
+        $prevSem->setCodeEnseignement($codeEnseignement);
+        $prevSem->setLibelleEnseignement($enseignement->getDisplay());
+        $prevSem->setTypeEnseignement($enseignement->getType());
+        $prevSem->setIdPersonnel($idPersonnel);
+        $prevSem->setPersonnels([$personnel]);
+        $prevSem->setIntervenant($personnel->getDisplay());
         $prevSem->setHeures(
             [
                 'CM' => [
@@ -309,7 +339,7 @@ class PrevisionnelSemestreProvider implements ProviderInterface
             ]
         );
         $prevSem->setGroupes($item->getGroupes());
-        $prevSem->setAnneeUniversitaire($item->getAnneeUniversitaire());
+        $prevSem->setAnneeUniversitaire($anneeUniversitaire);
 
         return $prevSem;
     }

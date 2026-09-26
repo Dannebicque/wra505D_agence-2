@@ -6,7 +6,9 @@ use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query\Expr\Join;
 use IntranetBundle\Enum\EtatJustificatifEnum;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -88,9 +90,9 @@ class AbsenceFilter extends AbstractFilter
 
     private function getOrCreateJoin(QueryBuilder $qb, QueryNameGeneratorInterface $queryNameGenerator, string $fromAlias, string $association): string
     {
-        foreach ($qb->getDQLPart('join')[$fromAlias] ?? [] as $join) {
-            if ($join->getJoin() === sprintf('%s.%s', $fromAlias, $association)) {
-                return $join->getAlias();
+        foreach (LooseValue::row(LooseValue::row($qb->getDQLPart('join'))[$fromAlias] ?? []) as $join) {
+            if ($join instanceof Join && $join->getJoin() === sprintf('%s.%s', $fromAlias, $association)) {
+                return $join->getAlias() ?? throw new \LogicException('Doctrine join without alias.');
             }
         }
 

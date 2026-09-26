@@ -7,8 +7,11 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Entity\Etudiant\EtudiantAbsence;
+use App\Utils\LooseValue;
 
-/** @implements ProviderInterface<object> */
+/** @implements ProviderInterface<object> *
+ * @phpstan-type Episode array{id: string, mode: string, justifiee: bool, scolariteSemestreId: int|null, etudiantDisplay: string, dateDebut: string|null, dateFin: string|null, joursCount: int, creneauxCount: int, absenceIds: list<int|null>, events: list<array<string, mixed>>, absences: list<array<string, mixed>>, jours: array<int, true>}
+ */
 class AbsenceEpisodeProvider implements ProviderInterface
 {
     public function __construct(
@@ -75,9 +78,9 @@ class AbsenceEpisodeProvider implements ProviderInterface
      */
     private function paginateRows(array $rows, array $context): array
     {
-        $filters = $context['filters'] ?? [];
-        $page = max(1, (int)($filters['page'] ?? 1));
-        $itemsPerPage = (int)($filters['itemsPerPage'] ?? 0);
+        $filters = LooseValue::row($context['filters'] ?? []);
+        $page = max(1, LooseValue::castInt($filters['page'] ?? 1));
+        $itemsPerPage = LooseValue::castInt($filters['itemsPerPage'] ?? 0);
 
         if ($itemsPerPage <= 0) {
             return $rows;
@@ -91,7 +94,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
     /** @param array<string, mixed> $context */
     private function isFlatMode(array $context): bool
     {
-        $filters = $context['filters'] ?? [];
+        $filters = LooseValue::row($context['filters'] ?? []);
 
         return isset($filters['event']) || isset($filters['personnel']);
     }
@@ -144,7 +147,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
     }
 
     /**
-     * @param array<string, mixed> $episode
+     * @param Episode $episode
      */
     private function canJoinEpisode(array $episode, ?int $studentId, \DateTimeInterface $date, bool $status): bool
     {
@@ -152,7 +155,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
             return false;
         }
 
-        $lastDate = new \DateTimeImmutable($episode['dateFin']);
+        $lastDate = new \DateTimeImmutable($episode['dateFin'] ?? '');
         $currentDay = new \DateTimeImmutable($date->format('Y-m-d'));
         $diffDays = (int)$lastDate->diff($currentDay)->format('%r%a');
 
@@ -160,7 +163,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
     }
 
     /**
-     * @return array<string, mixed>
+     * @return Episode
      */
     private function newEpisode(EtudiantAbsence $absence): array
     {

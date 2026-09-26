@@ -3,20 +3,20 @@
 namespace IntranetBundle\State\Provider\Previsionnel;
 
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
-use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelAllPersonnelsDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
+use App\Utils\LooseValue;
+use App\Entity\Users\Personnel;
 
 /** @implements ProviderInterface<PrevisionnelAllPersonnelsDto> */
 class PrevisionnelAllPersonnelsProvider implements ProviderInterface
 {
     public function __construct(
         private CollectionProvider $collectionProvider,
-        private ItemProvider $itemProvider,
         private StructureDepartementPersonnelRepository $structureDepartementPersonnelRepository
     ) {
     }
@@ -65,7 +65,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
             if (!empty($personnelIds)) {
                 $departements = $this->structureDepartementPersonnelRepository->findBy([
                     'personnel' => $personnelIds,
-                    'departement' => $context['filters']['departement']
+                    'departement' => LooseValue::row($context['filters'] ?? [])['departement']
                 ]);
 
                 foreach ($departements as $dept) {
@@ -208,14 +208,17 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
             });
 
             return $output;
-        } else {
-            $data = $this->itemProvider->provide($operation, $uriVariables, $context);
         }
 
-        return $this->toDto($data);
+        // L'opération d'élément passait l'entité du provider à toDto(), qui lit un groupe en
+        // tableau : elle plantait toujours (objet utilisé comme tableau).
+        throw new \LogicException('PrevisionnelAllPersonnelsProvider only serves collections.');
     }
 
-    public function toDto(mixed $group): PrevisionnelAllPersonnelsDto
+    /**
+     * @param array{count: int, personnel: Personnel, statutLibelle: string, statutBadge: string, heures: array<string, float|int|string>, nbHeuresService: int|string|null, affectation: bool} $group
+     */
+    public function toDto(array $group): PrevisionnelAllPersonnelsDto
     {
         $prevMatiere = new PrevisionnelAllPersonnelsDto();
 

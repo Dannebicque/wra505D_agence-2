@@ -105,16 +105,24 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
             return $output;
         } else {
             $data = $this->itemProvider->provide($operation, $uriVariables, $context);
+            if (!$data instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                throw new \LogicException('Expected a Previsionnel.');
+            }
         }
 
         return $this->toDto($data);
     }
 
-    public function toDto(mixed $item): PrevisionnelEnseignementDto
+    public function toDto(\IntranetBundle\Entity\Previsionnel\Previsionnel $item): PrevisionnelEnseignementDto
     {
+        $libelle = $item->getEnseignement()?->getLibelle();
+        $personnel = $item->getPersonnel();
+        if (null === $libelle || null === $personnel) {
+            throw new \LogicException('Previsionnel without enseignement or personnel.');
+        }
         $prevMatiere = new PrevisionnelEnseignementDto();
-        $prevMatiere->setLibelle($item->getEnseignement()->getLibelle());
-        $prevMatiere->setPersonnel($item->getPersonnel());
+        $prevMatiere->setLibelle($libelle);
+        $prevMatiere->setPersonnel($personnel);
         $prevMatiere->setHeures(
             [
                 'CM' => [
