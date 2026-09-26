@@ -32,7 +32,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 |---|---|
 | CI-Packages (front) | vert |
 | CI-Back : `composer validate`, `lint:container`, `doctrine:schema:validate` | vert |
-| CI-Back : PHPStan | niveau 9, 0 erreur, aucun identifiant ignoré (E15) |
+| CI-Back : PHPStan | niveau 10 (max), 0 erreur, aucun identifiant ignoré (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
 | CI-Cypress : 9 fichiers, 33 tests, sur une base de fixtures neuve et un Vite froid | vert |
@@ -350,7 +350,12 @@ supprimés. Preuve : les 195 appels GET sans paramètre (étudiant, personnel, s
 le même code et le même JSON que `develop`. Deux écarts sur des entrées invalides : un filtre
 texte reçu en tableau lève une erreur au lieu de chercher « Array », et un volume horaire absent
 arrête la synchronisation ORéOF. Les providers du prévisionnel ont été confiés à OpenCode, relus.
-**Reste** niveau 10, puis `phpstan-strict-rules`.
+**Niveau 10 fait** 98 erreurs : les tableaux sans type précis (réponses de la V3, sorties
+d'`OptionsResolver`) et une constante lue sur l'instance. `LooseValue::assoc()` type les options
+résolues. Les 195 appels GET rendent toujours le même JSON que `develop`. Corrigé au passage : le
+niveau 9 lisait les semestres d'un groupe V3 avec `rows()`, qui exige des tableaux, alors que ce
+sont des identifiants ; l'import des groupes aurait levé une exception.
+**Reste** `phpstan-strict-rules`.
 ### A1 · Masquer les ligatures d'icônes aux lecteurs d'écran · S
 **Obsolète** corrigé : plus aucune ligature n'est lue (A11Y-1, audit 05). La suite est A10.
 **Pourquoi** A11Y-1. Les libellés de navigation contiennent la ligature de l'icône, non masquée.
