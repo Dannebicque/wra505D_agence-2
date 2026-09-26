@@ -11,6 +11,7 @@ use App\Entity\Users\Personnel;
 use App\Repository\PersonnelRepository;
 use App\Repository\Structure\StructureCalendrierRepository;
 
+/** @implements ProviderInterface<\App\ApiDto\PersonnelsContraintes> */
 class PersonnelsContraintesProvider implements ProviderInterface
 {
     public function __construct(
@@ -65,6 +66,7 @@ class PersonnelsContraintesProvider implements ProviderInterface
         return $contraintes;
     }
 
+    /** @return array<string, array{type: string, contrainte: array<string, mixed>}> */
     private function getContraintes(StructureCalendrier $semaine, Personnel $personnel): array
     {
         //todo: si pas de semaine seule les contraintes all...

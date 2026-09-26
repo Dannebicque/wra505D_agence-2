@@ -105,10 +105,12 @@ class Previsionnel
     #[Groups(['previsionnel:read'])]
     private ?bool $referent = null;
 
+    /** @var array<string, float> */
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read','previsionnel_all_personnels:read', 'previsionnel_personnel:read'])]
     private array $heures = [];
 
+    /** @var array<string, int>|null */
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read'])]
     private ?array $groupes = [];
@@ -206,11 +208,13 @@ class Previsionnel
         return $this->heures['TP'] / self::DUREE_SEANCE;
     }
 
+    /** @return array<string, float> */
     public function getHeures(): array
     {
         return $this->heures;
     }
 
+    /** @param array<string, float|int> $heures */
     public function setHeures(array $heures): static
     {
         $resolver = new OptionsResolver();
@@ -241,6 +245,7 @@ class Previsionnel
         $resolver->setAllowedTypes('Projet', 'float');
     }
 
+    /** @return array<string, int> */
     public function getGroupes(): array
     {
         if ($this->groupes === null) {
@@ -250,6 +255,7 @@ class Previsionnel
         return $this->groupes;
     }
 
+    /** @param array<string, int>|null $groupes */
     public function setGroupes(?array $groupes): static
     {
         if ($groupes === null) {

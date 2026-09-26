@@ -113,6 +113,7 @@ class StagePeriode
     #[Groups(['stage_periode:read'])]
     private ?string $documentsRendre = null;
 
+    /** @var list<array{name: string, format: string, size: string, date: string}>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['stage_periode:read'])]
     private ?array $consignesFichiers = [];
@@ -391,11 +392,13 @@ class StagePeriode
         return $this;
     }
 
+    /** @return list<array{name: string, format: string, size: string, date: string}>|null */
     public function getConsignesFichiers(): ?array
     {
         return $this->consignesFichiers;
     }
 
+    /** @param list<array{name: string, format: string, size: string, date: string}>|null $consignesFichiers */
     public function setConsignesFichiers(?array $consignesFichiers): static
     {
         $this->consignesFichiers = $consignesFichiers;

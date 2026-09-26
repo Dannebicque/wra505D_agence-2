@@ -121,6 +121,7 @@ class StructureDiplome
     #[Groups(['diplome:detail', 'maquette:detail'])]
     private ?self $parent = null;
 
+    /** @var Collection<int, self> */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
     #[Groups(['diplome:detail', 'maquette:detail'])]
     private Collection $enfants;
@@ -129,6 +130,7 @@ class StructureDiplome
     #[Groups(['diplome:detail'])]
     private ?string $logoPartenaireName = null;
 
+    /** @var Collection<int, StructurePn> */
     #[ORM\OneToMany(targetEntity: StructurePn::class, mappedBy: 'diplome', cascade: ['remove'], fetch: 'EAGER', orphanRemoval: true)]
     #[Groups(['diplome:detail', 'maquette:detail', 'pn:light'])]
     private Collection $pns;

@@ -11,6 +11,7 @@ use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Structure\StructureAnnee;
 use Doctrine\ORM\EntityManagerInterface;
 
+/** @implements ProviderInterface<StructureAnnee> */
 class EtudiantAnneesStatsProvider implements ProviderInterface
 {
     public function __construct(
@@ -67,6 +68,11 @@ class EtudiantAnneesStatsProvider implements ProviderInterface
         return $this->itemProvider->provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * @param list<int> $anneeIds
+     * @param array<string, mixed> $filters
+     * @return array<int, int>
+     */
     private function getEtudiantsCountByAnnee(array $anneeIds, array $filters): array
     {
         $qb = $this->entityManager->createQueryBuilder();
@@ -112,6 +118,7 @@ class EtudiantAnneesStatsProvider implements ProviderInterface
         return $counts;
     }
 
+    /** @param array<string, mixed> $filters */
     private function resolveFilterValue(array $filters, string $key): mixed
     {
         $value = $filters[$key] ?? null;

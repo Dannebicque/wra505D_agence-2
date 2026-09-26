@@ -8,6 +8,7 @@ enum TypePublicEnum: string
     case TYPE_PUBLIC_PERSONNEL = 'personnel';
 
 
+    /** @return array<string, self> */
     public static function getChoices(): array
     {
         return [
@@ -16,6 +17,7 @@ enum TypePublicEnum: string
         ];
     }
 
+    /** @return list<self> */
     public static function getTypes(): array
     {
         return [

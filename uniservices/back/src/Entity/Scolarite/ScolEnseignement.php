@@ -84,6 +84,7 @@ class ScolEnseignement
     #[Groups(['enseignement:detail'])]
     private ?bool $suspendu = false;
 
+    /** @var array<string, array<string, float|int>> */
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['previsionnel:read', 'enseignement:detail', 'previsionnel_semestre:read'])]
     private array $heures = [];
@@ -277,11 +278,13 @@ class ScolEnseignement
         return $this;
     }
 
+    /** @return array<string, array<string, float|int>> */
     public function getHeures(): array
     {
         return $this->heures;
     }
 
+    /** @param array<string, array<string, float|int>> $heures */
     public function setHeures(array $heures): static
     {
         $resolver = new OptionsResolver();

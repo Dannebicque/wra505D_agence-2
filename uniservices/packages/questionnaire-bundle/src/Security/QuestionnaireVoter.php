@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités Questionnaire
  * Gère les droits d'accès pour : Questionnaire, Section, Question, Invitation, Réponses
  */
+/** @extends Voter<string, mixed> */
 class QuestionnaireVoter extends Voter
 {
     // Permissions Questionnaire
@@ -126,6 +127,7 @@ class QuestionnaireVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
+    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

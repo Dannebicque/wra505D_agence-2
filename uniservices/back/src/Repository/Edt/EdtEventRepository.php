@@ -100,6 +100,7 @@ class EdtEventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** @return list<EdtEvent> */
     public function findByPersonnelAndRange(int $personnelId, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
     {
         $qb = $this->createQueryBuilder('e')

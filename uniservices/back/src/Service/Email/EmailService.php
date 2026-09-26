@@ -179,6 +179,7 @@ final class EmailService
     /**
      * Injecte le contenu dans le layout HTML commun.
      */
+    /** @param array<string, mixed> $context */
     private function wrapInLayout(string $bodyContent, array $context): string
     {
         return sprintf(

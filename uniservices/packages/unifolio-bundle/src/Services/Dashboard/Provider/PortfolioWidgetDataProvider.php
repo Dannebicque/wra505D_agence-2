@@ -13,6 +13,7 @@ class PortfolioWidgetDataProvider implements WidgetDataProviderInterface
         return str_starts_with($code, 'portfolio.');
     }
 
+    /** @return array<string, mixed> */
     public function getData(string $code, Personnel|Etudiant $user): array
     {
         return match ($code) {

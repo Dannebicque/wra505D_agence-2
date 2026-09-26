@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Entity\Etudiant\EtudiantAbsence;
 
+/** @implements ProviderInterface<object> */
 class AbsenceEpisodeProvider implements ProviderInterface
 {
     public function __construct(
@@ -69,6 +70,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
 
     /**
      * @param array<int, array<string, mixed>> $rows
+     * @param array<string, mixed> $context
      * @return array<int, array<string, mixed>>
      */
     private function paginateRows(array $rows, array $context): array
@@ -86,6 +88,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
         return array_slice($rows, $offset, $itemsPerPage);
     }
 
+    /** @param array<string, mixed> $context */
     private function isFlatMode(array $context): bool
     {
         $filters = $context['filters'] ?? [];

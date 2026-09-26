@@ -37,6 +37,7 @@ class EdtContraintesSemestre
     #[ORM\ManyToOne(inversedBy: 'contraintesSemestres')]
     private ?StructureSemestre $semestre = null;
 
+    /** @var array<int|string, mixed>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['semestre-test:read'])]
     private ?array $contraintes = null;
@@ -70,11 +71,13 @@ class EdtContraintesSemestre
         return $this;
     }
 
+    /** @return array<int|string, mixed> */
     public function getContraintes(): ?array
     {
         return $this->contraintes ?? [];
     }
 
+    /** @param array<int|string, mixed>|null $contraintes */
     public function setContraintes(?array $contraintes): static
     {
         $this->contraintes = $contraintes;

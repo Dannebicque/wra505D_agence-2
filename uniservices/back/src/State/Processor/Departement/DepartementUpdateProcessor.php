@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Structure\StructureDepartement;
 use Doctrine\ORM\EntityManagerInterface;
 
+/** @implements ProcessorInterface<mixed, mixed> */
 class DepartementUpdateProcessor implements ProcessorInterface
 {
     public function __construct(

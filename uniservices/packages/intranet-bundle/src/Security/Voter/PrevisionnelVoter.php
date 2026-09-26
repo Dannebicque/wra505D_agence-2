@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités Prévisionnel
  * Gère les droits d'accès pour la gestion des services prévisionnels des enseignants
  */
+/** @extends Voter<string, mixed> */
 class PrevisionnelVoter extends Voter
 {
     // Permissions Prévisionnel
@@ -88,6 +89,7 @@ class PrevisionnelVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
+    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

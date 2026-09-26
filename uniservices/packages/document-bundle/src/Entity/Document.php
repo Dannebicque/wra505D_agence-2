@@ -79,6 +79,7 @@ class Document
     #[Groups(['document:read', 'document:write'])]
     private ?string $version = 'v1.0';
 
+    /** @var list<string>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['document:read', 'document:write'])]
     private ?array $tags = [];
@@ -219,11 +220,13 @@ class Document
         return $this;
     }
 
+    /** @return list<string>|null */
     public function getTags(): ?array
     {
         return $this->tags ?? [];
     }
 
+    /** @param list<string>|null $tags */
     public function setTags(?array $tags): static
     {
         $this->tags = $tags;

@@ -11,6 +11,7 @@ enum QuestTypeRepeatEnum: string implements BadgeEnumInterface
     case SAE = 'sae';
     case PREVISIONNEL = 'previsionnel';
 
+    /** @return list<string> */
     public static function getTypesRepeat(): array
     {
         return [

@@ -18,7 +18,9 @@ class WidgetDefinition
         private readonly string $component,
         private readonly string $size = 'medium',
         private readonly bool $enabled = true,
+        /** @var array<string, mixed> $defaultConfig */
         private readonly array $defaultConfig = [],
+        /** @var list<string> $allowedProfiles */
         private readonly array $allowedProfiles = [self::PROFILE_PERSONNEL, self::PROFILE_ETUDIANT],
     ) {
     }
@@ -42,6 +44,7 @@ class WidgetDefinition
         return in_array(self::PROFILE_ETUDIANT, $this->allowedProfiles, true);
     }
 
+    /** @return array{code: string, bundle: string, label: string, icon: string, component: string, size?: string, enabled?: bool, defaultConfig: array<string, mixed>, allowedProfiles: list<string>} */
     public function toArray(): array
     {
         return [

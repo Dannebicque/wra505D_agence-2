@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\Structure\StructureCalendrier;
 use Doctrine\ORM\EntityManagerInterface;
 
+/** @implements ProviderInterface<StructureCalendrier> */
 class SingleRecordDataProvider implements ProviderInterface
 {
     private EntityManagerInterface $entityManager;

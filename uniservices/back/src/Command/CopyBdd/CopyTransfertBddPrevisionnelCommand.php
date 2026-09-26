@@ -26,8 +26,11 @@ class CopyTransfertBddPrevisionnelCommand extends Command
 {
     protected Connection $em;
 
+    /** @var array<int|string, mixed> */
     protected array $tPersonnels = [];
+    /** @var array<int|string, mixed> */
     protected array $tAnneeUniversitaire = [];
+    /** @var array<int|string, mixed> */
     protected array $tEnseignements = [];
 
     protected SymfonyStyle $io;
@@ -85,6 +88,7 @@ FOREIGN_KEY_CHECKS=1');
         return Command::SUCCESS;
     }
 
+    /** @return array<mixed, mixed> */
     private function fetchAllPages(string $url): array
     {
         $page = 1;

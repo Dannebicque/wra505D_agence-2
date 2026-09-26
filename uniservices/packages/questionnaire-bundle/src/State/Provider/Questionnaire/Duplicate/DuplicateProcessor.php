@@ -10,6 +10,7 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Duplicate\DuplicateOutputDto;
 use QuestionnaireBundle\Domain\Questionnaire\Duplicate\DuplicateQuestionnaireService;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 
+/** @implements ProcessorInterface<DuplicateInputDto, DuplicateOutputDto> */
 final class DuplicateProcessor implements ProcessorInterface
 {
     public function __construct(

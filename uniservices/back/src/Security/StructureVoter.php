@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités de structure
  * Gère les droits d'accès pour : Département, Diplôme, Semestre, Groupe, UE, PN, Annee, Calendrier, TypeDiplome
  */
+/** @extends Voter<string, StructureDiplome> */
 class StructureVoter extends Voter
 {
     // Permissions Département
@@ -194,6 +195,7 @@ class StructureVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
+    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

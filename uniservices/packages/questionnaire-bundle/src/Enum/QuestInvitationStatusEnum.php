@@ -10,6 +10,7 @@ enum QuestInvitationStatusEnum: string implements BadgeEnumInterface
     case STARTED = 'started';
     case SUBMITTED = 'submitted';
 
+    /** @return list<string> */
     public static function getStatuts(): array
     {
         return [

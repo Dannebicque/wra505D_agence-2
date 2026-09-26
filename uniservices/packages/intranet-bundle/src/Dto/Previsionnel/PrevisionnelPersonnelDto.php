@@ -17,8 +17,10 @@ class PrevisionnelPersonnelDto
     protected Personnel $personnel;
     #[Groups(['previsionnel_personnel:read'])]
     protected int $idPersonnel;
+    /** @var array<string, array<string, float|int>> */
     #[Groups(['previsionnel_personnel:read'])]
     protected array $heures = [];
+    /** @var array<string, int> */
     #[Groups(['previsionnel_personnel:read'])]
     protected array $groupes = [];
     #[Groups(['previsionnel_personnel:read'])]
@@ -94,21 +96,25 @@ class PrevisionnelPersonnelDto
         $this->idEnseignement = $idEnseignement;
     }
 
+    /** @return array<string, array<string, float|int>> */
     public function getHeures(): array
     {
         return $this->heures;
     }
 
+    /** @param array<string, array<string, float|int>> $heures */
     public function setHeures(array $heures): void
     {
         $this->heures = $heures;
     }
 
+    /** @return array<string, int> */
     public function getGroupes(): array
     {
         return $this->groupes;
     }
 
+    /** @param array<string, int> $groupes */
     public function setGroupes(array $groupes): void
     {
         $this->groupes = $groupes;

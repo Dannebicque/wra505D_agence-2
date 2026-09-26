@@ -18,6 +18,7 @@ class PortalDashboardDefinition implements DashboardDefinitionInterface
         return 'portail';
     }
 
+    /** @return list<DashboardWidgetLayout> */
     public function getAvailableWidgets(): array
     {
         $widgets = [];

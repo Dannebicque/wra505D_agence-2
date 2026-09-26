@@ -154,6 +154,7 @@ class CreateEtudiantController extends AbstractController
         ], $errors ? Response::HTTP_PARTIAL_CONTENT : Response::HTTP_OK);
     }
 
+    /** @param array<string, string|null> $data */
     private function createEtudiantFromData(array $data, StructureAnneeUniversitaire $anneeUniv): Etudiant
     {
         $etudiant = new Etudiant();

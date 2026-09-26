@@ -11,6 +11,7 @@ use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiDto\EtudiantScolariteSemestre\EtudiantScolariteSemestreDto;
 
+/** @implements ProviderInterface<object> */
 class EtudiantScolariteSemestreProvider implements ProviderInterface
 {
     public function __construct(

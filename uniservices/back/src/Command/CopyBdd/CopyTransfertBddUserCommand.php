@@ -29,11 +29,17 @@ class CopyTransfertBddUserCommand extends Command
 {
     protected Connection $em;
 
+    /** @var array<int|string, mixed> */
     protected array $tPersonnels = [];
+    /** @var array<int|string, mixed> */
     protected array $tEtudiants = [];
+    /** @var array<int|string, mixed> */
     protected array $tAnneeUniversitaire = [];
+    /** @var array<int|string, mixed> */
     protected array $tDepartements = [];
+    /** @var array<int|string, mixed> */
     protected array $tGroupes = [];
+    /** @var array<int|string, mixed> */
     protected array $tBacs = [];
 
     protected SymfonyStyle $io;

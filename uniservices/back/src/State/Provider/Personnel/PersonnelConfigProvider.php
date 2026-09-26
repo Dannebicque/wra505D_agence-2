@@ -12,6 +12,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\Users\Personnel;
 use App\Security\UserEffectivePermissionService;
 
+/** @implements ProviderInterface<object> */
 class PersonnelConfigProvider implements ProviderInterface
 {
     public function __construct(
@@ -65,6 +66,7 @@ class PersonnelConfigProvider implements ProviderInterface
         return $this->itemProvider->provide($operation, $uriVariables, $context);
     }
 
+    /** @return array<string, mixed> */
     public function formatPersonnel(Personnel $item): array
     {
         $departements = [];

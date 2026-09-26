@@ -10,6 +10,7 @@ use ApiPlatform\State\ProviderInterface;
 use DateTime;
 use App\ApiDto\Edt\EdtStatsDto;
 
+/** @implements ProviderInterface<object> */
 class EdtStatsProvider implements ProviderInterface
 {
     public function __construct(

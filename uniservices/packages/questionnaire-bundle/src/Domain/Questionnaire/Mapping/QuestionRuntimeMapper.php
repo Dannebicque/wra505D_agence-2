@@ -11,6 +11,7 @@ use QuestionnaireBundle\Enum\QuestTypeQuestionEnum;
 
 final class QuestionRuntimeMapper
 {
+    /** @param iterable<object>|null $allQuestionsInContext */
     public function map(QuestionnaireQuestion $q, mixed $answerValue, ?iterable $allQuestionsInContext = null): QuestionRuntimeDto
     {
         $config = $q->getChoices();

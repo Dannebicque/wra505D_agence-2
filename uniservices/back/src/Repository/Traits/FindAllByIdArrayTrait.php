@@ -4,6 +4,7 @@ namespace App\Repository\Traits;
 
 trait FindAllByIdArrayTrait
 {
+    /** @return array<int|string, mixed> */
     public function findAllByIdArray(): array
     {
         $datas = $this->findAll();

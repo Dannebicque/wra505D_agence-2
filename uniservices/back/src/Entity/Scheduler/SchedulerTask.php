@@ -55,6 +55,7 @@ class SchedulerTask
     #[Groups(['scheduler_task:read', 'scheduler_task:write'])]
     private string $command;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['scheduler_task:read', 'scheduler_task:write'])]
     private ?array $arguments = [];
@@ -106,11 +107,13 @@ class SchedulerTask
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getArguments(): ?array
     {
         return $this->arguments;
     }
 
+    /** @param array<string, mixed>|null $arguments */
     public function setArguments(?array $arguments): self
     {
         $this->arguments = $arguments;

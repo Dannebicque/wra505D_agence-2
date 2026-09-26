@@ -10,6 +10,7 @@ use App\Enum\EtatEvaluationEnum;
 use App\Repository\EtudiantNoteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
+/** @implements ProcessorInterface<mixed, mixed> */
 class EtudiantNotePersistProcessor implements ProcessorInterface
 {
     public function __construct(

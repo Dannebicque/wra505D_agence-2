@@ -191,6 +191,7 @@ class StageSoutenanceController extends AbstractController
         ]);
     }
 
+    /** @return list<string> */
     private function checkConflicts(
         StagePeriode $periode,
         ?StageEtudiant $stageEtudiant,

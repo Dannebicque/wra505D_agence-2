@@ -12,6 +12,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
+/** @implements ProcessorInterface<mixed, mixed> */
 class TicketProcessor implements ProcessorInterface
 {
     public function __construct(

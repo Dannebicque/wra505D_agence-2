@@ -27,6 +27,7 @@ class AuthWidgetDataProvider implements WidgetDataProviderInterface
         return str_starts_with($code, 'auth.');
     }
 
+    /** @return array<string, mixed>|array<int, array<string, mixed>> */
     public function getData(string $code, Personnel|Etudiant $user): array
     {
         return match ($code) {
@@ -36,6 +37,7 @@ class AuthWidgetDataProvider implements WidgetDataProviderInterface
         };
     }
 
+    /** @return array<int, array<string, mixed>> */
     private function getActusInt(Personnel|Etudiant $user): array
     {
 
@@ -66,6 +68,7 @@ class AuthWidgetDataProvider implements WidgetDataProviderInterface
         return $actus;
     }
 
+    /** @return array<int, array<string, mixed>> */
     private function getActusExt(): array
     {
         // récupérer l'url depuis .env

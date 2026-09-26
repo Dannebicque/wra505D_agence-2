@@ -9,6 +9,7 @@ use App\Repository\Structure\StructureDepartementPersonnelRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/** @implements ProcessorInterface<object, array<int, StructureDepartementPersonnel>> */
 class ChangeDepartementProcessor implements ProcessorInterface
 {
     public function __construct(

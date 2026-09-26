@@ -32,9 +32,13 @@ class CopyTransfertBddEnseignementsCommand extends Command
 {
     protected Connection $em;
 
+    /** @var array<int|string, mixed> */
     protected array $tMatieres = [];
+    /** @var array<int|string, mixed> */
     protected array $tCompetences = [];
+    /** @var array<int|string, mixed> */
     protected array $tUes = [];
+    /** @var array<int|string, mixed> */
     protected array $tApprentissages = [];
     protected ?StructureAnneeUniversitaire $anneeUniv = null;
 

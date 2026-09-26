@@ -154,10 +154,12 @@ class StructureSemestre
     #[ORM\OneToMany(targetEntity: EdtContraintesSemestre::class, mappedBy: 'semestre', orphanRemoval: true, cascade: ['remove'])]
     private Collection $contraintesSemestres;
 
+    /** @var Collection<int, EtudiantScolariteSemestre> */
     #[ORM\OneToMany(mappedBy: 'semestre', targetEntity: EtudiantScolariteSemestre::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[Groups(['semestre:detail'])]
     private Collection $scolariteSemestre;
 
+    /** @var Collection<int, EtudiantScolariteSemestre> */
     #[ORM\OneToMany(mappedBy: 'proposition', targetEntity: EtudiantScolariteSemestre::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $scolariteSemestrePropositions;
 
@@ -477,11 +479,13 @@ class StructureSemestre
         return $this;
     }
 
+    /** @return Collection<int, EtudiantScolariteSemestre> */
     public function getScolariteSemestre(): Collection
     {
         return $this->scolariteSemestre;
     }
 
+    /** @param Collection<int, EtudiantScolariteSemestre> $scolariteSemestre */
     public function setScolariteSemestre(Collection $scolariteSemestre): void
     {
         $this->scolariteSemestre = $scolariteSemestre;
@@ -520,6 +524,7 @@ class StructureSemestre
         return $this;
     }
 
+    /** @return list<string> */
     #[Groups(['semestre:detail', 'semestre:light'])]
     public function getTypesGroupe(): array
     {

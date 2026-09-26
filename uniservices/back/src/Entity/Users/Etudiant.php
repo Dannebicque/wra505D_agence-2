@@ -76,6 +76,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $password = null;
 
+    /** @var list<string> */
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['etudiant:detail'])]
     private array $roles = [];
@@ -100,10 +101,12 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
     #[MaxDepth(1)]
     private Collection $scolarites;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['etudiant:detail', 'etudiant:write'])]
     private ?array $adresseEtudiante = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['etudiant:detail', 'etudiant:write'])]
     private ?array $adresseParentale = null;
@@ -160,6 +163,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['etudiant:detail'])]
     private ?string $lieu_naissance = null;
 
+    /** @var list<string>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['etudiant:detail'])]
     private ?array $applications = null;
@@ -188,6 +192,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
         $this->scolEvaluationRattrapages = new ArrayCollection();
     }
 
+    /** @return list<string> */
     public function getMails(): array
     {
         return [$this->mailUniv];
@@ -263,11 +268,13 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /** @return list<string> */
     public function getRoles(): array
     {
         return $this->roles;
     }
 
+    /** @param list<string> $roles */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -387,11 +394,13 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
         return Adresse::fromArray($data);
     }
 
+    /** @return list<string> */
     public function getApplications(): ?array
     {
         return $this->applications ?? ['UniTranet'];
     }
 
+    /** @param list<string>|null $applications */
     public function setApplications(?array $applications): static
     {
         $this->applications = $applications;

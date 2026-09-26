@@ -9,6 +9,7 @@ enum PriorityTicketEnum: string
     case HAUTE = 'Haute';
     case CRITIQUE = 'Critique';
 
+    /** @return list<self> */
     public function getPriorities(): array
     {
         return [

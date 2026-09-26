@@ -9,6 +9,7 @@ use App\Entity\Structure\StructureGroupe;
 use App\Entity\Structure\StructureSemestre;
 use Doctrine\ORM\EntityManagerInterface;
 
+/** @implements ProcessorInterface<object, object> */
 class GroupeDeletefromSemestreProcessor implements ProcessorInterface
 {
     public function __construct(

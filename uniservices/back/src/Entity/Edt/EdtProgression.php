@@ -32,6 +32,7 @@ class EdtProgression
     #[Groups(['previsionnel:read'])]
     private ?int $id = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['previsionnel:read'])]
     private ?array $progression = null;
@@ -73,11 +74,13 @@ class EdtProgression
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getProgression(): ?array
     {
         return $this->progression ?? [];
     }
 
+    /** @param array<string, mixed> $progression */
     public function setProgression(array $progression): static
     {
         $this->progression = $progression;

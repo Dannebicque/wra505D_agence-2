@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités diverses
  * Gère les droits d'accès pour : Salle
  */
+/** @extends Voter<string, Salle> */
 class SalleVoter extends Voter
 {
     // Permissions Salle
@@ -62,6 +63,7 @@ class SalleVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
+    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

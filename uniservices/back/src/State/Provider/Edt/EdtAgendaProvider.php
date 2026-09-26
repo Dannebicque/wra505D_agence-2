@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiDto\Edt\EdtAgendaDto;
 
+/** @implements ProviderInterface<EdtAgendaDto> */
 class EdtAgendaProvider implements ProviderInterface
 {
     public function __construct(

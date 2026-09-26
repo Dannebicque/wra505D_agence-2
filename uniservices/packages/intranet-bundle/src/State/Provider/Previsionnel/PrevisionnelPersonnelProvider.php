@@ -10,6 +10,7 @@ use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelPersonnelDto;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
 
+/** @implements ProviderInterface<PrevisionnelPersonnelDto> */
 class PrevisionnelPersonnelProvider implements ProviderInterface
 {
     public function __construct(

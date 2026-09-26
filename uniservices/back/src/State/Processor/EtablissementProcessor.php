@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+/** @implements ProcessorInterface<mixed, mixed> */
 class EtablissementProcessor implements ProcessorInterface
 {
     public function __construct(

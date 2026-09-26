@@ -29,10 +29,15 @@ class CopyTransfertBddEdtCommand extends Command
 {
     protected Connection $em;
 
+    /** @var array<int|string, mixed> */
     protected array $tMatieres = [];
+    /** @var array<int|string, mixed> */
     protected array $tPersonnels = [];
+    /** @var array<int|string, mixed> */
     protected array $tSemestres = [];
+    /** @var array<int|string, mixed> */
     protected array $tAnneesUniversitaires = [];
+    /** @var array<int|string, mixed> */
     protected array $tGroupes = [];
     protected string $base_url;
 

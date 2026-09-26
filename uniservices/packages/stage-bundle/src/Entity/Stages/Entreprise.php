@@ -33,6 +33,7 @@ class Entreprise
     #[ORM\Column(type: Types::STRING, length: 255)]
     private ?string $raisonSociale = null;
 
+    /** @var array{adresse: string, complement1: string, complement2: string, ville: string, codePostal: string, pays: string}|null */
     #[Groups(groups: ['stage_entreprise_administration', 'alternance_administration', 'stage_periode_gestion', 'stage_etudiant:read', 'stage_etudiant:write'])]
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $adresse = null;
@@ -137,6 +138,7 @@ class Entreprise
         return $this;
     }
 
+    /** @return array{siret: string|null, raisonSociale: string|null, adresse: array<string, mixed>, responsable: string} */
     public function getArray(): array
     {
         return [

@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class GenereSlots
 {
     private int $nbSlots = 0;
+    /** @var array<int|null, array<string, \App\Entity\Structure\StructureGroupe>> */
     private array $groupes = [];
 
     public function __construct(
@@ -17,6 +18,7 @@ class GenereSlots
     ) {
     }
 
+    /** @param array<int, Previsionnel> $previsionnels */
     public function genereAllSlots(array $previsionnels): int
     {
         foreach ($previsionnels as $previsionnel) {

@@ -39,17 +39,27 @@ class CopyTransfertBddStructureCommand extends Command
 {
     protected Connection $em;
 
-    /** @param array<int, StructureDepartement> $tDepartements */
+    /** @var array<int|string, mixed> */
     protected array $tDepartements = [];
+    /** @var array<int|string, mixed> */
     protected array $tAnneeUniversitaire = [];
+    /** @var array<int|string, mixed> */
     protected array $tTypeDiplomes = [];
+    /** @var array<int|string, mixed> */
     protected array $tDiplomes = [];
+    /** @var array<int|string, mixed> */
     protected array $tAnnees = [];
+    /** @var array<int|string, mixed> */
     protected array $tSemestres = [];
+    /** @var array<int|string, mixed> */
     protected array $tMatieres = [];
+    /** @var array<int|string, mixed> */
     protected array $tCompetences = [];
+    /** @var array<int|string, mixed> */
     protected array $tUes = [];
+    /** @var array<int|string, mixed> */
     protected array $tSemestreUes = [];
+    /** @var array<int|string, mixed> */
     protected array $tApprentissages = [];
 
     protected SymfonyStyle $io;

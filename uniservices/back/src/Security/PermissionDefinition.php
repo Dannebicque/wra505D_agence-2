@@ -9,6 +9,7 @@ class PermissionDefinition
         private readonly string $role,
         private readonly string $label,
         private readonly string $package,
+        /** @var list<string> $inheritedRoles */
         private readonly array $inheritedRoles = [],
         private readonly bool $defaultAccess = false
     ) {
@@ -34,6 +35,7 @@ class PermissionDefinition
         return $this->package;
     }
 
+    /** @return list<string> */
     public function getInheritedRoles(): array
     {
         return $this->inheritedRoles;
@@ -44,6 +46,7 @@ class PermissionDefinition
         return $this->defaultAccess;
     }
 
+    /** @return array{code: string, role: string, label: string, package: string, inheritedRoles: list<string>, defaultAccess: bool} */
     public function toArray(): array
     {
         return [

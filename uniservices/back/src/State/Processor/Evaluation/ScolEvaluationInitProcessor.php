@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Uid\Uuid;
 
+/** @implements ProcessorInterface<mixed, mixed> */
 class ScolEvaluationInitProcessor implements ProcessorInterface
 {
     public function __construct(

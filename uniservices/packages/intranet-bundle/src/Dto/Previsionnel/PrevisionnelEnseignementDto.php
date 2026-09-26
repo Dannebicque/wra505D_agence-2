@@ -14,6 +14,7 @@ class PrevisionnelEnseignementDto
     protected Personnel $personnel;
     #[Groups(['previsionnel_enseignement:read'])]
     protected TypeEnseignementEnum $typeEnseignement;
+    /** @var array<string, array<string, float|int>> */
     #[Groups(['previsionnel_enseignement:read'])]
     protected array $heures = [];
 
@@ -37,11 +38,13 @@ class PrevisionnelEnseignementDto
         $this->typeEnseignement = $typeEnseignement;
     }
 
+    /** @return array<string, array<string, float|int>> */
     public function getHeures(): array
     {
         return $this->heures;
     }
 
+    /** @param array<string, array<string, float|int>> $heures */
     public function setHeures(array $heures): void
     {
         $this->heures = $heures;

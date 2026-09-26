@@ -10,6 +10,7 @@ enum QuestStatutEnum: string implements BadgeEnumInterface
     case DRAFT = 'draft';
     case CLOSED = 'closed';
 
+    /** @return list<string> */
     public static function getStatuts(): array
     {
         return [

@@ -127,6 +127,7 @@ class ScolEvaluation
     #[Groups(['evaluation:detail', 'evaluation:write', 'evaluation:init'])]
     private ?EtatEvaluationEnum $etat = EtatEvaluationEnum::ETAT_NON_INITIALISEE;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['evaluation:detail'])]
     private ?array $stats = ['moyenne' => 0, 'mediane' => 0, 'min' => 0, 'max' => 0];
@@ -429,6 +430,7 @@ class ScolEvaluation
         return $this;
     }
 
+    /** @return array<int, string> */
     #[Groups(['evaluation:init', 'evaluation:detail'])]
     public function getTypeGroupeChoices(): array
     {
@@ -438,6 +440,7 @@ class ScolEvaluation
         );
     }
 
+    /** @return array<int, string> */
     #[Groups(['evaluation:init', 'evaluation:detail'])]
     public function getTypeChoices(): array
     {
@@ -447,6 +450,7 @@ class ScolEvaluation
         );
     }
 
+    /** @return array<string, mixed> */
     public function getStats(): ?array
     {
         $order = [
@@ -466,6 +470,7 @@ class ScolEvaluation
         return $result;
     }
 
+    /** @param array{moyenne: int|float, mediane: int|float, min: int|float, max: int|float}|null $stats */
     public function setStats(?array $stats): static
     {
         $this->stats = $stats;

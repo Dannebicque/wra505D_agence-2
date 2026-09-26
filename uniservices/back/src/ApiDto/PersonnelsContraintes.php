@@ -36,15 +36,18 @@ use App\State\Provider\UniEdt\PersonnelsContraintesProvider;
 )]
 class PersonnelsContraintes
 {
+    /** @var array<int|string, mixed> */
     protected array $contraintes = [];
     protected StructureCalendrier $semaineFormation;
     protected ?Personnel $personnel = null;
 
+    /** @return array<int|string, mixed> */
     public function getContraintes(): array
     {
         return $this->contraintes;
     }
 
+    /** @param array<int|string, mixed> $contraintes */
     public function setContraintes(array $contraintes): void
     {
         $this->contraintes = $contraintes;

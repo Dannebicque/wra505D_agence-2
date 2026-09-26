@@ -66,10 +66,12 @@ class ApcCompetence
     #[Groups(['competence:referentiel:full'])]
     private Collection $niveaux;
 
+    /** @var list<array<string, mixed>> */
     #[ORM\Column]
     #[Groups(['competence:referentiel:full'])]
     private array $composantesEssentielles = [];
 
+    /** @var list<array<string, mixed>> */
     #[ORM\Column]
     #[Groups(['competence:referentiel:full'])]
     private array $situationsProfessionnelles = [];
@@ -169,11 +171,13 @@ class ApcCompetence
         return $this;
     }
 
+    /** @return list<array<string, mixed>> */
     public function getComposantesEssentielles(): array
     {
         return $this->composantesEssentielles;
     }
 
+    /** @param list<array<string, mixed>> $composantesEssentielles */
     public function setComposantesEssentielles(array $composantesEssentielles): static
     {
         $this->composantesEssentielles = $composantesEssentielles;
@@ -181,11 +185,13 @@ class ApcCompetence
         return $this;
     }
 
+    /** @return list<array<string, mixed>> */
     public function getSituationsProfessionnelles(): array
     {
         return $this->situationsProfessionnelles;
     }
 
+    /** @param list<array<string, mixed>> $situationsProfessionnelles */
     public function setSituationsProfessionnelles(array $situationsProfessionnelles): static
     {
         $this->situationsProfessionnelles = $situationsProfessionnelles;

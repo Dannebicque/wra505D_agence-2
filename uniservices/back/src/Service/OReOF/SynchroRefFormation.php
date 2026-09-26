@@ -25,6 +25,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SynchroRefFormation
 {
+    /** @var array<string, \App\Entity\Apc\ApcCompetence> */
     private array $competencesDips;
 
     public function __construct(

@@ -31,11 +31,16 @@ class CopyTransfertBddScolariteCommand extends Command
 {
     protected Connection $em;
 
+    /** @var array<int|string, mixed> */
     protected array $tEtudiants = [];
+    /** @var array<int|string, mixed> */
     protected array $tAnneeUniversitaire = [];
+    /** @var array<int|string, mixed> */
     protected array $tSemestres = [];
+    /** @var array<int|string, mixed> */
     protected array $tDepartements = [];
 
+    /** @var array<int|string, mixed> */
     protected array $tGroupes = [];
     protected string $base_url;
 

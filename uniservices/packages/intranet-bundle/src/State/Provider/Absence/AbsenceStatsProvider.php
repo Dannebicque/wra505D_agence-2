@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 
+/** @implements ProviderInterface<object> */
 class AbsenceStatsProvider implements ProviderInterface
 {
     public function __construct(

@@ -29,9 +29,13 @@ class CopyTransfertBddApcCommand extends Command
 
     protected SymfonyStyle $io;
 
+    /** @var array<int, ApcReferentiel> */
     private array $tReferentiels = [];
+    /** @var array<int, ApcCompetence> */
     private array $tCompetences = [];
+    /** @var array<int, ApcParcours> */
     private array $tParcours = [];
+    /** @var array<int, ApcNiveau> */
     private array $tNiveaux = [];
 
     public function __construct(
