@@ -2,7 +2,7 @@ parameters:
     symfony:
         containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
 
-    level: 8
+    level: 9
 
     doctrine:
         # Le vrai mapping, types Carbon compris : sans lui, PHPStan croit que la base renvoie des DateTime.
