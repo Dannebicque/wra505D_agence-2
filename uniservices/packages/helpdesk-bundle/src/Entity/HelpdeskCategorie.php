@@ -43,10 +43,10 @@ class HelpdeskCategorie
     #[Groups(['category:read','service:read','service:form_ticket'])]
     private ?self $parent = null;
 
-    /** @var Collection<int, self>|null */
+    /** @var Collection<int, self> */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
     #[Groups(['category:read','service:read','service:form_ticket'])]
-    private ?Collection $enfants;
+    private Collection $enfants;
 
     #[ORM\ManyToOne(inversedBy: 'helpdeskCategories')]
     #[ORM\JoinColumn(nullable: false)]
@@ -62,6 +62,7 @@ class HelpdeskCategorie
     public function __construct()
     {
         $this->ticket = new ArrayCollection();
+        $this->enfants = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -92,13 +93,14 @@ class HelpdeskCategorie
     }
 
     /** @return Collection<int, self>|null */
-    public function getEnfants(): ?Collection
+    /** @return Collection<int, self> */
+    public function getEnfants(): Collection
     {
         return $this->enfants;
     }
 
-    /** @param Collection<int, self>|null $enfants */
-    public function setEnfants(?Collection $enfants): void
+    /** @param Collection<int, self> $enfants */
+    public function setEnfants(Collection $enfants): void
     {
         $this->enfants = $enfants;
     }
