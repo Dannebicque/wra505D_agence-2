@@ -44,7 +44,7 @@ class EdtEventRepository extends ServiceEntityRepository
             $qb->andWhere('sem.id = :semId')->setParameter('semId', $semestreId);
         }
 
-        return array_values($qb->getQuery()->getResult());
+        return $qb->getQuery()->getResult();
     }
 
     /** @return list<EdtEvent> */
@@ -70,7 +70,7 @@ class EdtEventRepository extends ServiceEntityRepository
             $qb->andWhere('sem.annee = :annee')->setParameter('annee', $annee);
         }
 
-        return array_values($qb->getQuery()->getResult());
+        return $qb->getQuery()->getResult();
     }
 
     /**

@@ -211,9 +211,6 @@ class StageSoutenanceController extends AbstractController
         $tuteur = $stageEtudiant ? $stageEtudiant->getTuteurUniversitaire() : null;
 
         foreach ($allSoutenances as $s) {
-            if (!$s instanceof StageSoutenance) {
-                throw new \LogicException('Expected a StageSoutenance.');
-            }
             if ($soutenanceId && $s->getId() === (int)$soutenanceId) {
                 continue;
             }
