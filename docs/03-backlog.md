@@ -272,7 +272,11 @@ autres classes en anglais. Les commandes `app:celcat:sync` et `app:celcat:fausse
 par la CI et la documentation, gardent leur nom. Délégué à Codex. Vérifié : aide des commandes,
 génération de la fausse base, synchronisation (290 créneaux) et contenu de `edt_event` identiques
 à la référence ; aucune chaîne ni phrase de commentaire changée.
-**Reste** documents favoris.
+**Documents favoris faits** `FavoriteDocumentController`, `FavoriteDocuments`, l'entité
+`FavoriteDocument` (table `document_favori` et colonnes inchangées) et son dépôt. L'URL
+`/api/me/documents-favoris` ne change pas. Délégué à Codex. Vérifié : liste, widgets et SQL
+identiques ; ajout, retrait, doublon et 404 testés sur l'API.
+**Fait** les cinq modules de notre code back sont en anglais.
 ### E15 · [back] PHPStan au niveau max, sans baseline · L, à redécouper
 **Pourquoi** le niveau 6 laisse passer le `mixed` et les nullabilités, et 4 identifiants sont
 ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au 9, 2 871 au 10,
