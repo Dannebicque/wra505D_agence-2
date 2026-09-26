@@ -539,7 +539,7 @@ FOREIGN_KEY_CHECKS=1');
                         }
                     }
                 }
-                foreach (LooseValue::rows($groupeArray['typeGroupe']['semestres']) as $semestre) {
+                foreach (LooseValue::row($groupeArray['typeGroupe']['semestres']) as $semestre) {
                     if (array_key_exists(LooseValue::key($semestre), $this->tSemestres)) {
                         $groupe->addSemestre($this->tSemestres[LooseValue::key($semestre)]);
                     }
@@ -583,7 +583,7 @@ FOREIGN_KEY_CHECKS=1');
                         }
                     }
                 }
-                foreach (LooseValue::rows($enfant['typeGroupe']['semestres']) as $semestre) {
+                foreach (LooseValue::row($enfant['typeGroupe']['semestres']) as $semestre) {
                     if (array_key_exists(LooseValue::key($semestre), $this->tSemestres)) {
                         $enfantGroupe->addSemestre($this->tSemestres[LooseValue::key($semestre)]);
                     }
