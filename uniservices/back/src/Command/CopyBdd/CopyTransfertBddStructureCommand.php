@@ -497,7 +497,7 @@ FOREIGN_KEY_CHECKS=1');
     private function addGroupes(): void
     {
         $reponses = $this->httpClient->request('GET', $this->base_url . '/groupes');
-        $groupes = $reponses->toArray();
+        $groupes = LooseValue::rows($reponses->toArray());
         foreach ($groupes as $groupeArray) {
             /*
              * "id": 9,
@@ -518,9 +518,9 @@ FOREIGN_KEY_CHECKS=1');
 "enfants": []
              */
             $groupe = new StructureGroupe();
-            $groupe->setLibelle($groupeArray['libelle']);
-            $groupe->setCodeApogee(substr($groupeArray['codeApogee'], 0, 25));
-            $groupe->setOrdre($groupeArray['ordre']);
+            $groupe->setLibelle(LooseValue::string($groupeArray['libelle']));
+            $groupe->setCodeApogee(substr(LooseValue::castString($groupeArray['codeApogee']), 0, 25));
+            $groupe->setOrdre(LooseValue::nullableInt($groupeArray['ordre']));
             $groupe->setType(TypeGroupeEnum::TYPE_GROUPE_AUTRE); // Default type
             if (array_key_exists('typeGroupe', $groupeArray) && is_array($groupeArray['typeGroupe'])) {
                 $type = $groupeArray['typeGroupe']['type'] ?? null;
@@ -539,14 +539,14 @@ FOREIGN_KEY_CHECKS=1');
                         }
                     }
                 }
-                foreach (LooseValue::rows($groupeArray['typeGroupe']['semestres']) as $semestre) {
+                foreach (LooseValue::row($groupeArray['typeGroupe']['semestres']) as $semestre) {
                     if (array_key_exists(LooseValue::key($semestre), $this->tSemestres)) {
                         $groupe->addSemestre($this->tSemestres[LooseValue::key($semestre)]);
                     }
                 }
             }
-            $groupe->setOldId($groupeArray['id']);
-            $groupe->setKeyEduSign($groupeArray['edusign']);
+            $groupe->setOldId(LooseValue::nullableInt($groupeArray['id']));
+            $groupe->setKeyEduSign(LooseValue::nullableString($groupeArray['edusign']));
             $groupe->setParent(null);
             //traiter les semestres
 
@@ -583,7 +583,7 @@ FOREIGN_KEY_CHECKS=1');
                         }
                     }
                 }
-                foreach (LooseValue::rows($enfant['typeGroupe']['semestres']) as $semestre) {
+                foreach (LooseValue::row($enfant['typeGroupe']['semestres']) as $semestre) {
                     if (array_key_exists(LooseValue::key($semestre), $this->tSemestres)) {
                         $enfantGroupe->addSemestre($this->tSemestres[LooseValue::key($semestre)]);
                     }
@@ -591,13 +591,13 @@ FOREIGN_KEY_CHECKS=1');
             } else {
                 $enfantGroupe->setType(TypeGroupeEnum::TYPE_GROUPE_AUTRE);
             }
-            $enfantGroupe->setOldId($enfant['id']);
-            $enfantGroupe->setKeyEduSign($enfant['edusign']);
+            $enfantGroupe->setOldId(LooseValue::nullableInt($enfant['id']));
+            $enfantGroupe->setKeyEduSign(LooseValue::nullableString($enfant['edusign']));
             $enfantGroupe->setParent($structureGroupe);
             //traiter les semestres
-            foreach ($enfant['typeGroupe']['semestres'] as $semestre) {
-                if (array_key_exists($semestre, $this->tSemestres)) {
-                    $enfantGroupe->addSemestre($this->tSemestres[$semestre]);
+            foreach (LooseValue::row(LooseValue::row($enfant['typeGroupe'] ?? [])['semestres'] ?? []) as $semestre) {
+                if (array_key_exists(LooseValue::key($semestre), $this->tSemestres)) {
+                    $enfantGroupe->addSemestre($this->tSemestres[LooseValue::key($semestre)]);
                 }
             }
             $this->entityManager->persist($enfantGroupe);

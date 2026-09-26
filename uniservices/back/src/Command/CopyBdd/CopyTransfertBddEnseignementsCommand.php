@@ -286,7 +286,7 @@ FOREIGN_KEY_CHECKS=1');
             // récupérer les dépendances de ApcRessources : ApprentissagesCrtiques, Competences, semestre
             $taddUes = [];
             if (array_key_exists('ues', $mat)) {
-                foreach ($mat['ues'] as $apcCompetence) {
+                foreach (LooseValue::rows($mat['ues']) as $apcCompetence) {
                     //                    dd($apcCompetence);
                     if (array_key_exists(LooseValue::key($apcCompetence['ue_id']), $this->tUes) &&
                         !array_key_exists(LooseValue::key($this->tUes[LooseValue::key($apcCompetence['ue_id'])]->getId()), $taddUes)
@@ -297,12 +297,12 @@ FOREIGN_KEY_CHECKS=1');
                             $this->tUes[LooseValue::key($apcCompetence['ue_id'])],
                         );
                         $taddUes[LooseValue::key($this->tUes[LooseValue::key($apcCompetence['ue_id'])]->getId())] = $apc;
-                        $apc->setCoefficient((float)$apcCompetence['coefficient']);
-                        $apc->setEcts((float)$apcCompetence['coefficient']);
+                        $apc->setCoefficient(LooseValue::castFloat($apcCompetence['coefficient']));
+                        $apc->setEcts(LooseValue::castFloat($apcCompetence['coefficient']));
                         //todo: parcours
                         $this->entityManager->persist($apc);
                     } else {
-                        $this->io->error('UE ' . $apcCompetence['ue_id'] . ' non trouvée dans la table des UEs');
+                        $this->io->error('UE ' . LooseValue::castString($apcCompetence['ue_id']) . ' non trouvée dans la table des UEs');
                     }
                 }
             }
@@ -318,7 +318,7 @@ FOREIGN_KEY_CHECKS=1');
                 }
             }
 
-            $this->io->info('Ressource : ' . $mat['libelle'] . ' ajouté pour insertion');
+            $this->io->info('Ressource : ' . LooseValue::castString($mat['libelle']) . ' ajouté pour insertion');
         }
 
         //        $sql = 'SELECT * FROM apc_ressource WHERE ressource_parent = true';
@@ -439,7 +439,7 @@ FOREIGN_KEY_CHECKS=1');
             // récupérer les dépendances de ApcRessources : ApprentissagesCrtiques, Competences, semestre
             $taddUes = [];
             if (array_key_exists('ues', $mat)) {
-                foreach ($mat['ues'] as $apcCompetence) {
+                foreach (LooseValue::rows($mat['ues']) as $apcCompetence) {
                     //dd($apcCompetence);
                     if (array_key_exists(LooseValue::key($apcCompetence['ue_id']), $this->tUes) &&
                         !array_key_exists(LooseValue::key($this->tUes[LooseValue::key($apcCompetence['ue_id'])]->getId()), $taddUes)
@@ -450,8 +450,8 @@ FOREIGN_KEY_CHECKS=1');
                             $this->tUes[LooseValue::key($apcCompetence['ue_id'])],
                         );
                         $taddUes[$this->tUes[LooseValue::key($apcCompetence['ue_id'])]->getId()] = $apc;
-                        $apc->setCoefficient((float)$apcCompetence['coefficient']);
-                        $apc->setEcts((float)$apcCompetence['coefficient']);
+                        $apc->setCoefficient(LooseValue::castFloat($apcCompetence['coefficient']));
+                        $apc->setEcts(LooseValue::castFloat($apcCompetence['coefficient']));
                         //todo: parcours
                         $this->entityManager->persist($apc);
                     }
@@ -470,7 +470,7 @@ FOREIGN_KEY_CHECKS=1');
                 }
             }
 
-            $this->io->info('SAE : ' . $mat['libelle'] . ' ajouté pour insertion');
+            $this->io->info('SAE : ' . LooseValue::castString($mat['libelle']) . ' ajouté pour insertion');
         }
 
         $this->entityManager->flush();

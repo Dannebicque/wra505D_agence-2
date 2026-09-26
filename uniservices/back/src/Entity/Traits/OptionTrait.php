@@ -2,6 +2,7 @@
 
 namespace App\Entity\Traits;
 
+use App\Utils\LooseValue;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -18,7 +19,7 @@ trait OptionTrait
     {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
-        $this->opt = $resolver->resolve($opt);
+        $this->opt = LooseValue::assoc($resolver->resolve($opt));
 
         return $this;
     }

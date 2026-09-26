@@ -122,6 +122,24 @@ final class LooseValue
     }
 
     /**
+     * Tableau associatif : options résolues par OptionsResolver, dont chaque clé est un nom.
+     *
+     * @return array<string, mixed>
+     */
+    public static function assoc(mixed $value): array
+    {
+        $assoc = [];
+        foreach (self::row($value) as $key => $item) {
+            if (!is_string($key)) {
+                throw self::unexpected('string key', $key);
+            }
+            $assoc[$key] = $item;
+        }
+
+        return $assoc;
+    }
+
+    /**
      * Valeur passée à un paramètre bool.
      */
     public static function bool(mixed $value): bool

@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Apc\ApcApprentissageCritique;
 use App\Entity\Edt\EdtEvent;
+use App\Utils\LooseValue;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 use App\Entity\Traits\ApogeeTrait;
 use App\Entity\Traits\OldIdTrait;
@@ -289,7 +290,10 @@ class ScolEnseignement
     {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
-        $this->heures = $resolver->resolve($heures);
+        $this->heures = array_map(
+            static fn (mixed $volumes): array => array_map(LooseValue::number(...), LooseValue::assoc($volumes)),
+            LooseValue::assoc($resolver->resolve($heures))
+        );
 
         return $this;
     }

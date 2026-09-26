@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Repository\EtudiantScolariteSemestreRepository;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Structure\StructureSemestre;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -34,7 +35,7 @@ class GroupeDeletefromSemestreProcessor implements ProcessorInterface
                 // Récupération de l'entité StructureSemestre
                 $semestre = $this->em->getRepository(StructureSemestre::class)->find($semestreId);
 
-                $this->removeGroupeFromSemestre($data, $semestreId);
+                $this->removeGroupeFromSemestre($data, LooseValue::int($semestreId));
 
                 if ($semestre) {
                     $data->removeSemestre($semestre);

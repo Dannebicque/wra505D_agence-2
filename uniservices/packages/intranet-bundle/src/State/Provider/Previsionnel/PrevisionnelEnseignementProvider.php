@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Scolarite\ScolEnseignement;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
+use IntranetBundle\Entity\Previsionnel\Previsionnel;
 
 /** @implements ProviderInterface<PrevisionnelEnseignementDto> */
 class PrevisionnelEnseignementProvider implements ProviderInterface
@@ -128,17 +129,17 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
                 'CM' => [
                     'NbHrGrp' => $item->getHeures()['CM'],
                     'NbGrp' => $item->getGroupes()['CM'],
-                    'NbSeanceGrp' => $item->getHeures()['CM'] / $item::DUREE_SEANCE,
+                    'NbSeanceGrp' => $item->getHeures()['CM'] / Previsionnel::DUREE_SEANCE,
                 ],
                 'TD' => [
                     'NbHrGrp' => $item->getHeures()['TD'],
                     'NbGrp' => $item->getGroupes()['TD'],
-                    'NbSeanceGrp' => $item->getHeures()['TD'] / $item::DUREE_SEANCE,
+                    'NbSeanceGrp' => $item->getHeures()['TD'] / Previsionnel::DUREE_SEANCE,
                 ],
                 'TP' => [
                     'NbHrGrp' => $item->getHeures()['TP'],
                     'NbGrp' => $item->getGroupes()['TP'],
-                    'NbSeanceGrp' => $item->getHeures()['TP'] / $item::DUREE_SEANCE,
+                    'NbSeanceGrp' => $item->getHeures()['TP'] / Previsionnel::DUREE_SEANCE,
                 ],
             ]
         );
