@@ -35,7 +35,7 @@ class EtablissementProcessor implements ProcessorInterface
             }
             if (!$file instanceof UploadedFile) {
                 $uploadedFiles = $request->files->all();
-                if (!empty($uploadedFiles)) {
+                if ($uploadedFiles !== []) {
                     $firstUploaded = array_values($uploadedFiles)[0];
                     $file = is_array($firstUploaded) ? (array_values($firstUploaded)[0] ?? null) : $firstUploaded;
                 }

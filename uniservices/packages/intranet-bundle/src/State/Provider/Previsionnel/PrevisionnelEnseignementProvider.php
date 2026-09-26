@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Scolarite\ScolEnseignement;
+use App\Entity\Users\Personnel;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 
@@ -30,11 +31,11 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
 
-            if (empty($data)) {
+            if (!(bool) $data) {
                 return [];
             }
 
-            if (empty($data)) {
+            if (!(bool) $data) {
                 $output['previ'] = [];
 
                 return $output;
@@ -54,7 +55,7 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
                 if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
                     throw new \LogicException('Expected a Previsionnel.');
                 }
-                if ($item->getPersonnel()) {
+                if ($item->getPersonnel() instanceof Personnel) {
                     $enseignement = $item->getEnseignement();
                     if ($enseignement === null) {
                         throw new \LogicException('Enseignement is required');

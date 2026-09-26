@@ -125,7 +125,7 @@ FOREIGN_KEY_CHECKS=1');
             $response = $this->httpClient->request('GET', $this->base_url . '/etudiant/' . LooseValue::castString($etu['id']));
             $scolarites = json_decode($response->getContent(), true);
 
-            if ($scolarites && isset($this->tEtudiants[LooseValue::key($etu['id'])])) {
+            if ((bool) $scolarites && isset($this->tEtudiants[LooseValue::key($etu['id'])])) {
                 $scolarites = LooseValue::rows($scolarites);
                 foreach ($scolarites as $scol) {
                     if (!array_key_exists(LooseValue::key($scol['annee']), $this->tAnneeUniversitaire)) {
@@ -136,7 +136,7 @@ FOREIGN_KEY_CHECKS=1');
                     $scolarite->setUuid(UuidV4::v4());
                     $scolarite->setEtudiant($this->tEtudiants[LooseValue::key($etu['id'])]);
                     $scolarite->setAnneeUniversitaire($this->tAnneeUniversitaire[LooseValue::key($scol['annee'])]);
-                    if ($this->tAnneeUniversitaire[LooseValue::key($scol['annee'])]->isActif()) {
+                    if ($this->tAnneeUniversitaire[LooseValue::key($scol['annee'])]->isActif() === true) {
                         $scolarite->setActif(true);
                     }
 
@@ -159,7 +159,7 @@ FOREIGN_KEY_CHECKS=1');
 
                     // Set proposition if available in the last semester
                     $semestres = LooseValue::rows($scol['semestres'] ?? []);
-                    if (!empty($semestres)) {
+                    if ($semestres !== []) {
                         $lastSemester = end($semestres);
                         if (isset($lastSemester['proposition'])) {
                             // If the proposition is for the next year (like "DUT"), find the appropriate year

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\ApiDto\Security\ResetPasswordDto;
 use App\Entity\ResetToken;
+use App\Entity\Structure\StructureDepartement;
 use App\Repository\EtudiantRepository;
 use App\Repository\PersonnelRepository;
 use App\Repository\ResetTokenRepository;
@@ -27,6 +28,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -47,7 +49,7 @@ class SecurityController extends AbstractController
         EventDispatcherInterface $dispatcher,
     ): JsonResponse {
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof UserInterface) {
             // HelpdeskMessage générique pour ne pas révéler si l'utilisateur existe ou non
             return new JsonResponse(['error' => 'Identifiants invalides'], JsonResponse::HTTP_UNAUTHORIZED);
         }
@@ -96,7 +98,7 @@ class SecurityController extends AbstractController
             ?? $this->etudiantRepository->findOneBy(['mailPerso' => $emailAddress]);
 
         // si on trouve l'utilisateur
-        if ($user) {
+        if ((bool) $user) {
             // Nettoyer les anciens tokens pour cet utilisateur
             $this->resetTokenRepository->removeExpiredTokens();
 
@@ -204,7 +206,7 @@ class SecurityController extends AbstractController
         // Rechercher le token dans la base de données
         $resetToken = $this->resetTokenRepository->findOneByTokenSecure($hashedToken);
 
-        if (!$resetToken) {
+        if (!$resetToken instanceof ResetToken) {
             return new JsonResponse(['error' => 'Token invalide'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
@@ -217,7 +219,7 @@ class SecurityController extends AbstractController
         // Récupérer l'utilisateur associé au token
         $user = $resetToken->getUser();
 
-        if (!$user) {
+        if (!(bool) $user) {
             return new JsonResponse(['error' => 'Utilisateur non trouvé'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
@@ -256,7 +258,7 @@ class SecurityController extends AbstractController
             $dps = $sdpRepo->findBy(['personnel' => $user]);
             foreach ($dps as $dp) {
                 $dept = $dp->getDepartement();
-                if (!$dept) {
+                if (!$dept instanceof StructureDepartement) {
                     continue;
                 }
 
@@ -267,7 +269,7 @@ class SecurityController extends AbstractController
                     'defaut' => $dp->isDefaut(),
                 ];
 
-                if ($dp->isDefaut()) {
+                if ($dp->isDefaut() === true) {
                     $currentDepartment = [
                         'id' => $dept->getId(),
                         'libelle' => $dept->getLibelle(),
@@ -278,10 +280,10 @@ class SecurityController extends AbstractController
                 }
             }
 
-            if (null === $currentDepartment && !empty($dps)) {
+            if (null === $currentDepartment && $dps !== []) {
                 $dp = $dps[0];
                 $dept = $dp->getDepartement();
-                if ($dept) {
+                if ($dept instanceof StructureDepartement) {
                     $currentDepartment = [
                         'id' => $dept->getId(),
                         'libelle' => $dept->getLibelle(),
@@ -293,7 +295,7 @@ class SecurityController extends AbstractController
             }
         } elseif ($user instanceof Etudiant) {
             $studentDept = $checker->getStudentDepartment($user);
-            if ($studentDept) {
+            if ($studentDept instanceof StructureDepartement) {
                 $currentDepartment = [
                     'id' => $studentDept->getId(),
                     'libelle' => $studentDept->getLibelle(),

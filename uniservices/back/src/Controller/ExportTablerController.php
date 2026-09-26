@@ -77,15 +77,15 @@ class ExportTablerController extends AbstractController
                 $date = $ev['date'] ?? null;
                 $debut = $ev['debut'] ?? null;
                 $fin = $ev['fin'] ?? null;
-                if ($debut && $fin) {
-                    if ($date) {
+                if ((bool) $debut && (bool) $fin) {
+                    if ((bool) $date) {
                         $startTs = strtotime(LooseValue::castString($date).' '.LooseValue::castString($debut));
                         $endTs = strtotime(LooseValue::castString($date).' '.LooseValue::castString($fin));
                     } else {
                         $startTs = strtotime(LooseValue::castString($debut));
                         $endTs = strtotime(LooseValue::castString($fin));
                     }
-                    if ($startTs && $endTs && $endTs > $startTs) {
+                    if ((bool) $startTs && (bool) $endTs && $endTs > $startTs) {
                         $total += ($endTs - $startTs) / 3600.0;
                     }
                 }

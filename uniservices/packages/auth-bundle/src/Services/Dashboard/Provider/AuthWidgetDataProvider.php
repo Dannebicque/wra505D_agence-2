@@ -77,7 +77,7 @@ class AuthWidgetDataProvider implements WidgetDataProviderInterface
         $actus_url = $_ENV['URL_ACTUS'];
         $actus = $this->loadRss(LooseValue::string($actus_url));
         $data = [];
-        if ($actus && isset($actus->channel->item)) {
+        if ($actus instanceof \SimpleXMLElement && isset($actus->channel->item)) {
             $count = 0;
             foreach ($actus->channel->item as $actu) {
                 if ($count >= 4) {

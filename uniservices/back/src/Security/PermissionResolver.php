@@ -32,21 +32,21 @@ class PermissionResolver
         // 2. Add direct permissions (only if their package is active)
         foreach ($assignedRoles as $role) {
             $definition = $this->registry->getPermissionByRole($role);
-            if ($definition && in_array($definition->getPackage(), $activePackages, true)) {
+            if ($definition instanceof PermissionDefinition && in_array($definition->getPackage(), $activePackages, true)) {
                 $resolved[$role] = true;
             }
         }
 
         // 3. Resolve inheritance recursively
         $toProcess = array_keys($resolved);
-        while (!empty($toProcess)) {
+        while ($toProcess !== []) {
             $currentRole = array_pop($toProcess);
             $definition = $this->registry->getPermissionByRole($currentRole);
-            if ($definition) {
+            if ($definition instanceof PermissionDefinition) {
                 foreach ($definition->getInheritedRoles() as $inheritedRole) {
                     if (!isset($resolved[$inheritedRole])) {
                         $inheritedDef = $this->registry->getPermissionByRole($inheritedRole);
-                        if ($inheritedDef && in_array($inheritedDef->getPackage(), $activePackages, true)) {
+                        if ($inheritedDef instanceof PermissionDefinition && in_array($inheritedDef->getPackage(), $activePackages, true)) {
                             $resolved[$inheritedRole] = true;
                             $toProcess[] = $inheritedRole;
                         }

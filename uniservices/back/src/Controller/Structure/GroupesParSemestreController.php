@@ -14,7 +14,7 @@ class GroupesParSemestreController extends AbstractController
         Request $request,
         StructureGroupeRepository $repo
     ): JsonResponse {
-        if (!$semestreId) {
+        if ($semestreId === 0 || ($semestreId === '' || $semestreId === '0') || $semestreId === null) {
             return new JsonResponse(['error' => 'Paramètre semestre manquant'], 400);
         }
         $groupes = $repo->findBySemestreId($semestreId);

@@ -59,18 +59,18 @@ class StageSoutenanceController extends AbstractController
         $soutenanceId = $this->getIdFromIri($data['soutenanceId'] ?? null);
         $stagePeriodeId = $this->getIdFromIri($data['stagePeriodeId'] ?? null);
 
-        if (!$dateStr || (!$stageEtudiantId && !$stagePeriodeId)) {
+        if (!(bool) $dateStr || (($stageEtudiantId === null || $stageEtudiantId === 0) && ($stagePeriodeId === null || $stagePeriodeId === 0))) {
             return new JsonResponse(['error' => 'Paramètres requis manquants.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $stageEtudiant = $stageEtudiantId ? $this->em->getRepository(StageEtudiant::class)->find($stageEtudiantId) : null;
-        $stagePeriode = $stagePeriodeId ? $this->em->getRepository(StagePeriode::class)->find($stagePeriodeId) : ($stageEtudiant ? $stageEtudiant->getStagePeriode() : null);
+        $stageEtudiant = $stageEtudiantId !== null && $stageEtudiantId !== 0 ? $this->em->getRepository(StageEtudiant::class)->find($stageEtudiantId) : null;
+        $stagePeriode = $stagePeriodeId !== null && $stagePeriodeId !== 0 ? $this->em->getRepository(StagePeriode::class)->find($stagePeriodeId) : ($stageEtudiant instanceof StageEtudiant ? $stageEtudiant->getStagePeriode() : null);
 
-        if (!$stagePeriode) {
+        if (!$stagePeriode instanceof StagePeriode) {
             return new JsonResponse(['error' => 'Période de stage non trouvée.'], Response::HTTP_NOT_FOUND);
         }
 
-        $enseignantJury = $enseignantJuryId ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
+        $enseignantJury = $enseignantJuryId !== null && $enseignantJuryId !== 0 ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
         $start = new \DateTime(LooseValue::string($dateStr));
         $end = (clone $start)->modify("+$duree minutes");
 
@@ -94,18 +94,18 @@ class StageSoutenanceController extends AbstractController
         $duree = LooseValue::castInt($data['duree'] ?? 30);
         $stagePeriodeId = $this->getIdFromIri($data['stagePeriodeId'] ?? null);
 
-        if (!$dateStr) {
+        if (!(bool) $dateStr) {
             return new JsonResponse(['error' => 'Paramètres requis manquants (date).'], Response::HTTP_BAD_REQUEST);
         }
 
-        $stageEtudiant = $stageEtudiantId ? $this->em->getRepository(StageEtudiant::class)->find($stageEtudiantId) : null;
-        $stagePeriode = $stagePeriodeId ? $this->em->getRepository(StagePeriode::class)->find($stagePeriodeId) : ($stageEtudiant ? $stageEtudiant->getStagePeriode() : null);
+        $stageEtudiant = $stageEtudiantId !== null && $stageEtudiantId !== 0 ? $this->em->getRepository(StageEtudiant::class)->find($stageEtudiantId) : null;
+        $stagePeriode = $stagePeriodeId !== null && $stagePeriodeId !== 0 ? $this->em->getRepository(StagePeriode::class)->find($stagePeriodeId) : ($stageEtudiant instanceof StageEtudiant ? $stageEtudiant->getStagePeriode() : null);
 
-        if (!$stagePeriode) {
+        if (!$stagePeriode instanceof StagePeriode) {
             return new JsonResponse(['error' => 'Période de stage non trouvée.'], Response::HTTP_NOT_FOUND);
         }
 
-        $enseignantJury = $enseignantJuryId ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
+        $enseignantJury = $enseignantJuryId !== null && $enseignantJuryId !== 0 ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
         $start = new \DateTime(LooseValue::string($dateStr));
         $end = (clone $start)->modify("+$duree minutes");
 
@@ -119,9 +119,9 @@ class StageSoutenanceController extends AbstractController
         }
 
         // Save soutenance slot
-        if ($soutenanceId) {
+        if ($soutenanceId !== null && $soutenanceId !== 0) {
             $soutenance = $this->em->getRepository(StageSoutenance::class)->find($soutenanceId);
-            if (!$soutenance) {
+            if (!$soutenance instanceof StageSoutenance) {
                 return new JsonResponse(['error' => 'Créneau non trouvé.'], Response::HTTP_NOT_FOUND);
             }
         } else {
@@ -129,9 +129,9 @@ class StageSoutenanceController extends AbstractController
         }
 
         // If assigning a student, verify they don't already have another defense
-        if ($stageEtudiant) {
+        if ($stageEtudiant instanceof StageEtudiant) {
             $existing = $this->em->getRepository(StageSoutenance::class)->findOneBy(['stageEtudiant' => $stageEtudiant]);
-            if ($existing && $existing->getId() !== $soutenance->getId()) {
+            if ($existing instanceof StageSoutenance && $existing->getId() !== $soutenance->getId()) {
                 return new JsonResponse([
                     'error' => 'L\'étudiant a déjà une soutenance planifiée sur un autre créneau.'
                 ], Response::HTTP_CONFLICT);
@@ -166,12 +166,12 @@ class StageSoutenanceController extends AbstractController
         $pauseDuree = LooseValue::castInt($data['pauseDuree'] ?? 0);
         $salle = $data['salle'] ?? '';
 
-        if (!$stagePeriodeId || !$dateStr || !$startTimeStr || !$endTimeStr) {
+        if ($stagePeriodeId === null || $stagePeriodeId === 0 || !(bool) $dateStr || !(bool) $startTimeStr || !(bool) $endTimeStr) {
             return new JsonResponse(['error' => 'Paramètres requis manquants.'], Response::HTTP_BAD_REQUEST);
         }
 
         $periode = $this->em->getRepository(StagePeriode::class)->find($stagePeriodeId);
-        if (!$periode) {
+        if (!$periode instanceof StagePeriode) {
             return new JsonResponse(['error' => 'Période de stage non trouvée.'], Response::HTTP_NOT_FOUND);
         }
 
@@ -222,10 +222,10 @@ class StageSoutenanceController extends AbstractController
             ->getResult();
 
         $conflicts = [];
-        $tuteur = $stageEtudiant ? $stageEtudiant->getTuteurUniversitaire() : null;
+        $tuteur = $stageEtudiant instanceof StageEtudiant ? $stageEtudiant->getTuteurUniversitaire() : null;
 
         foreach ($allSoutenances as $s) {
-            if ($soutenanceId && $s->getId() === (int)$soutenanceId) {
+            if ($soutenanceId !== null && $soutenanceId !== 0 && $s->getId() === (int)$soutenanceId) {
                 continue;
             }
 
@@ -243,7 +243,7 @@ class StageSoutenanceController extends AbstractController
                 $sStudentName = $s->getStageEtudiant()?->getEtudiant()?->getDisplay() ?? 'un autre créneau';
 
                 // Check tuteur overlap
-                if ($tuteur && ($tuteur === $sTuteur || $tuteur === $sAssesseur)) {
+                if ($tuteur instanceof Personnel && ($tuteur === $sTuteur || $tuteur === $sAssesseur)) {
                     $conflicts[] = sprintf(
                         "Le tuteur universitaire (%s) a déjà une soutenance planifiée sur ce créneau (%s - %s) pour %s.",
                         $tuteur->getDisplay(),
@@ -254,7 +254,7 @@ class StageSoutenanceController extends AbstractController
                 }
 
                 // Check assesseur overlap
-                if ($enseignantJury && ($enseignantJury === $sTuteur || $enseignantJury === $sAssesseur)) {
+                if ($enseignantJury instanceof Personnel && ($enseignantJury === $sTuteur || $enseignantJury === $sAssesseur)) {
                     $conflicts[] = sprintf(
                         "L'enseignant assesseur (%s) a déjà une soutenance planifiée sur ce créneau (%s - %s) pour %s.",
                         $enseignantJury->getDisplay(),
@@ -265,7 +265,7 @@ class StageSoutenanceController extends AbstractController
                 }
 
                 // Check student overlap
-                if ($stageEtudiant && $s->getStageEtudiant() === $stageEtudiant) {
+                if ($stageEtudiant instanceof StageEtudiant && $s->getStageEtudiant() === $stageEtudiant) {
                     $conflicts[] = sprintf(
                         "L'étudiant a déjà une soutenance planifiée sur ce créneau (%s - %s).",
                         $sStart->format('H:i'),

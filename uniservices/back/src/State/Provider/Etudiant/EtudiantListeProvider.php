@@ -10,6 +10,7 @@ use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Etudiant\EtudiantScolarite;
+use App\Entity\Users\Etudiant;
 
 /** @implements ProviderInterface<object> */
 class EtudiantListeProvider implements ProviderInterface
@@ -76,7 +77,7 @@ class EtudiantListeProvider implements ProviderInterface
 
         return [
             'id' => $scolarite->getId(),
-            'etudiant' => $etudiant ? [
+            'etudiant' => $etudiant instanceof Etudiant ? [
                 'id' => $etudiant->getId(),
                 'prenom' => $etudiant->getPrenom(),
                 'nom' => $etudiant->getNom(),

@@ -3,6 +3,7 @@
 namespace App\Security;
 
 use App\Entity\Structure\StructureDepartement;
+use App\Entity\Structure\StructureDepartementPersonnel;
 use App\Entity\Users\Personnel;
 use App\Entity\Users\Etudiant;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
@@ -24,7 +25,7 @@ class DepartmentPermissionChecker
                 'departement' => $departement,
             ]);
 
-            if ($superAdminInDepartment) {
+            if ($superAdminInDepartment instanceof StructureDepartementPersonnel) {
                 $resolvedPermissions = $this->resolver->resolve(
                     $superAdminInDepartment->getPermissions(),
                     $superAdminInDepartment->getPackages()
@@ -39,7 +40,7 @@ class DepartmentPermissionChecker
         // 2. Etudiants have a generic role within their active department
         if ($user instanceof Etudiant) {
             $studentDept = $this->getStudentDepartment($user);
-            if ($studentDept && $studentDept->getId() === $departement->getId()) {
+            if ($studentDept instanceof StructureDepartement && $studentDept->getId() === $departement->getId()) {
                 return $permission === 'ROLE_ETUDIANT';
             }
             return false;
@@ -51,7 +52,7 @@ class DepartmentPermissionChecker
             'departement' => $departement
         ]);
 
-        if (!$dp) {
+        if (!$dp instanceof StructureDepartementPersonnel) {
             return false;
         }
 

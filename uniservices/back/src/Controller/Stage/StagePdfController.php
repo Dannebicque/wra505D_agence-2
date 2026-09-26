@@ -3,11 +3,23 @@
 namespace App\Controller\Stage;
 
 use App\Entity\Etablissement;
+use App\Entity\Structure\StructureAnnee;
+use App\Entity\Structure\StructureAnneeUniversitaire;
+use App\Entity\Structure\StructureDepartement;
+use App\Entity\Structure\StructureDiplome;
+use App\Entity\Structure\StructureSemestre;
+use App\Entity\Structure\StructureTypeDiplome;
+use App\Entity\Users\Etudiant;
+use App\Entity\Users\Personnel;
 use App\Utils\LooseValue;
+use App\ValueObject\Adresse;
 use Doctrine\ORM\EntityManagerInterface;
+use StageBundle\Entity\Stages\Contact;
+use StageBundle\Entity\Stages\Entreprise;
 use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StageAvenant;
 use StageBundle\Entity\Stages\StageConventionTemplate;
+use StageBundle\Entity\Stages\StagePeriode;
 use StageBundle\Services\GotenbergService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +40,7 @@ class StagePdfController extends AbstractController
     public function getStagePdf(int $id): Response
     {
         $stage = $this->em->getRepository(StageEtudiant::class)->find($id);
-        if (!$stage) {
+        if (!$stage instanceof StageEtudiant) {
             return new Response('Stage étudiant non trouvé', Response::HTTP_NOT_FOUND);
         }
 
@@ -58,12 +70,12 @@ class StagePdfController extends AbstractController
     public function getAvenantPdf(int $id): Response
     {
         $avenant = $this->em->getRepository(StageAvenant::class)->find($id);
-        if (!$avenant) {
+        if (!$avenant instanceof StageAvenant) {
             return new Response('Avenant non trouvé', Response::HTTP_NOT_FOUND);
         }
 
         $stage = $avenant->getStageEtudiant();
-        if (!$stage) {
+        if (!$stage instanceof StageEtudiant) {
             return new Response('Stage associé à l\'avenant non trouvé', Response::HTTP_NOT_FOUND);
         }
 
@@ -93,7 +105,7 @@ class StagePdfController extends AbstractController
     public function validateAvenant(int $id): Response
     {
         $avenant = $this->em->getRepository(StageAvenant::class)->find($id);
-        if (!$avenant) {
+        if (!$avenant instanceof StageAvenant) {
             return new Response('Avenant non trouvé', Response::HTTP_NOT_FOUND);
         }
 
@@ -101,11 +113,11 @@ class StagePdfController extends AbstractController
         $avenant->setDateValidation(new \DateTime());
 
         $stage = $avenant->getStageEtudiant();
-        if ($stage) {
-            if ($avenant->getNewDateDebut()) {
+        if ($stage instanceof StageEtudiant) {
+            if ($avenant->getNewDateDebut() instanceof \DateTimeInterface) {
                 $stage->setDateDebutStage($avenant->getNewDateDebut());
             }
-            if ($avenant->getNewDateFin()) {
+            if ($avenant->getNewDateFin() instanceof \DateTimeInterface) {
                 $stage->setDateFinStage($avenant->getNewDateFin());
             }
             if (null !== $avenant->getNewDureeHebdomadaire()) {
@@ -114,7 +126,7 @@ class StagePdfController extends AbstractController
             if (null !== $avenant->getNewGratificationMontant()) {
                 $stage->setGratificationMontant($avenant->getNewGratificationMontant());
             }
-            if ($avenant->getNewTuteur()) {
+            if ($avenant->getNewTuteur() instanceof Contact) {
                 $stage->setTuteur($avenant->getNewTuteur());
             }
         }
@@ -136,22 +148,22 @@ class StagePdfController extends AbstractController
 
         // Get main establishment
         $etab = $this->em->getRepository(Etablissement::class)->findOneBy(['isMain' => true]);
-        if (!$etab) {
+        if (!$etab instanceof Etablissement) {
             $etab = $this->em->getRepository(Etablissement::class)->findOneBy([]);
         }
 
         // Safe format helper for dates
         $fmtDate = function (?\DateTimeInterface $d) {
-            return $d ? $d->format('d/m/Y') : '';
+            return $d instanceof \DateTimeInterface ? $d->format('d/m/Y') : '';
         };
 
         // Telephones
         $tels = [];
-        if ($etu) {
-            if ($etu->getTel1()) {
+        if ($etu instanceof Etudiant) {
+            if (!in_array($etu->getTel1(), [null, '', '0'], true)) {
                 $tels[] = $etu->getTel1();
             }
-            if ($etu->getTel2()) {
+            if (!in_array($etu->getTel2(), [null, '', '0'], true)) {
                 $tels[] = $etu->getTel2();
             }
         }
@@ -160,12 +172,12 @@ class StagePdfController extends AbstractController
         // Semestre & Diplome libelle
         $formationLibelle = 'BUT';
         $volumeHoraire = '600';
-        $sem = $periode ? $periode->getSemestreProgramme() : null;
-        if ($sem) {
+        $sem = $periode instanceof StagePeriode ? $periode->getSemestreProgramme() : null;
+        if ($sem instanceof StructureSemestre) {
             $formationLibelle = $sem->getLibelle();
-            if ($sem->getAnnee() && $sem->getAnnee()->getDiplome()) {
+            if ($sem->getAnnee() instanceof StructureAnnee && $sem->getAnnee()->getDiplome() instanceof StructureDiplome) {
                 $diplome = $sem->getAnnee()->getDiplome();
-                $formationLibelle = ($diplome->getTypeDiplome() ? $diplome->getTypeDiplome()->getLibelle() : '') . ' ' . $diplome->getLibelle();
+                $formationLibelle = ($diplome->getTypeDiplome() instanceof StructureTypeDiplome ? $diplome->getTypeDiplome()->getLibelle() : '') . ' ' . $diplome->getLibelle();
                 $volumeHoraire = (string)($diplome->getVolumeHoraire() ?? '600');
             }
         }
@@ -174,46 +186,46 @@ class StagePdfController extends AbstractController
         $deptTel = '';
         $deptMail = '';
         $deptAdresse = '';
-        $dept = ($sem && $sem->getAnnee()) ? $sem->getAnnee()->getDepartement() : null;
-        if ($dept) {
+        $dept = ($sem instanceof StructureSemestre && $sem->getAnnee() instanceof StructureAnnee) ? $sem->getAnnee()->getDepartement() : null;
+        if ($dept instanceof StructureDepartement) {
             $deptTel = $dept->getTelContact() ?? '';
-            if ($sem->getAnnee()->getDiplome() && $sem->getAnnee()->getDiplome()->getAssistantDiplome()) {
+            if ($sem->getAnnee()->getDiplome() instanceof StructureDiplome && $sem->getAnnee()->getDiplome()->getAssistantDiplome() instanceof Personnel) {
                 $deptMail = $sem->getAnnee()->getDiplome()->getAssistantDiplome()->getMailUniv() ?? '';
             }
         }
-        if ($etab && $etab->getAdresse()) {
+        if ($etab instanceof Etablissement && !in_array($etab->getAdresse(), [null, []], true)) {
             $deptAdresse = implode(', ', array_map(LooseValue::castString(...), $etab->getAdresse()));
         }
 
         // Annee universitaire display
-        $anneeUnivStr = $periode && $periode->getAnneeUniversitaire() ? $periode->getAnneeUniversitaire()->getLibelle() : '2025/2026';
+        $anneeUnivStr = $periode instanceof StagePeriode && $periode->getAnneeUniversitaire() instanceof StructureAnneeUniversitaire ? $periode->getAnneeUniversitaire()->getLibelle() : '2025/2026';
 
         // Calcule semaines
         $nbSemaines = 0;
-        if ($stage->getDureeJoursStage()) {
+        if ($stage->getDureeJoursStage() !== 0) {
             $nbSemaines = ceil($stage->getDureeJoursStage() / 5);
         }
 
         $replaces = [
             '{annee_universitaire}' => $anneeUnivStr,
-            '{etudiant.nom}' => $etu ? mb_strtoupper($etu->getNom() ?? '') : '',
-            '{etudiant.prenom}' => $etu ? $etu->getPrenom() : '',
-            '{etudiant.sexe}' => $etu && method_exists($etu, 'getCivilite') && $etu->getCivilite() === 'Mme' ? 'Femme' : 'Homme',
-            '{etudiant.date_naissance}' => $etu && $etu->getDateNaissance() ? $fmtDate($etu->getDateNaissance()) : '',
-            '{etudiant.adresse}' => $etu && $etu->getAdresseEtudiante() ? $etu->getAdresseEtudiante()->getAdresse() : '',
+            '{etudiant.nom}' => $etu instanceof Etudiant ? mb_strtoupper($etu->getNom() ?? '') : '',
+            '{etudiant.prenom}' => $etu instanceof Etudiant ? $etu->getPrenom() : '',
+            '{etudiant.sexe}' => $etu instanceof Etudiant && method_exists($etu, 'getCivilite') && $etu->getCivilite() === 'Mme' ? 'Femme' : 'Homme',
+            '{etudiant.date_naissance}' => $etu instanceof Etudiant && $etu->getDateNaissance() instanceof \DateTimeInterface ? $fmtDate($etu->getDateNaissance()) : '',
+            '{etudiant.adresse}' => $etu instanceof Etudiant && $etu->getAdresseEtudiante() instanceof Adresse ? $etu->getAdresseEtudiante()->getAdresse() : '',
             '{etudiant.telephones}' => $telephones,
-            '{etudiant.email}' => $etu ? $etu->getMailUniv() : '',
+            '{etudiant.email}' => $etu instanceof Etudiant ? $etu->getMailUniv() : '',
             '{etudiant.formation}' => $formationLibelle,
             '{formation.volume_horaire}' => $volumeHoraire,
-            '{etudiant.secu}' => $etu && method_exists($etu, 'getIntituleSecuriteSociale') && $etu->getIntituleSecuriteSociale() ? $etu->getIntituleSecuriteSociale() : 'CPAM de l\'Aube',
-            '{etudiant.secu_adresse}' => $etu && method_exists($etu, 'getAdresseSecuriteSociale') && $etu->getAdresseSecuriteSociale() ? $etu->getAdresseSecuriteSociale() : '',
+            '{etudiant.secu}' => $etu instanceof Etudiant && method_exists($etu, 'getIntituleSecuriteSociale') && (bool) $etu->getIntituleSecuriteSociale() ? $etu->getIntituleSecuriteSociale() : 'CPAM de l\'Aube',
+            '{etudiant.secu_adresse}' => $etu instanceof Etudiant && method_exists($etu, 'getAdresseSecuriteSociale') && (bool) $etu->getAdresseSecuriteSociale() ? $etu->getAdresseSecuriteSociale() : '',
 
-            '{entreprise.nom}' => $ent ? $ent->getRaisonSociale() : '',
-            '{entreprise.adresse}' => $stage->getAdresseStage() ?: ($ent && $ent->getAdresse() ? $ent->getAdresse()->getAdresse() : ''),
-            '{entreprise.signataire}' => $ent && $ent->getResponsable() ? $ent->getResponsable()->getDisplay() : '',
-            '{entreprise.signataire_fonction}' => $ent && $ent->getResponsable() ? $ent->getResponsable()->getFonction() : '',
-            '{entreprise.telephone}' => $ent && $ent->getResponsable() ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
-            '{entreprise.email}' => $ent && $ent->getResponsable() ? $ent->getResponsable()->getEmail() : '',
+            '{entreprise.nom}' => $ent instanceof Entreprise ? $ent->getRaisonSociale() : '',
+            '{entreprise.adresse}' => $stage->getAdresseStage() ?: ($ent instanceof Entreprise && $ent->getAdresse() instanceof Adresse ? $ent->getAdresse()->getAdresse() : ''),
+            '{entreprise.signataire}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getDisplay() : '',
+            '{entreprise.signataire_fonction}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getFonction() : '',
+            '{entreprise.telephone}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
+            '{entreprise.email}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getEmail() : '',
             '{stage.service}' => $stage->getServiceStageEntreprise() ?? 'Service Technique',
 
             '{stage.sujet}' => $stage->getSujetStage() ?? '',
@@ -223,38 +235,38 @@ class StagePdfController extends AbstractController
             '{stage.jours}' => (string)$stage->getDureeJoursStage(),
             '{stage.commentaire_heures}' => $stage->getCommentaireDureeHebdomadaire() ?? '',
             '{stage.activites}' => $stage->getActivites() ?? '',
-            '{stage.competences}' => $periode ? ($periode->getCompetencesVisees() ?? '') : '',
+            '{stage.competences}' => $periode instanceof StagePeriode ? ($periode->getCompetencesVisees() ?? '') : '',
             '{stage.heures_hebdo}' => (string)$stage->getDureeHebdomadaire(),
             '{stage.amenagements}' => $stage->getAmenagementStage() ?? 'Aucun',
-            '{stage.modalites_encadrement}' => $periode ? ($periode->getModalitesEncadrement() ?? '') : '',
-            '{stage.gratification}' => $stage->getGratificationMontant() ? number_format($stage->getGratificationMontant(), 2, ',', ' ') : '0,00',
+            '{stage.modalites_encadrement}' => $periode instanceof StagePeriode ? ($periode->getModalitesEncadrement() ?? '') : '',
+            '{stage.gratification}' => (bool) $stage->getGratificationMontant() ? number_format($stage->getGratificationMontant(), 2, ',', ' ') : '0,00',
             '{stage.gratification_periode}' => $stage->getGratificationPeriode() === 'M' ? 'mois' : ($stage->getGratificationPeriode() === 'H' ? 'heure' : 'jour'),
             '{stage.avantages}' => $stage->getAvantages() ?? 'Aucun',
-            '{stage.documents_a_rendre}' => $periode ? ($periode->getDocumentsRendre() ?? '') : '',
+            '{stage.documents_a_rendre}' => $periode instanceof StagePeriode ? ($periode->getDocumentsRendre() ?? '') : '',
             // Les ECTS d'un stage ne sont pas encore décidés par le client : la balise reste vide
             // plutôt que d'apparaître telle quelle dans le PDF.
             '{stage.ects}' => '',
 
-            '{tuteur.nom}' => $tutUniv ? $tutUniv->getDisplay() : ($periode && $periode->getResponsablePrincipal() ? $periode->getResponsablePrincipal()->getDisplay() : 'Non attribué'),
-            '{tuteur.telephone}' => $tutUniv ? $tutUniv->getTelBureau() : '',
-            '{tuteur.email}' => $tutUniv ? $tutUniv->getMailUniv() : '',
+            '{tuteur.nom}' => $tutUniv instanceof Personnel ? $tutUniv->getDisplay() : ($periode instanceof StagePeriode && $periode->getResponsablePrincipal() instanceof Personnel ? $periode->getResponsablePrincipal()->getDisplay() : 'Non attribué'),
+            '{tuteur.telephone}' => $tutUniv instanceof Personnel ? $tutUniv->getTelBureau() : '',
+            '{tuteur.email}' => $tutUniv instanceof Personnel ? $tutUniv->getMailUniv() : '',
 
-            '{tuteur_entreprise.nom}' => $tut ? $tut->getDisplay() : ($ent && $ent->getResponsable() ? $ent->getResponsable()->getDisplay() : ''),
-            '{tuteur_entreprise.fonction}' => $tut ? $tut->getFonction() : ($ent && $ent->getResponsable() ? $ent->getResponsable()->getFonction() : ''),
-            '{tuteur_entreprise.telephone}' => $tut ? ($tut->getTelephone() ?? $tut->getPortable() ?? '') : ($ent && $ent->getResponsable() ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : ''),
-            '{tuteur_entreprise.email}' => $tut ? $tut->getEmail() : ($ent && $ent->getResponsable() ? $ent->getResponsable()->getEmail() : ''),
+            '{tuteur_entreprise.nom}' => $tut instanceof Contact ? $tut->getDisplay() : ($ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getDisplay() : ''),
+            '{tuteur_entreprise.fonction}' => $tut instanceof Contact ? $tut->getFonction() : ($ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getFonction() : ''),
+            '{tuteur_entreprise.telephone}' => $tut instanceof Contact ? ($tut->getTelephone() ?? $tut->getPortable() ?? '') : ($ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : ''),
+            '{tuteur_entreprise.email}' => $tut instanceof Contact ? $tut->getEmail() : ($ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getEmail() : ''),
 
             '{etablissement.signataire}' => 'Martial Martin',
             '{date_creation}' => date('d/m/Y'),
             '{dept.tel}' => $deptTel,
             '{dept.mail}' => $deptMail,
             '{dept.adresse}' => $deptAdresse,
-            '{etudiant.parcours}' => ($stage->getStagePeriode() && $stage->getStagePeriode()->getSemestreProgramme()) ? $stage->getStagePeriode()->getSemestreProgramme()->getLibelle() : 'BUT',
+            '{etudiant.parcours}' => ($stage->getStagePeriode() instanceof StagePeriode && $stage->getStagePeriode()->getSemestreProgramme() instanceof StructureSemestre) ? $stage->getStagePeriode()->getSemestreProgramme()->getLibelle() : 'BUT',
         ];
 
-        if ($avenant) {
+        if ($avenant instanceof StageAvenant) {
             $replaces['{avenant.texte}'] = $avenant->getTexte() ?? '';
-            $replaces['{avenant.date_creation}'] = $avenant->getDateCreation() ? $avenant->getDateCreation()->format('d/m/Y') : '';
+            $replaces['{avenant.date_creation}'] = $avenant->getDateCreation() instanceof \DateTimeInterface ? $avenant->getDateCreation()->format('d/m/Y') : '';
         }
 
         return strtr($templateText, $replaces);

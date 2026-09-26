@@ -46,7 +46,7 @@ class AnneeUnivInitProcessor implements ProcessorInterface
         foreach ($existingDiplomes as $existingDiplome) {
             if (!$diplomes->contains($existingDiplome)) {
                 $pn = $this->structurePnRepository->findOneBy(['diplome' => $existingDiplome, 'anneeUniversitaire' => $data]);
-                if ($pn) {
+                if ($pn instanceof StructurePn) {
                     $this->em->remove($pn);
                 }
             }
@@ -54,7 +54,7 @@ class AnneeUnivInitProcessor implements ProcessorInterface
 
         foreach ($diplomes as $diplome) {
             $pn = $this->structurePnRepository->findOneBy(['diplome' => $diplome, 'anneeUniversitaire' => $data]);
-            if (!$pn) {
+            if (!$pn instanceof StructurePn) {
                 $pn = $this->createPn($diplome, $data);
                 $this->em->persist($pn);
                 //todo: lancer la synchro de la structure depuis oréof pr chaque diplome
@@ -62,7 +62,7 @@ class AnneeUnivInitProcessor implements ProcessorInterface
         }
 
         // si l'année universitaire nouvelle est active, alors on met les autres à inactif
-        if ($data->isActif()) {
+        if ($data->isActif() === true) {
             $this->anneeUniversitaireRepository->setAllAnneeUnivInactifExcept($data);
         }
 

@@ -54,7 +54,7 @@ class EnseignementFilter extends AbstractFilter
                 ->andWhere("departement.id = :departement")
                 ->setParameter("departement", $value);
 
-            if ($anneeUniversitaireId) {
+            if ((bool) $anneeUniversitaireId) {
                 $queryBuilder
                     ->join("diplome.anneesUniversitaires", "diplomeAnneeUniv")
                     ->andWhere("diplomeAnneeUniv.id = :anneeUniversitaireId")

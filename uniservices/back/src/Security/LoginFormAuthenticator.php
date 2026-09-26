@@ -38,7 +38,7 @@ class LoginFormAuthenticator extends AbstractAuthenticator
         $password = $data['password'] ?? $request->request->get('password') ?? '';
 
         // Validation basique des entrées
-        if (empty($username) || empty($password)) {
+        if (!(bool) $username || !(bool) $password) {
             throw new AuthenticationException('Identifiants requis');
         }
 

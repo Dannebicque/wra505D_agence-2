@@ -40,7 +40,7 @@ class TicketFilter extends AbstractFilter
                 ->andWhere(sprintf('%s.statut = :%s', $alias, $property))
                 ->setParameter($property, $value);
         }
-        if ('hasRecentMessage' === $property && $value) {
+        if ('hasRecentMessage' === $property && (bool) $value) {
             $dateLimite = new \DateTimeImmutable('-7 days');
 
             $queryBuilder

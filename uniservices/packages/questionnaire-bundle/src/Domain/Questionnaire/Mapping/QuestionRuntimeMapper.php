@@ -9,6 +9,7 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\QuestionRuntimeDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\ScaleDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\VisibilityRuleDto;
 use QuestionnaireBundle\Enum\QuestTypeQuestionEnum;
+use Symfony\Component\Uid\Uuid;
 
 final class QuestionRuntimeMapper
 {
@@ -37,7 +38,7 @@ final class QuestionRuntimeMapper
 
         $visibility = null;
         $qId = (string) $q->getId();
-        $qUuid = $q->getUuid() ? (string) $q->getUuid() : null;
+        $qUuid = $q->getUuid() instanceof Uuid ? (string) $q->getUuid() : null;
 
         $searchQuestions = [];
         if ($allQuestionsInContext !== null) {
@@ -47,14 +48,14 @@ final class QuestionRuntimeMapper
                 }
             }
         }
-        if (empty($searchQuestions)) {
+        if ($searchQuestions === []) {
             $searchQuestions = [$q];
         }
 
         $targetedRule = null;
         foreach ($searchQuestions as $sq) {
             $rules = $sq->getConditionalRules();
-            if (empty($rules)) {
+            if ($rules === null || $rules === []) {
                 continue;
             }
 
@@ -67,7 +68,7 @@ final class QuestionRuntimeMapper
                 $targetIds = $r['targetQuestionIds'] ?? [];
                 $isTargeted = false;
 
-                if (!empty($targetIds) && is_array($targetIds)) {
+                if ((bool) $targetIds && is_array($targetIds)) {
                     foreach ($targetIds as $tid) {
                         $tidStr = LooseValue::castString($tid);
                         if ($tidStr === $qId || ($qUuid !== null && $tidStr === $qUuid)) {
@@ -94,7 +95,7 @@ final class QuestionRuntimeMapper
             $logicalOperator = LooseValue::castString($targetedRule['logicalOperator'] ?? 'AND');
             $action = LooseValue::castString($targetedRule['action'] ?? 'show');
 
-            if (!empty($targetedRule['conditions']) && is_array($targetedRule['conditions'])) {
+            if ((bool) ($targetedRule['conditions'] ?? false) && is_array($targetedRule['conditions'])) {
                 foreach ($targetedRule['conditions'] as $cond) {
                     if (!is_array($cond)) {
                         continue;
@@ -111,7 +112,7 @@ final class QuestionRuntimeMapper
             }
 
             // Fallback for simple condition rules
-            if (empty($conditions)) {
+            if ($conditions === []) {
                 $dep = $targetedRule['dependsOnQuestionId'] ?? $targetedRule['dependsOn'] ?? null;
                 $operator = $targetedRule['operator'] ?? null;
                 if ($dep !== null && $operator !== null) {
@@ -123,7 +124,7 @@ final class QuestionRuntimeMapper
                 }
             }
 
-            if (!empty($conditions)) {
+            if ($conditions !== []) {
                 $firstCond = $conditions[0];
                 $visibility = new VisibilityRuleDto(
                     dependsOnQuestionId: $firstCond['dependsOnQuestionId'],

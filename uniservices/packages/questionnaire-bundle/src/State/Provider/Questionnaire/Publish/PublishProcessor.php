@@ -25,7 +25,7 @@ final class PublishProcessor implements ProcessorInterface
         $id = $uriVariables['questionnaireUuid'];
 
         $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $id]);
-        if (!$q) {
+        if (!$q instanceof Questionnaire) {
             throw new \RuntimeException('Questionnaire not found');
         }
 

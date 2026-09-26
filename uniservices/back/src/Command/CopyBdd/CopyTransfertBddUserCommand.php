@@ -2,6 +2,7 @@
 
 namespace App\Command\CopyBdd;
 
+use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureDepartementPersonnel;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
@@ -57,7 +58,7 @@ class CopyTransfertBddUserCommand extends Command
         parent::__construct();
         $this->em = $copyConnection;
         $this->tAnneeUniversitaire = array_filter($structureAnneeUniversitaireRepository->findAllByIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureAnneeUniversitaire);
-        $this->tDepartements = array_filter($structureDepartementRepository->findAllByIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureDepartement);
+        $this->tDepartements = array_filter($structureDepartementRepository->findAllByIdArray(), static fn (mixed $entity): bool => $entity instanceof StructureDepartement);
         $this->tGroupes = array_filter($structureGroupeRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureGroupe);
         $this->tEtudiants = array_filter($etudiantRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof Etudiant);
         $this->tBacs = array_filter($scolBacRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Scolarite\ScolBac);
@@ -363,7 +364,7 @@ FOREIGN_KEY_CHECKS=1');
                 }
             }
             // Si le département n'existe pas, on skip
-            if (!$departementTrouve) {
+            if (!$departementTrouve instanceof StructureDepartement) {
                 continue;
             }
             $depPers->setDepartement($departementTrouve);

@@ -84,7 +84,7 @@ class ApcParcours
         // si il ya formation_continue:true dans la propriété option
         // on affiche le libellé du parcours suivi de (FC)
         // sinon on affiche le libellé du parcours
-        if ($this->opt && $this->opt['formation_continue']) {
+        if ($this->opt !== [] && (bool) $this->opt['formation_continue']) {
             return $this->libelle . ' (FC)';
         } else {
             return $this->libelle . ' (FI)';

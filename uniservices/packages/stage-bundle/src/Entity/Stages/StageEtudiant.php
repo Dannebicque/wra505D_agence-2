@@ -486,7 +486,7 @@ class StageEtudiant
 
     public function setAdresseStage(?Adresse $adresseStage): self
     {
-        $this->adresseStage = $adresseStage ? $adresseStage->toArray() : null;
+        $this->adresseStage = $adresseStage instanceof Adresse ? $adresseStage->toArray() : null;
 
         return $this;
     }

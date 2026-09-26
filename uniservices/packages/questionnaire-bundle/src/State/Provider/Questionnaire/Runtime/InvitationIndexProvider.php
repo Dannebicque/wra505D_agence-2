@@ -23,7 +23,7 @@ final class InvitationIndexProvider implements ProviderInterface
         $token = LooseValue::castString($uriVariables['token']);
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv) {
+        if (!$inv instanceof QuestionnaireInvitation) {
             throw new \RuntimeException('Invitation not found');
         }
 
@@ -56,7 +56,7 @@ final class InvitationIndexProvider implements ProviderInterface
                 questionCount: $qtCount,
                 order: $order,
                 repeatItemType: $s->getRepeatSectionItemType(),
-                repeatItemId: $s->getRepeatSectionItemId() ? (string) $s->getRepeatSectionItemId() : null
+                repeatItemId: !in_array($s->getRepeatSectionItemId(), [null, 0], true) ? (string) $s->getRepeatSectionItemId() : null
             );
         }
 

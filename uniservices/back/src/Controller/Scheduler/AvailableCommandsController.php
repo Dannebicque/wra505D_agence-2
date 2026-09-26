@@ -24,7 +24,7 @@ class AvailableCommandsController extends AbstractController
 
         foreach ($commands as $command) {
             $name = $command->getName();
-            if ($name && (str_starts_with($name, 'app:') || str_starts_with($name, 'database:'))) {
+            if ($name !== null && $name !== '' && $name !== '0' && (str_starts_with($name, 'app:') || str_starts_with($name, 'database:'))) {
                 // Eviter de lister des commandes de dev internes si on veut restreindre, mais app:* est parfait
                 $list[] = [
                     'name' => $name,

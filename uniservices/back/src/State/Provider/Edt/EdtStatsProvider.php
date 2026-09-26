@@ -24,7 +24,7 @@ class EdtStatsProvider implements ProviderInterface
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
 
-            if (empty($data)) {
+            if (!(bool) $data) {
                 // Renvoie un DTO vide
                 return new EdtStatsDto();
             }
@@ -61,7 +61,7 @@ class EdtStatsProvider implements ProviderInterface
                 $start = $item->getDebut();
                 $end = $item->getFin();
 
-                if (!$start || !$end) {
+                if (!$start instanceof \DateTimeInterface || !$end instanceof \DateTimeInterface) {
                     continue;
                 }
 
@@ -89,7 +89,7 @@ class EdtStatsProvider implements ProviderInterface
                 $enseignement = $item->getEnseignement();
                 $enseignementLibelle = $enseignement?->getLibelle();
                 $enseignementId = $enseignement?->getId();
-                if ($enseignementLibelle) {
+                if ($enseignementLibelle !== null && $enseignementLibelle !== '' && $enseignementLibelle !== '0') {
                     if (!isset($byEnseignement[$enseignementLibelle])) {
                         $byEnseignement[$enseignementLibelle] = [
                             'id' => $enseignementId,
@@ -97,14 +97,14 @@ class EdtStatsProvider implements ProviderInterface
                         ];
                     }
                     // Si plusieurs événements partagent le même libellé mais que l'id est manquant, tenter de le définir
-                    if (!isset($byEnseignement[$enseignementLibelle]['id']) && $enseignementId) {
+                    if (!isset($byEnseignement[$enseignementLibelle]['id']) && ($enseignementId !== null && $enseignementId !== 0)) {
                         $byEnseignement[$enseignementLibelle]['id'] = $enseignementId;
                     }
                     $byEnseignement[$enseignementLibelle]['heures'] += $duration;
                 }
 
                 $enseignantDisplay = $item->getPersonnel()?->getDisplay();
-                if ($enseignantDisplay) {
+                if ($enseignantDisplay !== null && $enseignantDisplay !== '' && $enseignantDisplay !== '0') {
                     if (!isset($byEnseignant[$enseignantDisplay])) {
                         $byEnseignant[$enseignantDisplay] = 0.0;
                     }

@@ -53,7 +53,7 @@ class DashboardController extends AbstractController
         $structureDepartementPersonnelId = $request->query->get('structureDepartementPersonnelId');
 
         $structureDepartementPersonnel = null;
-        if ($structureDepartementPersonnelId) {
+        if ($structureDepartementPersonnelId !== null && $structureDepartementPersonnelId !== '' && $structureDepartementPersonnelId !== '0') {
             $structureDepartementPersonnel = $this->structureDepartementPersonnelRepository->find($structureDepartementPersonnelId);
         }
 
@@ -63,7 +63,7 @@ class DashboardController extends AbstractController
         $widgets = [];
         $dashboard = $this->getDashboard($dashboardCode);
 
-        if (empty($preferences)) {
+        if ($preferences === []) {
             // Si aucune préférence n'existe, on charge le layout par défaut
             foreach ($dashboard->getDefaultLayout() as $layout) {
                 $widgetDefinition = $this->coreWidgetRegistry->get($layout->widgetCode);
@@ -118,7 +118,7 @@ class DashboardController extends AbstractController
 
         $structureDepartementPersonnelId = $request->query->get('structureDepartementPersonnelId');
         $structureDepartementPersonnel = null;
-        if ($structureDepartementPersonnelId) {
+        if ($structureDepartementPersonnelId !== null && $structureDepartementPersonnelId !== '' && $structureDepartementPersonnelId !== '0') {
             $structureDepartementPersonnel = $this->structureDepartementPersonnelRepository->find($structureDepartementPersonnelId);
         }
 
@@ -134,13 +134,13 @@ class DashboardController extends AbstractController
         $widgets = [];
         foreach ($dashboard->getAvailableWidgets() as $layout) {
             $widgetDefinition = $this->coreWidgetRegistry->get($layout->widgetCode);
-            if ($widgetDefinition && $widgetDefinition->isAllowedForUser($user)) {
+            if ($widgetDefinition instanceof WidgetDefinition && $widgetDefinition->isAllowedForUser($user)) {
                 $widgets[] = $widgetDefinition->toArray();
             }
         }
 
         $responseWidgets = [];
-        if (empty($preferences)) {
+        if ($preferences === []) {
             // On commence par les widgets du layout par défaut
             foreach ($dashboard->getDefaultLayout() as $layout) {
                 $widgetDefinition = $this->coreWidgetRegistry->get($layout->widgetCode);
@@ -228,7 +228,7 @@ class DashboardController extends AbstractController
         $structureDepartementPersonnelId = $request->query->get('structureDepartementPersonnelId');
 
         $structureDepartementPersonnel = null;
-        if ($structureDepartementPersonnelId) {
+        if ($structureDepartementPersonnelId !== null && $structureDepartementPersonnelId !== '' && $structureDepartementPersonnelId !== '0') {
             $structureDepartementPersonnel = $this->structureDepartementPersonnelRepository->find($structureDepartementPersonnelId);
         }
 
@@ -245,7 +245,7 @@ class DashboardController extends AbstractController
 
         $preferences = $this->preferenceRepository->findByUser($user, $structureDepartementPersonnel, $dashboardCode);
 
-        if (empty($preferences)) {
+        if ($preferences === []) {
             // Initialiser les préférences à partir des widgets disponibles du dashboard
             $availableWidgets = $dashboard->getAvailableWidgets();
             $defaultLayouts = [];

@@ -110,7 +110,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
 
         foreach ($absences as $absence) {
             $currentDate = $absence->getEvent()?->getDate();
-            if (!$currentDate) {
+            if (!$currentDate instanceof \DateTimeInterface) {
                 continue;
             }
 
@@ -188,7 +188,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
             'absenceIds' => [$absence->getId()],
             'events' => [$this->mapEvent($absence)],
             'absences' => [$this->mapAbsence($absence)],
-            'jours' => [$date ? (int)str_replace('-', '', $date) : 0 => true],
+            'jours' => [$date !== null && $date !== '' && $date !== '0' ? (int)str_replace('-', '', $date) : 0 => true],
         ];
     }
 

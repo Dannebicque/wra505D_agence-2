@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureDepartementPersonnel;
+use App\Entity\Users\Personnel;
 use App\Repository\PersonnelRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
@@ -67,7 +68,7 @@ class StructureDeptFixtures extends Fixture implements OrderedFixtureInterface
         $manager->persist($personnelDepartement2);
 
         $superadmin = $this->personnelRepository->findOneBy(['username' => 'superadmin']);
-        if ($superadmin) {
+        if ($superadmin instanceof Personnel) {
             $superadminDept = new StructureDepartementPersonnel();
             $superadminDept->setPersonnel($superadmin)
                 ->setDepartement($departement1)

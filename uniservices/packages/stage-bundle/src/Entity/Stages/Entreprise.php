@@ -92,7 +92,7 @@ class Entreprise
 
     public function setAdresse(?Adresse $adresse): self
     {
-        $this->adresse = $adresse ? $adresse->toArray() : null;
+        $this->adresse = $adresse instanceof Adresse ? $adresse->toArray() : null;
 
         return $this;
     }

@@ -66,7 +66,7 @@ class SendSurveyRemindersCommand extends Command
         $questionnaires = $this->questionnaireRepository->findActivePublished();
         $io->text(sprintf('Trouvé %d questionnaire(s) actif(s) et publié(s).', count($questionnaires)));
 
-        if (empty($questionnaires)) {
+        if ($questionnaires === []) {
             $io->success('Aucun questionnaire actif à traiter.');
             return Command::SUCCESS;
         }

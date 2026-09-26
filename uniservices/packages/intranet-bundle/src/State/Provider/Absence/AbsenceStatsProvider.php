@@ -52,7 +52,7 @@ class AbsenceStatsProvider implements ProviderInterface
                     'title' => 'Non justifiées',
                     'icon' => 'pi pi-times',
                     'color' => 'red-500',
-                    'value' => count(array_filter($episodes, fn (array $episode) => !($episode['justifiee'] ?? false))),
+                    'value' => count(array_filter($episodes, fn (array $episode) => !(bool) ($episode['justifiee'] ?? false))),
                 ],
                 'scolarite_semestre' => [
                     'title' => 'Étudiants concernés',

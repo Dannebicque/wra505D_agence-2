@@ -2,6 +2,8 @@
 
 namespace IntranetBundle\Controller;
 
+use App\Entity\Etudiant\EtudiantScolarite;
+use App\Entity\Users\Etudiant;
 use App\Repository\EtudiantRepository;
 use App\Repository\EtudiantScolariteRepository;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +22,7 @@ class DemissionEtudiantController extends AbstractController
     public function demission(string $id): Response
     {
         $etudiantScolarite = $this->etudiantScolariteRepository->find($id);
-        if (!$etudiantScolarite) {
+        if (!$etudiantScolarite instanceof EtudiantScolarite) {
             return $this->json(['message' => 'Scolarité non trouvée'], Response::HTTP_NOT_FOUND);
         }
         $etudiantScolarite->setActif(false);
@@ -29,7 +31,7 @@ class DemissionEtudiantController extends AbstractController
         // récupérer l'année calendaire actuelle
         $anneeSortie = (int) date('Y');
         $etudiant = $etudiantScolarite->getEtudiant();
-        if (!$etudiant) {
+        if (!$etudiant instanceof Etudiant) {
             throw new \LogicException('Étudiant non trouvé pour la scolarité');
         }
         $etudiant->setAnneeSortie($anneeSortie);

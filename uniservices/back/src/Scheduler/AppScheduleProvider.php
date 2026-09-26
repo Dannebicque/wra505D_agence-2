@@ -30,7 +30,7 @@ class AppScheduleProvider implements ScheduleProviderInterface
 
                 $commandLine = $task->getCommand();
                 $args = $task->getArguments() ?? [];
-                if (!empty($args)) {
+                if ($args !== []) {
                     $commandLine .= ' ' . implode(' ', array_map(LooseValue::castString(...), $args));
                 }
 

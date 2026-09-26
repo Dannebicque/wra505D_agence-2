@@ -24,7 +24,7 @@ final class QuestionnaireAnalyticsProvider implements ProviderInterface
         $surveyId = LooseValue::castString($uriVariables['surveyId']);
 
         $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $surveyId]);
-        if (!$q) {
+        if (!$q instanceof Questionnaire) {
             throw new \RuntimeException('Questionnaire not found');
         }
 

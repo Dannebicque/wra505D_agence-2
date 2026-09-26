@@ -29,11 +29,11 @@ class SynchroRefCompetences
         $departement = $this->structureDepartementRepository->find($departementId);
         $diplome = $this->structureDiplomeRepository->find($diplomeId);
 
-        if (!$departement || !$diplome) {
+        if (!$departement instanceof StructureDepartement || !$diplome instanceof StructureDiplome) {
             throw new \Exception('Département ou diplôme introuvable');
         }
 
-        if ($diplome->getTypeDiplome()?->isApc()) {
+        if ($diplome->getTypeDiplome()?->isApc() === true) {
             if ($diplome->getParent() !== null) {
                 //on pioche dans le diplôme parent
                 $diplome = $diplome->getParent();

@@ -26,7 +26,7 @@ final class SaveAnswersProcessor implements ProcessorInterface
         $token = LooseValue::castString($uriVariables['token']);
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv) {
+        if (!$inv instanceof QuestionnaireInvitation) {
             throw new \RuntimeException('Invitation not found');
         }
         if ($inv->isSubmitted()) {
@@ -35,7 +35,7 @@ final class SaveAnswersProcessor implements ProcessorInterface
 
         $psi = $this->em->getRepository(QuestionnaireSectionInstance::class)->find($data->publishedSectionInstanceId);
         $questionnaire = $inv->getQuestionnaire();
-        if (!$psi || $questionnaire === null || $psi->getQuestionnaire()?->getId() !== $questionnaire->getId()) {
+        if (!$psi instanceof QuestionnaireSectionInstance || $questionnaire === null || $psi->getQuestionnaire()?->getId() !== $questionnaire->getId()) {
             throw new \RuntimeException('Invalid section');
         }
 

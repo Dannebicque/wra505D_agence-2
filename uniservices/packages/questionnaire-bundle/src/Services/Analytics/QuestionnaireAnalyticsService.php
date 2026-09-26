@@ -35,7 +35,7 @@ class QuestionnaireAnalyticsService
         $responsesByDate = [];
 
         foreach ($invitations as $inv) {
-            $status = $inv->getStatus() ? $inv->getStatus()->value : 'pending';
+            $status = $inv->getStatus() instanceof QuestInvitationStatusEnum ? $inv->getStatus()->value : 'pending';
             $statusCounts[$status]++;
 
             if ($status === 'submitted') {
@@ -43,7 +43,7 @@ class QuestionnaireAnalyticsService
 
                 $startedAt = $inv->getStartedAt();
                 $submittedAt = $inv->getSubmittedAt();
-                if ($startedAt && $submittedAt) {
+                if ($startedAt instanceof \DateTimeImmutable && $submittedAt instanceof \DateTimeImmutable) {
                     $diff = $submittedAt->getTimestamp() - $startedAt->getTimestamp();
                     if ($diff > 0) {
                         $totalDuration += $diff;
@@ -51,7 +51,7 @@ class QuestionnaireAnalyticsService
                     }
                 }
 
-                if ($submittedAt) {
+                if ($submittedAt instanceof \DateTimeImmutable) {
                     $dateStr = $submittedAt->format('Y-m-d');
                     $responsesByDate[$dateStr] = ($responsesByDate[$dateStr] ?? 0) + 1;
                 }
@@ -104,7 +104,7 @@ class QuestionnaireAnalyticsService
                 $qAnswers = $answersMap[$instance->getId()][$qId] ?? [];
                 $qTotalResponses = count($qAnswers);
                 $type = $question->getTypeQuestion();
-                $typeStr = $type ? $type->value : 'text_short';
+                $typeStr = $type instanceof QuestTypeQuestionEnum ? $type->value : 'text_short';
 
                 $stats = [];
 
@@ -297,9 +297,9 @@ class QuestionnaireAnalyticsService
             $sectionsAnalytics[] = new SectionInstanceAnalyticsDto(
                 sectionInstanceId: (int)$instance->getId(),
                 sectionTitle: $instance->getTitleSnapshot() ?? '',
-                sectionType: $sectionTemplate->getTypeSection() ? $sectionTemplate->getTypeSection()->value : 'normal',
+                sectionType: $sectionTemplate->getTypeSection() instanceof QuestTypeSectionEnum ? $sectionTemplate->getTypeSection()->value : 'normal',
                 repeatItemType: $instance->getRepeatSectionItemType(),
-                repeatItemId: $instance->getRepeatSectionItemId() ? (string)$instance->getRepeatSectionItemId() : null,
+                repeatItemId: !in_array($instance->getRepeatSectionItemId(), [null, 0], true) ? (string)$instance->getRepeatSectionItemId() : null,
                 questions: $questionsStats
             );
         }

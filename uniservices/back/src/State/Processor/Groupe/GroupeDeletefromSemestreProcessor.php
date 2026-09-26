@@ -31,13 +31,13 @@ class GroupeDeletefromSemestreProcessor implements ProcessorInterface
             $body = $request->toArray();
             $semestreId = $body['semestre'] ?? null;
 
-            if ($semestreId) {
+            if ((bool) $semestreId) {
                 // Récupération de l'entité StructureSemestre
                 $semestre = $this->em->getRepository(StructureSemestre::class)->find($semestreId);
 
                 $this->removeGroupeFromSemestre($data, LooseValue::int($semestreId));
 
-                if ($semestre) {
+                if ($semestre instanceof StructureSemestre) {
                     $data->removeSemestre($semestre);
                     $this->em->flush();
                 }

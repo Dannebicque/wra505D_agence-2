@@ -39,7 +39,7 @@ class ScolariteNotesFixtures extends Fixture implements OrderedFixtureInterface
             ->findOneBy(['libelle' => StructureAnneeUniversitaireFixtures::libelle()]);
         $scolarite = $manager->getRepository(EtudiantScolarite::class)->findOneBy(['etudiant' => $etudiant, 'actif' => true]);
         $scolariteSemestre = $scolarite?->getScolariteSemestre()->first();
-        if (!$annee || !$scolarite || !$scolariteSemestre) {
+        if (!$annee instanceof StructureAnneeUniversitaire || !$scolarite instanceof EtudiantScolarite || !(bool) $scolariteSemestre) {
             throw new \RuntimeException('Scolarité active de l\'étudiant de test introuvable.');
         }
 

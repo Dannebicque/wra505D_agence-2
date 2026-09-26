@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Scolarite\ScolEnseignement;
+use App\Entity\Users\Personnel;
 use App\Utils\LooseValue;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelSemestreDto;
 use App\Repository\Structure\StructureSemestreRepository;
@@ -57,7 +58,7 @@ class PrevisionnelSemestreProvider implements ProviderInterface
                 ],
             ];
 
-            if (empty($data)) {
+            if (!(bool) $data) {
                 $output['totalForm'] = [
                     'CM' => 0,
                     'TD' => 0,
@@ -96,7 +97,7 @@ class PrevisionnelSemestreProvider implements ProviderInterface
                 if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
                     throw new \LogicException('Expected a Previsionnel.');
                 }
-                if ($item->getPersonnel()) {
+                if ($item->getPersonnel() instanceof Personnel) {
                     $enseignement = $item->getEnseignement();
                     if ($enseignement === null) {
                         throw new \LogicException('Enseignement is required');

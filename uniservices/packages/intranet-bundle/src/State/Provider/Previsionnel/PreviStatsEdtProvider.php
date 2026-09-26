@@ -27,7 +27,7 @@ class PreviStatsEdtProvider implements ProviderInterface
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
 
             $dto = new PreviStatsEdtDto();
-            if (empty($data)) {
+            if (!(bool) $data) {
                 return $dto;
             }
 
@@ -61,7 +61,7 @@ class PreviStatsEdtProvider implements ProviderInterface
                 }
                 $enseignement = $previ->getEnseignement();
                 $ensId = $enseignement?->getId();
-                if ($ensId) {
+                if ($ensId !== null && $ensId !== 0) {
                     $libelleDisplay = ($enseignement->getCodeEnseignement() ?? '').'-'.$enseignement->getLibelle();
                     $ensDisplayById[$ensId] = $libelleDisplay;
                     if (!isset($previByEnsType[$ensId])) {
@@ -80,7 +80,7 @@ class PreviStatsEdtProvider implements ProviderInterface
                 }
 
                 $enseignantDisplay = $previ->getPersonnel()?->getDisplay();
-                if ($enseignantDisplay) {
+                if ($enseignantDisplay !== null && $enseignantDisplay !== '' && $enseignantDisplay !== '0') {
                     if (!isset($previByEnseignantType[$enseignantDisplay])) {
                         $previByEnseignantType[$enseignantDisplay] = [];
                     }
@@ -99,13 +99,13 @@ class PreviStatsEdtProvider implements ProviderInterface
 
             // EDT: récupérer les événements correspondants via le repository (filtres: semestre et année universitaire)
             $filters = LooseValue::row($context['filters'] ?? []);
-            $semestreId = !empty($filters['semestre']) ? LooseValue::castInt($filters['semestre']) : null;
-            $anneeId = !empty($filters['annee']) ? LooseValue::castInt($filters['annee']) : null;
-            $anneeUniversitaireId = !empty($filters['anneeUniversitaire']) ? LooseValue::castInt($filters['anneeUniversitaire']) : null;
+            $semestreId = (bool) ($filters['semestre'] ?? false) ? LooseValue::castInt($filters['semestre']) : null;
+            $anneeId = (bool) ($filters['annee'] ?? false) ? LooseValue::castInt($filters['annee']) : null;
+            $anneeUniversitaireId = (bool) ($filters['anneeUniversitaire'] ?? false) ? LooseValue::castInt($filters['anneeUniversitaire']) : null;
 
-            if ($semestreId) {
+            if ($semestreId !== null && $semestreId !== 0) {
                 $events = $this->edtEventRepository->findForStatsBySemestreAndAnneeUniversitaire($semestreId, $anneeUniversitaireId);
-            } elseif ($anneeId) {
+            } elseif ($anneeId !== null && $anneeId !== 0) {
                 $events = $this->edtEventRepository->findForStatsByAnneeAndAnneeUniversitaire($anneeId, $anneeUniversitaireId);
             } else {
                 // Pas de filtre semestre/année: récupérer tous les événements pour l'année universitaire si fournie
@@ -119,7 +119,7 @@ class PreviStatsEdtProvider implements ProviderInterface
             foreach ($events as $ev) {
                 $start = $ev->getDebut();
                 $end = $ev->getFin();
-                if (!$start || !$end) {
+                if (!$start instanceof \DateTimeInterface || !$end instanceof \DateTimeInterface) {
                     continue;
                 }
                 $interval = $start->diff($end);
@@ -131,7 +131,7 @@ class PreviStatsEdtProvider implements ProviderInterface
                 if ($type === '') {
                     $type = 'UNKNOWN';
                 }
-                if ($ensId) {
+                if ($ensId !== null && $ensId !== 0) {
                     if (!isset($edtByEnsType[$ensId])) {
                         $edtByEnsType[$ensId] = [];
                     }
@@ -148,7 +148,7 @@ class PreviStatsEdtProvider implements ProviderInterface
                 }
 
                 $enseignantDisplay = $ev->getPersonnel()?->getDisplay();
-                if ($enseignantDisplay) {
+                if ($enseignantDisplay !== null && $enseignantDisplay !== '' && $enseignantDisplay !== '0') {
                     if (!isset($edtByEnseignantType[$enseignantDisplay])) {
                         $edtByEnseignantType[$enseignantDisplay] = [];
                     }
@@ -200,7 +200,7 @@ class PreviStatsEdtProvider implements ProviderInterface
             // On parcourt d'abord les enseignants rencontrés dans les événements pour préserver l'ordre
             foreach ($events as $ev) {
                 $enseignantDisplay = $ev->getPersonnel()?->getDisplay();
-                if (!$enseignantDisplay) {
+                if ($enseignantDisplay === null || $enseignantDisplay === '' || $enseignantDisplay === '0') {
                     continue;
                 }
                 // éviter doublons
