@@ -4,12 +4,14 @@ namespace HelpdeskBundle\State\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Utils\LooseValue;
 use HelpdeskBundle\Entity\HelpdeskCategorie;
 use HelpdeskBundle\Entity\HelpdeskTicket;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Users\Personnel;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 /** @implements ProcessorInterface<mixed, mixed> */
@@ -27,7 +29,7 @@ class TicketProcessor implements ProcessorInterface
     {
         $request = $context['request'] ?? null;
 
-        if ($request === null) {
+        if (!$request instanceof Request) {
             return $data;
         }
 
@@ -39,12 +41,12 @@ class TicketProcessor implements ProcessorInterface
         $categoriePath = $request->request->get('helpdeskCategorie'); // ex: /api/helpdesk_categories/5
         $auteurPath   = $request->request->get('auteur');             // ex: /api/personnels/3
 
-        $ticket->setSubject($subject);
-        $ticket->setDescription($description);
+        $ticket->setSubject(LooseValue::string($subject));
+        $ticket->setDescription(LooseValue::string($description));
 
         // Résolution de la catégorie
         if ($categoriePath) {
-            $categorieId = basename($categoriePath);
+            $categorieId = basename(LooseValue::castString($categoriePath));
             $categorie = $this->em->getRepository(HelpdeskCategorie::class)->find($categorieId);
             if ($categorie instanceof HelpdeskCategorie) {
                 $ticket->setHelpdeskCategorie($categorie);
@@ -53,7 +55,7 @@ class TicketProcessor implements ProcessorInterface
 
         // Résolution de l'auteur
         if ($auteurPath) {
-            $auteurId = basename($auteurPath);
+            $auteurId = basename(LooseValue::castString($auteurPath));
             $auteur = $this->em->getRepository(Personnel::class)->find($auteurId);
             if ($auteur) {
                 $ticket->setAuteur($auteur);
@@ -62,7 +64,7 @@ class TicketProcessor implements ProcessorInterface
 
         // 👇 Gestion des fichiers uploadés
         $savedFiles = [];
-        $uploadedFiles = $request->files->all('files') ?? [];
+        $uploadedFiles = $request->files->all('files');
 
         // Gestion du cas où files[] est envoyé comme tableau
         if (empty($uploadedFiles)) {

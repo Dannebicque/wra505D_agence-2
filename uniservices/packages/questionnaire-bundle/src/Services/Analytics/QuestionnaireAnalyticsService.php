@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Services\Analytics;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
@@ -112,7 +113,7 @@ class QuestionnaireAnalyticsService
                     $optionTexts = [];
                     foreach ($choices as $choice) {
                         if (is_array($choice)) {
-                            $optionTexts[] = $choice['text'] ?? $choice['label'] ?? '';
+                            $optionTexts[] = LooseValue::key($choice['text'] ?? $choice['label'] ?? '');
                         } elseif (is_string($choice)) {
                             $optionTexts[] = $choice;
                         }
@@ -146,15 +147,15 @@ class QuestionnaireAnalyticsService
                     $stats = ['choices' => $statsList];
                 } elseif ($type === QuestTypeQuestionEnum::Scale) {
                     $opts = $question->getOpt();
-                    $min = $opts['min'] ?? 1;
-                    $max = $opts['max'] ?? 10;
+                    $min = LooseValue::castInt($opts['min'] ?? 1);
+                    $max = LooseValue::castInt($opts['max'] ?? 10);
 
                     $sum = 0;
                     $numCount = 0;
                     $distribution = array_fill($min, $max - $min + 1, 0);
 
                     foreach ($qAnswers as $ansVal) {
-                        $val = (int)$ansVal;
+                        $val = LooseValue::castInt($ansVal);
                         if ($val >= $min && $val <= $max) {
                             $sum += $val;
                             $numCount++;
@@ -181,7 +182,7 @@ class QuestionnaireAnalyticsService
                     $optionTexts = [];
                     foreach ($choices as $choice) {
                         if (is_array($choice)) {
-                            $optionTexts[] = $choice['text'] ?? $choice['label'] ?? '';
+                            $optionTexts[] = LooseValue::key($choice['text'] ?? $choice['label'] ?? '');
                         } elseif (is_string($choice)) {
                             $optionTexts[] = $choice;
                         }

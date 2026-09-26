@@ -10,6 +10,7 @@ use App\Repository\DepartementActualiteRepository;
 use App\Repository\Edt\EdtEventRepository;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
 use App\Repository\Structure\StructureDepartementRepository;
+use App\Utils\LooseValue;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class AuthWidgetDataProvider implements WidgetDataProviderInterface
@@ -73,7 +74,7 @@ class AuthWidgetDataProvider implements WidgetDataProviderInterface
     {
         // récupérer l'url depuis .env
         $actus_url = $_ENV['URL_ACTUS'];
-        $actus = $this->loadRss($actus_url);
+        $actus = $this->loadRss(LooseValue::string($actus_url));
         $data = [];
         if ($actus && isset($actus->channel->item)) {
             $count = 0;

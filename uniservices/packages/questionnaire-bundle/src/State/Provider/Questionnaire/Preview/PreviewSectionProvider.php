@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Preview;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Domain\Questionnaire\Mapping\QuestionRuntimeMapper;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,8 +23,8 @@ final readonly class PreviewSectionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PreviewSectionDto
     {
-        $qid = (string) $uriVariables['questionnaireUuid'];
-        $key = (string) $uriVariables['key'];
+        $qid = LooseValue::castString($uriVariables['questionnaireUuid']);
+        $key = LooseValue::castString($uriVariables['key']);
 
         $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $qid]);
         if (!$q) {
@@ -88,11 +89,11 @@ final readonly class PreviewSectionProvider implements ProviderInterface
             return $title;
         }
         $opts = $section->getOpt();
-        $elements = $opts['elements'] ?? [];
+        $elements = LooseValue::rows($opts['elements'] ?? []);
         foreach ($elements as $el) {
             if (($el['id'] ?? '') === $repeatId) {
                 $titleTemplate = $opts['titleTemplate'] ?? 'Évaluation de {element}';
-                return str_replace('{element}', $el['name'] ?? '', $titleTemplate);
+                return str_replace('{element}', LooseValue::castString($el['name'] ?? ''), LooseValue::castString($titleTemplate));
             }
         }
         return sprintf('%s – %s %s', $section->getTitle() ?? '', $repeatType->value, $repeatId);

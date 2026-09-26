@@ -6,6 +6,7 @@ namespace DocumentBundle\Repository;
 
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use DocumentBundle\Entity\Document;
 use DocumentBundle\Entity\FavoriteDocument;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -29,7 +30,7 @@ class FavoriteDocumentRepository extends ServiceEntityRepository
      */
     public function documentIds(Etudiant|Personnel $user): array
     {
-        return array_values(array_map('intval', $this->forUser($user)
+        return array_values(array_map(LooseValue::castInt(...), $this->forUser($user)
             ->select('IDENTITY(f.document)')
             ->getQuery()
             ->getSingleColumnResult()));
@@ -45,11 +46,13 @@ class FavoriteDocumentRepository extends ServiceEntityRepository
 
     public function findFor(Etudiant|Personnel $user, Document $document): ?FavoriteDocument
     {
-        return $this->forUser($user)
+        $result = $this->forUser($user)
             ->andWhere('f.document = :document')
             ->setParameter('document', $document)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return LooseValue::nullableInstance($result, FavoriteDocument::class);
     }
 
     private function forUser(Etudiant|Personnel $user): QueryBuilder

@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Runtime;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireQuestion;
@@ -22,7 +23,7 @@ final class SaveAnswersProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): SaveAnswersOutput
     {
         /** @var SaveAnswersInput $data */
-        $token = (string) $uriVariables['token'];
+        $token = LooseValue::castString($uriVariables['token']);
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
         if (!$inv) {

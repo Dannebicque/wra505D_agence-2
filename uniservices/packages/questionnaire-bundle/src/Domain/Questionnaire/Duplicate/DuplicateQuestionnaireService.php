@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Duplicate;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireQuestion;
@@ -106,7 +107,7 @@ final class DuplicateQuestionnaireService
                             continue;
                         }
 
-                        $dependsOn = (string)($r['dependsOnQuestionId'] ?? $r['dependsOn'] ?? '');
+                        $dependsOn = LooseValue::castString($r['dependsOnQuestionId'] ?? $r['dependsOn'] ?? '');
                         if (isset($questionUuidMap[$dependsOn])) {
                             $r['dependsOn'] = $questionUuidMap[$dependsOn];
                             $r['dependsOnQuestionId'] = $questionUuidMap[$dependsOn];
@@ -118,7 +119,7 @@ final class DuplicateQuestionnaireService
                                 if (!is_array($cond)) {
                                     continue;
                                 }
-                                $cDep = (string)($cond['dependsOnQuestionId'] ?? $cond['dependsOn'] ?? '');
+                                $cDep = LooseValue::castString($cond['dependsOnQuestionId'] ?? $cond['dependsOn'] ?? '');
                                 if (isset($questionUuidMap[$cDep])) {
                                     if (isset($cond['dependsOn'])) {
                                         $cond['dependsOn'] = $questionUuidMap[$cDep];
@@ -135,14 +136,14 @@ final class DuplicateQuestionnaireService
                         if (isset($r['targetQuestionIds']) && is_array($r['targetQuestionIds'])) {
                             $newTargets = [];
                             foreach ($r['targetQuestionIds'] as $tid) {
-                                $tidStr = (string)$tid;
+                                $tidStr = LooseValue::castString($tid);
                                 $newTargets[] = $questionUuidMap[$tidStr] ?? $tid;
                             }
                             $r['targetQuestionIds'] = $newTargets;
                         }
 
                         if (isset($r['targetSectionId'])) {
-                            $secIdStr = (string)$r['targetSectionId'];
+                            $secIdStr = LooseValue::castString($r['targetSectionId']);
                             if (isset($sectionUuidMap[$secIdStr])) {
                                 $r['targetSectionId'] = $sectionUuidMap[$secIdStr];
                             }

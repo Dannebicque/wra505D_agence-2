@@ -3,6 +3,7 @@
 namespace QuestionnaireBundle\Command;
 
 use App\Service\Email\EmailService;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireInvitationRepository;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireRepository;
@@ -51,8 +52,8 @@ class SendSurveyRemindersCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $days = (int) $input->getOption('days');
-        $baseUrl = rtrim($input->getOption('base-url'), '/');
+        $days = LooseValue::castInt($input->getOption('days'));
+        $baseUrl = rtrim(LooseValue::castString($input->getOption('base-url')), '/');
 
         if ($days <= 0) {
             $io->error('L\'option --days doit être un entier strictement supérieur à 0.');

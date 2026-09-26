@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Runtime;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSectionInstance;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,7 +20,7 @@ final class InvitationIndexProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): InvitationIndexDto
     {
-        $token = (string) $uriVariables['token'];
+        $token = LooseValue::castString($uriVariables['token']);
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
         if (!$inv) {
