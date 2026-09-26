@@ -29,6 +29,9 @@ class DemissionEtudiantController extends AbstractController
         // récupérer l'année calendaire actuelle
         $anneeSortie = (int) date('Y');
         $etudiant = $etudiantScolarite->getEtudiant();
+        if (!$etudiant) {
+            throw new \LogicException('Étudiant non trouvé pour la scolarité');
+        }
         $etudiant->setAnneeSortie($anneeSortie);
         $this->etudiantRepository->save($etudiant, true);
 

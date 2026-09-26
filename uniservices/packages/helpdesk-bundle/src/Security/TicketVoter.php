@@ -81,7 +81,7 @@ class TicketVoter extends Voter
         if ($user instanceof Etudiant) {
             return false;
         }
-        return $user->getId() === $subject->getAuteur()->getId();
+        return $user->getId() === $subject->getAuteur()?->getId();
 
     }
 
@@ -90,6 +90,6 @@ class TicketVoter extends Voter
         if ($user instanceof Etudiant) {
             return false;
         }
-        return $user->getId() === $subject->getAuteur()->getId();
+        return $user->getId() === $subject->getAuteur()?->getId();
     }
 }

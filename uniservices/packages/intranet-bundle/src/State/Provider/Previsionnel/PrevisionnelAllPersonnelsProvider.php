@@ -50,7 +50,11 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                     throw new \LogicException('Expected a Previsionnel.');
                 }
                 if ($item->getPersonnel()) {
-                    $personnelIds[] = $item->getPersonnel()->getId();
+                    $personnelId = $item->getPersonnel()->getId();
+                    if ($personnelId === null) {
+                        throw new \LogicException('Personnel ID is required');
+                    }
+                    $personnelIds[] = $personnelId;
                 }
             }
 
@@ -64,7 +68,11 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                 ]);
 
                 foreach ($departements as $dept) {
-                    $departementMap[$dept->getPersonnel()->getId()] = $dept;
+                    $personnel = $dept->getPersonnel();
+                    if ($personnel === null || $personnel->getId() === null) {
+                        throw new \LogicException('Department personnel is required');
+                    }
+                    $departementMap[$personnel->getId()] = $dept;
                 }
 
                 // Fetch all affectations in one query
@@ -84,7 +92,13 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                 if ($item->getPersonnel()) {
                     $personnel = $item->getPersonnel();
                     $personnelId = $personnel->getId();
+                    if ($personnelId === null) {
+                        throw new \LogicException('Personnel ID is required');
+                    }
                     $statut = $personnel->getStatut();
+                    if ($statut === null) {
+                        throw new \LogicException('Personnel status is required');
+                    }
                     $statutLibelle = $statut->getLibelle();
 
                     $departement = $departementMap[$personnelId] ?? null;

@@ -114,7 +114,7 @@ final readonly class TranscriptBuilder
                 'numero' => $course->getNumero(),
                 'libelle' => $course->getLibelle(),
                 'moyenne' => $this->calculator->courseAverage(array_map(
-                    fn (array $row) => ['moyenne' => $row['moyenne'], 'coefficient' => $row['coefficient']],
+                    fn (array $row) => ['moyenne' => $row['moyenne'], 'coefficient' => $row['coefficient'] ?? 0.0],
                     $teachings,
                 )),
                 'enseignements' => $teachings,

@@ -268,6 +268,10 @@ class Questionnaire
     #[Groups(['questionnaire:read'])]
     public function getStatutSeverity(): string
     {
+        if ($this->status === null) {
+            throw new \LogicException('Questionnaire status is required');
+        }
+
         return $this->status->getBadge();
     }
 

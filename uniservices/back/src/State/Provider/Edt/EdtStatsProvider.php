@@ -79,7 +79,7 @@ class EdtStatsProvider implements ProviderInterface
                 }
                 $byType[$type] += $duration;
 
-                $semestre = (string) $item->getSemestre()->getLibelle();
+                $semestre = (string) $item->getSemestre()?->getLibelle();
                 if (!isset($bySemestre[$semestre])) {
                     $bySemestre[$semestre] = 0.0;
                 }

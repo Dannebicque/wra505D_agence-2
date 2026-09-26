@@ -83,7 +83,7 @@ class SynchroRefFormation
         // Ajout d'un PN
         $pn = new StructurePn($diplome);
         $pn->setLibelle($diplome->getSigle(). ' - '.$anneeUniversitaire->getAnnee());
-        $pn->setAnneePublication($anneeUniversitaire->getAnnee());
+        $pn->setAnneePublication($anneeUniversitaire->getAnnee() ?? 0);
         $pn->setAnneeUniversitaire($anneeUniversitaire);
         $pn->setApcReferentiel($diplome->getReferentiel());
         $this->entityManager->persist($pn);

@@ -44,10 +44,15 @@ final class DuplicateQuestionnaireService
             foreach ($source->getSections() as $section) {
                 $sectionsCount++;
                 $newSection = new QuestionnaireSection();
+                $sectionTitle = $section->getTitle();
+                $sectionSortOrder = $section->getSortOrder();
+                if ($sectionSortOrder === null) {
+                    throw new \LogicException('Section fields are required');
+                }
                 $newSection->setUuid(Uuid::v4());
-                $newSection->setTitle($section->getTitle());
+                $newSection->setTitle($sectionTitle);
                 $newSection->setDescription($section->getDescription());
-                $newSection->setSortOrder($section->getSortOrder());
+                $newSection->setSortOrder($sectionSortOrder);
                 $newSection->setTypeSection($section->getTypeSection());
                 $newSection->setOpt($section->getOpt());
                 $newSection->setQuestionnaire($duplicate);
@@ -62,14 +67,19 @@ final class DuplicateQuestionnaireService
                 foreach ($section->getQuestions() as $q) {
                     $questionsCount++;
                     $newQ = new QuestionnaireQuestion();
+                    $label = $q->getLabel();
+                    $sortOrder = $q->getSortOrder();
+                    if ($label === null || $sortOrder === null) {
+                        throw new \LogicException('Question fields are required');
+                    }
                     $newQ->setUuid(Uuid::v4());
-                    $newQ->setLabel($q->getLabel());
+                    $newQ->setLabel($label);
                     $newQ->setTypeQuestion($q->getTypeQuestion());
                     $newQ->setRequired((bool)$q->isObligatoire());
                     $newQ->setHelp($q->getHelp());
                     $newQ->setChoices($q->getChoices());
                     $newQ->setConditionalRules($q->getConditionalRules());
-                    $newQ->setSortOrder($q->getSortOrder());
+                    $newQ->setSortOrder($sortOrder);
                     $newQ->setOpt($q->getOpt());
                     $newQ->setSection($newSection);
 

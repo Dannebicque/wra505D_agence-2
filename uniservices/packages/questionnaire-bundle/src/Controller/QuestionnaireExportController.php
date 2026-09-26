@@ -203,7 +203,7 @@ class QuestionnaireExportController extends AbstractController
             $writer->save('php://output');
         });
 
-        $safeTitle = preg_replace('/[^a-zA-Z0-9]/', '_', $q->getTitle());
+        $safeTitle = preg_replace('/[^a-zA-Z0-9]/', '_', $q->getTitle() ?? '');
         $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $response->headers->set('Content-Disposition', 'attachment;filename="Statistiques_' . $safeTitle . '.xlsx"');
         $response->headers->set('Cache-Control', 'max-age=0');

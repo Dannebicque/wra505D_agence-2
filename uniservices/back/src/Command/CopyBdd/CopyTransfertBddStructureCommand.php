@@ -167,6 +167,9 @@ FOREIGN_KEY_CHECKS=1');
 
         $this->entityManager->flush();
 
+        if (null === $anneeActive) {
+            throw new \LogicException('Aucune année universitaire active.');
+        }
         $sql = "SELECT * FROM calendrier WHERE annee_universitaire_id = " . $anneeActive->getOldId();
         $annees = $this->em->executeQuery($sql)->fetchAllAssociative();
 
@@ -215,6 +218,9 @@ FOREIGN_KEY_CHECKS=1');
     private function addDiplomes(): void
     {
         $anneeUnivPn = $this->structureAnneeUniversitaireRepository->findOneBy(['actif' => true]);
+        if (null === $anneeUnivPn) {
+            throw new \LogicException('Année universitaire active introuvable.');
+        }
         $sql = "SELECT * FROM diplome WHERE parent_id IS NULL";
         $diplomes = $this->em->executeQuery($sql)->fetchAllAssociative();
         foreach ($diplomes as $dip) {

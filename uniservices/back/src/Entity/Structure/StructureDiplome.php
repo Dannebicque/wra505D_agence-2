@@ -123,7 +123,7 @@ class StructureDiplome
 
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
     #[Groups(['diplome:detail', 'maquette:detail'])]
-    private ?Collection $enfants;
+    private Collection $enfants;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['diplome:detail'])]
@@ -290,6 +290,9 @@ class StructureDiplome
 
     public function addEnfant(?self $enfant): static
     {
+        if (null === $enfant) {
+            throw new \LogicException('Un diplôme enfant est requis.');
+        }
         if (!$this->enfants->contains($enfant)) {
             $this->enfants->add($enfant);
             $enfant->setParent($this);

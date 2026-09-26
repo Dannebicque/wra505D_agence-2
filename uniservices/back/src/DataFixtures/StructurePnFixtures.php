@@ -31,6 +31,10 @@ class StructurePnFixtures extends Fixture implements OrderedFixtureInterface
         $diplome1 = $this->diplomeRepository->findOneBy(['sigle' => 'MMI']);
         $diplome2 = $this->diplomeRepository->findOneBy(['sigle' => 'MMI DWeb-Di FC']);
 
+        if (null === $diplome1 || null === $diplome2) {
+            throw new \LogicException('Les diplômes nécessaires aux PN sont introuvables.');
+        }
+
         $pn1 = new StructurePn(
             $diplome1
         );

@@ -24,8 +24,12 @@ class PersonnelCountProvider implements ProviderInterface
     {
         // On force une GetCollection pour que le CollectionProvider fonctionne
         // mais on désactive la pagination pour tout compter
+        $class = $operation->getClass();
+        if (null === $class) {
+            throw new \LogicException('La classe de la ressource est introuvable.');
+        }
         $countOperation = (new GetCollection())
-            ->withClass($operation->getClass())
+            ->withClass($class)
             ->withFilters($operation->getFilters() ?? []);
 
         $context['filters'] = $context['filters'] ?? [];

@@ -29,6 +29,9 @@ class DemissionEtudiantController extends AbstractController
         // récupérer l'année calendaire actuelle
         $anneeSortie = (int) date('Y');
         $etudiant = $etudiantScolarite->getEtudiant();
+        if (null === $etudiant) {
+            throw new \LogicException('L’étudiant de la scolarité est introuvable.');
+        }
         $etudiant->setAnneeSortie($anneeSortie);
         $this->etudiantRepository->save($etudiant, true);
 

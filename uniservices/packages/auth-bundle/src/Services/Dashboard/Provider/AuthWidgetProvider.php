@@ -28,7 +28,7 @@ class AuthWidgetProvider implements WidgetProviderInterface
     {
         // Implementation for getting etablissement libelle. Il n'y a qu'un seul établissement dans la base de données
         $etablissement = $this->etablissementRepository->findOneBy([]);
-        return $etablissement ? $etablissement->getLibelle() : '';
+        return $etablissement?->getLibelle() ?? '';
     }
 
     public function getBundleCode(): string

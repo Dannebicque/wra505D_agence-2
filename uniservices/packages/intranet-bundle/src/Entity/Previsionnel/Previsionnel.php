@@ -243,11 +243,19 @@ class Previsionnel
 
     public function getGroupes(): array
     {
+        if ($this->groupes === null) {
+            throw new \LogicException('Groupes are required');
+        }
+
         return $this->groupes;
     }
 
     public function setGroupes(?array $groupes): static
     {
+        if ($groupes === null) {
+            throw new \LogicException('Groupes are required');
+        }
+
         $resolver = new OptionsResolver();
         $this->configureOptionsGroupes($resolver);
         $this->groupes = $resolver->resolve($groupes);

@@ -44,9 +44,14 @@ final readonly class PreviewIndexProvider implements ProviderInterface
             );
         }
 
+        $title = $q->getTitle();
+        if ($title === null) {
+            throw new \LogicException('Questionnaire title is required');
+        }
+
         return new PreviewIndexDto(
             $q->getUuidString(),
-            $q->getTitle(),
+            $title,
             $q->getOpt(),
             $q->getStartText(),
             $q->getEndText(),

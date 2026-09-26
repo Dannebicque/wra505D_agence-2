@@ -90,6 +90,9 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
 
             if (null !== $personnel) {
                 $personnelId = $personnel->getId();
+                if ($personnelId === null) {
+                    throw new \LogicException('Personnel ID is required');
+                }
                 $departementId = $context['filters']['departement'] ?? null;
 
                 $departement = null;

@@ -39,10 +39,17 @@ class PersonnelsContraintesProvider implements ProviderInterface
 
         if ($semaine !== null) {
             $semaine = $this->structureCalendrierRepository->findOneBy(['semaineFormation' => $semaine]); //todo: ajouter l'année universitaire courante
+            if (null === $semaine) {
+                throw new \LogicException('Semaine de formation introuvable.');
+            }
         }
 
         if ($personnel !== null) {
             $personnel = $this->personnelRepository->find($personnel);
+        }
+
+        if (null === $semaine) {
+            throw new \LogicException('Semaine de formation introuvable.');
         }
 
         $contraintes = new PersonnelsContraintes();
@@ -64,7 +71,7 @@ class PersonnelsContraintesProvider implements ProviderInterface
 
         //récupère les contraintes de la semaine pour le personnel + les contraintes de l'année pour le personnel
         $tContraintes = [];
-        $contraintesPersonnels = $personnel->getContraintesEdt();
+        $contraintesPersonnels = $personnel->getContraintesEdt() ?? [];
         foreach ($contraintesPersonnels as $typeContrainte => $contraintes) {
             foreach ($contraintes as $keySemaine => $contrainte) {
                 if ($keySemaine === 'all') {

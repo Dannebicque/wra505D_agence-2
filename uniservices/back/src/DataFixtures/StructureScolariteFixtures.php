@@ -51,6 +51,10 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         $anneeUniversitaire1 = $this->anneeUniversitaireRepository->findOneBy(['libelle' => StructureAnneeUniversitaireFixtures::libelle(-1)]);
         $anneeUniversitaire2 = $this->anneeUniversitaireRepository->findOneBy(['libelle' => StructureAnneeUniversitaireFixtures::libelle()]);
 
+        if (null === $semestre1 || null === $etu1 || null === $anneeUniversitaire1 || null === $anneeUniversitaire2) {
+            throw new \LogicException('Les données nécessaires aux scolarités sont introuvables.');
+        }
+
         $scolarite1 = new EtudiantScolarite();
         $scolarite1->setEtudiant($etu1)
             ->setOrdre(1)
@@ -85,6 +89,9 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
 
         foreach (['MMICM', 'MMITDAB', 'MMITPA'] as $codeGroupe) {
             $groupe = $this->groupeRepository->findOneBy(['codeApogee' => $codeGroupe]);
+            if (null === $groupe) {
+                throw new \LogicException('Un groupe nécessaire à la scolarité est introuvable.');
+            }
             $scolariteSemestre2->addGroupe($groupe);
             $etu1->addGroupe($groupe);
         }

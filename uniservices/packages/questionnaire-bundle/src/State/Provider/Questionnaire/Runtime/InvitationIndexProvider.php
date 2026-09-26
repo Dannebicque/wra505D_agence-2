@@ -29,6 +29,10 @@ final class InvitationIndexProvider implements ProviderInterface
         $this->em->flush();
 
         $q = $inv->getQuestionnaire();
+        $status = $inv->getStatus();
+        if ($q === null || $status === null) {
+            throw new \LogicException('Invitation fields are required');
+        }
 
         $sections = $this->em->getRepository(QuestionnaireSectionInstance::class)->findBy(
             ['questionnaire' => $q],
@@ -37,20 +41,31 @@ final class InvitationIndexProvider implements ProviderInterface
 
         $out = [];
         foreach ($sections as $s) {
-            $qtCount = $s->getSection()->getQuestions()->count();
+            $section = $s->getSection();
+            $title = $s->getTitleSnapshot();
+            $order = $s->getSortOrder();
+            if ($section === null || $title === null || $order === null) {
+                throw new \LogicException('Section instance fields are required');
+            }
+            $qtCount = $section->getQuestions()->count();
             $out[] = new SectionIndexDto(
                 publishedSectionInstanceId: (int) $s->getId(),
-                title: $s->getTitleSnapshot(),
+                title: $title,
                 questionCount: $qtCount,
-                order: $s->getSortOrder(),
+                order: $order,
                 repeatItemType: $s->getRepeatSectionItemType(),
                 repeatItemId: $s->getRepeatSectionItemId() ? (string) $s->getRepeatSectionItemId() : null
             );
         }
 
+        $questionnaireTitle = $q->getTitle();
+        if ($questionnaireTitle === null) {
+            throw new \LogicException('Questionnaire title is required');
+        }
+
         return new InvitationIndexDto(
-            questionnaireTitle: $q->getTitle(),
-            invitationStatus: $inv->getStatus()->value,
+            questionnaireTitle: $questionnaireTitle,
+            invitationStatus: $status->value,
             startedAt: $inv->getStartedAt(),
             submittedAt: $inv->getSubmittedAt(),
             sections: $out

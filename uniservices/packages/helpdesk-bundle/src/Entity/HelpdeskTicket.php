@@ -218,7 +218,7 @@ class HelpdeskTicket
         return $this;
     }
 
-    public function getAuteur(): Personnel
+    public function getAuteur(): ?Personnel
     {
         return $this->auteur;
     }

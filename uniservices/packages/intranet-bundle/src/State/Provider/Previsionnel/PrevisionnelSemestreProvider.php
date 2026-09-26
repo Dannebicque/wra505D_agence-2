@@ -96,11 +96,18 @@ class PrevisionnelSemestreProvider implements ProviderInterface
                     throw new \LogicException('Expected a Previsionnel.');
                 }
                 if ($item->getPersonnel()) {
-                    $enseignementId = $item->getEnseignement()->getId();
+                    $enseignement = $item->getEnseignement();
+                    if ($enseignement === null) {
+                        throw new \LogicException('Enseignement is required');
+                    }
+                    $enseignementId = $enseignement->getId();
+                    if ($enseignementId === null) {
+                        throw new \LogicException('Enseignement ID is required');
+                    }
 
                     if (!isset($groupedData[$enseignementId])) {
                         $groupedData[$enseignementId] = [
-                            'enseignement' => $item->getEnseignement(),
+                            'enseignement' => $enseignement,
                             'personnels' => [],
                             'heures' => [
                                 'CM' => 0,
@@ -127,6 +134,9 @@ class PrevisionnelSemestreProvider implements ProviderInterface
                     $output['previForm'][] = $this->formToDto($item);
 
                     $semestre = $this->semestreRepository->find($context['filters']['semestre']);
+                    if ($semestre === null) {
+                        throw new \LogicException('Semestre is required');
+                    }
 
                     $nbHrSaisiCM += $item->getGroupes()['CM'] !== 0
                         ? ($item->getGroupes()['CM'] % $semestre->getNbGroupesCm() === 0

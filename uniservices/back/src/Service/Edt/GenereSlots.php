@@ -32,7 +32,7 @@ class GenereSlots
     {
         if ($previsionnel->getProgression() !== null) {
             $progression = $previsionnel->getProgression();
-            foreach ($progression->getProgression() as $semaine => $value) {
+            foreach ($progression->getProgression() ?? [] as $semaine => $value) {
                 $this->genereSlotsFromProgression($value, $semaine, $previsionnel);
             }
         }
@@ -45,8 +45,8 @@ class GenereSlots
             $typeCours = substr($creneau, 0, 2);
             $numeroSeance = substr($creneau, 2);
             $nbGroupes = match ($typeCours) {
-                'TD' => explode(' ', $previsionnel->getProgression()?->getGrTd()),
-                'TP' => explode(' ', $previsionnel->getProgression()?->getGrTp()),
+                'TD' => explode(' ', $previsionnel->getProgression()?->getGrTd() ?? ''),
+                'TP' => explode(' ', $previsionnel->getProgression()?->getGrTp() ?? ''),
                 'CM' => ['CM'],
                 default => [],
             };
@@ -98,7 +98,7 @@ class GenereSlots
     private function getGroupes(Previsionnel $previsionnel): void
     {
         $semestre = $this->getSemestre($previsionnel);
-        if ($semestre !== null && !array_key_exists($semestre->getId(), $this->groupes)) {
+        if ($semestre !== null && null !== $semestre->getId() && !array_key_exists($semestre->getId(), $this->groupes)) {
             $groupes = $semestre->getGroupes();
             foreach ($groupes as $groupe) {
                 $this->groupes[$semestre->getId()][$groupe->getLibelle()] = $groupe;
