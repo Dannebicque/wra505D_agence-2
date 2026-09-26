@@ -106,7 +106,7 @@ FOREIGN_KEY_CHECKS=1');
     private function addEdtEventIntranet(): void
     {
         $reponses = $this->httpClient->request('GET', $this->base_url . '/edt-intranet');
-        $edts = $reponses->toArray();
+        $edts = LooseValue::rows($reponses->toArray());
         foreach ($edts as $ed) {
             if (array_key_exists(LooseValue::key($ed['prof']), $this->tPersonnels) && array_key_exists(LooseValue::key($ed['matiere']), $this->tMatieres)) {
                 $edt = new EdtEvent();
