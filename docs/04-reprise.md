@@ -154,7 +154,15 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
 - **Au déploiement**, vider aussi les pools de cache :
   `php bin/console cache:pool:clear cache.global_clearer`. Le cache de métadonnées d'API Platform
   survit à `cache:clear` et garde des groupes de sérialisation périmés.
-- Dernier commit examiné : noté dans `.github/uniservices-amont-examine`, aujourd'hui `ef38ca880`.
+- Dernier commit examiné : noté dans `.github/uniservices-amont-examine`, aujourd'hui `9cda32da8`.
+  Dernière base reprise : `ef38ca880`.
+- Écartés le 26/09/2026, à rouvrir ensemble si le client corrige le premier point :
+  - `cf95b8a1b` (#247, intégrations de l'établissement) : la nouvelle colonne `settings` porte
+    les clés d'API EduSign et ORéBUT dans le groupe `etablissement:read`, or
+    `/api/etablissements` est lisible sans connexion ; les clés seraient publiques. Colonne sans
+    migration, tableaux non typés (PHPStan 10 échouerait). Son retrait des accesseurs de moyennes
+    est déjà fait chez nous (`055f295fd`).
+  - `9cda32da8` (#248, pointage) : ne complète que l'écran de pointage ajouté par #247.
 - Le workflow « Veille uniServices » ouvre une issue chaque matin de semaine s'il y a du nouveau.
   Il ne tourne que depuis la branche par défaut, `main` : pas avant le prochain passage vers `main`.
 - Procédure : `git fetch` dans le clone `Reference/uniServices`, puis, depuis `uniservices/back`,
