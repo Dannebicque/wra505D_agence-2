@@ -210,7 +210,9 @@ le hachage.
 
 Vérifié sur l'API : un jeton haché par connexion, rotation, rejeu refusé, déconnexion, ancien jeton
 en clair accepté une fois puis réécrit haché, `Secure` présent avec `JWT_COOKIE_SECURE=true`.
-**Reste** passer `accept_stored_in_the_clear` à `false` 14 jours après le déploiement.
+**Fait ensuite** `accept_stored_in_the_clear` passé à `false` le 26/09/2026, sans attendre les
+14 jours : pas de production, seulement la base de fixtures. Un jeton encore stocké en clair est
+refusé (401), sa session doit se reconnecter une fois ; un jeton haché se rafraîchit (204).
 
 ### E13 · [back] Symfony 8.1 · M
 **Pourquoi** dernière version stable. Elle n'est maintenue que jusqu'à fin janvier 2027 : il
