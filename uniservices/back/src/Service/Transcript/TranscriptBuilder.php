@@ -131,7 +131,7 @@ final readonly class TranscriptBuilder
     /**
      * @param list<int> $teachingIds
      *
-     * @return array<int, list<ScolEvaluation>>
+     * @return array<int|string, list<ScolEvaluation>>
      */
     private function evaluationsByTeaching(array $teachingIds, EtudiantScolarite $studentEnrollment): array
     {

@@ -48,14 +48,20 @@ final class StudentInvitationsProvider implements ProviderInterface
         $out = [];
         foreach ($invitations as $inv) {
             $q = $inv->getQuestionnaire();
+            $title = $q?->getTitle();
+            $token = $inv->getToken();
+            $status = $inv->getStatus();
+            if (null === $q || null === $title || null === $token || null === $status) {
+                throw new \LogicException('Invitation incomplete.');
+            }
             $out[] = new StudentInvitationDto(
                 uuid: (string)$q->getUuid(),
-                title: $q->getTitle(),
+                title: $title,
                 description: $q->getDescription(),
                 estimatedTime: $q->getEstimatedTime(),
                 deadline: $q->getClosingDate()?->format('d/m/Y'),
-                token: $inv->getToken(),
-                status: $inv->getStatus()->value,
+                token: $token,
+                status: $status->value,
                 anonymous: $q->getOpt()['anonymous'] ?? true
             );
         }
