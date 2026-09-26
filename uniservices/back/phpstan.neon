@@ -4,9 +4,12 @@ parameters:
 
     level: 8
 
-    ignoreErrors:
-        - identifier: doctrine.columnType
-        - identifier: doctrine.associationType
+    doctrine:
+        # Le vrai mapping, types Carbon compris : sans lui, PHPStan croit que la base renvoie des DateTime.
+        objectManagerLoader: tests/object-manager.php
+        # Une entité neuve est vide avant d'être remplie : une propriété nullable sur une colonne
+        # NOT NULL est le motif Doctrine voulu, pas une erreur.
+        allowNullablePropertyForRequiredField: true
 
     paths:
         - src
