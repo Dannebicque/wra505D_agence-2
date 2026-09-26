@@ -92,10 +92,12 @@ class StructureGroupe
     #[Groups(['groupe:detail', 'groupe:structure'])]
     private ?int $ordre = null;
 
+    /** @var Collection<int, StructureSemestre> */
     #[ORM\ManyToMany(targetEntity: StructureSemestre::class, inversedBy: 'groupes')]
     #[Groups(['groupe:structure'])]
     private Collection $semestres;
 
+    /** @var Collection<int, self> */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
     #[Groups(['groupe:detail', 'edt_event:read:agenda', 'groupe:structure'])]
     private Collection $enfants;
@@ -219,11 +221,11 @@ class StructureGroupe
         return $this->enfants;
     }
 
-    public function addEnfant(?self $enfant): static
+    public function addEnfant(self $enfant): static
     {
         if (!$this->enfants->contains($enfant)) {
             $this->enfants->add($enfant);
-            $enfant?->setParent($this);
+            $enfant->setParent($this);
         }
 
         return $this;
