@@ -5,6 +5,7 @@ namespace IntranetBundle\State\Provider\Absence;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Utils\LooseValue;
 
 /** @implements ProviderInterface<object> */
 class AbsenceStatsProvider implements ProviderInterface
@@ -22,7 +23,6 @@ class AbsenceStatsProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof GetCollection) {
-            $stats = [];
             $episodesResult = $this->absenceEpisodeProvider->provide($operation, $uriVariables, $context);
             if ($episodesResult === null) {
                 $episodes = [];
@@ -33,30 +33,41 @@ class AbsenceStatsProvider implements ProviderInterface
             } else {
                 $episodes = [];
             }
+            $episodes = LooseValue::rows($episodes);
 
-            $stats['total']['title'] = 'Total de périodes d\'absence';
-            $stats['total']['icon'] = 'pi pi-list';
-            $stats['total']['color'] = 'yellow-500';
-            $stats['total']['value'] = count($episodes);
-            $stats['justifiee']['title'] = 'Justifiées';
-            $stats['justifiee']['icon'] = 'pi pi-check';
-            $stats['justifiee']['color'] = 'green-500';
-            $stats['justifiee']['value'] = count(array_filter($episodes, fn (array $episode) => (bool)($episode['justifiee'] ?? false)));
-            $stats['non_justifiee']['title'] = 'Non justifiées';
-            $stats['non_justifiee']['icon'] = 'pi pi-times';
-            $stats['non_justifiee']['color'] = 'red-500';
-            $stats['non_justifiee']['value'] = count(array_filter($episodes, fn (array $episode) => !($episode['justifiee'] ?? false)));
-            $stats['scolarite_semestre']['title'] = 'Étudiants concernés';
-            $stats['scolarite_semestre']['icon'] = 'pi pi-calendar';
-            $stats['scolarite_semestre']['color'] = 'blue-500';
-            $stats['scolarite_semestre']['value'] = count(
-                array_unique(
-                    array_filter(
-                        array_map(fn (array $episode) => $episode['scolariteSemestreId'] ?? null, $episodes),
-                        fn ($id) => $id !== null
-                    )
-                )
-            );
+            $stats = [
+                'total' => [
+                    'title' => 'Total de périodes d\'absence',
+                    'icon' => 'pi pi-list',
+                    'color' => 'yellow-500',
+                    'value' => count($episodes),
+                ],
+                'justifiee' => [
+                    'title' => 'Justifiées',
+                    'icon' => 'pi pi-check',
+                    'color' => 'green-500',
+                    'value' => count(array_filter($episodes, fn (array $episode) => (bool)($episode['justifiee'] ?? false))),
+                ],
+                'non_justifiee' => [
+                    'title' => 'Non justifiées',
+                    'icon' => 'pi pi-times',
+                    'color' => 'red-500',
+                    'value' => count(array_filter($episodes, fn (array $episode) => !($episode['justifiee'] ?? false))),
+                ],
+                'scolarite_semestre' => [
+                    'title' => 'Étudiants concernés',
+                    'icon' => 'pi pi-calendar',
+                    'color' => 'blue-500',
+                    'value' => count(
+                        array_unique(
+                            array_filter(
+                                array_map(fn (array $episode) => LooseValue::nullableInt($episode['scolariteSemestreId'] ?? null), $episodes),
+                                fn ($id) => $id !== null
+                            )
+                        )
+                    ),
+                ],
+            ];
 
             return $stats;
         }

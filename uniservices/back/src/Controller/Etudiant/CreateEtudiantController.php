@@ -13,6 +13,7 @@ use App\Repository\EtudiantRepository;
 use App\Repository\Structure\StructureAnneeRepository;
 use App\Repository\Structure\StructureAnneeUniversitaireRepository;
 use App\Repository\Structure\StructureSemestreRepository;
+use App\Utils\LooseValue;
 use App\ValueObject\Adresse;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -45,7 +46,7 @@ class CreateEtudiantController extends AbstractController
         }
 
         // Traiter le contenu du fichier CSV
-        $lines = explode("\n", $fileContent);
+        $lines = explode("\n", LooseValue::castString($fileContent));
 
         // Vérifier si le fichier a au moins deux lignes (en-tête + données)
         if (count($lines) < 2) {

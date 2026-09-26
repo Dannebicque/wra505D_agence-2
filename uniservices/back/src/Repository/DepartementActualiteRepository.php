@@ -18,7 +18,7 @@ class DepartementActualiteRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return DepartementActualite[]
+     * @return list<DepartementActualite>
      */
     public function findByDepartementAndPublic(?StructureDepartement $departement, string $public): array
     {

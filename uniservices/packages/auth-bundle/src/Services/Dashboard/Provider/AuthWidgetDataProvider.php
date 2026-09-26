@@ -52,8 +52,9 @@ class AuthWidgetDataProvider implements WidgetDataProviderInterface
 
         $actus = $this->departementActualiteRepository->findByDepartementAndPublic($departement, $public);
 
+        $data = [];
         foreach ($actus as $key => $actu) {
-            $actus[$key] = [
+            $data[$key] = [
                 'id' => $actu->getId(),
                 'created' => $actu->getCreated(),
                 'updated' => $actu->getUpdated(),
@@ -66,7 +67,7 @@ class AuthWidgetDataProvider implements WidgetDataProviderInterface
             ];
         }
 
-        return $actus;
+        return $data;
     }
 
     /** @return array<int, array<string, mixed>> */

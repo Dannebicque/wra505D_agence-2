@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelSemestreDto;
+use IntranetBundle\Entity\Previsionnel\Previsionnel;
 
 /** @implements ProviderInterface<PrevisionnelSemestreDto> */
 class PrevisionnelSemestreTestProvider implements ProviderInterface
@@ -100,22 +101,22 @@ class PrevisionnelSemestreTestProvider implements ProviderInterface
                 'CM' => [
                     'NbHrGrp' => round($item->getGroupes()['CM'] !== 0 ? $item->getHeures()['CM'] / $item->getGroupes()['CM'] : $item->getHeures()['CM'], 1),
                     'NbGrp' => $item->getGroupes()['CM'],
-                    'NbSeanceGrp' => round((($item->getGroupes()['CM'] !== 0 ? $item->getHeures()['CM'] / $item->getGroupes()['CM'] : $item->getHeures()['CM']) / $item::DUREE_SEANCE) * $item->getGroupes()['CM'], 0),
+                    'NbSeanceGrp' => round((($item->getGroupes()['CM'] !== 0 ? $item->getHeures()['CM'] / $item->getGroupes()['CM'] : $item->getHeures()['CM']) / Previsionnel::DUREE_SEANCE) * $item->getGroupes()['CM'], 0),
                 ],
                 'TD' => [
                     'NbHrGrp' => round($item->getGroupes()['TD'] !== 0 ? $item->getHeures()['TD'] / $item->getGroupes()['TD'] : $item->getHeures()['TD'], 1),
                     'NbGrp' => $item->getGroupes()['TD'],
-                    'NbSeanceGrp' => round((($item->getGroupes()['TD'] !== 0 ? $item->getHeures()['TD'] / $item->getGroupes()['TD'] : $item->getHeures()['TD']) / $item::DUREE_SEANCE) * $item->getGroupes()['TD'], 0),
+                    'NbSeanceGrp' => round((($item->getGroupes()['TD'] !== 0 ? $item->getHeures()['TD'] / $item->getGroupes()['TD'] : $item->getHeures()['TD']) / Previsionnel::DUREE_SEANCE) * $item->getGroupes()['TD'], 0),
                 ],
                 'TP' => [
                     'NbHrGrp' => round($item->getGroupes()['TP'] !== 0 ? $item->getHeures()['TP'] / $item->getGroupes()['TP'] : $item->getHeures()['TP'], 1),
                     'NbGrp' => $item->getGroupes()['TP'],
-                    'NbSeanceGrp' => round((($item->getGroupes()['TP'] !== 0 ? $item->getHeures()['TP'] / $item->getGroupes()['TP'] : $item->getHeures()['TP']) / $item::DUREE_SEANCE) * $item->getGroupes()['TP'], 0),
+                    'NbSeanceGrp' => round((($item->getGroupes()['TP'] !== 0 ? $item->getHeures()['TP'] / $item->getGroupes()['TP'] : $item->getHeures()['TP']) / Previsionnel::DUREE_SEANCE) * $item->getGroupes()['TP'], 0),
                 ],
                 'Projet' => [
                     'NbHrGrp' => $item->getHeures()['Projet'],
                     'NbGrp' => $item->getGroupes()['Projet'],
-                    'NbSeanceGrp' => ($item->getHeures()['Projet'] / $item::DUREE_SEANCE),
+                    'NbSeanceGrp' => ($item->getHeures()['Projet'] / Previsionnel::DUREE_SEANCE),
                 ],
             ]
         );

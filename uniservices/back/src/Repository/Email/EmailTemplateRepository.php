@@ -86,6 +86,6 @@ class EmailTemplateRepository extends ServiceEntityRepository
             ->getQuery()
             ->getScalarResult();
 
-        return array_column($results, 'emailKey');
+        return array_map(LooseValue::string(...), array_column($results, 'emailKey'));
     }
 }
