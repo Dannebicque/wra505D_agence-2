@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Celcat;
 
 /**
@@ -8,15 +10,15 @@ namespace App\Service\Celcat;
  */
 interface CelcatSource
 {
-    public function estConfigure(): bool;
+    public function isConfigured(): bool;
 
     /**
      * @return array<int, \DateTimeImmutable> lundi de chaque semaine, indexé par numéro
      */
-    public function lireSemaines(): array;
+    public function readWeeks(): array;
 
     /**
      * @return list<array<string, mixed>>
      */
-    public function lireEvenements(int $departement): array;
+    public function readEvents(int $department): array;
 }

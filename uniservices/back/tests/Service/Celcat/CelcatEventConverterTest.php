@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service\Celcat;
 
 use App\Service\Celcat\CelcatEventConverter;
@@ -7,15 +9,15 @@ use PHPUnit\Framework\TestCase;
 
 final class CelcatEventConverterTest extends TestCase
 {
-    private CelcatEventConverter $convertisseur;
+    private CelcatEventConverter $converter;
 
     /** @var array<int, \DateTimeImmutable> */
-    private array $lundis;
+    private array $mondays;
 
     protected function setUp(): void
     {
-        $this->convertisseur = new CelcatEventConverter();
-        $this->lundis = [
+        $this->converter = new CelcatEventConverter();
+        $this->mondays = [
             0 => new \DateTimeImmutable('2026-09-07'),
             1 => new \DateTimeImmutable('2026-09-14'),
             2 => new \DateTimeImmutable('2026-09-21'),
@@ -24,11 +26,11 @@ final class CelcatEventConverterTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $surcharge
+     * @param array<string, mixed> $override
      *
      * @return array<string, mixed>
      */
-    private function ligne(array $surcharge = []): array
+    private function row(array $override = []): array
     {
         return array_merge([
             'event_id' => 4210,
@@ -48,133 +50,133 @@ final class CelcatEventConverterTest extends TestCase
             'date_change' => '2026-09-01 17:42:00',
             'room_weeks' => null,
             'notes' => null,
-        ], $surcharge);
+        ], $override);
     }
 
-    public function testDeplieLeMasqueEnUnCreneauParSemaineMarquee(): void
+    public function testExpandsMaskPerMarkedWeek(): void
     {
-        $creneaux = $this->convertisseur->convertir($this->ligne(['weeks' => 'NYNY']), $this->lundis);
+        $slots = $this->converter->convert($this->row(['weeks' => 'NYNY']), $this->mondays);
 
-        self::assertSame([1, 3], array_map(fn ($c) => $c->semaine, $creneaux));
+        self::assertSame([1, 3], array_map(fn ($c) => $c->week, $slots));
     }
 
-    public function testAccepteLeMasqueEnMinuscules(): void
+    public function testAcceptsLowercaseMask(): void
     {
-        $creneaux = $this->convertisseur->convertir($this->ligne(['weeks' => 'yNyN']), $this->lundis);
+        $slots = $this->converter->convert($this->row(['weeks' => 'yNyN']), $this->mondays);
 
-        self::assertSame([0, 2], array_map(fn ($c) => $c->semaine, $creneaux));
+        self::assertSame([0, 2], array_map(fn ($c) => $c->week, $slots));
     }
 
-    public function testDateLeCreneauAPartirDuLundiEtDuJour(): void
+    public function testDatesSlotFromMondayAndDay(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'NNY', 'day_of_week' => 2]), $this->lundis);
+        [$event] = $this->converter->convert($this->row(['weeks' => 'NNY', 'day_of_week' => 2]), $this->mondays);
 
-        self::assertSame('2026-09-23', $creneau->date->format('Y-m-d'));
-        self::assertSame('Wednesday', $creneau->date->format('l'));
+        self::assertSame('2026-09-23', $event->date->format('Y-m-d'));
+        self::assertSame('Wednesday', $event->date->format('l'));
     }
 
-    public function testReporteLesHeuresSurLeJourDuCreneau(): void
+    public function testMovesTimesToSlotDay(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'day_of_week' => 0]), $this->lundis);
+        [$event] = $this->converter->convert($this->row(['weeks' => 'Y', 'day_of_week' => 0]), $this->mondays);
 
-        self::assertSame('2026-09-07 08:00:00', $creneau->debut->format('Y-m-d H:i:s'));
-        self::assertSame('2026-09-07 10:00:00', $creneau->fin->format('Y-m-d H:i:s'));
+        self::assertSame('2026-09-07 08:00:00', $event->start->format('Y-m-d H:i:s'));
+        self::assertSame('2026-09-07 10:00:00', $event->end->format('Y-m-d H:i:s'));
     }
 
-    public function testLeMasqueDeLaSallePrimeSurCeluiDuCours(): void
+    public function testRoomMaskTakesPriority(): void
     {
-        $creneaux = $this->convertisseur->convertir($this->ligne(['weeks' => 'YYYY', 'room_weeks' => 'YNNN']), $this->lundis);
+        $slots = $this->converter->convert($this->row(['weeks' => 'YYYY', 'room_weeks' => 'YNNN']), $this->mondays);
 
-        self::assertSame([0], array_map(fn ($c) => $c->semaine, $creneaux));
+        self::assertSame([0], array_map(fn ($c) => $c->week, $slots));
     }
 
-    public function testRetombeSurLeMasqueDuCoursSansMasqueDeSalle(): void
+    public function testFallsBackToCourseMask(): void
     {
-        $creneaux = $this->convertisseur->convertir($this->ligne(['weeks' => 'NNYY', 'room_weeks' => null]), $this->lundis);
+        $slots = $this->converter->convert($this->row(['weeks' => 'NNYY', 'room_weeks' => null]), $this->mondays);
 
-        self::assertSame([2, 3], array_map(fn ($c) => $c->semaine, $creneaux));
+        self::assertSame([2, 3], array_map(fn ($c) => $c->week, $slots));
     }
 
-    public function testRetireLesCrochetsDuType(): void
+    public function testRemovesTypeBrackets(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'category' => '[TP]']), $this->lundis);
+        [$event] = $this->converter->convert($this->row(['weeks' => 'Y', 'category' => '[TP]']), $this->mondays);
 
-        self::assertTrue($creneau->estUnCours);
-        self::assertSame('TP', $creneau->type);
-        self::assertSame('R5.01', $creneau->codeModule);
+        self::assertTrue($event->isCourse);
+        self::assertSame('TP', $event->type);
+        self::assertSame('R5.01', $event->moduleCode);
     }
 
-    public function testTraiteUnEvenementSansMatiereCommeHorsCours(): void
+    public function testTreatsEventWithoutSubjectAsNonCourse(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne([
+        [$event] = $this->converter->convert($this->row([
             'weeks' => 'Y',
             'module_code' => null,
             'category' => 'Réunion',
             'notes' => 'rentrée BUT 3',
-        ]), $this->lundis);
+        ]), $this->mondays);
 
-        self::assertFalse($creneau->estUnCours);
-        self::assertNull($creneau->type);
-        self::assertSame('4210', $creneau->codeModule);
-        self::assertSame('Réunion rentrée BUT 3', $creneau->libModule);
+        self::assertFalse($event->isCourse);
+        self::assertNull($event->type);
+        self::assertSame('4210', $event->moduleCode);
+        self::assertSame('Réunion rentrée BUT 3', $event->moduleLabel);
     }
 
-    public function testIgnoreUneSemaineAbsenteDuCalendrier(): void
+    public function testIgnoresWeekOutsideCalendar(): void
     {
-        $creneaux = $this->convertisseur->convertir($this->ligne(['weeks' => 'YNNNNNNY']), $this->lundis);
+        $slots = $this->converter->convert($this->row(['weeks' => 'YNNNNNNY']), $this->mondays);
 
-        self::assertSame([0], array_map(fn ($c) => $c->semaine, $creneaux));
+        self::assertSame([0], array_map(fn ($c) => $c->week, $slots));
     }
 
-    public function testConvertitLeLatin1EnUtf8(): void
+    public function testConvertsLatin1ToUtf8(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne([
+        [$event] = $this->converter->convert($this->row([
             'weeks' => 'Y',
             'module_name' => mb_convert_encoding('Développement', 'ISO-8859-1', 'UTF-8'),
-        ]), $this->lundis);
+        ]), $this->mondays);
 
-        self::assertSame('Développement', $creneau->libModule);
+        self::assertSame('Développement', $event->moduleLabel);
     }
 
-    public function testLaisseIntactUnTexteDejaEnUtf8(): void
+    public function testKeepsUtf8Text(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'staff_name' => 'Lefèvre Hélène']), $this->lundis);
+        [$event] = $this->converter->convert($this->row(['weeks' => 'Y', 'staff_name' => 'Lefèvre Hélène']), $this->mondays);
 
-        self::assertSame('Lefèvre Hélène', $creneau->libPersonnel);
+        self::assertSame('Lefèvre Hélène', $event->staffLabel);
     }
 
-    public function testConsidereUnChampVideCommeAbsent(): void
+    public function testTreatsEmptyFieldAsAbsent(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'staff_code' => '', 'room_name' => '   ']), $this->lundis);
+        [$event] = $this->converter->convert($this->row(['weeks' => 'Y', 'staff_code' => '', 'room_name' => '   ']), $this->mondays);
 
-        self::assertNull($creneau->codePersonnel);
-        self::assertNull($creneau->libSalle);
+        self::assertNull($event->staffCode);
+        self::assertNull($event->roomLabel);
     }
 
-    public function testIdentifieUnCreneauParCoursSemaineJourEtGroupe(): void
+    public function testKeysSlotByCourseWeekDayAndGroup(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'NNNY']), $this->lundis);
+        [$event] = $this->converter->convert($this->row(['weeks' => 'NNNY']), $this->mondays);
 
-        self::assertSame('4210_3_2_MMI3-TD2', $creneau->cle());
+        self::assertSame('4210_3_2_MMI3-TD2', $event->key());
     }
 
-    public function testDistingueUnCmCommunAPlusieursGroupes(): void
+    public function testDistinguishesSharedCmByGroup(): void
     {
-        [$pourTd1] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'group_code' => 'MMI3-TD1']), $this->lundis);
-        [$pourTd2] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y', 'group_code' => 'MMI3-TD2']), $this->lundis);
+        [$forTd1] = $this->converter->convert($this->row(['weeks' => 'Y', 'group_code' => 'MMI3-TD1']), $this->mondays);
+        [$forTd2] = $this->converter->convert($this->row(['weeks' => 'Y', 'group_code' => 'MMI3-TD2']), $this->mondays);
 
-        self::assertNotSame($pourTd1->cle(), $pourTd2->cle());
+        self::assertNotSame($forTd1->key(), $forTd2->key());
     }
 
-    public function testLitLaDateDeDerniereModification(): void
+    public function testReadsLastModificationDate(): void
     {
-        [$creneau] = $this->convertisseur->convertir($this->ligne(['weeks' => 'Y']), $this->lundis);
+        [$event] = $this->converter->convert($this->row(['weeks' => 'Y']), $this->mondays);
 
-        self::assertSame('2026-09-01 17:42:00', $creneau->modifieLe?->format('Y-m-d H:i:s'));
+        self::assertSame('2026-09-01 17:42:00', $event->changedAt?->format('Y-m-d H:i:s'));
     }
 
-    public function testNeProduitRienPourUnMasqueVide(): void
+    public function testProducesNothingForEmptyMask(): void
     {
-        self::assertSame([], $this->convertisseur->convertir($this->ligne(['weeks' => '', 'room_weeks' => null]), $this->lundis));
+        self::assertSame([], $this->converter->convert($this->row(['weeks' => '', 'room_weeks' => null]), $this->mondays));
     }
 }

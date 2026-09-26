@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Celcat;
 
 /**
@@ -9,22 +11,22 @@ final readonly class CelcatSlot
 {
     public function __construct(
         public int $celcatId,
-        public int $semaine,
-        public int $jour,
+        public int $week,
+        public int $day,
         public \DateTimeImmutable $date,
-        public \DateTimeImmutable $debut,
-        public \DateTimeImmutable $fin,
-        public bool $estUnCours,
+        public \DateTimeImmutable $start,
+        public \DateTimeImmutable $end,
+        public bool $isCourse,
         public ?string $type,
-        public string $codeModule,
-        public string $libModule,
-        public ?string $codePersonnel,
-        public ?string $libPersonnel,
-        public ?string $codeSalle,
-        public ?string $libSalle,
-        public ?string $codeGroupe,
-        public ?string $libGroupe,
-        public ?\DateTimeImmutable $modifieLe,
+        public string $moduleCode,
+        public string $moduleLabel,
+        public ?string $staffCode,
+        public ?string $staffLabel,
+        public ?string $roomCode,
+        public ?string $roomLabel,
+        public ?string $groupCode,
+        public ?string $groupLabel,
+        public ?\DateTimeImmutable $changedAt,
     ) {
     }
 
@@ -33,8 +35,8 @@ final readonly class CelcatSlot
      * pas : un cours décrit toutes ses semaines, et un CM commun à plusieurs groupes revient
      * une fois par groupe dans la jointure.
      */
-    public function cle(): string
+    public function key(): string
     {
-        return $this->celcatId.'_'.$this->semaine.'_'.$this->jour.'_'.($this->codeGroupe ?? '');
+        return $this->celcatId.'_'.$this->week.'_'.$this->day.'_'.($this->groupCode ?? '');
     }
 }
