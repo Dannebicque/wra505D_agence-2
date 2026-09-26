@@ -61,6 +61,9 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
             $personnel = null;
 
             foreach ($data as $item) {
+                if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                    throw new \LogicException('Expected a Previsionnel.');
+                }
                 if (null === $item->getPersonnel() || null === $item->getEnseignement()) {
                     continue;
                 }

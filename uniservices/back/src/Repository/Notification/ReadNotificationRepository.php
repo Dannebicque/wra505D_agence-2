@@ -30,14 +30,14 @@ class ReadNotificationRepository extends ServiceEntityRepository
             return [];
         }
 
-        return $this->createQueryBuilder('l')
+        return array_values(array_map('strval', $this->createQueryBuilder('l')
             ->select('l.key')
             ->where('l.student = :student')
             ->andWhere('l.key IN (:keys)')
             ->setParameter('student', $student)
             ->setParameter('keys', $keys)
             ->getQuery()
-            ->getSingleColumnResult();
+            ->getSingleColumnResult()));
     }
 
     /**

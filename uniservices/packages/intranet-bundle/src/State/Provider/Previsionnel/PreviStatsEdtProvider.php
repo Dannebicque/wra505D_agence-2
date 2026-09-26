@@ -32,6 +32,9 @@ class PreviStatsEdtProvider implements ProviderInterface
             // Détermination dynamique des types de groupes à partir des lignes de prévisionnel
             $typesSet = [];
             foreach ($data as $previ) {
+                if (!$previ instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                    throw new \LogicException('Expected a Previsionnel.');
+                }
                 $heures = (array) $previ->getHeures();
                 $groupes = (array) $previ->getGroupes();
                 $keys = array_unique(array_merge(array_keys($heures), array_keys($groupes)));
@@ -51,10 +54,13 @@ class PreviStatsEdtProvider implements ProviderInterface
             $previByEnseignantType = [];
 
             foreach ($data as $previ) {
+                if (!$previ instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                    throw new \LogicException('Expected a Previsionnel.');
+                }
                 $enseignement = $previ->getEnseignement();
                 $ensId = $enseignement?->getId();
                 if ($ensId) {
-                    $libelleDisplay = ($enseignement->getCodeEnseignement() ?? '').'-'.$enseignement?->getLibelle();
+                    $libelleDisplay = ($enseignement->getCodeEnseignement() ?? '').'-'.$enseignement->getLibelle();
                     $ensDisplayById[$ensId] = $libelleDisplay;
                     if (!isset($previByEnsType[$ensId])) {
                         $previByEnsType[$ensId] = [];

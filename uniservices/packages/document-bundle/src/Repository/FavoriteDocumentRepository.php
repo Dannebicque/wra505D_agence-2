@@ -29,10 +29,10 @@ class FavoriteDocumentRepository extends ServiceEntityRepository
      */
     public function documentIds(Etudiant|Personnel $user): array
     {
-        return array_map('intval', $this->forUser($user)
+        return array_values(array_map('intval', $this->forUser($user)
             ->select('IDENTITY(f.document)')
             ->getQuery()
-            ->getSingleColumnResult());
+            ->getSingleColumnResult()));
     }
 
     public function countFor(Etudiant|Personnel $user): int

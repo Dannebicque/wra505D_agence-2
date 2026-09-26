@@ -20,7 +20,7 @@ class EdtEventRepository extends ServiceEntityRepository
      * Récupère les événements d'EDT pour les statistiques, filtrés par semestre et année universitaire.
      * Les deux filtres sont optionnels: si null, ils ne sont pas appliqués.
      *
-     * @return EdtEvent[]
+     * @return list<EdtEvent>
      */
     public function findForStatsBySemestreAndAnneeUniversitaire(?int $semestreId, ?int $anneeUniversitaireId): array
     {
@@ -44,9 +44,10 @@ class EdtEventRepository extends ServiceEntityRepository
             $qb->andWhere('sem.id = :semId')->setParameter('semId', $semestreId);
         }
 
-        return $qb->getQuery()->getResult();
+        return array_values($qb->getQuery()->getResult());
     }
 
+    /** @return list<EdtEvent> */
     public function findForStatsByAnneeAndAnneeUniversitaire(?int $annee, ?int $anneeUniversitaireId): array
     {
         $qb = $this->createQueryBuilder('e')
@@ -69,7 +70,7 @@ class EdtEventRepository extends ServiceEntityRepository
             $qb->andWhere('sem.annee = :annee')->setParameter('annee', $annee);
         }
 
-        return $qb->getQuery()->getResult();
+        return array_values($qb->getQuery()->getResult());
     }
 
     /**

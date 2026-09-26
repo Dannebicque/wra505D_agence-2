@@ -32,6 +32,9 @@ class EtudiantListeProvider implements ProviderInterface
             if ($data instanceof PaginatorInterface) {
                 $items = [];
                 foreach ($data as $item) {
+                    if (!$item instanceof EtudiantScolarite) {
+                        throw new \LogicException('Expected an EtudiantScolarite.');
+                    }
                     $items[] = $this->formatScolarite($item);
                 }
 
@@ -45,6 +48,9 @@ class EtudiantListeProvider implements ProviderInterface
 
             $items = [];
             foreach ($data as $item) {
+                if (!$item instanceof EtudiantScolarite) {
+                    throw new \LogicException('Expected an EtudiantScolarite.');
+                }
                 $items[] = $this->formatScolarite($item);
             }
 

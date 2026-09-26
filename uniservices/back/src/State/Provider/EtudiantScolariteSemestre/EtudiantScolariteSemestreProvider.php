@@ -28,6 +28,9 @@ class EtudiantScolariteSemestreProvider implements ProviderInterface
             if ($data instanceof PaginatorInterface) {
                 $items = [];
                 foreach ($data as $item) {
+                    if (!$item instanceof \App\Entity\Etudiant\EtudiantScolariteSemestre) {
+                        throw new \LogicException('Expected an EtudiantScolariteSemestre.');
+                    }
                     $dto = new EtudiantScolariteSemestreDto();
 
                     $etudiant = $item->getScolarite()?->getEtudiant();
@@ -78,6 +81,9 @@ class EtudiantScolariteSemestreProvider implements ProviderInterface
             // Cas non paginé (pagination désactivée) : renvoyer la liste de DTO
             $items = [];
             foreach ($data as $item) {
+                if (!$item instanceof \App\Entity\Etudiant\EtudiantScolariteSemestre) {
+                    throw new \LogicException('Expected an EtudiantScolariteSemestre.');
+                }
                 $dto = new EtudiantScolariteSemestreDto();
 
                 $etudiant = $item->getScolarite()?->getEtudiant();

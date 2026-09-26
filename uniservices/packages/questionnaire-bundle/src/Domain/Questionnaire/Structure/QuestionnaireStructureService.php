@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Structure;
 
+use LogicException;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
 use QuestionnaireBundle\Enum\QuestTypeSectionEnum;
@@ -21,7 +22,7 @@ final class QuestionnaireStructureService
             if ($st->getTypeSection() === QuestTypeSectionEnum::normal) {
                 $plan[] = [
                     'sectionTemplate' => $st,
-                    'title' => $st->getTitle(),
+                    'title' => $st->getTitle() ?? '',
                     'repeatItemType' => null,
                     'repeatItemId' => null,
                     'sortOrder' => $order++,
@@ -37,8 +38,15 @@ final class QuestionnaireStructureService
                 $elementId = $el['id'] ?? '';
                 $sourceType = $opts['sourceType'] ?? 'matiere';
 
+                if (!is_string($elementName) || !is_string($elementId) || !is_string($sourceType)) {
+                    throw new LogicException();
+                }
+
                 // Génération du titre avec le patron
                 $titleTemplate = $opts['titleTemplate'] ?? 'Évaluation de {element}';
+                if (!is_string($titleTemplate)) {
+                    throw new LogicException();
+                }
                 $title = str_replace('{element}', $elementName, $titleTemplate);
 
                 $plan[] = [

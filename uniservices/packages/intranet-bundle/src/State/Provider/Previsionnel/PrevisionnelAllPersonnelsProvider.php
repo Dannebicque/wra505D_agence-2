@@ -46,6 +46,9 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
             // Pre-fetch department data to avoid queries in the loop
             $personnelIds = [];
             foreach ($data as $item) {
+                if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                    throw new \LogicException('Expected a Previsionnel.');
+                }
                 if ($item->getPersonnel()) {
                     $personnelIds[] = $item->getPersonnel()->getId();
                 }
@@ -75,6 +78,9 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
             }
 
             foreach ($data as $item) {
+                if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                    throw new \LogicException('Expected a Previsionnel.');
+                }
                 if ($item->getPersonnel()) {
                     $personnel = $item->getPersonnel();
                     $personnelId = $personnel->getId();
@@ -145,15 +151,19 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
 
                 $group['heures']['Total'] = $total;
 
-                if ($group['statutLibelle'] === 'Enseignant Vacataire' && $total < $group['nbHeuresService']) {
-                    $diffValue = $total - $group['nbHeuresService'];
+                // Seul un personnel affecté au département a des heures de service, entières ou non
+                // renseignées ; PHP comptait ces dernières comme 0, ce qui est gardé. Le libellé
+                // « Service réalisé… » d'un personnel non affecté n'entre jamais dans un calcul.
+                $serviceHours = is_int($group['nbHeuresService']) ? $group['nbHeuresService'] : 0;
+                if ($group['statutLibelle'] === 'Enseignant Vacataire' && $total < $serviceHours) {
+                    $diffValue = $total - $serviceHours;
                     $diff = 'Peut rester ' . abs($diffValue);
-                } elseif ($group['statutLibelle'] === 'Enseignant Vacataire' && $total > $group['nbHeuresService']) {
-                    $diffValue = $total - $group['nbHeuresService'];
+                } elseif ($group['statutLibelle'] === 'Enseignant Vacataire' && $total > $serviceHours) {
+                    $diffValue = $total - $serviceHours;
                     $diff = 'Dépassement de ' . $diffValue;
                 } else {
                     if ($group['affectation']) {
-                        $diff = $total - $group['nbHeuresService'];
+                        $diff = $total - $serviceHours;
                     } else {
                         $diff = 'Service réalisé dans un autre département';
                     }

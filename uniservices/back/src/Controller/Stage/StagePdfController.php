@@ -120,7 +120,7 @@ class StagePdfController extends AbstractController
 
         $this->em->flush();
 
-        return new Response(json_encode(['success' => true]), Response::HTTP_OK, [
+        return new Response(json_encode(['success' => true]) ?: '', Response::HTTP_OK, [
             'Content-Type' => 'application/json'
         ]);
     }

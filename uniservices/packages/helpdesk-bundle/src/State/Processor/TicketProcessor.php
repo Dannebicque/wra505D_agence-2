@@ -45,7 +45,7 @@ class TicketProcessor implements ProcessorInterface
         if ($categoriePath) {
             $categorieId = basename($categoriePath);
             $categorie = $this->em->getRepository(HelpdeskCategorie::class)->find($categorieId);
-            if ($categorie) {
+            if ($categorie instanceof HelpdeskCategorie) {
                 $ticket->setHelpdeskCategorie($categorie);
             }
         }

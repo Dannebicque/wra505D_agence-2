@@ -28,9 +28,13 @@ class AbsenceEpisodeProvider implements ProviderInterface
 
         $unpaginatedOperation = $operation->withPaginationEnabled(false);
         $absencesResult = $this->collectionProvider->provide($unpaginatedOperation, $uriVariables, $context);
-        $absences = is_array($absencesResult)
-            ? $absencesResult
-            : iterator_to_array($absencesResult);
+        $absences = [];
+        foreach ($absencesResult as $absence) {
+            if (!$absence instanceof EtudiantAbsence) {
+                throw new \LogicException('Expected an EtudiantAbsence.');
+            }
+            $absences[] = $absence;
+        }
 
         usort($absences, function (EtudiantAbsence $a, EtudiantAbsence $b) {
             $studentA = $a->getScolariteSemestre()?->getId() ?? 0;

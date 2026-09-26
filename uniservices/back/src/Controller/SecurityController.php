@@ -115,8 +115,14 @@ class SecurityController extends AbstractController
 
             // Associer le token à l'utilisateur (étudiant ou personnel)
             if ($user->getTypeUser() === 'etudiant') {
+                if (!$user instanceof Etudiant) {
+                    throw new \LogicException('Expected an Etudiant user.');
+                }
                 $tokenEntity->setEtudiant($user);
             } else {
+                if (!$user instanceof Personnel) {
+                    throw new \LogicException('Expected a Personnel user.');
+                }
                 $tokenEntity->setPersonnel($user);
             }
 

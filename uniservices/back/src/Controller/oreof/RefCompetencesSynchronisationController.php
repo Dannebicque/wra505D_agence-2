@@ -18,6 +18,9 @@ class RefCompetencesSynchronisationController extends AbstractController
         Request               $request
     ): Response {
         $data = JsonRequest::getValuesFromString($request->getContent());
+        if (!is_array($data)) {
+            throw new \UnexpectedValueException('Expected a JSON object.');
+        }
         $synchro = $synchroRefCompetences->synchroniser($data['departementId'], $data['diplomeId']);
 
         return JsonResponse::Success('Synchronisation des compétences terminée', [
