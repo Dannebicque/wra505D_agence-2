@@ -7,6 +7,8 @@ use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Entity\Structure\StructureDepartementPersonnel;
+use App\Enum\StatutEnum;
 use App\Utils\LooseValue;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelPersonnelDto;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
@@ -27,7 +29,7 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
@@ -54,7 +56,7 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
                 ],
             ];
 
-            if (empty($data)) {
+            if (!(bool) $data) {
                 return array_values($output);
             }
 
@@ -74,9 +76,9 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
                 $personnel = $item->getPersonnel();
                 $output['previForm'][] = $this->toDto($item);
 
-                $totalCm += (float) $item->getHeures()['CM'];
-                $totalTd += (float) $item->getHeures()['TD'];
-                $totalTp += (float) $item->getHeures()['TP'];
+                $totalCm += $item->getHeures()['CM'];
+                $totalTd += $item->getHeures()['TD'];
+                $totalTp += $item->getHeures()['TP'];
             }
 
             $totalClassique = round($totalCm + $totalTd + $totalTp, 1);
@@ -107,9 +109,9 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
                 }
 
                 $departementAffectation = $this->structureDepartementPersonnelRepository->findOneByPersonnelAffectation($personnelId);
-                $isVacataire = $personnel->getStatut() && $personnel->getStatut()->getLibelle() === 'Enseignant Vacataire';
+                $isVacataire = $personnel->getStatut() instanceof StatutEnum && $personnel->getStatut()->getLibelle() === 'Enseignant Vacataire';
 
-                $hasServiceInDepartement = ($departementAffectation && $departement && $departement->getId() === $departementAffectation->getId()) || $isVacataire;
+                $hasServiceInDepartement = ($departementAffectation instanceof StructureDepartementPersonnel && $departement instanceof StructureDepartementPersonnel && $departement->getId() === $departementAffectation->getId()) || $isVacataire;
 
                 if ($hasServiceInDepartement) {
                     $nbHeuresService = (float) $personnel->getNbHeuresService();

@@ -25,7 +25,7 @@ class SentMessageRepository extends ServiceEntityRepository
      */
     public function receivedSince(array $addresses, \DateTimeImmutable $since): array
     {
-        $addresses = array_values(array_unique(array_map('mb_strtolower', array_filter($addresses))));
+        $addresses = array_values(array_unique(array_map('mb_strtolower', array_filter($addresses, static fn (string $address): bool => $address !== '' && $address !== '0'))));
         if ([] === $addresses) {
             return [];
         }

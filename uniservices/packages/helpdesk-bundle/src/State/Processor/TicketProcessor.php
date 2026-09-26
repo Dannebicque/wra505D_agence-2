@@ -45,7 +45,7 @@ class TicketProcessor implements ProcessorInterface
         $ticket->setDescription(LooseValue::string($description));
 
         // Résolution de la catégorie
-        if ($categoriePath) {
+        if ((bool) $categoriePath) {
             $categorieId = basename(LooseValue::castString($categoriePath));
             $categorie = $this->em->getRepository(HelpdeskCategorie::class)->find($categorieId);
             if ($categorie instanceof HelpdeskCategorie) {
@@ -54,10 +54,10 @@ class TicketProcessor implements ProcessorInterface
         }
 
         // Résolution de l'auteur
-        if ($auteurPath) {
+        if ((bool) $auteurPath) {
             $auteurId = basename(LooseValue::castString($auteurPath));
             $auteur = $this->em->getRepository(Personnel::class)->find($auteurId);
-            if ($auteur) {
+            if ($auteur instanceof Personnel) {
                 $ticket->setAuteur($auteur);
             }
         }
@@ -67,15 +67,15 @@ class TicketProcessor implements ProcessorInterface
         $uploadedFiles = $request->files->all('files');
 
         // Gestion du cas où files[] est envoyé comme tableau
-        if (empty($uploadedFiles)) {
+        if ($uploadedFiles === []) {
             $allFiles = $request->files->all();
-            if (!empty($allFiles)) {
+            if ($allFiles !== []) {
                 $firstGroup = array_values($allFiles)[0];
                 $uploadedFiles = is_array($firstGroup) ? $firstGroup : [$firstGroup];
             }
         }
 
-        if (!empty($uploadedFiles)) {
+        if ($uploadedFiles !== []) {
             if (!is_dir($this->uploadsDirectory) && !@mkdir($this->uploadsDirectory, 0775, true) && !is_dir($this->uploadsDirectory)) {
                 throw new \RuntimeException('Impossible de créer le dossier d\'upload.');
             }
@@ -87,9 +87,10 @@ class TicketProcessor implements ProcessorInterface
 
                 // Validation de l'extension
                 $allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'txt'];
-                $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
+                $guessedExtension = $uploadedFile->guessExtension();
+                $extension = $guessedExtension !== null && $guessedExtension !== '' && $guessedExtension !== '0' ? $guessedExtension : $uploadedFile->getClientOriginalExtension();
 
-                if (!in_array(strtolower($extension), $allowedExtensions)) {
+                if (!in_array(strtolower($extension), $allowedExtensions, true)) {
                     throw new \RuntimeException(
                         sprintf('Le fichier "%s" n\'est pas dans un format autorisé.', $uploadedFile->getClientOriginalName())
                     );
@@ -109,7 +110,7 @@ class TicketProcessor implements ProcessorInterface
             }
         }
 
-        $ticket->setFilesNames($savedFiles ?: null);
+        $ticket->setFilesNames($savedFiles !== [] ? $savedFiles : null);
 
         $this->em->persist($ticket);
         $this->em->flush();

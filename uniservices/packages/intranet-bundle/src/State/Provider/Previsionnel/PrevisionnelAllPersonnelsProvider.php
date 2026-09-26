@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Entity\Structure\StructureDepartementPersonnel;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelAllPersonnelsDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
@@ -26,7 +27,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
@@ -50,7 +51,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                 if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
                     throw new \LogicException('Expected a Previsionnel.');
                 }
-                if ($item->getPersonnel()) {
+                if ($item->getPersonnel() instanceof Personnel) {
                     $personnelId = $item->getPersonnel()->getId();
                     if ($personnelId === null) {
                         throw new \LogicException('Personnel ID is required');
@@ -62,7 +63,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
             // Batch fetch department data
             $departementMap = [];
             $departementAffectationMap = [];
-            if (!empty($personnelIds)) {
+            if ($personnelIds !== []) {
                 $departements = $this->structureDepartementPersonnelRepository->findBy([
                     'personnel' => $personnelIds,
                     'departement' => LooseValue::row($context['filters'] ?? [])['departement']
@@ -80,7 +81,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                 $affectations = [];
                 foreach ($personnelIds as $id) {
                     $affectation = $this->structureDepartementPersonnelRepository->findOneByPersonnelAffectation($id);
-                    if ($affectation) {
+                    if ($affectation instanceof StructureDepartementPersonnel) {
                         $departementAffectationMap[$id] = $affectation;
                     }
                 }
@@ -90,7 +91,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                 if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
                     throw new \LogicException('Expected a Previsionnel.');
                 }
-                if ($item->getPersonnel()) {
+                if ($item->getPersonnel() instanceof Personnel) {
                     $personnel = $item->getPersonnel();
                     $personnelId = $personnel->getId();
                     if ($personnelId === null) {
@@ -105,7 +106,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                     $departement = $departementMap[$personnelId] ?? null;
                     $departementAffectation = $departementAffectationMap[$personnelId] ?? null;
 
-                    if (($departementAffectation && $departement && $departement->getId() === $departementAffectation->getId())
+                    if (($departementAffectation instanceof StructureDepartementPersonnel && $departement instanceof StructureDepartementPersonnel && $departement->getId() === $departementAffectation->getId())
                         || $statutLibelle === 'Enseignant Vacataire') {
                         $nbHeuresService = $personnel->getNbHeuresService();
                         $affectation = true;
@@ -149,9 +150,9 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                     $totalHeures = $cmHours + $tdHours + $tpHours;
 
                     $statutValue = $statut->value;
-                    if (in_array($statutValue, ['MCF', 'PU', 'ENSAM', 'PRAG', 'PRCE', 'CDD'])) {
+                    if (in_array($statutValue, ['MCF', 'PU', 'ENSAM', 'PRAG', 'PRCE', 'CDD'], true)) {
                         $totalPermanent += $totalHeures;
-                    } elseif (in_array($statutValue, ['vacataire'])) {
+                    } elseif (in_array($statutValue, ['vacataire'], true)) {
                         $totalVacataire += $totalHeures;
                     } else {
                         $totalAutre += $totalHeures;

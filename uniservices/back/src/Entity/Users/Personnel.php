@@ -331,7 +331,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $activeDepartementPersonnel = null;
         foreach ($this->departementsPersonnel as $departementPersonnel) {
-            if ($departementPersonnel->isDefaut()) {
+            if ($departementPersonnel->isDefaut() === true) {
                 $activeDepartementPersonnel = $departementPersonnel;
                 break;
             }

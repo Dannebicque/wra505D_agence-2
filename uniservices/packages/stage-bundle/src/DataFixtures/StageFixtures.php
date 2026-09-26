@@ -35,21 +35,21 @@ class StageFixtures extends Fixture implements OrderedFixtureInterface, FixtureG
         $anneeUnivRepo = $manager->getRepository(StructureAnneeUniversitaire::class);
 
         $anneeUniv2324 = $anneeUnivRepo->findOneBy(['libelle' => '2023-2024']);
-        if (!$anneeUniv2324) {
+        if (!$anneeUniv2324 instanceof StructureAnneeUniversitaire) {
             $anneeUniv2324 = new StructureAnneeUniversitaire();
             $anneeUniv2324->setLibelle('2023-2024')->setAnnee(2023);
             $manager->persist($anneeUniv2324);
         }
 
         $anneeUniv2425 = $anneeUnivRepo->findOneBy(['libelle' => '2024-2025']);
-        if (!$anneeUniv2425) {
+        if (!$anneeUniv2425 instanceof StructureAnneeUniversitaire) {
             $anneeUniv2425 = new StructureAnneeUniversitaire();
             $anneeUniv2425->setLibelle('2024-2025')->setAnnee(2024);
             $manager->persist($anneeUniv2425);
         }
 
         $anneeUniv2526 = $anneeUnivRepo->findOneBy(['libelle' => '2025-2026']);
-        if (!$anneeUniv2526) {
+        if (!$anneeUniv2526 instanceof StructureAnneeUniversitaire) {
             $anneeUniv2526 = new StructureAnneeUniversitaire();
             $anneeUniv2526->setLibelle('2025-2026')->setAnnee(2025);
             $manager->persist($anneeUniv2526);
@@ -104,7 +104,7 @@ class StageFixtures extends Fixture implements OrderedFixtureInterface, FixtureG
         $manager->persist($periodeBUT2);
 
         // Stage terminé pour l'étudiant principal en BUT2
-        if ($mainStudent) {
+        if ($mainStudent instanceof Etudiant) {
             $tuteur2 = new Contact();
             $tuteur2->setCivilite('M')
                 ->setPrenom('Marc')
@@ -177,10 +177,10 @@ class StageFixtures extends Fixture implements OrderedFixtureInterface, FixtureG
             ])
         ;
         // Saisie autorisée pour S5 et S6 !
-        if ($s5) {
+        if ($s5 instanceof StructureSemestre) {
             $periodeBUT3->addSemestresSaisie($s5);
         }
-        if ($s6) {
+        if ($s6 instanceof StructureSemestre) {
             $periodeBUT3->addSemestresSaisie($s6);
         }
         if (isset($personnels[1])) {

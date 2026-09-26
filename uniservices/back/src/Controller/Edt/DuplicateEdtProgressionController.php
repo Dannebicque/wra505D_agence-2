@@ -2,6 +2,7 @@
 
 namespace App\Controller\Edt;
 
+use App\Entity\Edt\EdtProgression;
 use App\Repository\Edt\EdtProgressionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,7 +22,7 @@ class DuplicateEdtProgressionController extends AbstractController
         //todo: ajouter un voter pour vérifier que l'utilisateur a le droit de dupliquer une ressource
         $original = $this->edtProgressionRepository->find($id);
 
-        if (!$original) {
+        if (!$original instanceof EdtProgression) {
             return new JsonResponse(['error' => 'EdtProgression not found'], 404);
         }
 

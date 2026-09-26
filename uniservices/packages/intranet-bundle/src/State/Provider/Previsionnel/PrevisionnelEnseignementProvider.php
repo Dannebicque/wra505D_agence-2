@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Scolarite\ScolEnseignement;
+use App\Entity\Users\Personnel;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 
@@ -25,19 +26,13 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
 
-            if (empty($data)) {
+            if (!(bool) $data) {
                 return [];
-            }
-
-            if (empty($data)) {
-                $output['previ'] = [];
-
-                return $output;
             }
 
             $output = [];
@@ -54,7 +49,7 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
                 if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
                     throw new \LogicException('Expected a Previsionnel.');
                 }
-                if ($item->getPersonnel()) {
+                if ($item->getPersonnel() instanceof Personnel) {
                     $enseignement = $item->getEnseignement();
                     if ($enseignement === null) {
                         throw new \LogicException('Enseignement is required');

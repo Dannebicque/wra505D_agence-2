@@ -130,7 +130,7 @@ FOREIGN_KEY_CHECKS=1');
                 $matiere->setMutualisee(LooseValue::bool($mat['mutualisee']));
                 $matiere->setMotsCles(LooseValue::nullableString($mat['mots_cles']));
                 $matiere->setObjectif(LooseValue::nullableString($mat['objectifs_module']));
-                $matiere->setPrerequis(LooseValue::nullableString($mat['pre_requis']));
+                $matiere->setPreRequis(LooseValue::nullableString($mat['pre_requis']));
                 $matiere->setOldId(LooseValue::nullableInt($mat['id']));
 
                 $nbNotes = LooseValue::castInt($mat['nb_notes']);
@@ -194,7 +194,7 @@ FOREIGN_KEY_CHECKS=1');
                 $matiere->setMutualisee(LooseValue::bool($mat['mutualisee']));
                 $matiere->setMotsCles(LooseValue::nullableString($mat['mots_cles']));
                 $matiere->setObjectif(LooseValue::nullableString($mat['objectifs_module']));
-                $matiere->setPrerequis(LooseValue::nullableString($mat['pre_requis']));
+                $matiere->setPreRequis(LooseValue::nullableString($mat['pre_requis']));
                 $matiere->setParent($this->tMatieres[LooseValue::key($mat['matiere_parent_id'])]);
                 $matiere->setOldId(LooseValue::nullableInt($mat['id']));
 
@@ -257,7 +257,7 @@ FOREIGN_KEY_CHECKS=1');
             $matiere->setSuspendu(LooseValue::bool($mat['suspendu']));
             $matiere->setMutualisee(LooseValue::bool($mat['mutualisee']));
             $matiere->setMotsCles(LooseValue::nullableString($mat['mots_cles']));
-            $matiere->setPrerequis(LooseValue::nullableString($mat['pre_requis']));
+            $matiere->setPreRequis(LooseValue::nullableString($mat['pre_requis']));
             $matiere->setOldId(LooseValue::nullableInt($mat['id']));
 
             $nbNotes = LooseValue::castInt($mat['nb_notes']);

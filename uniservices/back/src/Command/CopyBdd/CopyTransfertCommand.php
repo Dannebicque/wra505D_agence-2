@@ -39,7 +39,7 @@ class CopyTransfertCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        if (!$input->getOption('scolarite') && !$input->getOption('edt') && !$input->getOption('enseignement') && !$input->getOption('all') && !$input->getOption('user') && !$input->getOption('structure') && !$input->getOption('apc')) {
+        if (!(bool) $input->getOption('scolarite') && !(bool) $input->getOption('edt') && !(bool) $input->getOption('enseignement') && !(bool) $input->getOption('all') && !(bool) $input->getOption('user') && !(bool) $input->getOption('structure') && !(bool) $input->getOption('apc')) {
             $io->error('At least one option is required. Use --help to see available options.');
             return Command::FAILURE;
         }

@@ -27,13 +27,13 @@ final class InvitationSectionProvider implements ProviderInterface
         $id = LooseValue::castInt($uriVariables['id']);
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv) {
+        if (!$inv instanceof QuestionnaireInvitation) {
             throw new \RuntimeException('Invitation not found');
         }
 
         $psi = $this->em->getRepository(QuestionnaireSectionInstance::class)->find($id);
         $questionnaire = $inv->getQuestionnaire();
-        if (!$psi || $questionnaire === null || $psi->getQuestionnaire()?->getId() !== $questionnaire->getId()) {
+        if (!$psi instanceof QuestionnaireSectionInstance || $questionnaire === null || $psi->getQuestionnaire()?->getId() !== $questionnaire->getId()) {
             throw new \RuntimeException('Section not found');
         }
         $section = $psi->getSection();
@@ -69,7 +69,7 @@ final class InvitationSectionProvider implements ProviderInterface
             publishedSectionInstanceId: $publishedSectionInstanceId,
             title: $title,
             repeatItemType: $psi->getRepeatSectionItemType(),
-            repeatItemId: $psi->getRepeatSectionItemId() ? (string) $psi->getRepeatSectionItemId() : null,
+            repeatItemId: !in_array($psi->getRepeatSectionItemId(), [null, 0], true) ? (string) $psi->getRepeatSectionItemId() : null,
             questions: $questions
         );
     }

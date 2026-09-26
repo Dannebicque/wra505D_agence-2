@@ -29,11 +29,11 @@ final class StudentInvitationsProvider implements ProviderInterface
         }
 
         $emails = array_filter([
-            $user->getMailUniv() ? trim(mb_strtolower($user->getMailUniv())) : null,
-            $user->getMailPerso() ? trim(mb_strtolower($user->getMailPerso())) : null
-        ]);
+            !in_array($user->getMailUniv(), [null, '', '0'], true) ? trim(mb_strtolower($user->getMailUniv())) : null,
+            !in_array($user->getMailPerso(), [null, '', '0'], true) ? trim(mb_strtolower($user->getMailPerso())) : null
+        ], static fn (?string $value): bool => $value !== null && $value !== '' && $value !== '0');
 
-        if (empty($emails)) {
+        if ($emails === []) {
             return [];
         }
 

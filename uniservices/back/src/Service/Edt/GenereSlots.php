@@ -95,7 +95,7 @@ class GenereSlots
     {
         $enseignementUe = $previsionnel->getEnseignement()?->getEnseignementUes()->first();
 
-        return $enseignementUe ? $enseignementUe->getUe()?->getSemestre() : null;
+        return (bool) $enseignementUe ? $enseignementUe->getUe()?->getSemestre() : null;
     }
 
     private function getGroupes(Previsionnel $previsionnel): void

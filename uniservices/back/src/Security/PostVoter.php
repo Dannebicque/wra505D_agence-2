@@ -105,7 +105,7 @@ class PostVoter extends Voter
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, self::SUPPORTED_ATTRIBUTES);
+        return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
     }
 
     /**
@@ -371,7 +371,7 @@ class PostVoter extends Voter
         if ($user instanceof Etudiant && $subject instanceof EtudiantNote) {
             $scolariteSemestre = $subject->getScolariteSemestre();
             $evaluation = $subject->getEvaluation();
-            if ($scolariteSemestre && $evaluation) {
+            if ($scolariteSemestre instanceof EtudiantScolariteSemestre && $evaluation instanceof ScolEvaluation) {
                 $etudiant = $scolariteSemestre->getScolarite()?->getEtudiant();
                 return $etudiant === $user && $evaluation->isVisible() === true;
             }
@@ -436,7 +436,7 @@ class PostVoter extends Voter
         // Un étudiant peut voir ses propres absences
         if ($subject instanceof EtudiantAbsence) {
             $scolariteSemestre = $subject->getScolariteSemestre();
-            if ($scolariteSemestre) {
+            if ($scolariteSemestre instanceof EtudiantScolariteSemestre) {
                 $etudiant = $scolariteSemestre->getScolarite()?->getEtudiant();
                 return $etudiant === $user;
             }
@@ -499,7 +499,7 @@ class PostVoter extends Voter
             $absences = $subject->getAbsence();
             foreach ($absences as $absence) {
                 $scolariteSemestre = $absence->getScolariteSemestre();
-                if ($scolariteSemestre) {
+                if ($scolariteSemestre instanceof EtudiantScolariteSemestre) {
                     $etudiant = $scolariteSemestre->getScolarite()?->getEtudiant();
                     if ($etudiant === $user) {
                         return true;

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller\Edt;
 
 use App\Entity\Edt\EdtContraintesSemestre;
+use App\Entity\Structure\StructureCalendrier;
+use App\Entity\Structure\StructureSemestre;
 use App\Repository\Edt\EdtContraintesSemestreRepository;
 use App\Repository\Structure\StructureCalendrierRepository;
 use App\Repository\Structure\StructureSemestreRepository;
@@ -35,19 +37,19 @@ class EdtCalendrierContraintesController extends AbstractController
 
         $semestre = $structureSemestreRepository->find($data['semestreId']);
 
-        if (!$semestre) {
+        if (!$semestre instanceof StructureSemestre) {
             return $this->json(['message' => 'Semestre not found'], Response::HTTP_NOT_FOUND);
         }
 
         $semaine = $structureCalendrierRepository->find($data['weekId']);
 
-        if (!$semaine) {
+        if (!$semaine instanceof StructureCalendrier) {
             return $this->json(['message' => 'Week not found'], Response::HTTP_NOT_FOUND);
         }
 
         $contraintes = $edtContraintesSemestreRepository->findOneBy(['semestre' => $semestre]); //todo: ajouter AnneeUniversitaire
 
-        if (!$contraintes) {
+        if (!$contraintes instanceof EdtContraintesSemestre) {
             $contraintes = new EdtContraintesSemestre();
             $contraintes->setSemestre($semestre);
             $entityManager->persist($contraintes);

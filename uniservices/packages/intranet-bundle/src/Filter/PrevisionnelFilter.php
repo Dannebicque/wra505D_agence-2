@@ -30,7 +30,7 @@ class PrevisionnelFilter extends AbstractFilter
     ];
     protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
-        if (!in_array($property, self::FILTERS) || null === $value) {
+        if (!in_array($property, self::FILTERS, true) || null === $value) {
             return;
         }
 

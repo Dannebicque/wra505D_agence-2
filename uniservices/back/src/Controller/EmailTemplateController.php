@@ -49,7 +49,7 @@ class EmailTemplateController extends AbstractController
             : null;
 
         // Clés déjà personnalisées pour ce département
-        $customizedKeys = $departement
+        $customizedKeys = $departement instanceof StructureDepartement
             ? $this->templateRepository->findCustomizedKeysByDepartement($departement)
             : [];
 
@@ -96,7 +96,7 @@ class EmailTemplateController extends AbstractController
             : null;
 
         // Cherche une personnalisation existante
-        $template = $departement
+        $template = $departement instanceof StructureDepartement
             ? $this->templateRepository->findByKeyAndDepartement($key, $departement)
             : $this->templateRepository->findGlobal($key);
 
@@ -137,7 +137,7 @@ class EmailTemplateController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $data = is_array($data) ? $data : [];
 
-        if (empty($data['emailKey']) || empty($data['subject']) || empty($data['bodyHtml'])) {
+        if (!(bool) ($data['emailKey'] ?? false) || !(bool) ($data['subject'] ?? false) || !(bool) ($data['bodyHtml'] ?? false)) {
             return $this->json(['error' => 'Champs requis : emailKey, subject, bodyHtml'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -149,7 +149,7 @@ class EmailTemplateController extends AbstractController
 
         // Résout le département
         $departement = null;
-        if (!empty($data['departement'])) {
+        if ((bool) ($data['departement'] ?? false)) {
             $departement = $this->departementRepository->find($data['departement']);
             if ($departement === null) {
                 return $this->json(['error' => 'Département introuvable'], Response::HTTP_NOT_FOUND);
@@ -157,7 +157,7 @@ class EmailTemplateController extends AbstractController
         }
 
         // Cherche s'il existe déjà
-        $template = $departement
+        $template = $departement instanceof StructureDepartement
             ? $this->templateRepository->findByKeyAndDepartement($key, $departement)
             : $this->templateRepository->findGlobal($key);
 

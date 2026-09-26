@@ -24,7 +24,7 @@ class EdtStatsProvider implements ProviderInterface
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
 
-            if (empty($data)) {
+            if (!(bool) $data) {
                 // Renvoie un DTO vide
                 return new EdtStatsDto();
             }
@@ -53,15 +53,15 @@ class EdtStatsProvider implements ProviderInterface
                     'enseignement' => $item->getEnseignement()?->getLibelle(),
                     'enseignant' => $item->getPersonnel()?->getDisplay(),
                     'date' => $item->getDate()?->format('Y-m-d'),
-                    'debut' => (string) ($item->getDebut()?->format('H:i') ?? ''),
-                    'fin' => (string) ($item->getFin()?->format('H:i') ?? ''),
+                    'debut' => $item->getDebut()?->format('H:i') ?? '',
+                    'fin' => $item->getFin()?->format('H:i') ?? '',
                     'salle' => $item->getSalle(),
                     'groupe' => $item->getGroupe()?->getLibelle(),
                 ];
                 $start = $item->getDebut();
                 $end = $item->getFin();
 
-                if (!$start || !$end) {
+                if (!$start instanceof \DateTimeInterface || !$end instanceof \DateTimeInterface) {
                     continue;
                 }
 
@@ -89,7 +89,7 @@ class EdtStatsProvider implements ProviderInterface
                 $enseignement = $item->getEnseignement();
                 $enseignementLibelle = $enseignement?->getLibelle();
                 $enseignementId = $enseignement?->getId();
-                if ($enseignementLibelle) {
+                if ($enseignementLibelle !== null && $enseignementLibelle !== '' && $enseignementLibelle !== '0') {
                     if (!isset($byEnseignement[$enseignementLibelle])) {
                         $byEnseignement[$enseignementLibelle] = [
                             'id' => $enseignementId,
@@ -97,14 +97,14 @@ class EdtStatsProvider implements ProviderInterface
                         ];
                     }
                     // Si plusieurs événements partagent le même libellé mais que l'id est manquant, tenter de le définir
-                    if (!isset($byEnseignement[$enseignementLibelle]['id']) && $enseignementId) {
+                    if (!isset($byEnseignement[$enseignementLibelle]['id']) && ($enseignementId !== null && $enseignementId !== 0)) {
                         $byEnseignement[$enseignementLibelle]['id'] = $enseignementId;
                     }
                     $byEnseignement[$enseignementLibelle]['heures'] += $duration;
                 }
 
                 $enseignantDisplay = $item->getPersonnel()?->getDisplay();
-                if ($enseignantDisplay) {
+                if ($enseignantDisplay !== null && $enseignantDisplay !== '' && $enseignantDisplay !== '0') {
                     if (!isset($byEnseignant[$enseignantDisplay])) {
                         $byEnseignant[$enseignantDisplay] = 0.0;
                     }
@@ -118,10 +118,10 @@ class EdtStatsProvider implements ProviderInterface
                 'TP' => 0,
             ];
             foreach ($byType as $type => $heures) {
-                $heuresParType[$type] = (float) $heures;
+                $heuresParType[$type] = $heures;
             }
 
-            $total = (float) $totals['totalHeures'];
+            $total = $totals['totalHeures'];
 
             // Construire la répartition comme tableau [{type, heures, pourcentage}, ...]
             $repartitionTypes = [];
@@ -132,7 +132,7 @@ class EdtStatsProvider implements ProviderInterface
 
             $heuresParSemestre = [];
             foreach ($bySemestre as $semestre => $heures) {
-                $heuresParSemestre[$semestre] = (float) $heures;
+                $heuresParSemestre[$semestre] = $heures;
             }
 
             $repartitionSemestres = [];
@@ -151,7 +151,7 @@ class EdtStatsProvider implements ProviderInterface
 
             $heuresParEnseignants = [];
             foreach ($byEnseignant as $enseignantId => $heures) {
-                $heuresParEnseignants[$enseignantId] = (float) $heures;
+                $heuresParEnseignants[$enseignantId] = $heures;
             }
 
             $dto->setTotalHeures($total);

@@ -61,7 +61,7 @@ final readonly class SubjectSearchSource implements SearchSourceInterface
                     $label,
                     LooseValue::nullableString($subject['libelle_court']),
                     LooseValue::nullableString($subject['motsCles']),
-                ])),
+                ], static fn (?string $value): bool => $value !== null && $value !== '' && $value !== '0')),
             );
         }
     }

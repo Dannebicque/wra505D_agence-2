@@ -24,7 +24,7 @@ final class DuplicateQuestionnaireService
         try {
             $duplicate = new Questionnaire();
             $duplicate->setUuid(Uuid::v4());
-            $duplicate->setTitle($newTitle && trim($newTitle) !== '' ? trim($newTitle) : ($source->getTitle() . ' (Copie)'));
+            $duplicate->setTitle($newTitle !== null && $newTitle !== '' && $newTitle !== '0' && trim($newTitle) !== '' ? trim($newTitle) : ($source->getTitle() . ' (Copie)'));
             $duplicate->setDescription($source->getDescription());
             $duplicate->setStatus(QuestStatutEnum::DRAFT);
             $duplicate->setOpeningDate(null);
@@ -60,7 +60,7 @@ final class DuplicateQuestionnaireService
                 $newSection->setQuestionnaire($duplicate);
 
                 $sectionUuidMap[(string)$section->getUuid()] = (string)$newSection->getUuid();
-                if ($section->getId()) {
+                if (!in_array($section->getId(), [null, 0], true)) {
                     $sectionUuidMap[(string)$section->getId()] = (string)$newSection->getUuid();
                 }
 
@@ -86,7 +86,7 @@ final class DuplicateQuestionnaireService
                     $newQ->setSection($newSection);
 
                     $questionUuidMap[(string)$q->getUuid()] = (string)$newQ->getUuid();
-                    if ($q->getId()) {
+                    if (!in_array($q->getId(), [null, 0], true)) {
                         $questionUuidMap[(string)$q->getId()] = (string)$newQ->getUuid();
                     }
 
@@ -98,7 +98,7 @@ final class DuplicateQuestionnaireService
             // 2. Re-map conditional rules across all cloned questions
             foreach ($allClonedQuestions as $newQ) {
                 $rules = $newQ->getConditionalRules();
-                if (!empty($rules)) {
+                if ($rules !== null && $rules !== []) {
                     $remappedRules = [];
                     $ruleList = isset($rules[0]) && is_array($rules[0]) ? $rules : [$rules];
 

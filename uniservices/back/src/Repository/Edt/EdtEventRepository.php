@@ -37,10 +37,10 @@ class EdtEventRepository extends ServiceEntityRepository
             ->orderBy('p.nom', 'ASC')
             ->addOrderBy('p.prenom', 'ASC');
 
-        if ($anneeUniversitaireId) {
+        if ($anneeUniversitaireId !== null && $anneeUniversitaireId !== 0) {
             $qb->andWhere('au.id = :auId')->setParameter('auId', $anneeUniversitaireId);
         }
-        if ($semestreId) {
+        if ($semestreId !== null && $semestreId !== 0) {
             $qb->andWhere('sem.id = :semId')->setParameter('semId', $semestreId);
         }
 
@@ -63,10 +63,10 @@ class EdtEventRepository extends ServiceEntityRepository
             ->orderBy('p.nom', 'ASC')
             ->addOrderBy('p.prenom', 'ASC');
 
-        if ($anneeUniversitaireId) {
+        if ($anneeUniversitaireId !== null && $anneeUniversitaireId !== 0) {
             $qb->andWhere('au.id = :auId')->setParameter('auId', $anneeUniversitaireId);
         }
-        if ($annee) {
+        if ($annee !== null && $annee !== 0) {
             $qb->andWhere('sem.annee = :annee')->setParameter('annee', $annee);
         }
 

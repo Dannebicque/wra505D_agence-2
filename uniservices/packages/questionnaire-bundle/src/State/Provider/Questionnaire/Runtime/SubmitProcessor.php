@@ -21,7 +21,7 @@ final class SubmitProcessor implements ProcessorInterface
         $token = LooseValue::castString($uriVariables['token']);
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv) {
+        if (!$inv instanceof QuestionnaireInvitation) {
             throw new \RuntimeException('Invitation not found');
         }
         if ($inv->isSubmitted()) {

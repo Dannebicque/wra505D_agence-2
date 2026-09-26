@@ -10,6 +10,7 @@ use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Etudiant\EtudiantScolarite;
+use App\Entity\Users\Etudiant;
 
 /** @implements ProviderInterface<object> */
 class EtudiantListeProvider implements ProviderInterface
@@ -25,7 +26,7 @@ class EtudiantListeProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
@@ -76,7 +77,7 @@ class EtudiantListeProvider implements ProviderInterface
 
         return [
             'id' => $scolarite->getId(),
-            'etudiant' => $etudiant ? [
+            'etudiant' => $etudiant instanceof Etudiant ? [
                 'id' => $etudiant->getId(),
                 'prenom' => $etudiant->getPrenom(),
                 'nom' => $etudiant->getNom(),

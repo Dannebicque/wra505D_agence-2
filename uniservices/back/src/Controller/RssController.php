@@ -47,7 +47,7 @@ class RssController extends AbstractController
         $actus_url = $_ENV['URL_ACTUS'];
         $actus = $this->loadRss(LooseValue::string($actus_url));
         $data = [];
-        if ($actus && isset($actus->channel->item)) {
+        if ($actus instanceof \SimpleXMLElement && isset($actus->channel->item)) {
             $count = 0;
             foreach ($actus->channel->item as $actu) {
                 if ($count >= 4) {
@@ -73,7 +73,7 @@ class RssController extends AbstractController
     {
         $events = $this->loadRss('https://www.univ-reims.fr/iut-troyes/service/rss/getRss.php?type=event');
         $data = [];
-        if ($events && isset($events->channel->item)) {
+        if ($events instanceof \SimpleXMLElement && isset($events->channel->item)) {
             $count = 0;
             foreach ($events->channel->item as $event) {
                 if ($count >= 4) {

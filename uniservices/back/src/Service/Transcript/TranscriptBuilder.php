@@ -235,10 +235,11 @@ final readonly class TranscriptBuilder
             };
             ++$counters[$justification];
             $event = $absence->getEvent();
+            $matiere = trim(($event?->getCodeModule() ?? '').' '.($event?->getLibModule() ?? ''));
             $list[] = [
                 'debut' => $event?->getDebut()?->format(\DateTimeInterface::ATOM),
                 'fin' => $event?->getFin()?->format(\DateTimeInterface::ATOM),
-                'matiere' => trim(($event?->getCodeModule() ?? '').' '.($event?->getLibModule() ?? '')) ?: null,
+                'matiere' => $matiere !== '' && $matiere !== '0' ? $matiere : null,
                 'justification' => $justification,
             ];
         }

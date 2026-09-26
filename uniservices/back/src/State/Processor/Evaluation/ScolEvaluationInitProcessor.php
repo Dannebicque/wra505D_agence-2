@@ -36,7 +36,7 @@ class ScolEvaluationInitProcessor implements ProcessorInterface
         $this->em->flush();
 
         $etatActuel = $data->getEtat();
-        if ($etatActuel?->isEtatManuel()) {
+        if ($etatActuel?->isEtatManuel() === true) {
             return $data;
         }
 
@@ -108,7 +108,7 @@ class ScolEvaluationInitProcessor implements ProcessorInterface
                 'evaluation' => $data,
                 'scolariteSemestre' => $ess,
             ]);
-            if ($existing) {
+            if ($existing instanceof EtudiantNote) {
                 continue;
             }
 

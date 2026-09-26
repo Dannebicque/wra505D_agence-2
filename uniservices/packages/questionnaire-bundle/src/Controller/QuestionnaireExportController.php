@@ -24,7 +24,7 @@ class QuestionnaireExportController extends AbstractController
     public function __invoke(string $uuid): Response
     {
         $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $uuid]);
-        if (!$q) {
+        if (!$q instanceof Questionnaire) {
             throw new NotFoundHttpException('Questionnaire not found');
         }
 

@@ -10,6 +10,7 @@ use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiDto\EtudiantScolariteSemestre\EtudiantScolariteSemestreDto;
+use App\Entity\Users\Etudiant;
 use App\Utils\LooseValue;
 
 /** @implements ProviderInterface<object> */
@@ -36,7 +37,7 @@ class EtudiantTrombinoscopeProvider implements ProviderInterface
                     $dto = new EtudiantScolariteSemestreDto();
 
                     $etudiant = $item->getScolarite()?->getEtudiant();
-                    if ($etudiant) {
+                    if ($etudiant instanceof Etudiant) {
                         $dto->setEtudiant([
                             'id' => $etudiant->getId(),
                             'prenom' => $etudiant->getPrenom(),
@@ -92,7 +93,7 @@ class EtudiantTrombinoscopeProvider implements ProviderInterface
                 $dto = new EtudiantScolariteSemestreDto();
 
                 $etudiant = $item->getScolarite()?->getEtudiant();
-                if ($etudiant) {
+                if ($etudiant instanceof Etudiant) {
                     $dto->setEtudiant([
                         'id' => $etudiant->getId(),
                         'prenom' => $etudiant->getPrenom(),

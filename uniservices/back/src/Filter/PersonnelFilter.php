@@ -48,7 +48,7 @@ class PersonnelFilter extends AbstractFilter
                 ->andWhere(sprintf('%s.id = :enseignement', $enseignementAlias))
                 ->setParameter('enseignement', $value);
         }
-        if (('enseignant' === $property) && $value) {
+        if (('enseignant' === $property) && (bool) $value) {
             // si true : récupérer les personnels dont statut != "BIATSS"
             $queryBuilder
                 ->andWhere(sprintf('%s.statut != :statut', $alias))

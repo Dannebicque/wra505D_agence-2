@@ -2,6 +2,7 @@
 
 namespace App\Controller\Etudiant;
 
+use App\Entity\Etudiant\EtudiantScolarite;
 use App\Repository\EtudiantRepository;
 use App\Repository\EtudiantScolariteRepository;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +21,7 @@ class DemissionEtudiantController extends AbstractController
     public function demission(string $id): Response
     {
         $etudiantScolarite = $this->etudiantScolariteRepository->find($id);
-        if (!$etudiantScolarite) {
+        if (!$etudiantScolarite instanceof EtudiantScolarite) {
             return $this->json(['message' => 'Scolarité non trouvée'], Response::HTTP_NOT_FOUND);
         }
         $etudiantScolarite->setActif(false);

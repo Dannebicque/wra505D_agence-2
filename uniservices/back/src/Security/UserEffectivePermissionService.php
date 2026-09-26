@@ -62,7 +62,7 @@ class UserEffectivePermissionService
     private function getActiveDepartementPersonnel(Personnel $user): ?StructureDepartementPersonnel
     {
         foreach ($user->getDepartementsPersonnel() as $departementPersonnel) {
-            if ($departementPersonnel->isDefaut()) {
+            if ($departementPersonnel->isDefaut() === true) {
                 return $departementPersonnel;
             }
         }

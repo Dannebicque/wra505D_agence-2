@@ -25,13 +25,13 @@ class AnneeUniversitaireDiplomeController extends AbstractController
     {
         $anneeUniversitaire = $this->entityManager->getRepository(StructureAnneeUniversitaire::class)->find($anneeUnivId);
 
-        if (!$anneeUniversitaire) {
+        if (!$anneeUniversitaire instanceof StructureAnneeUniversitaire) {
             return new JsonResponse(['error' => 'Année universitaire non trouvée'], Response::HTTP_NOT_FOUND);
         }
 
         $diplome = $this->entityManager->getRepository(StructureDiplome::class)->find($diplomeId);
 
-        if (!$diplome) {
+        if (!$diplome instanceof StructureDiplome) {
             return new JsonResponse(['error' => 'Diplôme non trouvé'], Response::HTTP_NOT_FOUND);
         }
 

@@ -130,7 +130,7 @@ FOREIGN_KEY_CHECKS=1');
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        if (!$input->getOption('force')) {
+        if (!(bool) $input->getOption('force')) {
             $this->io->warning('Cette commande va supprimer les données de la structure ainsi que des matières, ressources et SAE.');
             if (!$this->io->confirm('Cette commande va supprimer les données de la structure ainsi que des matières, ressources et SAE. Confirmer ?', false)) {
                 $this->io->warning('Command execution aborted.');
@@ -168,7 +168,7 @@ FOREIGN_KEY_CHECKS=1');
             $anneeUniversitaire->setActif(LooseValue::bool($annee['active']));
             $anneeUniversitaire->setCommentaire(LooseValue::nullableString($annee['commentaire']));
             $anneeUniversitaire->setOldId(LooseValue::nullableInt($annee['id']));
-            if ($annee['active']) {
+            if ((bool) $annee['active']) {
                 $anneeActive = $anneeUniversitaire;
             }
 
@@ -524,7 +524,7 @@ FOREIGN_KEY_CHECKS=1');
             $groupe->setType(TypeGroupeEnum::TYPE_GROUPE_AUTRE); // Default type
             if (array_key_exists('typeGroupe', $groupeArray) && is_array($groupeArray['typeGroupe'])) {
                 $type = $groupeArray['typeGroupe']['type'] ?? null;
-                if ($type) {
+                if ((bool) $type) {
                     $typeUpper = strtoupper(LooseValue::string($type));
                     if (str_contains($typeUpper, 'TP')) {
                         $groupe->setType(TypeGroupeEnum::TYPE_GROUPE_TP);
@@ -568,7 +568,7 @@ FOREIGN_KEY_CHECKS=1');
             if (array_key_exists('typeGroupe', $enfant) && is_array($enfant['typeGroupe'])) {
                 $enfantGroupe->setType(TypeGroupeEnum::TYPE_GROUPE_AUTRE); // Default type
                 $type = $enfant['typeGroupe']['type'] ?? null;
-                if ($type) {
+                if ((bool) $type) {
                     $typeUpper = strtoupper(LooseValue::string($type));
                     if (str_contains($typeUpper, 'TP')) {
                         $enfantGroupe->setType(TypeGroupeEnum::TYPE_GROUPE_TP);

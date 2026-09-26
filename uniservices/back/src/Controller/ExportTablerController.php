@@ -26,7 +26,7 @@ class ExportTablerController extends AbstractController
     #[Route('/export/previ', name: 'app_export_previ', methods: ['POST'])]
     public function exportPrevi(Request $request): Response
     {
-        $content = (string) $request->getContent();
+        $content = $request->getContent();
         $data = json_decode($content, true) ?? [];
         //        dd($data);
 
@@ -42,7 +42,7 @@ class ExportTablerController extends AbstractController
     #[Route('/export/edt-heures', name: 'app_export_edt_heures', methods: ['POST'])]
     public function exportHeures(Request $request): Response
     {
-        $content = (string) $request->getContent();
+        $content = $request->getContent();
         $allData = json_decode($content, true);
         $allData = is_array($allData) ? $allData : [];
 
@@ -77,15 +77,15 @@ class ExportTablerController extends AbstractController
                 $date = $ev['date'] ?? null;
                 $debut = $ev['debut'] ?? null;
                 $fin = $ev['fin'] ?? null;
-                if ($debut && $fin) {
-                    if ($date) {
+                if ((bool) $debut && (bool) $fin) {
+                    if ((bool) $date) {
                         $startTs = strtotime(LooseValue::castString($date).' '.LooseValue::castString($debut));
                         $endTs = strtotime(LooseValue::castString($date).' '.LooseValue::castString($fin));
                     } else {
                         $startTs = strtotime(LooseValue::castString($debut));
                         $endTs = strtotime(LooseValue::castString($fin));
                     }
-                    if ($startTs && $endTs && $endTs > $startTs) {
+                    if ((bool) $startTs && (bool) $endTs && $endTs > $startTs) {
                         $total += ($endTs - $startTs) / 3600.0;
                     }
                 }

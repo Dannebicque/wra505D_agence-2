@@ -18,7 +18,7 @@ class EtablissementProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         // Pour une opération GET (item)
-        if (empty($uriVariables)) {
+        if ($uriVariables === []) {
             return $this->getSingleEtablissement();
         }
 
@@ -30,7 +30,7 @@ class EtablissementProvider implements ProviderInterface
     {
         $etablissement = $this->etablissementRepository->findSingleEtablissement();
 
-        if (!$etablissement) {
+        if (!$etablissement instanceof Etablissement) {
             throw new \RuntimeException('Aucun établissement n\'a été configuré. Veuillez en créer un.');
         }
 

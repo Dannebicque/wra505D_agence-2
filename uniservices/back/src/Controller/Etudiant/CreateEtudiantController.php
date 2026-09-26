@@ -41,7 +41,7 @@ class CreateEtudiantController extends AbstractController
         $fileContent = $data['fileContent'] ?? null;
         $anneeUniv = $this->structureAnneeUniversitaireRepository->findOneBy(['id' => $data['anneeUniversitaireId']]);
 
-        if (!$fileContent) {
+        if (!(bool) $fileContent) {
             return new JsonResponse(['message' => 'No file content provided'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -63,7 +63,7 @@ class CreateEtudiantController extends AbstractController
         // Traiter chaque ligne de données (à partir de la deuxième ligne)
         for ($i = 1; $i < count($lines); $i++) {
             $line = trim($lines[$i]);
-            if (empty($line)) {
+            if ($line === '' || $line === '0') {
                 continue; // Ignorer les lignes vides
             }
 
@@ -94,36 +94,36 @@ class CreateEtudiantController extends AbstractController
             $lineInfo['prenom'] = $rowData['prenom'] ?? '';
 
             $annee = $this->structureAnneeRepository->findOneBy(['apogeeCodeEtape' => $rowData['annee_code_etape']]);
-            if (!$annee) {
+            if (!$annee instanceof StructureAnnee) {
                 throw new \InvalidArgumentException('Année non trouvée pour le code étape fourni');
             }
 
             try {
                 // Vérifier si l'étudiant existe déjà
                 $existingEtudiant = null;
-                if (!empty($rowData['numero_etudiant'])) {
+                if ((bool) ($rowData['numero_etudiant'] ?? false)) {
                     $existingEtudiant = $this->etudiantRepository->findOneBy(['num_etudiant' => $rowData['numero_etudiant']]);
                 }
 
-                if (!$existingEtudiant && !empty($rowData['numero_ine'])) {
+                if (!$existingEtudiant instanceof Etudiant && (bool) ($rowData['numero_ine'] ?? false)) {
                     $existingEtudiant = $this->etudiantRepository->findOneBy(['num_ine' => $rowData['numero_ine']]);
                 }
 
-                if (!$existingEtudiant && !empty($rowData['nom']) && !empty($rowData['prenom'])) {
+                if (!$existingEtudiant instanceof Etudiant && (bool) ($rowData['nom'] ?? false) && (isset($rowData['prenom']) && ($rowData['prenom'] !== '' && $rowData['prenom'] !== '0'))) {
                     // Générer un username basé sur le prénom et le nom comme dans createEtudiantFromData
                     $username = strtolower($rowData['prenom'] . '.' . $rowData['nom']);
                     $username = preg_replace('/[^a-z0-9.]/', '', $username) ?? '';
                     $existingEtudiant = $this->etudiantRepository->findOneBy(['username' => $username]);
                 }
 
-                if ($existingEtudiant) {
+                if ($existingEtudiant instanceof Etudiant) {
                     // L'étudiant existe déjà
                     $lineInfo['status'] = 'existant';
                     $lineInfo['message'] = 'Étudiant déjà inscrit';
                     $lineInfo['etudiantId'] = $existingEtudiant->getId();
                 } else {
                     // Créer un nouvel étudiant
-                    if (!$anneeUniv) {
+                    if (!$anneeUniv instanceof StructureAnneeUniversitaire) {
                         throw new \LogicException('Année universitaire non trouvée');
                     }
                     $etudiant = $this->createEtudiantFromData($rowData, $anneeUniv);
@@ -152,7 +152,7 @@ class CreateEtudiantController extends AbstractController
             'created' => count($createdEtudiants),
             'errors' => $errors,
             'processedLines' => $processedLines // Ajouter le tableau des lignes traitées à la réponse
-        ], $errors ? Response::HTTP_PARTIAL_CONTENT : Response::HTTP_OK);
+        ], $errors !== [] ? Response::HTTP_PARTIAL_CONTENT : Response::HTTP_OK);
     }
 
     /** @param array<string, string|null> $data */
@@ -161,7 +161,7 @@ class CreateEtudiantController extends AbstractController
         $etudiant = new Etudiant();
 
         // Vérifier et définir les champs obligatoires
-        if (empty($data['nom']) || empty($data['prenom'])) {
+        if (!(bool) ($data['nom'] ?? false) || !(bool) ($data['prenom'] ?? false)) {
             throw new \InvalidArgumentException('Le nom et le prénom sont obligatoires');
         }
 
@@ -192,18 +192,18 @@ class CreateEtudiantController extends AbstractController
         $etudiant->setApplications(['UniTranet']);
 
         // Définir les autres propriétés si elles existent dans les données
-        if (!empty($data['numero_etudiant'])) {
+        if (isset($data['numero_etudiant']) && ($data['numero_etudiant'] !== '' && $data['numero_etudiant'] !== '0')) {
             $etudiant->setNumEtudiant($data['numero_etudiant']);
         }
 
-        if (!empty($data['numero_ine'])) {
+        if (isset($data['numero_ine']) && ($data['numero_ine'] !== '' && $data['numero_ine'] !== '0')) {
             $etudiant->setNumIne($data['numero_ine']);
         }
 
-        if (!empty($data['date_naissance'])) {
+        if (isset($data['date_naissance']) && ($data['date_naissance'] !== '' && $data['date_naissance'] !== '0')) {
             try {
                 $dateNaissance = \DateTime::createFromFormat('d/m/Y', $data['date_naissance']);
-                if ($dateNaissance) {
+                if ((bool) $dateNaissance) {
                     $etudiant->setDateNaissance($dateNaissance);
                 }
             } catch (\Exception $e) {
@@ -211,15 +211,15 @@ class CreateEtudiantController extends AbstractController
             }
         }
 
-        if (!empty($data['annee_promotion(aaaa)'])) {
+        if (isset($data['annee_promotion(aaaa)']) && ($data['annee_promotion(aaaa)'] !== '' && $data['annee_promotion(aaaa)'] !== '0')) {
             $etudiant->setPromotion((int) $data['annee_promotion(aaaa)']);
         }
 
-        if (!empty($data['annee_bac(aaaa)'])) {
+        if (isset($data['annee_bac(aaaa)']) && ($data['annee_bac(aaaa)'] !== '' && $data['annee_bac(aaaa)'] !== '0')) {
             $etudiant->setAnneeBac((int) $data['annee_bac(aaaa)']);
         }
 
-        if (!empty($data['telephone'])) {
+        if (isset($data['telephone']) && ($data['telephone'] !== '' && $data['telephone'] !== '0')) {
             $etudiant->setTel1($data['telephone']);
         }
 
@@ -227,7 +227,7 @@ class CreateEtudiantController extends AbstractController
         $etudiant->setBoursier(false);
 
         // Créer l'adresse étudiante si les champs nécessaires sont présents
-        if (!empty($data['LIB_AD1']) || !empty($data['ville']) || !empty($data['codepostal'])) {
+        if (isset($data['LIB_AD1']) && ($data['LIB_AD1'] !== '' && $data['LIB_AD1'] !== '0') || isset($data['ville']) && ($data['ville'] !== '' && $data['ville'] !== '0') || isset($data['codepostal']) && ($data['codepostal'] !== '' && $data['codepostal'] !== '0')) {
             $adresse = new Adresse(
                 $data['LIB_AD1'] ?? '',
                 $data['LIB_AD2'] ?? '',
@@ -250,7 +250,7 @@ class CreateEtudiantController extends AbstractController
         $etudiantSco->setEtudiant($etudiant);
         $etudiantSco->setDepartement($annee->getDepartement());
         $etudiantSco->setUuid();
-        if ($anneeUniv->isActif()) {
+        if ($anneeUniv->isActif() === true) {
             $etudiantSco->setActif(true);
         } else {
             $etudiantSco->setActif(false);
@@ -262,6 +262,7 @@ class CreateEtudiantController extends AbstractController
     {
         $semestres = $this->structureSemestreRepository->findBy(['annee' => $annee]);
 
+        $etudiantScoSemestre = null;
         if (count($semestres) === 2) {
             foreach ($semestres as $semestre) {
                 $etudiantScoSemestre = new EtudiantScolariteSemestre();

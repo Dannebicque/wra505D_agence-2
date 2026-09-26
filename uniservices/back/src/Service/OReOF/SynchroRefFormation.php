@@ -44,11 +44,11 @@ class SynchroRefFormation
         $diplome = $this->structureDiplomeRepository->find($diplomeId);
 
 
-        if (!$anneeUniversitaire || !$diplome) {
+        if (!$anneeUniversitaire instanceof StructureAnneeUniversitaire || !$diplome instanceof StructureDiplome) {
             throw new \Exception('Année Universitaire ou diplôme introuvable');
         }
 
-        if ($diplome->getTypeDiplome()?->isApc()) {
+        if ($diplome->getTypeDiplome()?->isApc() === true) {
             if ($diplome->getParent() !== null) {
                 //on pioche dans le diplôme parent
                 $diplome = $diplome->getParent();

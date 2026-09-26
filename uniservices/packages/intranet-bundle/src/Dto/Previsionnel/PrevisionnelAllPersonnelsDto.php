@@ -56,7 +56,7 @@ class PrevisionnelAllPersonnelsDto
 
     public function getPersonnel(): Personnel
     {
-        if (!$this->personnel) {
+        if (!$this->personnel instanceof Personnel) {
             throw new \LogicException('Personnel is required');
         }
 

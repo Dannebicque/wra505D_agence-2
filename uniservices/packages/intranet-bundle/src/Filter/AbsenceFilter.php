@@ -49,7 +49,7 @@ class AbsenceFilter extends AbstractFilter
             $param = $queryNameGenerator->generateParameterName('justifiee');
             $justificatifAlias = $this->getOrCreateJoin($queryBuilder, $queryNameGenerator, $alias, 'absenceJustificatif');
 
-            if (filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)) {
+            if (filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === true) {
                 $queryBuilder
                     ->andWhere(sprintf('%s.etat = :%s', $justificatifAlias, $param))
                     ->setParameter($param, EtatJustificatifEnum::VALIDE);

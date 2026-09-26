@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenInterface;
 use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[Route('/api')]
 class AuthController extends AbstractController
@@ -29,14 +31,14 @@ class AuthController extends AbstractController
 
         // Récupérer et invalider le refresh token
         $refreshToken = $request->cookies->get('refresh_token');
-        if ($refreshToken) {
+        if ($refreshToken !== null && $refreshToken !== '' && $refreshToken !== '0') {
             $token = $this->refreshTokenManager->get($refreshToken);
-            if ($token) {
+            if ($token instanceof RefreshTokenInterface) {
                 $this->refreshTokenManager->delete($token);
             }
         }
 
-        $secure = (bool) $this->parameterBag->get('JWT_COOKIE_SECURE');
+        $secure = $this->parameterBag->get('JWT_COOKIE_SECURE');
 
         // Supprimer les cookies
         $response->headers->setCookie(
@@ -86,7 +88,7 @@ class AuthController extends AbstractController
     {
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof UserInterface) {
             return new JsonResponse(['authenticated' => false], Response::HTTP_UNAUTHORIZED);
         }
 

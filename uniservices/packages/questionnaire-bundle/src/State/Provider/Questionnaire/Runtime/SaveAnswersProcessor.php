@@ -26,7 +26,7 @@ final class SaveAnswersProcessor implements ProcessorInterface
         $token = LooseValue::castString($uriVariables['token']);
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv) {
+        if (!$inv instanceof QuestionnaireInvitation) {
             throw new \RuntimeException('Invitation not found');
         }
         if ($inv->isSubmitted()) {
@@ -35,11 +35,11 @@ final class SaveAnswersProcessor implements ProcessorInterface
 
         $psi = $this->em->getRepository(QuestionnaireSectionInstance::class)->find($data->publishedSectionInstanceId);
         $questionnaire = $inv->getQuestionnaire();
-        if (!$psi || $questionnaire === null || $psi->getQuestionnaire()?->getId() !== $questionnaire->getId()) {
+        if (!$psi instanceof QuestionnaireSectionInstance || $questionnaire === null || $psi->getQuestionnaire()?->getId() !== $questionnaire->getId()) {
             throw new \RuntimeException('Invalid section');
         }
 
-        $questionIds = array_map(fn ($a) => (int) ((array) $a)['questionId'], $data->answers);
+        $questionIds = array_map(fn ($a) => ((array) $a)['questionId'], $data->answers);
         $questions = $this->em->getRepository(QuestionnaireQuestion::class)->findBy(['id' => $questionIds]);
         $qById = [];
         foreach ($questions as $q) {
@@ -65,7 +65,7 @@ final class SaveAnswersProcessor implements ProcessorInterface
 
         foreach ($data->answers as $incoming) {
             $incomingArr = (array) $incoming;
-            $qid = (int) $incomingArr['questionId'];
+            $qid = $incomingArr['questionId'];
             if (!isset($qById[$qid])) {
                 continue;
             }

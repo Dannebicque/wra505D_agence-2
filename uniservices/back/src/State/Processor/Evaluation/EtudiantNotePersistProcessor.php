@@ -39,7 +39,7 @@ class EtudiantNotePersistProcessor implements ProcessorInterface
     private function refreshEvaluationEtat(ScolEvaluation $evaluation): void
     {
         $etatActuel = $evaluation->getEtat();
-        if ($etatActuel?->isEtatManuel()) {
+        if ($etatActuel?->isEtatManuel() === true) {
             $this->calcEvaluationStats($evaluation);
             $this->em->flush();
             return;
@@ -111,7 +111,7 @@ class EtudiantNotePersistProcessor implements ProcessorInterface
             $values[] = $n;
         }
 
-        if (empty($values)) {
+        if ($values === []) {
             $stats = [
                 'moyenne' => 0,
                 'mediane' => 0,

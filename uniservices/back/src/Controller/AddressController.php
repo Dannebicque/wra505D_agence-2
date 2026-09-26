@@ -34,7 +34,7 @@ class AddressController extends AbstractController
         $query = $request->query->get('q');
 
         // Validation
-        if (!$query || strlen(trim($query)) < 3) {
+        if ($query === null || $query === '' || $query === '0' || strlen(trim($query)) < 3) {
             return new JsonResponse(['features' => []], 400);
         }
 
@@ -72,7 +72,7 @@ class AddressController extends AbstractController
         $lon = $request->query->get('lon');
 
         // Validation
-        if (!$lat || !$lon) {
+        if ($lat === null || $lat === '' || $lat === '0' || ($lon === null || $lon === '' || $lon === '0')) {
             return new JsonResponse(['error' => 'Les paramètres lat et lon sont requis'], 400);
         }
 

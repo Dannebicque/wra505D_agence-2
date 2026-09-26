@@ -24,7 +24,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         if (!$operation instanceof GetCollection) {
             return null;
@@ -110,12 +110,12 @@ class AbsenceEpisodeProvider implements ProviderInterface
 
         foreach ($absences as $absence) {
             $currentDate = $absence->getEvent()?->getDate();
-            if (!$currentDate) {
+            if (!$currentDate instanceof \DateTimeInterface) {
                 continue;
             }
 
             $studentId = $absence->getScolariteSemestre()?->getId();
-            $status = (bool)$absence->isJustifiee();
+            $status = $absence->isJustifiee();
 
             if ($currentEpisode === null || !$this->canJoinEpisode($currentEpisode, $studentId, $currentDate, $status)) {
                 if ($currentEpisode !== null) {
@@ -178,7 +178,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
                 $date ?? 'unknown'
             ),
             'mode' => 'episode',
-            'justifiee' => (bool)$absence->isJustifiee(),
+            'justifiee' => $absence->isJustifiee(),
             'scolariteSemestreId' => $absence->getScolariteSemestre()?->getId(),
             'etudiantDisplay' => $student?->getDisplay() ?? '-',
             'dateDebut' => $date,
@@ -188,7 +188,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
             'absenceIds' => [$absence->getId()],
             'events' => [$this->mapEvent($absence)],
             'absences' => [$this->mapAbsence($absence)],
-            'jours' => [$date ? (int)str_replace('-', '', $date) : 0 => true],
+            'jours' => [$date !== null ? (int)str_replace('-', '', $date) : 0 => true],
         ];
     }
 
@@ -203,7 +203,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
         return [
             'id' => sprintf('absence-%s', $absence->getId()),
             'mode' => 'flat',
-            'justifiee' => (bool)$absence->isJustifiee(),
+            'justifiee' => $absence->isJustifiee(),
             'scolariteSemestreId' => $absence->getScolariteSemestre()?->getId(),
             'etudiantDisplay' => $student?->getDisplay() ?? '-',
             'dateDebut' => $date,
@@ -247,7 +247,7 @@ class AbsenceEpisodeProvider implements ProviderInterface
 
         return [
             'id' => $absence->getId(),
-            'justifiee' => (bool)$absence->isJustifiee(),
+            'justifiee' => $absence->isJustifiee(),
             'personnelDisplay' => $personnel?->getDisplay() ?? '-',
             'created' => $absence->getCreated()?->format(DATE_ATOM),
             'updated' => $absence->getUpdated()?->format(DATE_ATOM),

@@ -25,7 +25,7 @@ final class DuplicateProcessor implements ProcessorInterface
         $uuidStr = $uriVariables['questionnaireUuid'];
 
         $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $uuidStr]);
-        if (!$q) {
+        if (!$q instanceof Questionnaire) {
             throw new \RuntimeException('Questionnaire not found');
         }
 

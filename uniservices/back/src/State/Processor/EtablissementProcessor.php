@@ -35,7 +35,7 @@ class EtablissementProcessor implements ProcessorInterface
             }
             if (!$file instanceof UploadedFile) {
                 $uploadedFiles = $request->files->all();
-                if (!empty($uploadedFiles)) {
+                if ($uploadedFiles !== []) {
                     $firstUploaded = array_values($uploadedFiles)[0];
                     $file = is_array($firstUploaded) ? (array_values($firstUploaded)[0] ?? null) : $firstUploaded;
                 }
@@ -45,7 +45,7 @@ class EtablissementProcessor implements ProcessorInterface
                 return $entity;
             }
 
-            if (!in_array($file->guessExtension(), ['png', 'jpg', 'jpeg'])) {
+            if (!in_array($file->guessExtension(), ['png', 'jpg', 'jpeg'], true)) {
                 throw new \RuntimeException('Le fichier doit être au format PNG ou JPG.');
             }
 

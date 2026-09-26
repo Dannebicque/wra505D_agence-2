@@ -91,7 +91,7 @@ class StructureUe
     #[Groups(['maquette:detail', 'ue:read'])]
     public function getDisplayApc(): string
     {
-        return $this->competence ? $this->libelle.' | '.$this->competence->getNomCourt() : $this->libelle;
+        return $this->competence instanceof ApcCompetence ? $this->libelle.' | '.$this->competence->getNomCourt() : $this->libelle;
     }
 
     public function getId(): ?int

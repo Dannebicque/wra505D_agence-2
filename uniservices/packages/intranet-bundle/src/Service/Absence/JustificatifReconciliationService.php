@@ -2,6 +2,7 @@
 
 namespace IntranetBundle\Service\Absence;
 
+use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Users\Etudiant;
 use Doctrine\ORM\EntityManagerInterface;
 use IntranetBundle\Entity\Etudiant\EtudiantAbsence;
@@ -41,12 +42,12 @@ class JustificatifReconciliationService
         $debut = $justificatif->getDebut();
         $fin = $justificatif->getFin();
 
-        if (!$scolariteSemestre || !$debut || !$fin) {
+        if (!$scolariteSemestre instanceof EtudiantScolariteSemestre || !$debut instanceof \DateTimeInterface || !$fin instanceof \DateTimeInterface) {
             return;
         }
 
         $etudiant = $scolariteSemestre->getScolarite()?->getEtudiant();
-        if (!$etudiant) {
+        if (!$etudiant instanceof Etudiant) {
             return;
         }
 
@@ -77,7 +78,7 @@ class JustificatifReconciliationService
             $event = $absence->getEvent();
             $eventDebut = $event?->getDebut();
             $eventFin = $event?->getFin();
-            if (!$eventDebut || !$eventFin) {
+            if (!$eventDebut instanceof \DateTimeInterface || !$eventFin instanceof \DateTimeInterface) {
                 continue;
             }
 

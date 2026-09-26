@@ -27,7 +27,7 @@ final readonly class PreviewSectionProvider implements ProviderInterface
         $key = LooseValue::castString($uriVariables['key']);
 
         $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $qid]);
-        if (!$q) {
+        if (!$q instanceof Questionnaire) {
             throw new \RuntimeException('Questionnaire not found');
         }
 
@@ -41,7 +41,7 @@ final readonly class PreviewSectionProvider implements ProviderInterface
                 break;
             }
         }
-        if (!$sectionTemplate) {
+        if (!$sectionTemplate instanceof QuestionnaireSection) {
             throw new \RuntimeException('Section template not found');
         }
 
