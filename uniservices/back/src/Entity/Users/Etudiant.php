@@ -205,6 +205,10 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
+        if ($this->username === '') {
+            throw new \LogicException('Username must not be empty.');
+        }
+
         return $this->username;
     }
 

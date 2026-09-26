@@ -44,7 +44,7 @@ final class InvitationIndexProvider implements ProviderInterface
                 questionCount: $qtCount,
                 order: $s->getSortOrder(),
                 repeatItemType: $s->getRepeatSectionItemType(),
-                repeatItemId: $s->getRepeatSectionItemId()
+                repeatItemId: $s->getRepeatSectionItemId() ? (string) $s->getRepeatSectionItemId() : null
             );
         }
 

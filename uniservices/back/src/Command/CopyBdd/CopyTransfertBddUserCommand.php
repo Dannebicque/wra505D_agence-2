@@ -13,7 +13,8 @@ use App\Repository\Structure\StructureDepartementRepository;
 use App\Repository\Structure\StructureGroupeRepository;
 use App\ValueObject\Adresse;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,7 +27,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class CopyTransfertBddUserCommand extends Command
 {
-    protected object $em;
+    protected Connection $em;
 
     protected array $tPersonnels = [];
     protected array $tEtudiants = [];
@@ -39,7 +40,7 @@ class CopyTransfertBddUserCommand extends Command
 
     public function __construct(
         protected EntityManagerInterface $entityManager,
-        ManagerRegistry                  $managerRegistry,
+        #[Target('copy')] Connection $copyConnection,
         StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository,
         StructureDepartementRepository $structureDepartementRepository,
         StructureGroupeRepository $structureGroupeRepository,
@@ -47,7 +48,7 @@ class CopyTransfertBddUserCommand extends Command
         ScolBacRepository $scolBacRepository
     ) {
         parent::__construct();
-        $this->em = $managerRegistry->getConnection('copy');
+        $this->em = $copyConnection;
         $this->tAnneeUniversitaire = $structureAnneeUniversitaireRepository->findAllByIdArray();
         $this->tDepartements = $structureDepartementRepository->findAllByIdArray();
         $this->tGroupes = $structureGroupeRepository->findAllByOldIdArray();

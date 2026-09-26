@@ -19,7 +19,8 @@ use App\Repository\Apc\ApcParcoursRepository;
 use App\Repository\PersonnelRepository;
 use App\Repository\Structure\StructureAnneeUniversitaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -36,7 +37,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 )]
 class CopyTransfertBddStructureCommand extends Command
 {
-    protected object $em;
+    protected Connection $em;
 
     /** @param array<int, StructureDepartement> $tDepartements */
     protected array $tDepartements = [];
@@ -60,7 +61,7 @@ class CopyTransfertBddStructureCommand extends Command
 
     public function __construct(
         protected EntityManagerInterface   $entityManager,
-        ManagerRegistry                    $managerRegistry,
+        #[Target('copy')] Connection $copyConnection,
         ApcApprentissageCritiqueRepository $apcApprentissageCritiqueRepository,
         ApcCompetenceRepository            $apcCompetenceRepository,
         StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository,
@@ -80,7 +81,7 @@ class CopyTransfertBddStructureCommand extends Command
             'verify_peer' => false,
             'verify_host' => false,
         ]);
-        $this->em = $managerRegistry->getConnection('copy');
+        $this->em = $copyConnection;
     }
 
     protected function configure(): void

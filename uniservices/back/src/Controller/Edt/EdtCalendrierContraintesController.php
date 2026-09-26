@@ -29,6 +29,9 @@ class EdtCalendrierContraintesController extends AbstractController
         //todo: tester securité et droits
 
         $data = JsonRequest::getValuesFromString($request->getContent());
+        if (!is_array($data)) {
+            throw new \UnexpectedValueException('Expected a JSON object.');
+        }
 
         $semestre = $structureSemestreRepository->find($data['semestreId']);
 

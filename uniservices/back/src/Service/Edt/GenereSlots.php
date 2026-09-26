@@ -69,7 +69,7 @@ class GenereSlots
         $edtEvent->setSemestre($semestre);
         $edtEvent->setAnneeUniversitaire($previsionnel->getAnneeUniversitaire());
         $edtEvent->setType($typeCours);
-        $edtEvent->setSemaineFormation($semaine);
+        $edtEvent->setSemaineFormation(is_int($semaine) ? $semaine : (int) $semaine);
         $edtEvent->setEnseignement($previsionnel->getEnseignement());
         $edtEvent->setLibModule($previsionnel->getEnseignement()?->getLibelle());
         $edtEvent->setCodeModule($previsionnel->getEnseignement()?->getCodeEnseignement());

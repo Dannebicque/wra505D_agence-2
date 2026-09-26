@@ -242,6 +242,12 @@ PHPUnit, écrit par Codex, échoue dès qu'un mot de passe est de nouveau attrib
 apparaître une dépréciation PHP 8.4 : `str_getcsv()` reçoit désormais son caractère d'échappement
 explicitement, sans changement de comportement.
 
+### E18 · [back] Trois routes du client en erreur 500 · S
+**Pourquoi** Constaté pendant E15, avant tout changement : `/api/oreof/ref-competences/synchronisation`,
+`/api/oreof/ref-formation/synchronisation` et `/api/stats/edt_events` répondent 500, en étudiant,
+personnel et superadmin. Écrans du personnel : correction de bug seulement.
+**Terminé quand** chacune répond un code défendable (200, 400 ou 403), couvert par un test.
+
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,
 `CentreNotifications`, `marquerLues()`, `synchroniserCalendrier()`.
@@ -293,7 +299,13 @@ sauf migration décidée et notée.
 
 Répertoires : `uniservices/shared/components`, `uniservices/shared/styles`.
 Ces fiches touchent des fichiers partagés : les faire tôt évite les conflits avec B, C et D.
-
+**Niveau 7 fait** 229 erreurs. 193 venaient de la connexion à la base V3, typée `object` dans les
+commandes `CopyBdd` : elle est injectée par `#[Target('copy')]`. Le vrai type révèle 198 erreurs
+de plus, corrigées par Codex en deux lots parallèles : génériques des dépôts, contrôles
+`instanceof` suivis d'une exception, unions réduites. Une de ses corrections changeait le calcul
+du service des vacataires du prévisionnel ; elle est réécrite à l'identique de l'original. Filet :
+les 65 routes GET sans paramètre, en étudiant, personnel et superadmin, répondent comme avant.
+**Reste** niveaux 8, 9, 10, les exclusions de `phpstan.neon`, puis `phpstan-strict-rules`.
 ### A1 · Masquer les ligatures d'icônes aux lecteurs d'écran · S
 **Obsolète** corrigé : plus aucune ligature n'est lue (A11Y-1, audit 05). La suite est A10.
 **Pourquoi** A11Y-1. Les libellés de navigation contiennent la ligature de l'icône, non masquée.

@@ -36,6 +36,9 @@ class PrevisionnelSemestreTestProvider implements ProviderInterface
                 'groupes' => [],
             ];
             foreach ($data as $item) {
+                if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                    throw new \LogicException('Expected a Previsionnel.');
+                }
                 if ($item->getPersonnel() !== null && $item->getEnseignement() !== null) {
                     if (!array_key_exists($item->getEnseignement()->getId(), $output['heures'])) {
                         $output['heures'][$item->getEnseignement()->getId()] = [];

@@ -7,7 +7,8 @@ use App\Repository\PersonnelRepository;
 use App\Repository\ScolEnseignementRepository;
 use App\Repository\Structure\StructureAnneeUniversitaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,7 +24,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 )]
 class CopyTransfertBddPrevisionnelCommand extends Command
 {
-    protected object $em;
+    protected Connection $em;
 
     protected array $tPersonnels = [];
     protected array $tAnneeUniversitaire = [];
@@ -36,7 +37,7 @@ class CopyTransfertBddPrevisionnelCommand extends Command
 
     public function __construct(
         protected EntityManagerInterface   $entityManager,
-        ManagerRegistry                    $managerRegistry,
+        #[Target('copy')] Connection $copyConnection,
         protected HttpClientInterface      $httpClient,
         ParameterBagInterface              $params,
         PersonnelRepository                $personnelRepository,
@@ -51,7 +52,7 @@ class CopyTransfertBddPrevisionnelCommand extends Command
             'verify_peer' => false,
             'verify_host' => false,
         ]);
-        $this->em = $managerRegistry->getConnection('copy');
+        $this->em = $copyConnection;
         $this->scolEnseignementRepository = $scolEnseignementRepository;
     }
 

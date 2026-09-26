@@ -8,6 +8,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 
+/** @extends ServiceEntityRepository<QuestionnaireInvitation> */
 class QuestionnaireInvitationRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

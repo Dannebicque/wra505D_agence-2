@@ -49,6 +49,9 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
             $totalTD = 0;
             $totalTP = 0;
             foreach ($data as $item) {
+                if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                    throw new \LogicException('Expected a Previsionnel.');
+                }
                 if ($item->getPersonnel()) {
                     $nbHrAttenduCM = $item->getEnseignement()->getHeures()['CM']['IUT'];
                     $nbHrSaisiCM += $item->getHeures()['CM'];

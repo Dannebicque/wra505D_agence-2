@@ -56,7 +56,7 @@ final class InvitationSectionProvider implements ProviderInterface
             publishedSectionInstanceId: $psi->getId(),
             title: $psi->getTitleSnapshot(),
             repeatItemType: $psi->getRepeatSectionItemType(),
-            repeatItemId: $psi->getRepeatSectionItemId(),
+            repeatItemId: $psi->getRepeatSectionItemId() ? (string) $psi->getRepeatSectionItemId() : null,
             questions: $questions
         );
     }

@@ -34,6 +34,9 @@ class PersonnelConfigProvider implements ProviderInterface
             if ($data instanceof PaginatorInterface) {
                 $items = [];
                 foreach ($data as $item) {
+                    if (!$item instanceof Personnel) {
+                        throw new \LogicException('Expected a Personnel.');
+                    }
                     $items[] = $this->formatPersonnel($item);
                 }
 
@@ -47,6 +50,9 @@ class PersonnelConfigProvider implements ProviderInterface
 
             $items = [];
             foreach ($data as $item) {
+                if (!$item instanceof Personnel) {
+                    throw new \LogicException('Expected a Personnel.');
+                }
                 $items[] = $this->formatPersonnel($item);
             }
 

@@ -92,6 +92,9 @@ class PrevisionnelSemestreProvider implements ProviderInterface
             $nbHrSaisiTP = 0;
             $groupedData = [];
             foreach ($data as $item) {
+                if (!$item instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                    throw new \LogicException('Expected a Previsionnel.');
+                }
                 if ($item->getPersonnel()) {
                     $enseignementId = $item->getEnseignement()->getId();
 

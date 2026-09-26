@@ -11,7 +11,8 @@ use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureTypeDiplome;
 use App\Repository\Structure\StructureUeRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,7 +25,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class CopyTransfertBddApcCommand extends Command
 {
-    protected object $em;
+    protected Connection $em;
 
     protected SymfonyStyle $io;
 
@@ -35,10 +36,10 @@ class CopyTransfertBddApcCommand extends Command
 
     public function __construct(
         protected EntityManagerInterface $entityManager,
-        ManagerRegistry                  $managerRegistry,
+        #[Target('copy')] Connection $copyConnection,
     ) {
         parent::__construct();
-        $this->em = $managerRegistry->getConnection('copy');
+        $this->em = $copyConnection;
     }
 
     protected function configure(): void

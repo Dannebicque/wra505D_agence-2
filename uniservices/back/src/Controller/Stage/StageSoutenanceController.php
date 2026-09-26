@@ -210,12 +210,18 @@ class StageSoutenanceController extends AbstractController
         $tuteur = $stageEtudiant ? $stageEtudiant->getTuteurUniversitaire() : null;
 
         foreach ($allSoutenances as $s) {
+            if (!$s instanceof StageSoutenance) {
+                throw new \LogicException('Expected a StageSoutenance.');
+            }
             if ($soutenanceId && $s->getId() === (int)$soutenanceId) {
                 continue;
             }
 
             $sStart = $s->getDateSoutenance();
-            $sEnd = (clone $sStart)->modify("+" . $s->getDuree() . " minutes");
+            $duration = "+".$s->getDuree().' minutes';
+            $sEnd = $sStart instanceof \DateTimeImmutable
+                ? $sStart->modify($duration)
+                : ($sStart instanceof \DateTime ? (clone $sStart)->modify($duration) : throw new \LogicException('Expected a mutable or immutable date.'));
 
             // Overlap condition
             $overlap = max($start->getTimestamp(), $sStart->getTimestamp()) < min($end->getTimestamp(), $sEnd->getTimestamp());

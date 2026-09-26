@@ -6,6 +6,7 @@ use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSectionInstance;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/** @extends ServiceEntityRepository<QuestionnaireSectionInstance> */
 class QuestionnaireSectionInstanceRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

@@ -41,6 +41,9 @@ class EdtStatsProvider implements ProviderInterface
             $stats_export = [];
 
             foreach ($data as $item) {
+                if (!$item instanceof \App\Entity\Edt\EdtEvent) {
+                    throw new \LogicException('Expected an EdtEvent.');
+                }
                 // ajouter chaque item dans stats_export
                 $stats_export[] = [
                     'id' => $item->getId(),

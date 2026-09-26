@@ -2,7 +2,7 @@ parameters:
     symfony:
         containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
 
-    level: 6
+    level: 7
 
     ignoreErrors:
         - identifier: missingType.iterableValue
