@@ -29,7 +29,7 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
@@ -76,9 +76,9 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
                 $personnel = $item->getPersonnel();
                 $output['previForm'][] = $this->toDto($item);
 
-                $totalCm += (float) $item->getHeures()['CM'];
-                $totalTd += (float) $item->getHeures()['TD'];
-                $totalTp += (float) $item->getHeures()['TP'];
+                $totalCm += $item->getHeures()['CM'];
+                $totalTd += $item->getHeures()['TD'];
+                $totalTp += $item->getHeures()['TP'];
             }
 
             $totalClassique = round($totalCm + $totalTd + $totalTp, 1);

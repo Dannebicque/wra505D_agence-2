@@ -31,7 +31,7 @@ final class StudentInvitationsProvider implements ProviderInterface
         $emails = array_filter([
             !in_array($user->getMailUniv(), [null, '', '0'], true) ? trim(mb_strtolower($user->getMailUniv())) : null,
             !in_array($user->getMailPerso(), [null, '', '0'], true) ? trim(mb_strtolower($user->getMailPerso())) : null
-        ]);
+        ], static fn (?string $value): bool => $value !== null && $value !== '' && $value !== '0');
 
         if ($emails === []) {
             return [];

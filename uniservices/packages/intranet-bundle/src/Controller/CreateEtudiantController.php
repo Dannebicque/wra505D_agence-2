@@ -262,6 +262,7 @@ class CreateEtudiantController extends AbstractController
     {
         $semestres = $this->structureSemestreRepository->findBy(['annee' => $annee]);
 
+        $etudiantScoSemestre = null;
         if (count($semestres) === 2) {
             foreach ($semestres as $semestre) {
                 $etudiantScoSemestre = new EtudiantScolariteSemestre();

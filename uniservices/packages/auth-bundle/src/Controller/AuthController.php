@@ -38,7 +38,7 @@ class AuthController extends AbstractController
             }
         }
 
-        $secure = (bool) $this->parameterBag->get('JWT_COOKIE_SECURE');
+        $secure = $this->parameterBag->get('JWT_COOKIE_SECURE');
 
         // Supprimer les cookies
         $response->headers->setCookie(

@@ -225,7 +225,7 @@ class StageSoutenanceController extends AbstractController
         $tuteur = $stageEtudiant instanceof StageEtudiant ? $stageEtudiant->getTuteurUniversitaire() : null;
 
         foreach ($allSoutenances as $s) {
-            if ($soutenanceId !== null && $soutenanceId !== 0 && $s->getId() === (int)$soutenanceId) {
+            if ($soutenanceId !== null && $soutenanceId !== 0 && $s->getId() === $soutenanceId) {
                 continue;
             }
 

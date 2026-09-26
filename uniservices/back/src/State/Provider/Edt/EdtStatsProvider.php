@@ -53,8 +53,8 @@ class EdtStatsProvider implements ProviderInterface
                     'enseignement' => $item->getEnseignement()?->getLibelle(),
                     'enseignant' => $item->getPersonnel()?->getDisplay(),
                     'date' => $item->getDate()?->format('Y-m-d'),
-                    'debut' => (string) ($item->getDebut()?->format('H:i') ?? ''),
-                    'fin' => (string) ($item->getFin()?->format('H:i') ?? ''),
+                    'debut' => $item->getDebut()?->format('H:i') ?? '',
+                    'fin' => $item->getFin()?->format('H:i') ?? '',
                     'salle' => $item->getSalle(),
                     'groupe' => $item->getGroupe()?->getLibelle(),
                 ];

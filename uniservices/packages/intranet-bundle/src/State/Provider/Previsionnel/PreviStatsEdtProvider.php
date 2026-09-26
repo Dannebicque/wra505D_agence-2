@@ -70,7 +70,7 @@ class PreviStatsEdtProvider implements ProviderInterface
                     $heures = $previ->getHeures();
                     $groupes = $previ->getGroupes();
                     foreach ($typesList as $t) {
-                        $h = (float) ($heures[$t] ?? 0.0);
+                        $h = $heures[$t] ?? 0.0;
                         $g = array_key_exists($t, $groupes) ? $groupes[$t] : 1;
                         if (!isset($previByEnsType[$ensId][$t])) {
                             $previByEnsType[$ensId][$t] = 0.0;
@@ -87,7 +87,7 @@ class PreviStatsEdtProvider implements ProviderInterface
                     $heures = $previ->getHeures();
                     $groupes = $previ->getGroupes();
                     foreach ($typesList as $t) {
-                        $h = (float) ($heures[$t] ?? 0.0);
+                        $h = $heures[$t] ?? 0.0;
                         $g = array_key_exists($t, $groupes) ? $groupes[$t] : 1;
                         if (!isset($previByEnseignantType[$enseignantDisplay][$t])) {
                             $previByEnseignantType[$enseignantDisplay][$t] = 0.0;

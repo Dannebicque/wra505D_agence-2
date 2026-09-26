@@ -21,7 +21,7 @@ class PersonnelCountProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         // On force une GetCollection pour que le CollectionProvider fonctionne
         // mais on désactive la pagination pour tout compter

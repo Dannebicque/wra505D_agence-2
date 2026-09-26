@@ -27,7 +27,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
@@ -150,9 +150,9 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                     $totalHeures = $cmHours + $tdHours + $tpHours;
 
                     $statutValue = $statut->value;
-                    if (in_array($statutValue, ['MCF', 'PU', 'ENSAM', 'PRAG', 'PRCE', 'CDD'])) {
+                    if (in_array($statutValue, ['MCF', 'PU', 'ENSAM', 'PRAG', 'PRCE', 'CDD'], true)) {
                         $totalPermanent += $totalHeures;
-                    } elseif (in_array($statutValue, ['vacataire'])) {
+                    } elseif (in_array($statutValue, ['vacataire'], true)) {
                         $totalVacataire += $totalHeures;
                     } else {
                         $totalAutre += $totalHeures;

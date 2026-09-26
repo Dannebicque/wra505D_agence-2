@@ -39,7 +39,7 @@ final class SaveAnswersProcessor implements ProcessorInterface
             throw new \RuntimeException('Invalid section');
         }
 
-        $questionIds = array_map(fn ($a) => (int) ((array) $a)['questionId'], $data->answers);
+        $questionIds = array_map(fn ($a) => ((array) $a)['questionId'], $data->answers);
         $questions = $this->em->getRepository(QuestionnaireQuestion::class)->findBy(['id' => $questionIds]);
         $qById = [];
         foreach ($questions as $q) {
@@ -65,7 +65,7 @@ final class SaveAnswersProcessor implements ProcessorInterface
 
         foreach ($data->answers as $incoming) {
             $incomingArr = (array) $incoming;
-            $qid = (int) $incomingArr['questionId'];
+            $qid = $incomingArr['questionId'];
             if (!isset($qById[$qid])) {
                 continue;
             }

@@ -19,7 +19,7 @@ final class MessageNotificationSource implements NotificationSourceInterface
     public function getNotifications(Etudiant $student, \DateTimeImmutable $since): iterable
     {
         $notifications = [];
-        $addresses = array_values(array_filter([$student->getMailUniv(), $student->getMailPerso()]));
+        $addresses = array_values(array_filter([$student->getMailUniv(), $student->getMailPerso()], static fn (?string $value): bool => $value !== null && $value !== '' && $value !== '0'));
         foreach ($this->messages->receivedSince($addresses, $since) as $message) {
             $notifications[] = new Notification(
                 'message-'.$message->getId(),

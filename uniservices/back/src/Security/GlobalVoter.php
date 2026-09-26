@@ -27,7 +27,7 @@ class GlobalVoter extends Voter
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, self::SUPPORTED_ATTRIBUTES);
+        return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
     }
 
     /**

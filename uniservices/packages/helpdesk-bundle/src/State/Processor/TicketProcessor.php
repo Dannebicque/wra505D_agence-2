@@ -87,9 +87,10 @@ class TicketProcessor implements ProcessorInterface
 
                 // Validation de l'extension
                 $allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'txt'];
-                $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
+                $guessedExtension = $uploadedFile->guessExtension();
+                $extension = $guessedExtension !== null && $guessedExtension !== '' && $guessedExtension !== '0' ? $guessedExtension : $uploadedFile->getClientOriginalExtension();
 
-                if (!in_array(strtolower($extension), $allowedExtensions)) {
+                if (!in_array(strtolower($extension), $allowedExtensions, true)) {
                     throw new \RuntimeException(
                         sprintf('Le fichier "%s" n\'est pas dans un format autorisé.', $uploadedFile->getClientOriginalName())
                     );

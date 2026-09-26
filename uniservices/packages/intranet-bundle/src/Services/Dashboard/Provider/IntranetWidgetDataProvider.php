@@ -109,6 +109,6 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
             }
         }
 
-        return array_values(array_unique(array_filter($ids)));
+        return array_values(array_unique(array_filter($ids, static fn (?int $id): bool => $id !== null && $id !== 0)));
     }
 }

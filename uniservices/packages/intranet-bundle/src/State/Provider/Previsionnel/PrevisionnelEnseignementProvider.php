@@ -26,19 +26,13 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
 
             if (!(bool) $data) {
                 return [];
-            }
-
-            if (!(bool) $data) {
-                $output['previ'] = [];
-
-                return $output;
             }
 
             $output = [];

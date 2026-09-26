@@ -45,7 +45,7 @@ class EtablissementProcessor implements ProcessorInterface
                 return $entity;
             }
 
-            if (!in_array($file->guessExtension(), ['png', 'jpg', 'jpeg'])) {
+            if (!in_array($file->guessExtension(), ['png', 'jpg', 'jpeg'], true)) {
                 throw new \RuntimeException('Le fichier doit être au format PNG ou JPG.');
             }
 

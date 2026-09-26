@@ -27,7 +27,7 @@ class PrevisionnelSemestreProvider implements ProviderInterface
      *
      * @return array<mixed>|object|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null // @phpstan-ignore method.childReturnType (ProviderInterface<T> ne décrit que des objets ; ce provider renvoie un tableau)
     {
         if ($operation instanceof GetCollection) {
             $data = $this->collectionProvider->provide($operation, $uriVariables, $context);
@@ -142,20 +142,20 @@ class PrevisionnelSemestreProvider implements ProviderInterface
                     }
 
                     $nbHrSaisiCM += $item->getGroupes()['CM'] !== 0
-                        ? ($item->getGroupes()['CM'] % $semestre->getNbGroupesCm() === 0
-                            ? $item->getHeures()['CM'] / $semestre->getNbGroupesCm()
+                        ? ($item->getGroupes()['CM'] % ($semestre->getNbGroupesCm() ?? 0) === 0
+                            ? $item->getHeures()['CM'] / ($semestre->getNbGroupesCm() ?? 0)
                             : $item->getHeures()['CM'] / $item->getGroupes()['CM'])
                         : 0;
 
                     $nbHrSaisiTD += $item->getGroupes()['TD'] !== 0
-                        ? ($item->getGroupes()['TD'] % $semestre->getNbGroupesTd() === 0
-                            ? $item->getHeures()['TD'] / $semestre->getNbGroupesTd()
+                        ? ($item->getGroupes()['TD'] % ($semestre->getNbGroupesTd() ?? 0) === 0
+                            ? $item->getHeures()['TD'] / ($semestre->getNbGroupesTd() ?? 0)
                             : $item->getHeures()['TD'] / $item->getGroupes()['TD'])
                         : 0;
 
                     $nbHrSaisiTP += $item->getGroupes()['TP'] !== 0
-                        ? ($item->getGroupes()['TP'] % $semestre->getNbGroupesTp() === 0
-                            ? $item->getHeures()['TP'] / $semestre->getNbGroupesTp()
+                        ? ($item->getGroupes()['TP'] % ($semestre->getNbGroupesTp() ?? 0) === 0
+                            ? $item->getHeures()['TP'] / ($semestre->getNbGroupesTp() ?? 0)
                             : $item->getHeures()['TP'] / $item->getGroupes()['TP'])
                         : 0;
                 }

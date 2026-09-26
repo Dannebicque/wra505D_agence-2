@@ -59,7 +59,7 @@ final class NotificationFeed
     public static function fromFeed(array $feed): self
     {
         return new self(
-            count(array_filter($feed, fn (array $element) => !(bool) ($element['lue'] ?? false))),
+            count(array_filter($feed, fn (array $element) => !$element['lue'])),
             array_map(fn (array $element) => [
                 'cle' => $element['notification']->key,
                 'type' => $element['notification']->type,

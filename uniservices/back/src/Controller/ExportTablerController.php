@@ -26,7 +26,7 @@ class ExportTablerController extends AbstractController
     #[Route('/export/previ', name: 'app_export_previ', methods: ['POST'])]
     public function exportPrevi(Request $request): Response
     {
-        $content = (string) $request->getContent();
+        $content = $request->getContent();
         $data = json_decode($content, true) ?? [];
         //        dd($data);
 
@@ -42,7 +42,7 @@ class ExportTablerController extends AbstractController
     #[Route('/export/edt-heures', name: 'app_export_edt_heures', methods: ['POST'])]
     public function exportHeures(Request $request): Response
     {
-        $content = (string) $request->getContent();
+        $content = $request->getContent();
         $allData = json_decode($content, true);
         $allData = is_array($allData) ? $allData : [];
 

@@ -161,7 +161,7 @@ class DashboardController extends AbstractController
             // On ajoute les widgets disponibles qui ne sont pas dans le layout par défaut
             foreach ($widgets as $widget) {
                 // Si le widget existe déjà (il était dans le layout par défaut), on ne le rajoute pas
-                if (in_array($widget['code'], array_column($responseWidgets, 'code'))) {
+                if (in_array($widget['code'], array_column($responseWidgets, 'code'), true)) {
                     continue;
                 }
 

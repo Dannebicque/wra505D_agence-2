@@ -133,7 +133,7 @@ class StagePdfController extends AbstractController
 
         $this->em->flush();
 
-        return new Response(json_encode(['success' => true]) ?: '', Response::HTTP_OK, [
+        return new Response((string) json_encode(['success' => true]), Response::HTTP_OK, [
             'Content-Type' => 'application/json'
         ]);
     }
@@ -221,7 +221,7 @@ class StagePdfController extends AbstractController
             '{etudiant.secu_adresse}' => $etu instanceof Etudiant && method_exists($etu, 'getAdresseSecuriteSociale') && (bool) $etu->getAdresseSecuriteSociale() ? $etu->getAdresseSecuriteSociale() : '',
 
             '{entreprise.nom}' => $ent instanceof Entreprise ? $ent->getRaisonSociale() : '',
-            '{entreprise.adresse}' => $stage->getAdresseStage() ?: ($ent instanceof Entreprise && $ent->getAdresse() instanceof Adresse ? $ent->getAdresse()->getAdresse() : ''),
+            '{entreprise.adresse}' => $stage->getAdresseStage() ?? ($ent instanceof Entreprise && $ent->getAdresse() instanceof Adresse ? $ent->getAdresse()->getAdresse() : ''),
             '{entreprise.signataire}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getDisplay() : '',
             '{entreprise.signataire_fonction}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getFonction() : '',
             '{entreprise.telephone}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
