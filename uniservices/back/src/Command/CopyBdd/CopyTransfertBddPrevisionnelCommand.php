@@ -26,11 +26,11 @@ class CopyTransfertBddPrevisionnelCommand extends Command
 {
     protected Connection $em;
 
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Users\Personnel> */
     protected array $tPersonnels = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Structure\StructureAnneeUniversitaire> */
     protected array $tAnneeUniversitaire = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Scolarite\ScolEnseignement> */
     protected array $tEnseignements = [];
 
     protected SymfonyStyle $io;
@@ -48,8 +48,8 @@ class CopyTransfertBddPrevisionnelCommand extends Command
         StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository
     ) {
         parent::__construct();
-        $this->tPersonnels = $personnelRepository->findAllByOldIdArray();
-        $this->tAnneeUniversitaire = $structureAnneeUniversitaireRepository->findAllByOldIdArray();
+        $this->tPersonnels = array_filter($personnelRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Users\Personnel);
+        $this->tAnneeUniversitaire = array_filter($structureAnneeUniversitaireRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureAnneeUniversitaire);
         $this->base_url = $params->get('URL_INTRANET_V3');
         $this->httpClient = HttpClient::create([
             'verify_peer' => false,
@@ -88,7 +88,7 @@ FOREIGN_KEY_CHECKS=1');
         return Command::SUCCESS;
     }
 
-    /** @return array<mixed, mixed> */
+    /** @return array<array-key, array<array-key, mixed>> */
     private function fetchAllPages(string $url): array
     {
         $page = 1;
@@ -103,7 +103,7 @@ FOREIGN_KEY_CHECKS=1');
                 ],
                 'timeout' => 600,
             ]);
-            $data = json_decode($response->getContent(), true) ?? [];
+            $data = LegacyValue::rows(json_decode($response->getContent(), true) ?? []);
             $allData = array_merge($allData, $data);
             $page++;
         } while (count($data) === $limit);
@@ -116,27 +116,27 @@ FOREIGN_KEY_CHECKS=1');
         $previs = $this->fetchAllPages($this->base_url . '/previsionnels/matiere');
 
         foreach ($previs as $previ) {
-            $enseignement = $this->scolEnseignementRepository->findOneBy(['oldId' => $previ['matiere']['id'], 'type' => $previ['matiere']['type']]);
+            $enseignement = $this->scolEnseignementRepository->findOneBy(['oldId' => LegacyValue::row($previ['matiere'])['id'], 'type' => LegacyValue::row($previ['matiere'])['type']]);
 
             $previsionnel = new Previsionnel();
-            if (array_key_exists($previ['personnel'], $this->tPersonnels)) {
-                $previsionnel->setPersonnel($this->tPersonnels[$previ['personnel']]);
+            if (array_key_exists(LegacyValue::key($previ['personnel']), $this->tPersonnels)) {
+                $previsionnel->setPersonnel($this->tPersonnels[LegacyValue::key($previ['personnel'])]);
             }
-            if (array_key_exists($previ['annee'], $this->tAnneeUniversitaire)) {
-                $previsionnel->setAnneeUniversitaire($this->tAnneeUniversitaire[$previ['annee']]);
+            if (array_key_exists(LegacyValue::key($previ['annee']), $this->tAnneeUniversitaire)) {
+                $previsionnel->setAnneeUniversitaire($this->tAnneeUniversitaire[LegacyValue::key($previ['annee'])]);
             }
             $previsionnel->setEnseignement($enseignement);
-            $previsionnel->setReferent($previ['referent']);
+            $previsionnel->setReferent(LegacyValue::bool($previ['referent']));
             $previsionnel->setHeures([
-                'CM' => $previ['nbHCm'],
-                'TD' => $previ['nbHTd'],
-                'TP' => $previ['nbHTp'],
+                'CM' => LegacyValue::float($previ['nbHCm']),
+                'TD' => LegacyValue::float($previ['nbHTd']),
+                'TP' => LegacyValue::float($previ['nbHTp']),
                 'Projet' => 0,
             ]);
             $previsionnel->setGroupes([
-                'CM' => $previ['nbGrCm'],
-                'TD' => $previ['nbGrTd'],
-                'TP' => $previ['nbGrTp'],
+                'CM' => LegacyValue::int($previ['nbGrCm']),
+                'TD' => LegacyValue::int($previ['nbGrTd']),
+                'TP' => LegacyValue::int($previ['nbGrTp']),
                 'Projet' => 0,
             ]);
 
@@ -153,27 +153,27 @@ FOREIGN_KEY_CHECKS=1');
         $previs = $this->fetchAllPages($this->base_url . '/previsionnels/ressource');
 
         foreach ($previs as $previ) {
-            $enseignement = $this->scolEnseignementRepository->findOneBy(['oldId' => $previ['matiere']['id'], 'type' => $previ['matiere']['type']]);
+            $enseignement = $this->scolEnseignementRepository->findOneBy(['oldId' => LegacyValue::row($previ['matiere'])['id'], 'type' => LegacyValue::row($previ['matiere'])['type']]);
 
             $previsionnel = new Previsionnel();
-            if (array_key_exists($previ['personnel'], $this->tPersonnels)) {
-                $previsionnel->setPersonnel($this->tPersonnels[$previ['personnel']]);
+            if (array_key_exists(LegacyValue::key($previ['personnel']), $this->tPersonnels)) {
+                $previsionnel->setPersonnel($this->tPersonnels[LegacyValue::key($previ['personnel'])]);
             }
-            if (array_key_exists($previ['annee'], $this->tAnneeUniversitaire)) {
-                $previsionnel->setAnneeUniversitaire($this->tAnneeUniversitaire[$previ['annee']]);
+            if (array_key_exists(LegacyValue::key($previ['annee']), $this->tAnneeUniversitaire)) {
+                $previsionnel->setAnneeUniversitaire($this->tAnneeUniversitaire[LegacyValue::key($previ['annee'])]);
             }
             $previsionnel->setEnseignement($enseignement);
-            $previsionnel->setReferent($previ['referent']);
+            $previsionnel->setReferent(LegacyValue::bool($previ['referent']));
             $previsionnel->setHeures([
-                'CM' => $previ['nbHCm'],
-                'TD' => $previ['nbHTd'],
-                'TP' => $previ['nbHTp'],
+                'CM' => LegacyValue::float($previ['nbHCm']),
+                'TD' => LegacyValue::float($previ['nbHTd']),
+                'TP' => LegacyValue::float($previ['nbHTp']),
                 'Projet' => 0,
             ]);
             $previsionnel->setGroupes([
-                'CM' => $previ['nbGrCm'],
-                'TD' => $previ['nbGrTd'],
-                'TP' => $previ['nbGrTp'],
+                'CM' => LegacyValue::int($previ['nbGrCm']),
+                'TD' => LegacyValue::int($previ['nbGrTd']),
+                'TP' => LegacyValue::int($previ['nbGrTp']),
                 'Projet' => 0,
             ]);
 
@@ -190,27 +190,27 @@ FOREIGN_KEY_CHECKS=1');
         $previs = $this->fetchAllPages($this->base_url . '/previsionnels/sae');
 
         foreach ($previs as $previ) {
-            $enseignement = $this->scolEnseignementRepository->findOneBy(['oldId' => $previ['matiere']['id'], 'type' => $previ['matiere']['type']]);
+            $enseignement = $this->scolEnseignementRepository->findOneBy(['oldId' => LegacyValue::row($previ['matiere'])['id'], 'type' => LegacyValue::row($previ['matiere'])['type']]);
 
             $previsionnel = new Previsionnel();
-            if (array_key_exists($previ['personnel'], $this->tPersonnels)) {
-                $previsionnel->setPersonnel($this->tPersonnels[$previ['personnel']]);
+            if (array_key_exists(LegacyValue::key($previ['personnel']), $this->tPersonnels)) {
+                $previsionnel->setPersonnel($this->tPersonnels[LegacyValue::key($previ['personnel'])]);
             }
-            if (array_key_exists($previ['annee'], $this->tAnneeUniversitaire)) {
-                $previsionnel->setAnneeUniversitaire($this->tAnneeUniversitaire[$previ['annee']]);
+            if (array_key_exists(LegacyValue::key($previ['annee']), $this->tAnneeUniversitaire)) {
+                $previsionnel->setAnneeUniversitaire($this->tAnneeUniversitaire[LegacyValue::key($previ['annee'])]);
             }
             $previsionnel->setEnseignement($enseignement);
-            $previsionnel->setReferent($previ['referent']);
+            $previsionnel->setReferent(LegacyValue::bool($previ['referent']));
             $previsionnel->setHeures([
-                'CM' => $previ['nbHCm'],
-                'TD' => $previ['nbHTd'],
-                'TP' => $previ['nbHTp'],
+                'CM' => LegacyValue::float($previ['nbHCm']),
+                'TD' => LegacyValue::float($previ['nbHTd']),
+                'TP' => LegacyValue::float($previ['nbHTp']),
                 'Projet' => 0,
             ]);
             $previsionnel->setGroupes([
-                'CM' => $previ['nbGrCm'],
-                'TD' => $previ['nbGrTd'],
-                'TP' => $previ['nbGrTp'],
+                'CM' => LegacyValue::int($previ['nbGrCm']),
+                'TD' => LegacyValue::int($previ['nbGrTd']),
+                'TP' => LegacyValue::int($previ['nbGrTp']),
                 'Projet' => 0,
             ]);
 

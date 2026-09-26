@@ -251,6 +251,18 @@ personnel et superadmin. Écrans du personnel : correction de bug seulement.
 sans semestre faisait échouer toute la statistique, il est désormais compté sous un libellé vide.
 À trancher : la route répond aussi à un étudiant.
 
+### E19 · [back] Deux incohérences de données révélées par le niveau 9 · S
+**Pourquoi** Constaté pendant E15 (niveau 9).
+- `CopyTransfertBddScolariteCommand` passait l'année civile (`getAnnee()`, un entier) à
+  `EtudiantScolarite::setProposition()`, qui attend une `StructureAnnee` : l'import plantait dès
+  qu'une proposition de la V3 correspondait. Il échoue désormais avec un message explicite.
+  Il faut décider quelle année de formation la proposition désigne.
+- Les composantes essentielles et situations professionnelles d'une compétence sont des libellés
+  quand elles viennent de la V3, des tableaux quand elles viennent d'OREOF ; le front les déclare
+  `string[]` mais lit `composante.xxx`.
+**Terminé quand** la règle est décidée (avec le client si besoin), appliquée et testée, et que
+les deux sources produisent la même forme.
+
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,
 `CentreNotifications`, `marquerLues()`, `synchroniserCalendrier()`.
@@ -325,7 +337,12 @@ admet le motif Doctrine voulu : une propriété nullable sur une colonne NOT NUL
 remplie après sa construction (environ 130). Les 14 erreurs restantes, révélées par le vrai
 mapping, sont corrigées ; la collection d'enfants d'une catégorie du helpdesk est désormais
 initialisée. Schéma SQL identique. `phpstan.neon` n'ignore plus rien.
-**Reste** niveaux 9 et 10, puis `phpstan-strict-rules`.
+**Niveau 9, commandes `CopyBdd` faites** 501 erreurs. `LegacyValue` type chaque valeur lue dans
+la V3 en reproduisant la conversion de PHP sans `strict_types`. Ces commandes demandent la base V3 :
+preuve par construction, le diff de jetons contre `develop`, appels `LegacyValue` retirés, ne
+montre que les filtres `instanceof`, les imports et deux branches décrites en E19. Codex a épuisé
+son quota en cours de lot (jusqu'au 25/10/2026) ; OpenCode puis la main ont pris le relais.
+**Reste** niveau 9 hors `CopyBdd` (environ 680), niveau 10, puis `phpstan-strict-rules`.
 ### A1 · Masquer les ligatures d'icônes aux lecteurs d'écran · S
 **Obsolète** corrigé : plus aucune ligature n'est lue (A11Y-1, audit 05). La suite est A10.
 **Pourquoi** A11Y-1. Les libellés de navigation contiennent la ligature de l'icône, non masquée.
