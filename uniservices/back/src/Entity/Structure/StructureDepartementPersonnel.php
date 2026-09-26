@@ -62,10 +62,12 @@ class StructureDepartementPersonnel
     #[Groups(groups: ['personnel:read', 'departement_personnel:read', 'departement:read'])]
     private ?int $id = null;
 
+    /** @var list<string> */
     #[ORM\Column]
     #[Groups(groups: ['departement_personnel:read', 'departement_personnel:write', 'departement:read'])]
     private array $packages = ["intranet"];
 
+    /** @var list<string> */
     #[ORM\Column]
     #[Groups(groups: ['departement_personnel:read', 'departement_personnel:write', 'departement:read'])]
     private array $permissions = [];
@@ -92,11 +94,13 @@ class StructureDepartementPersonnel
         return $this->id;
     }
 
+    /** @return list<string> */
     public function getPackages(): array
     {
         return $this->packages;
     }
 
+    /** @param list<string> $packages */
     public function setPackages(array $packages): static
     {
         $this->packages = $packages;
@@ -104,11 +108,13 @@ class StructureDepartementPersonnel
         return $this;
     }
 
+    /** @return list<string> */
     public function getPermissions(): array
     {
         return $this->permissions;
     }
 
+    /** @param list<string> $permissions */
     public function setPermissions(array $permissions): static
     {
         $this->permissions = $permissions;

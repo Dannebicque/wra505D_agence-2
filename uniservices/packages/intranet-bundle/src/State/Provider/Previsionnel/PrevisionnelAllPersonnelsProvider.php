@@ -11,6 +11,7 @@ use IntranetBundle\Dto\Previsionnel\PrevisionnelAllPersonnelsDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
 
+/** @implements ProviderInterface<PrevisionnelAllPersonnelsDto> */
 class PrevisionnelAllPersonnelsProvider implements ProviderInterface
 {
     public function __construct(

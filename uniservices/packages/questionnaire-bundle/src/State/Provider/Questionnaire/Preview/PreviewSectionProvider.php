@@ -11,6 +11,7 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewSectionDto;
 use QuestionnaireBundle\Enum\QuestTypeRepeatEnum;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
 
+/** @implements ProviderInterface<PreviewSectionDto> */
 final readonly class PreviewSectionProvider implements ProviderInterface
 {
     public function __construct(
@@ -61,6 +62,7 @@ final readonly class PreviewSectionProvider implements ProviderInterface
         );
     }
 
+    /** @return array{int, QuestTypeRepeatEnum|null, string} */
     private function parseKey(string $key): array
     {
         // "tpl:12|matiere:45"

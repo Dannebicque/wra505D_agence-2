@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités Stage
  * Gère les droits d'accès pour : StagePeriode et gestion des stages
  */
+/** @extends Voter<string, mixed> */
 class StageVoter extends Voter
 {
     // Permissions StagePeriode
@@ -90,6 +91,7 @@ class StageVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
+    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

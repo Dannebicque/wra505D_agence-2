@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewIndexDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewSectionIndexDto;
 
+/** @implements ProviderInterface<PreviewIndexDto> */
 final readonly class PreviewIndexProvider implements ProviderInterface
 {
     public function __construct(

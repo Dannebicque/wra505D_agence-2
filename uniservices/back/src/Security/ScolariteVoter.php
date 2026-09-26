@@ -15,6 +15,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités Scolarité (hors évaluations/notes)
  * Gère les droits d'accès pour : Enseignement, EnseignementUe, Bac
  */
+/** @extends Voter<string, mixed> */
 class ScolariteVoter extends Voter
 {
     // Permissions Enseignement
@@ -92,6 +93,7 @@ class ScolariteVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
+    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

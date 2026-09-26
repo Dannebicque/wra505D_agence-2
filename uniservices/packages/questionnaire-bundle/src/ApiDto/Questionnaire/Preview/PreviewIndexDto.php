@@ -39,7 +39,10 @@ use QuestionnaireBundle\State\Provider\Questionnaire\Preview\PreviewIndexProvide
 )]
 final class PreviewIndexDto
 {
-    /** @param list<PreviewSectionIndexDto> $sections */
+    /**
+     * @param array<string, mixed> $opt
+     * @param list<PreviewSectionIndexDto> $sections
+     */
     public function __construct(
         public string $questionnaireUuid,
         public string $title,

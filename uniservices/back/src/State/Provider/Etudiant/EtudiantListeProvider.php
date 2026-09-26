@@ -11,6 +11,7 @@ use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Etudiant\EtudiantScolarite;
 
+/** @implements ProviderInterface<object> */
 class EtudiantListeProvider implements ProviderInterface
 {
     public function __construct(
@@ -60,6 +61,7 @@ class EtudiantListeProvider implements ProviderInterface
         return $this->itemProvider->provide($operation, $uriVariables, $context);
     }
 
+    /** @return array<string, mixed> */
     private function formatScolarite(EtudiantScolarite $scolarite): array
     {
         $etudiant = $scolarite->getEtudiant();

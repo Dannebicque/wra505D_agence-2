@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelSemestreDto;
 
+/** @implements ProviderInterface<PrevisionnelSemestreDto> */
 class PrevisionnelSemestreTestProvider implements ProviderInterface
 {
     public function __construct(

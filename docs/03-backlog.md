@@ -315,7 +315,11 @@ changeaient un comportement qui fonctionnait. Deux étaient faux (le code planta
 portaient sur des cas impossibles en pratique et sont gardés ; quatre sont corrigés pour rendre
 l'ancien résultat (titre de section nul, en-tête CSV nul, contrôle de l'année placé après les
 réponses 400). Les deux copies de l'import CSV sont de nouveau identiques.
-**Reste** niveaux 9 et 10, les exclusions de `phpstan.neon`, puis `phpstan-strict-rules`.
+**Exclusions `missingType.*` retirées** 418 erreurs de types de tableau et de génériques, corrigées
+en PHPDoc seulement : hors commentaires, les jetons PHP des 144 fichiers sont inchangés. Seul code
+modifié : `StructureGroupe::addEnfant()` n'accepte plus `null`. Délégué à Codex ; un lot parti sur
+un périmètre trop large a tourné trois heures, arrêté et repris en trois petits lots.
+**Reste** exclusions `doctrine.*` (185), niveaux 9 et 10, puis `phpstan-strict-rules`.
 ### A1 · Masquer les ligatures d'icônes aux lecteurs d'écran · S
 **Obsolète** corrigé : plus aucune ligature n'est lue (A11Y-1, audit 05). La suite est A10.
 **Pourquoi** A11Y-1. Les libellés de navigation contiennent la ligature de l'icône, non masquée.

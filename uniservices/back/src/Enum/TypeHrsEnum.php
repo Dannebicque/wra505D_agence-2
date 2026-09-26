@@ -10,6 +10,7 @@ enum TypeHrsEnum: string
     case TYPE_HRS_SUIVI = 'Suivi';
     case TYPE_HRS_AUTRE = 'Autre';
 
+    /** @return array<string, self> */
     public static function getChoices(): array
     {
         return [
@@ -21,6 +22,7 @@ enum TypeHrsEnum: string
         ];
     }
 
+    /** @return list<self> */
     public static function getTypes(): array
     {
         return [
@@ -32,6 +34,7 @@ enum TypeHrsEnum: string
         ];
     }
 
+    /** @return list<string> */
     public function getRequiredFields(): array
     {
         return match ($this) {

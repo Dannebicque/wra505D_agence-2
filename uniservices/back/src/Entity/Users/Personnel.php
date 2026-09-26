@@ -118,6 +118,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['personnel:detail'])]
     private ?StructureAnneeUniversitaire $anneeUniversitaire = null;
 
+    /** @var array{adresse: string, complement1: string, complement2: string, ville: string, codePostal: string, pays: string}|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?array $adressePersonnelle = null;
@@ -135,6 +136,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: EtudiantAbsence::class, mappedBy: 'personnel')]
     private Collection $absences;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?array $idEduSign = null;
@@ -161,6 +163,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['personnel:detail'])]
     private ?string $telBureau = null;
 
+    /** @var list<string>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?array $domaines = null;
@@ -205,6 +208,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['personnel:detail'])]
     private ?string $initiales = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?array $contraintesEdt = null;
@@ -257,6 +261,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
         $this->scolEvaluationRattrapages = new ArrayCollection();
     }
 
+    /** @return list<string> */
     public function getMails(): array
     {
         return [$this->mailUniv];
@@ -526,11 +531,13 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getIdEduSign(): ?array
     {
         return $this->idEduSign;
     }
 
+    /** @param array<string, mixed>|null $idEduSign */
     public function setIdEduSign(?array $idEduSign): void
     {
         $this->idEduSign = $idEduSign;
@@ -617,11 +624,13 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /** @return list<string>|null */
     public function getDomaines(): ?array
     {
         return $this->domaines;
     }
 
+    /** @param list<string>|null $domaines */
     public function setDomaines(?array $domaines): static
     {
         $this->domaines = $domaines;
@@ -767,11 +776,13 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getContraintesEdt(): ?array
     {
         return $this->contraintesEdt ?? [];
     }
 
+    /** @param array<string, mixed>|null $contraintesEdt */
     public function setContraintesEdt(?array $contraintesEdt): static
     {
         $this->contraintesEdt = $contraintesEdt;

@@ -17,6 +17,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités APC (Approche Par Compétences)
  * Gère les droits d'accès pour : Référentiel, Compétences, Niveaux, Parcours, AC
  */
+/** @extends Voter<string, mixed> */
 class ApcVoter extends Voter
 {
     // Permissions Référentiel APC
@@ -130,6 +131,7 @@ class ApcVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
+    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

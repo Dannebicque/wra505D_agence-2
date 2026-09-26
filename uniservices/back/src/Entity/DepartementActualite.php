@@ -47,6 +47,7 @@ class DepartementActualite
     #[ORM\JoinColumn(nullable: false)]
     private ?StructureDepartement $departement = null;
 
+    /** @var list<string> */
     #[ORM\Column(type: 'json')]
     #[Groups(['actu:read'])]
     private array $public = [];
@@ -104,13 +105,14 @@ class DepartementActualite
         return $this;
     }
 
+    /** @return list<string> */
     public function getPublic(): array
     {
         return $this->public;
     }
 
     /**
-     * @param array<TypePublicEnum|string> $public
+     * @param list<TypePublicEnum|string> $public
      */
     public function setPublic(array $public): static
     {
@@ -122,6 +124,7 @@ class DepartementActualite
         return $this;
     }
 
+    /** @return list<TypePublicEnum> */
     public function getPublicEnums(): array
     {
         return array_map(

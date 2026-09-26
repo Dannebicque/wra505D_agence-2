@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\Etablissement;
 use App\Repository\EtablissementRepository;
 
+/** @implements ProviderInterface<Etablissement> */
 class EtablissementProvider implements ProviderInterface
 {
     public function __construct(

@@ -25,6 +25,7 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         return str_starts_with($code, 'intranet.');
     }
 
+    /** @return array<mixed> */
     public function getData(string $code, Personnel|Etudiant $user): array
     {
         return match ($code) {
@@ -72,6 +73,7 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         ];
     }
 
+    /** @return array<string, mixed> */
     private function getEmploiDuTemps(Personnel|Etudiant $user): array
     {
         $today = new \DateTimeImmutable('today');

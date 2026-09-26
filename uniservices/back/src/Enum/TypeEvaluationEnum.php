@@ -8,6 +8,7 @@ enum TypeEvaluationEnum: string
     case TYPE_EVALUATION_EXAM = 'Examen';
     case TYPE_EVALUATION_PROJET = 'Projet';
 
+    /** @return array<string, string> */
     public static function getChoices(): array
     {
         return [
@@ -17,6 +18,7 @@ enum TypeEvaluationEnum: string
         ];
     }
 
+    /** @return list<self> */
     public static function getTypes(): array
     {
         return [
@@ -26,6 +28,7 @@ enum TypeEvaluationEnum: string
         ];
     }
 
+    /** @return array<string, string> */
     public static function getSeverity(): array
     {
         return [
@@ -34,6 +37,7 @@ enum TypeEvaluationEnum: string
             self::TYPE_EVALUATION_PROJET->value => 'info',
         ];
     }
+    /** @return array<string, string> */
     public static function getIcon(): array
     {
         return [

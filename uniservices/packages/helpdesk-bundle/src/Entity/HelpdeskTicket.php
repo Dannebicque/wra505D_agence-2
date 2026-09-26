@@ -74,6 +74,7 @@ class HelpdeskTicket
     #[Groups(['ticket:read','ticket:write','ticket:delete'])]
     private StatutTicketEnum $statut = StatutTicketEnum::A_TRAITER;
 
+    /** @return list<StatutTicketEnum> */
     #[Groups(['ticket:read'])]
     public function getTransitionsAutorisees(): array
     {
@@ -84,6 +85,7 @@ class HelpdeskTicket
     #[Groups(['ticket:write','ticket:read','ticket:delete'])]
     private ?string $priority = null;
 
+    /** @var list<string>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['ticket:write','ticket:read','ticket:delete'])]
     private ?array $files_names = null;
@@ -165,11 +167,13 @@ class HelpdeskTicket
 
 
 
+    /** @return list<string>|null */
     public function getFilesNames(): ?array
     {
         return $this->files_names;
     }
 
+    /** @param list<string>|null $files_names */
     public function setFilesNames(?array $files_names): void
     {
         $this->files_names = $files_names;

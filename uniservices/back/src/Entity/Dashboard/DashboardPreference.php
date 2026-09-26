@@ -52,6 +52,7 @@ class DashboardPreference
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
     private int $rowSpan = 1;
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: Types::JSON)]
     private array $config = [];
 
@@ -182,11 +183,13 @@ class DashboardPreference
         return $this;
     }
 
+    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         return $this->config;
     }
 
+    /** @param array<string, mixed> $config */
     public function setConfig(array $config): static
     {
         $this->config = $config;

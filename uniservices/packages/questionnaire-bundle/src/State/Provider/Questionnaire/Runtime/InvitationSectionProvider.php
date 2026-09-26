@@ -11,6 +11,7 @@ use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSectionInstance;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SectionRuntimeDto;
 
+/** @implements ProviderInterface<SectionRuntimeDto> */
 final class InvitationSectionProvider implements ProviderInterface
 {
     public function __construct(

@@ -10,6 +10,7 @@ enum EtatJustificatifEnum: int implements BadgeEnumInterface
     case VALIDE = 1;
     case REFUSE = 2;
 
+    /** @return array<int, string> */
     public function getOptions(): array
     {
         return [

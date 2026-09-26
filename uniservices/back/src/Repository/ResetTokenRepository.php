@@ -10,9 +10,9 @@ use Doctrine\Persistence\ManagerRegistry;
  * @extends ServiceEntityRepository<ResetToken>
  *
  * @method ResetToken|null find($id, $lockMode = null, $lockVersion = null)
- * @method ResetToken|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ResetToken|null findOneBy(array<string, mixed> $criteria, ?array<string, string> $orderBy = null)
  * @method ResetToken[]    findAll()
- * @method ResetToken[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method ResetToken[]    findBy(array<string, mixed> $criteria, ?array<string, string> $orderBy = null, $limit = null, $offset = null)
  */
 class ResetTokenRepository extends ServiceEntityRepository
 {

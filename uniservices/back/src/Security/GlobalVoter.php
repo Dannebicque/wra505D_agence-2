@@ -8,6 +8,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/** @extends Voter<string, mixed> */
 class GlobalVoter extends Voter
 {
     public const IS_SUPER_ADMIN = 'IS_SUPER_ADMIN';
@@ -54,6 +55,7 @@ class GlobalVoter extends Voter
     }
 
     // ========== Helpers ==========
+    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

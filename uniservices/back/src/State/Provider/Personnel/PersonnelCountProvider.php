@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\ProviderInterface;
 
+/** @implements ProviderInterface<object> */
 class PersonnelCountProvider implements ProviderInterface
 {
     public function __construct(

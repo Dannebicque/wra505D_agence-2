@@ -102,6 +102,7 @@ class StructureCalendrier
         return $this;
     }
 
+    /** @return list<\DateTime> */
     public function getJours(): array
     {
         if (null === $this->dateLundi) {

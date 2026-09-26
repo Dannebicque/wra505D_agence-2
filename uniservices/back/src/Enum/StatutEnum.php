@@ -26,6 +26,7 @@ enum StatutEnum: string implements BadgeEnumInterface
     case CONTRAC = 'CONTRAC';
     case AUTRE = 'Autre';
 
+    /** @return list<string> */
     public static function getStatuts(): array
     {
         return [

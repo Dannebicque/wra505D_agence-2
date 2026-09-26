@@ -16,6 +16,7 @@ use App\Repository\Structure\StructureDiplomeRepository;
 use App\Repository\Structure\StructurePnRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
+/** @implements ProcessorInterface<mixed, mixed> */
 class AnneeUnivInitProcessor implements ProcessorInterface
 {
     public function __construct(

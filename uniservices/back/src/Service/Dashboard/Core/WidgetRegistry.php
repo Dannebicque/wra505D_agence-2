@@ -18,6 +18,7 @@ class WidgetRegistry
      */
     private array $bundles = [];
 
+    /** @param iterable<WidgetProviderInterface> $providers */
     public function __construct(
         #[AutowireIterator('app.dashboard.widget_provider')]
         iterable $providers,

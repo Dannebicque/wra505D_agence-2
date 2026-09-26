@@ -12,6 +12,7 @@ enum EtatEvaluationEnum: string
     case ETAT_PUBLIEE = 'publiee';
 
 
+    /** @return array<string, string> */
     public static function getChoices(): array
     {
         return [
@@ -24,6 +25,7 @@ enum EtatEvaluationEnum: string
         ];
     }
 
+    /** @return list<self> */
     public static function getTypes(): array
     {
         return [
@@ -36,6 +38,7 @@ enum EtatEvaluationEnum: string
         ];
     }
 
+    /** @return array<string, string> */
     public static function getLibelle(): array
     {
         return [
@@ -48,6 +51,7 @@ enum EtatEvaluationEnum: string
         ];
     }
 
+    /** @return array<string, string> */
     public static function getSeverity(): array
     {
         return [
@@ -59,6 +63,7 @@ enum EtatEvaluationEnum: string
             self::ETAT_PUBLIEE->value => 'success',
         ];
     }
+    /** @return array<string, string> */
     public static function getIcon(): array
     {
         return [
@@ -72,6 +77,7 @@ enum EtatEvaluationEnum: string
     }
 
     /*Retourne les statuts accessibles depuis le statut actuel*/
+    /** @return list<self> */
     public static function getTransitionsAutorisees(self $etat): array
     {
         return match ($etat) {

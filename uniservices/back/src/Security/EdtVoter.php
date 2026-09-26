@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités EDT (Emploi du Temps)
  * Gère les droits d'accès pour : EdtEvent, Contraintes, Créneaux interdits, Progression
  */
+/** @extends Voter<string, mixed> */
 class EdtVoter extends Voter
 {
     // Permissions EdtEvent
@@ -113,6 +114,7 @@ class EdtVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
+    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

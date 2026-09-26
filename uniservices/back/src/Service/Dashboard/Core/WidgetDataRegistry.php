@@ -18,6 +18,7 @@ class WidgetDataRegistry
     ) {
     }
 
+    /** @return array<string, mixed>|null */
     public function get(string $code, Personnel|Etudiant $user): ?array
     {
         foreach ($this->providers as $provider) {

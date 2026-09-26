@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\Users\Etudiant;
 
+/** @implements ProviderInterface<StudentInvitationDto> */
 final class StudentInvitationsProvider implements ProviderInterface
 {
     public function __construct(
@@ -18,6 +19,7 @@ final class StudentInvitationsProvider implements ProviderInterface
     ) {
     }
 
+    /** @return list<StudentInvitationDto> */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $user = $this->security->getUser();

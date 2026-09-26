@@ -285,11 +285,13 @@ class StructureAnnee
         $this->id = $id;
     }
 
+    /** @param Collection<int, StructureSemestre> $semestres */
     public function setSemestres(Collection $semestres): void
     {
         $this->semestres = $semestres;
     }
 
+    /** @param Collection<int, EtudiantScolarite> $etudiantScolaritesPropositions */
     public function setEtudiantScolaritesPropositions(Collection $etudiantScolaritesPropositions): void
     {
         $this->etudiantScolaritesPropositions = $etudiantScolaritesPropositions;

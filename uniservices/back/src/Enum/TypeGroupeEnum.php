@@ -10,6 +10,7 @@ enum TypeGroupeEnum: string
     case TYPE_GROUPE_SPECIAL = 'Spécial';
     case TYPE_GROUPE_AUTRE = 'Autre';
 
+    /** @return array<string, self> */
     public static function getChoices(): array
     {
         return [
@@ -21,6 +22,7 @@ enum TypeGroupeEnum: string
         ];
     }
 
+    /** @return list<self> */
     public static function getTypes(): array
     {
         return [

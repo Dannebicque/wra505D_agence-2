@@ -10,6 +10,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\Scolarite\ScolEnseignement;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 
+/** @implements ProviderInterface<PrevisionnelEnseignementDto> */
 class PrevisionnelEnseignementProvider implements ProviderInterface
 {
     public function __construct(

@@ -20,6 +20,7 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
         return str_starts_with($code, 'questionnaire.');
     }
 
+    /** @return array<string, mixed> */
     public function getData(string $code, Personnel|Etudiant $user): array
     {
         return match ($code) {

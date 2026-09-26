@@ -10,6 +10,7 @@ use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Dto\Previsionnel\PreviStatsEdtDto;
 use App\Repository\Edt\EdtEventRepository;
 
+/** @implements ProviderInterface<object> */
 class PreviStatsEdtProvider implements ProviderInterface
 {
     public function __construct(

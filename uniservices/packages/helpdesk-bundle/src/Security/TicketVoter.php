@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités diverses
  * Gère les droits d'accès pour : TICKET
  */
+/** @extends Voter<string, HelpdeskTicket> */
 class TicketVoter extends Voter
 {
     // Permissions TICKET

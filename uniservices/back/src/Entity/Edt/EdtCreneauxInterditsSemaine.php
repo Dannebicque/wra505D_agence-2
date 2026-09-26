@@ -36,6 +36,7 @@ class EdtCreneauxInterditsSemaine
     #[ORM\ManyToOne(inversedBy: 'creneauxInterditsSemaines')]
     private ?StructureAnneeUniversitaire $anneeUniversitaire = null;
 
+    /** @var list<array<string, mixed>> */
     #[ORM\Column]
     private array $restrictedSlots = [];
 
@@ -68,11 +69,13 @@ class EdtCreneauxInterditsSemaine
         return $this;
     }
 
+    /** @return list<array<string, mixed>> */
     public function getRestrictedSlots(): array
     {
         return $this->restrictedSlots;
     }
 
+    /** @param list<array<string, mixed>> $restrictedSlots */
     public function setRestrictedSlots(array $restrictedSlots): static
     {
         $this->restrictedSlots = $restrictedSlots;

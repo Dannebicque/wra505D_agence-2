@@ -16,6 +16,7 @@ final class DuplicateQuestionnaireService
     ) {
     }
 
+    /** @return array{questionnaire: Questionnaire, sectionsCount: int, questionsCount: int} */
     public function duplicate(Questionnaire $source, ?string $newTitle = null): array
     {
         $this->em->beginTransaction();

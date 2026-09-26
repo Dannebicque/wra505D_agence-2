@@ -64,6 +64,7 @@ class Etablissement
     #[Groups(['etablissement:read', 'etablissement:write'])]
     private ?string $logo_name = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['etablissement:read', 'etablissement:write'])]
     private ?array $adresse = null;
@@ -107,11 +108,13 @@ class Etablissement
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getAdresse(): ?array
     {
         return $this->adresse;
     }
 
+    /** @param array<string, mixed>|null $adresse */
     public function setAdresse(?array $adresse): static
     {
         $this->adresse = $adresse;

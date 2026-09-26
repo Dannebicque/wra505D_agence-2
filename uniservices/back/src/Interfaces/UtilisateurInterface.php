@@ -16,6 +16,7 @@ interface UtilisateurInterface
 {
     public function getId(): ?int;
 
+    /** @return list<string> */
     public function getMails(): array;
 
     public function getTypeUser(): ?string;

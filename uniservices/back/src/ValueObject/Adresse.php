@@ -65,6 +65,7 @@ class Adresse
     }
 
 
+    /** @return array{adresse: string, complement1: string, complement2: string, ville: string, codePostal: string, pays: string} */
     public function toArray(): array
     {
         return [
@@ -77,6 +78,7 @@ class Adresse
         ];
     }
 
+    /** @param array{adresse: string, complement1: string, complement2: string, ville: string, codePostal: string, pays: string} $data */
     public static function fromArray(array $data): self
     {
         return new self(

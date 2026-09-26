@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\InvitationIndexDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SectionIndexDto;
 
+/** @implements ProviderInterface<InvitationIndexDto> */
 final class InvitationIndexProvider implements ProviderInterface
 {
     public function __construct(private EntityManagerInterface $em)

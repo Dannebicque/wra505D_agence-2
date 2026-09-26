@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SaveAnswersInput;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SaveAnswersOutput;
 
+/** @implements ProcessorInterface<SaveAnswersInput, SaveAnswersOutput> */
 final class SaveAnswersProcessor implements ProcessorInterface
 {
     public function __construct(private EntityManagerInterface $em)

@@ -11,6 +11,7 @@ use App\Entity\Scolarite\ScolEnseignement;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelSemestreDto;
 use App\Repository\Structure\StructureSemestreRepository;
 
+/** @implements ProviderInterface<PrevisionnelSemestreDto> */
 class PrevisionnelSemestreProvider implements ProviderInterface
 {
     public function __construct(

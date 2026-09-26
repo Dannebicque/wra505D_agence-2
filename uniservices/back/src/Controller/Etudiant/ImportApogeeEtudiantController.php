@@ -24,6 +24,7 @@ class ImportApogeeEtudiantController extends AbstractController
         return new Response('ok');
     }
 
+    /** @return list<array<string, mixed>> */
     public function getEtudiantsFromApogee(): array
     {
         return [];

@@ -6,8 +6,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class JsonRequest
 {
+    /** @var array<string, mixed> */
     protected static array $data = [];
 
+    /** @return Response|array<string, mixed> */
     public static function getValuesFromString(
         ?string $content = null
     ): Response|array {

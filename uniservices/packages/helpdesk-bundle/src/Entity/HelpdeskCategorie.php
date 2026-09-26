@@ -43,6 +43,7 @@ class HelpdeskCategorie
     #[Groups(['category:read','service:read','service:form_ticket'])]
     private ?self $parent = null;
 
+    /** @var Collection<int, self>|null */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
     #[Groups(['category:read','service:read','service:form_ticket'])]
     private ?Collection $enfants;
@@ -90,11 +91,13 @@ class HelpdeskCategorie
         $this->parent = $parent;
     }
 
+    /** @return Collection<int, self>|null */
     public function getEnfants(): ?Collection
     {
         return $this->enfants;
     }
 
+    /** @param Collection<int, self>|null $enfants */
     public function setEnfants(?Collection $enfants): void
     {
         $this->enfants = $enfants;

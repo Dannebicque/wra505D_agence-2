@@ -159,6 +159,7 @@ class EtudiantAbsenceJustificatif
         return $this;
     }
 
+    /** @return array<int, string> */
     #[Groups(['justificatif:administration'])]
     public function getEtatOptions(): array
     {

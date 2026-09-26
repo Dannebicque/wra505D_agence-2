@@ -80,6 +80,7 @@ class EtudiantNote
     #[Groups(['note:write', 'note:detail'])]
     private ?string $presenceStatut = self::STATUT_PRESENT;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(nullable: true)]
     private ?array $historique = null;
 
@@ -181,11 +182,13 @@ class EtudiantNote
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getHistorique(): ?array
     {
         return $this->historique;
     }
 
+    /** @param array<string, mixed>|null $historique */
     public function setHistorique(?array $historique): static
     {
         $this->historique = $historique;

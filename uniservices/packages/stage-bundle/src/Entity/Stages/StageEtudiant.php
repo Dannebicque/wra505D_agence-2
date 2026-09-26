@@ -167,6 +167,7 @@ class StageEtudiant
     #[Groups(['stage_etudiant:read', 'stage_etudiant:write'])]
     private ?\DateTimeInterface $dateImprime = null;
 
+    /** @var array{adresse: string, complement1: string, complement2: string, ville: string, codePostal: string, pays: string}|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['stage_etudiant:read', 'stage_etudiant:write'])]
     private ?array $adresseStage = null;
@@ -187,6 +188,7 @@ class StageEtudiant
     #[Groups(['stage_etudiant:read', 'stage_etudiant:write'])]
     private ?string $evaluationCommentaire = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['stage_etudiant:read', 'stage_etudiant:write'])]
     private ?array $suiviRencontres = [];
@@ -595,11 +597,13 @@ class StageEtudiant
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getSuiviRencontres(): ?array
     {
         return $this->suiviRencontres;
     }
 
+    /** @param array<string, mixed>|null $suiviRencontres */
     public function setSuiviRencontres(?array $suiviRencontres): self
     {
         $this->suiviRencontres = $suiviRencontres;

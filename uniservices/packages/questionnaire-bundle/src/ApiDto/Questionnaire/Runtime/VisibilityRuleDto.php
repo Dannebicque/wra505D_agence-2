@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\ApiDto\Questionnaire\Runtime;
 
 final class VisibilityRuleDto
 {
+    /** @param list<array<string, mixed>>|null $conditions */
     public function __construct(
         public int|string|null $dependsOnQuestionId = null,
         public ?string         $operator = null,

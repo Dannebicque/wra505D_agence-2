@@ -5,10 +5,8 @@ parameters:
     level: 8
 
     ignoreErrors:
-        - identifier: missingType.iterableValue
         - identifier: doctrine.columnType
         - identifier: doctrine.associationType
-        - identifier: missingType.generics
 
     paths:
         - src

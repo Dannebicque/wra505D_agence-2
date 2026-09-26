@@ -13,6 +13,7 @@ enum StatutTicketEnum: string
     case ACCEPTE = 'Accepté';
     case CLOTURE = 'Clôturé';
 
+    /** @return list<self> */
     public function getStatuts(): array
     {
         return [
@@ -26,6 +27,7 @@ enum StatutTicketEnum: string
         ];
     }
     /*Retourne les statuts accessibles depuis le statut actuel*/
+    /** @return list<self> */
     public function getTransitionsAutorisees(): array
     {
         return match($this) {

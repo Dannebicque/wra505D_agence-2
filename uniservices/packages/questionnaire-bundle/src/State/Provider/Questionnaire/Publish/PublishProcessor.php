@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Publish\PublishInputDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Publish\PublishOutputDto;
 
+/** @implements ProcessorInterface<PublishInputDto, PublishOutputDto> */
 final class PublishProcessor implements ProcessorInterface
 {
     public function __construct(

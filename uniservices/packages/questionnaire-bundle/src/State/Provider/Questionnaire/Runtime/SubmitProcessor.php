@@ -8,6 +8,7 @@ use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SubmitOutput;
 
+/** @implements ProcessorInterface<mixed, SubmitOutput> */
 final class SubmitProcessor implements ProcessorInterface
 {
     public function __construct(private EntityManagerInterface $em)

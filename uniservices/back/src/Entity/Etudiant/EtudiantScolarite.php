@@ -122,6 +122,7 @@ class EtudiantScolarite
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?StructureAnnee $proposition = null;
 
+    /** @var list<string> */
     #[ORM\Column]
     #[Groups(groups: ['scolarite:detail', 'scolarite:user'])]
     private array $packages = ["intranet"];
@@ -313,11 +314,13 @@ class EtudiantScolarite
         return $annees;
     }
 
+    /** @return list<string> */
     public function getPackages(): array
     {
         return $this->packages;
     }
 
+    /** @param list<string> $packages */
     public function setPackages(array $packages): void
     {
         $this->packages = $packages;

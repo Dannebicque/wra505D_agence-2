@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use IntranetBundle\Entity\Etudiant\EtudiantAbsenceJustificatif;
 use IntranetBundle\Service\Absence\JustificatifReconciliationService;
 
+/** @implements ProcessorInterface<mixed, mixed> */
 class EtudiantAbsenceJustificatifCreateProcessor implements ProcessorInterface
 {
     public function __construct(
