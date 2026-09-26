@@ -128,6 +128,75 @@ final class LegacyValue
     }
 
     /**
+     * Équivalent de (float) $value, qui convertit aussi null en 0.
+     */
+    public static function castFloat(mixed $value): float
+    {
+        if (null === $value || is_scalar($value)) {
+            return (float) $value;
+        }
+
+        throw self::unexpected('float', $value);
+    }
+
+    /**
+     * Sous-tableau d'une ligne JSON de la V3 (bilan, matière…). Un autre contenu signale un
+     * export corrompu.
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function row(mixed $value): array
+    {
+        if (!is_array($value)) {
+            throw self::unexpected('array', $value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Liste JSON de la V3 décodée en tableaux associatifs, parcourue ligne par ligne. Un autre
+     * contenu signale un export corrompu : la copie ne produirait que des avertissements et des
+     * lignes vides, elle s'arrête.
+     *
+     * @return array<array-key, array<array-key, mixed>>
+     */
+    public static function rows(mixed $value): array
+    {
+        if (!is_array($value)) {
+            throw self::unexpected('array', $value);
+        }
+        $rows = [];
+        foreach ($value as $key => $row) {
+            if (!is_array($row)) {
+                throw self::unexpected('array', $row);
+            }
+            $rows[$key] = $row;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Liste de chaînes décodée d'un JSON de la V3 (rôles, permissions). Un autre contenu signale
+     * une donnée corrompue.
+     *
+     * @return list<string>
+     */
+    public static function strings(mixed $value): array
+    {
+        if (!is_array($value) || !array_is_list($value)) {
+            throw self::unexpected('list<string>', $value);
+        }
+        $strings = [];
+        foreach ($value as $item) {
+            $strings[] = self::string($item);
+        }
+
+        return $strings;
+    }
+
+    /**
      * Valeur employée comme clé de tableau, convertie comme PHP le fait : null en chaîne vide,
      * booléen et flottant en entier.
      */

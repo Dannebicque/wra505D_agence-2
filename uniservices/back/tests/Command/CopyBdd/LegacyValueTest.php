@@ -80,6 +80,49 @@ final class LegacyValueTest extends TestCase
     }
 
     /**
+     * (float) accepte null et les scalaires.
+     */
+    public function testCastsToFloat(): void
+    {
+        self::assertSame(0.0, LegacyValue::castFloat(null));
+        self::assertSame(2.5, LegacyValue::castFloat('2.5'));
+    }
+
+    /**
+     * Une liste JSON n'est acceptée que si chaque ligne est un tableau.
+     */
+    public function testAcceptsOnlyListsOfRows(): void
+    {
+        $rows = [['libelle' => 'A'], ['libelle' => 'B']];
+        self::assertSame($rows, LegacyValue::rows($rows));
+
+        $this->expectException(\UnexpectedValueException::class);
+        LegacyValue::rows([['libelle' => 'A'], 'corrompu']);
+    }
+
+    /**
+     * Un sous-tableau reste un tableau ; une chaîne à sa place signale un export corrompu.
+     */
+    public function testReadsOneRow(): void
+    {
+        self::assertSame(['moyenne' => 12], LegacyValue::row(['moyenne' => 12]));
+
+        $this->expectException(\UnexpectedValueException::class);
+        LegacyValue::row('bilan');
+    }
+
+    /**
+     * Les rôles et permissions décodés restent une liste de chaînes.
+     */
+    public function testReadsListsOfStrings(): void
+    {
+        self::assertSame(['ROLE_ETUDIANT'], LegacyValue::strings(['ROLE_ETUDIANT']));
+
+        $this->expectException(\UnexpectedValueException::class);
+        LegacyValue::strings(['role' => 'ROLE_ETUDIANT']);
+    }
+
+    /**
      * Les clés de tableau suivent les conversions de PHP.
      */
     public function testConvertsArrayKeysLikePhp(): void
