@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use App\Utils\LooseValue;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelAllPersonnelsDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelPersonnelDto;
@@ -225,7 +226,7 @@ class Previsionnel
             return (float) $value;
         }, $heures);
 
-        $this->heures = $resolver->resolve($heures);
+        $this->heures = array_map(LooseValue::float(...), LooseValue::assoc($resolver->resolve($heures)));
 
         return $this;
     }
@@ -264,7 +265,7 @@ class Previsionnel
 
         $resolver = new OptionsResolver();
         $this->configureOptionsGroupes($resolver);
-        $this->groupes = $resolver->resolve($groupes);
+        $this->groupes = array_map(LooseValue::int(...), LooseValue::assoc($resolver->resolve($groupes)));
 
         return $this;
     }
