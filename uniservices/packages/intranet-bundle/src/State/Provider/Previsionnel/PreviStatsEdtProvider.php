@@ -37,8 +37,8 @@ class PreviStatsEdtProvider implements ProviderInterface
                 if (!$previ instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
                     throw new \LogicException('Expected a Previsionnel.');
                 }
-                $heures = (array) $previ->getHeures();
-                $groupes = (array) $previ->getGroupes();
+                $heures = $previ->getHeures();
+                $groupes = $previ->getGroupes();
                 $keys = array_unique(array_merge(array_keys($heures), array_keys($groupes)));
                 foreach ($keys as $k) {
                     if ($k !== '') {
@@ -67,11 +67,11 @@ class PreviStatsEdtProvider implements ProviderInterface
                     if (!isset($previByEnsType[$ensId])) {
                         $previByEnsType[$ensId] = [];
                     }
-                    $heures = (array) $previ->getHeures();
-                    $groupes = (array) $previ->getGroupes();
+                    $heures = $previ->getHeures();
+                    $groupes = $previ->getGroupes();
                     foreach ($typesList as $t) {
                         $h = (float) ($heures[$t] ?? 0.0);
-                        $g = array_key_exists($t, $groupes) ? (int) $groupes[$t] : 1;
+                        $g = array_key_exists($t, $groupes) ? $groupes[$t] : 1;
                         if (!isset($previByEnsType[$ensId][$t])) {
                             $previByEnsType[$ensId][$t] = 0.0;
                         }
@@ -84,11 +84,11 @@ class PreviStatsEdtProvider implements ProviderInterface
                     if (!isset($previByEnseignantType[$enseignantDisplay])) {
                         $previByEnseignantType[$enseignantDisplay] = [];
                     }
-                    $heures = (array) $previ->getHeures();
-                    $groupes = (array) $previ->getGroupes();
+                    $heures = $previ->getHeures();
+                    $groupes = $previ->getGroupes();
                     foreach ($typesList as $t) {
                         $h = (float) ($heures[$t] ?? 0.0);
-                        $g = array_key_exists($t, $groupes) ? (int) $groupes[$t] : 1;
+                        $g = array_key_exists($t, $groupes) ? $groupes[$t] : 1;
                         if (!isset($previByEnseignantType[$enseignantDisplay][$t])) {
                             $previByEnseignantType[$enseignantDisplay][$t] = 0.0;
                         }
@@ -169,13 +169,13 @@ class PreviStatsEdtProvider implements ProviderInterface
                 $totalPrevi = 0.0;
                 $totalEdt = 0.0;
                 foreach ($typesList as $tt) {
-                    $totalPrevi += (float) ($previByEnsType[$ensId][$tt] ?? 0.0);
-                    $totalEdt += (float) ($edtByEnsType[$ensId][$tt] ?? 0.0);
+                    $totalPrevi += $previByEnsType[$ensId][$tt] ?? 0.0;
+                    $totalEdt += $edtByEnsType[$ensId][$tt] ?? 0.0;
                 }
 
                 foreach ($typesList as $t) {
-                    $previ = (float) ($previByEnsType[$ensId][$t] ?? 0.0);
-                    $edt = (float) ($edtByEnsType[$ensId][$t] ?? 0.0);
+                    $previ = $previByEnsType[$ensId][$t] ?? 0.0;
+                    $edt = $edtByEnsType[$ensId][$t] ?? 0.0;
                     if ($previ > 0 || $edt > 0) {
                         // Utiliser la différence des totaux (edt total - prévi total) pour l'enseignement
                         $heures_diff = $totalEdt - $totalPrevi;
@@ -214,20 +214,20 @@ class PreviStatsEdtProvider implements ProviderInterface
                 $totalEdtTeacher = 0.0;
                 if (isset($previByEnseignantType[$enseignantDisplay])) {
                     foreach ($previByEnseignantType[$enseignantDisplay] as $val) {
-                        $totalPreviTeacher += (float) $val;
+                        $totalPreviTeacher += $val;
                     }
                 }
                 if (isset($edtByEnseignantType[$enseignantDisplay])) {
                     foreach ($edtByEnseignantType[$enseignantDisplay] as $val) {
-                        $totalEdtTeacher += (float) $val;
+                        $totalEdtTeacher += $val;
                     }
                 }
                 $totalDiffTeacher = $totalEdtTeacher - $totalPreviTeacher;
                 // --- fin changement ---
 
                 foreach ($typesList as $t) {
-                    $previ = (float) ($previByEnseignantType[$enseignantDisplay][$t] ?? 0.0);
-                    $edt = (float) ($edtByEnseignantType[$enseignantDisplay][$t] ?? 0.0);
+                    $previ = $previByEnseignantType[$enseignantDisplay][$t] ?? 0.0;
+                    $edt = $edtByEnseignantType[$enseignantDisplay][$t] ?? 0.0;
                     if ($previ > 0 || $edt > 0) {
                         $rowsTeachers[] = [
                             'enseignant' => $enseignantDisplay,
@@ -252,20 +252,20 @@ class PreviStatsEdtProvider implements ProviderInterface
                 $totalEdtTeacher = 0.0;
                 if (isset($previByEnseignantType[$teacher])) {
                     foreach ($previByEnseignantType[$teacher] as $val) {
-                        $totalPreviTeacher += (float) $val;
+                        $totalPreviTeacher += $val;
                     }
                 }
                 if (isset($edtByEnseignantType[$teacher])) {
                     foreach ($edtByEnseignantType[$teacher] as $val) {
-                        $totalEdtTeacher += (float) $val;
+                        $totalEdtTeacher += $val;
                     }
                 }
                 $totalDiffTeacher = $totalEdtTeacher - $totalPreviTeacher;
                 // --- fin changement ---
 
                 foreach ($typesList as $t) {
-                    $previ = (float) ($previByEnseignantType[$teacher][$t] ?? 0.0);
-                    $edt = (float) ($edtByEnseignantType[$teacher][$t] ?? 0.0);
+                    $previ = $previByEnseignantType[$teacher][$t] ?? 0.0;
+                    $edt = $edtByEnseignantType[$teacher][$t] ?? 0.0;
                     if ($previ > 0 || $edt > 0) {
                         $rowsTeachers[] = [
                             'enseignant' => $teacher,
@@ -286,14 +286,14 @@ class PreviStatsEdtProvider implements ProviderInterface
             // Somme des heures prévues (toutes matières, tous types)
             foreach ($previByEnsType as $ensIdTmp => $types) {
                 foreach ($types as $t => $val) {
-                    $total_previ += (float) $val;
+                    $total_previ += $val;
                 }
             }
 
             // Somme des heures réalisées (EDT) (toutes matières, tous types)
             foreach ($edtByEnsType as $ensIdTmp => $types) {
                 foreach ($types as $t => $val) {
-                    $total_edt += (float) $val;
+                    $total_edt += $val;
                 }
             }
 

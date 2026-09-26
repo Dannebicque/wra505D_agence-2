@@ -118,10 +118,10 @@ class EdtStatsProvider implements ProviderInterface
                 'TP' => 0,
             ];
             foreach ($byType as $type => $heures) {
-                $heuresParType[$type] = (float) $heures;
+                $heuresParType[$type] = $heures;
             }
 
-            $total = (float) $totals['totalHeures'];
+            $total = $totals['totalHeures'];
 
             // Construire la répartition comme tableau [{type, heures, pourcentage}, ...]
             $repartitionTypes = [];
@@ -132,7 +132,7 @@ class EdtStatsProvider implements ProviderInterface
 
             $heuresParSemestre = [];
             foreach ($bySemestre as $semestre => $heures) {
-                $heuresParSemestre[$semestre] = (float) $heures;
+                $heuresParSemestre[$semestre] = $heures;
             }
 
             $repartitionSemestres = [];
@@ -151,7 +151,7 @@ class EdtStatsProvider implements ProviderInterface
 
             $heuresParEnseignants = [];
             foreach ($byEnseignant as $enseignantId => $heures) {
-                $heuresParEnseignants[$enseignantId] = (float) $heures;
+                $heuresParEnseignants[$enseignantId] = $heures;
             }
 
             $dto->setTotalHeures($total);
