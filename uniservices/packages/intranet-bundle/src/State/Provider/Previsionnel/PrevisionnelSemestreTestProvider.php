@@ -72,17 +72,29 @@ class PrevisionnelSemestreTestProvider implements ProviderInterface
         }
     }
 
-    public function formToDto(mixed $item): PrevisionnelSemestreDto
+    public function formToDto(\IntranetBundle\Entity\Previsionnel\Previsionnel $item): PrevisionnelSemestreDto
     {
         $prevSem = new PrevisionnelSemestreDto();
-        $prevSem->setId($item->getId());
-        $prevSem->setIdEnseignement($item->getEnseignement()->getId());
-        $prevSem->setCodeEnseignement($item->getEnseignement()->getCodeEnseignement());
-        $prevSem->setLibelleEnseignement($item->getEnseignement()->getDisplay());
-        $prevSem->setTypeEnseignement($item->getEnseignement()->getType());
-        $prevSem->setIdPersonnel($item->getPersonnel()->getId());
-        $prevSem->setPersonnels([$item->getPersonnel()]);
-        $prevSem->setIntervenant($item->getPersonnel()->getDisplay());
+        $id = $item->getId();
+        $enseignement = $item->getEnseignement();
+        $personnel = $item->getPersonnel();
+        if (null === $id || null === $enseignement || null === $personnel) {
+            throw new \LogicException('Previsionnel without id, enseignement or personnel.');
+        }
+        $enseignementId = $enseignement->getId();
+        $codeEnseignement = $enseignement->getCodeEnseignement();
+        $personnelId = $personnel->getId();
+        if (null === $enseignementId || null === $codeEnseignement || null === $personnelId) {
+            throw new \LogicException('Enseignement without id or code, or personnel without id.');
+        }
+        $prevSem->setId($id);
+        $prevSem->setIdEnseignement($enseignementId);
+        $prevSem->setCodeEnseignement($codeEnseignement);
+        $prevSem->setLibelleEnseignement($enseignement->getDisplay());
+        $prevSem->setTypeEnseignement($enseignement->getType());
+        $prevSem->setIdPersonnel($personnelId);
+        $prevSem->setPersonnels([$personnel]);
+        $prevSem->setIntervenant($personnel->getDisplay());
         $prevSem->setHeures(
             [
                 'CM' => [

@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use IntranetBundle\Dto\Previsionnel\PreviStatsEdtDto;
 use App\Repository\Edt\EdtEventRepository;
+use App\Utils\LooseValue;
 
 /** @implements ProviderInterface<object> */
 class PreviStatsEdtProvider implements ProviderInterface
@@ -97,10 +98,10 @@ class PreviStatsEdtProvider implements ProviderInterface
             }
 
             // EDT: récupérer les événements correspondants via le repository (filtres: semestre et année universitaire)
-            $filters = $context['filters'] ?? [];
-            $semestreId = !empty($filters['semestre']) ? (int) $filters['semestre'] : null;
-            $anneeId = !empty($filters['annee']) ? (int) $filters['annee'] : null;
-            $anneeUniversitaireId = !empty($filters['anneeUniversitaire']) ? (int) $filters['anneeUniversitaire'] : null;
+            $filters = LooseValue::row($context['filters'] ?? []);
+            $semestreId = !empty($filters['semestre']) ? LooseValue::castInt($filters['semestre']) : null;
+            $anneeId = !empty($filters['annee']) ? LooseValue::castInt($filters['annee']) : null;
+            $anneeUniversitaireId = !empty($filters['anneeUniversitaire']) ? LooseValue::castInt($filters['anneeUniversitaire']) : null;
 
             if ($semestreId) {
                 $events = $this->edtEventRepository->findForStatsBySemestreAndAnneeUniversitaire($semestreId, $anneeUniversitaireId);

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -44,23 +45,27 @@ class EtudiantScolariteRepository extends ServiceEntityRepository
         Etudiant $etudiant,
         StructureAnneeUniversitaire $anneeUniversitaire
     ): ?EtudiantScolarite {
-        return $this->createQueryBuilder('es')
+        $result = $this->createQueryBuilder('es')
             ->andWhere('es.etudiant = :etudiant')
             ->andWhere('es.anneeUniversitaire = :anneeUniversitaire')
             ->setParameter('etudiant', $etudiant)
             ->setParameter('anneeUniversitaire', $anneeUniversitaire)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return LooseValue::nullableInstance($result, EtudiantScolarite::class);
     }
 
     public function findActiveByEtudiant(Etudiant $etudiant): ?EtudiantScolarite
     {
-        return $this->createQueryBuilder('es')
+        $result = $this->createQueryBuilder('es')
             ->andWhere('es.etudiant = :etudiant')
             ->andWhere('es.actif = true')
             ->setParameter('etudiant', $etudiant)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return LooseValue::nullableInstance($result, EtudiantScolarite::class);
     }
 
     /**

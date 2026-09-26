@@ -10,6 +10,8 @@ use App\Entity\Structure\StructureCalendrier;
 use App\Entity\Users\Personnel;
 use App\Repository\PersonnelRepository;
 use App\Repository\Structure\StructureCalendrierRepository;
+use App\Utils\LooseValue;
+use Symfony\Component\HttpFoundation\Request;
 
 /** @implements ProviderInterface<\App\ApiDto\PersonnelsContraintes> */
 class PersonnelsContraintesProvider implements ProviderInterface
@@ -32,7 +34,11 @@ class PersonnelsContraintesProvider implements ProviderInterface
         }
 
         $semaine = $uriVariables['semaineFormation'];
-        $personnel = $context['request']->query->get('personnel');
+        $request = $context['request'] ?? null;
+        if (!$request instanceof Request) {
+            throw new \LogicException('PersonnelsContraintesProvider needs the HTTP request.');
+        }
+        $personnel = $request->query->get('personnel');
 
         if ($semaine === null && $personnel === null) {
             return null;
@@ -66,7 +72,7 @@ class PersonnelsContraintesProvider implements ProviderInterface
         return $contraintes;
     }
 
-    /** @return array<string, array{type: string, contrainte: array<string, mixed>}> */
+    /** @return array<string, array{type: string, contrainte: array<mixed>}> */
     private function getContraintes(StructureCalendrier $semaine, Personnel $personnel): array
     {
         //todo: si pas de semaine seule les contraintes all...
@@ -75,17 +81,17 @@ class PersonnelsContraintesProvider implements ProviderInterface
         $tContraintes = [];
         $contraintesPersonnels = $personnel->getContraintesEdt() ?? [];
         foreach ($contraintesPersonnels as $typeContrainte => $contraintes) {
-            foreach ($contraintes as $keySemaine => $contrainte) {
+            foreach (LooseValue::row($contraintes) as $keySemaine => $contrainte) {
                 if ($keySemaine === 'all') {
-                    foreach ($contrainte as $contr) {
-                        $tContraintes[$contr['day'] . '_' . $contr['time']]['type'] = $typeContrainte;
-                        $tContraintes[$contr['day'] . '_' . $contr['time']]['contrainte'] = $contr;
+                    foreach (LooseValue::rows($contrainte) as $contr) {
+                        $creneau = LooseValue::castString($contr['day']) . '_' . LooseValue::castString($contr['time']);
+                        $tContraintes[$creneau] = ['type' => $typeContrainte, 'contrainte' => $contr];
                     }
                 }
                 if ((int)$keySemaine === $semaine->getSemaineFormation()) {
-                    foreach ($contrainte as $contr) {
-                        $tContraintes[$contr['day'] . '_' . $contr['time']]['type'] = $typeContrainte;
-                        $tContraintes[$contr['day'] . '_' . $contr['time']]['contrainte'] = $contr;
+                    foreach (LooseValue::rows($contrainte) as $contr) {
+                        $creneau = LooseValue::castString($contr['day']) . '_' . LooseValue::castString($contr['time']);
+                        $tContraintes[$creneau] = ['type' => $typeContrainte, 'contrainte' => $contr];
                     }
                 }
             }

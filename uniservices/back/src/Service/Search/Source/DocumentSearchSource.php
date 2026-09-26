@@ -10,6 +10,7 @@ use App\Entity\Users\Personnel;
 use App\Service\Search\Candidate;
 use Doctrine\ORM\EntityManagerInterface;
 use DocumentBundle\Entity\Document;
+use App\Utils\LooseValue;
 
 /**
  * Documents du département, ou communs à tous, que l'utilisateur a le droit de voir.
@@ -46,12 +47,12 @@ final readonly class DocumentSearchSource implements SearchSourceInterface
             ->getQuery()
             ->getArrayResult();
 
-        foreach ($documents as $document) {
+        foreach (LooseValue::rows($documents) as $document) {
             if (null === $document['titre']) {
                 continue;
             }
 
-            yield new Candidate('document', $document['id'], $document['titre'], $document['categorie'], $document['titre']);
+            yield new Candidate('document', LooseValue::int($document['id']), LooseValue::string($document['titre']), LooseValue::nullableString($document['categorie']), LooseValue::string($document['titre']));
         }
     }
 }

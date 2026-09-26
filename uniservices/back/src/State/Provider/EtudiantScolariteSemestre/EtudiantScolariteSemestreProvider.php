@@ -10,6 +10,7 @@ use ApiPlatform\State\Pagination\PaginatorInterface;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\ApiDto\EtudiantScolariteSemestre\EtudiantScolariteSemestreDto;
+use App\Utils\LooseValue;
 
 /** @implements ProviderInterface<object> */
 class EtudiantScolariteSemestreProvider implements ProviderInterface
@@ -70,8 +71,8 @@ class EtudiantScolariteSemestreProvider implements ProviderInterface
 
                 // Tri alphabétique par nom d'étudiant (insensible à la casse)
                 usort($items, function ($a, $b) {
-                    $na = mb_strtolower((string) ($a->getEtudiant()['nom'] ?? ''));
-                    $nb = mb_strtolower((string) ($b->getEtudiant()['nom'] ?? ''));
+                    $na = mb_strtolower(LooseValue::castString($a->getEtudiant()['nom'] ?? ''));
+                    $nb = mb_strtolower(LooseValue::castString($b->getEtudiant()['nom'] ?? ''));
                     return strcasecmp($na, $nb);
                 });
 
@@ -127,8 +128,8 @@ class EtudiantScolariteSemestreProvider implements ProviderInterface
 
             // Tri alphabétique par nom d'étudiant (insensible à la casse)
             usort($items, function ($a, $b) {
-                $na = mb_strtolower((string) ($a->getEtudiant()['nom'] ?? ''));
-                $nb = mb_strtolower((string) ($b->getEtudiant()['nom'] ?? ''));
+                $na = mb_strtolower(LooseValue::castString($a->getEtudiant()['nom'] ?? ''));
+                $nb = mb_strtolower(LooseValue::castString($b->getEtudiant()['nom'] ?? ''));
                 return strcasecmp($na, $nb);
             });
 

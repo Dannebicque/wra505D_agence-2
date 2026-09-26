@@ -12,6 +12,7 @@ use App\Repository\Structure\StructureDepartementPersonnelRepository;
 use App\Service\Dashboard\Core\DashboardRegistry;
 use App\Service\Dashboard\Core\WidgetDataRegistry;
 use App\Service\Dashboard\Core\WidgetRegistry as CoreWidgetRegistry;
+use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -231,7 +232,8 @@ class DashboardController extends AbstractController
             $structureDepartementPersonnel = $this->structureDepartementPersonnelRepository->find($structureDepartementPersonnelId);
         }
 
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = json_decode($request->getContent(), true);
+        $data = is_array($data) ? $data : [];
 
         $dashboard = $this->getDashboard($dashboardCode);
 
@@ -277,16 +279,16 @@ class DashboardController extends AbstractController
                 // Appliquer les changements du widget cliqué
                 if ($code === $widgetKey) {
                     if (isset($data['enabled'])) {
-                        $pref->setEnabled($data['enabled']);
+                        $pref->setEnabled(LooseValue::bool($data['enabled']));
                     }
                     if (isset($data['colSpan'])) {
                         // Valider colSpan: min 1, max 4
-                        $colSpan = (int)$data['colSpan'];
+                        $colSpan = LooseValue::castInt($data['colSpan']);
                         $colSpan = max(1, min(4, $colSpan));
                         $pref->setColSpan($colSpan);
                     }
                     if (isset($data['rowSpan'])) {
-                        $rowSpan = max(1, (int)$data['rowSpan']);
+                        $rowSpan = max(1, LooseValue::castInt($data['rowSpan']));
                         $pref->setRowSpan($rowSpan);
                     }
                 }
@@ -310,39 +312,39 @@ class DashboardController extends AbstractController
                 $pref->setDashboardCode($dashboardCode);
                 $pref->setWidgetKey($widgetKey);
                 // Valider colSpan: min 1, max 4
-                $colSpan = isset($data['colSpan']) ? (int)$data['colSpan'] : 1;
+                $colSpan = isset($data['colSpan']) ? LooseValue::castInt($data['colSpan']) : 1;
                 $colSpan = max(1, min(4, $colSpan));
                 $pref->setColSpan($colSpan);
-                $pref->setRowSpan(max(1, (int)($data['rowSpan'] ?? 1)));
-                $pref->setEnabled($data['enabled'] ?? true);
+                $pref->setRowSpan(max(1, LooseValue::castInt($data['rowSpan'] ?? 1)));
+                $pref->setEnabled(LooseValue::bool($data['enabled'] ?? true));
                 if (isset($data['position'])) {
-                    $pref->setPosition(max(0, (int)$data['position']));
+                    $pref->setPosition(max(0, LooseValue::castInt($data['position'])));
                 } else {
                     $pref->setPosition(null);
                 }
                 $this->preferenceRepository->save($pref, true);
             } else {
                 if (isset($data['enabled'])) {
-                    $pref->setEnabled($data['enabled']);
+                    $pref->setEnabled(LooseValue::bool($data['enabled']));
                 }
                 if (isset($data['colSpan'])) {
                     // Valider colSpan: min 1, max 4
-                    $colSpan = (int)$data['colSpan'];
+                    $colSpan = LooseValue::castInt($data['colSpan']);
                     $colSpan = max(1, min(4, $colSpan));
                     $pref->setColSpan($colSpan);
                 }
                 if (isset($data['rowSpan'])) {
-                    $rowSpan = max(1, (int)$data['rowSpan']);
+                    $rowSpan = max(1, LooseValue::castInt($data['rowSpan']));
                     $pref->setRowSpan($rowSpan);
                 }
                 if (isset($data['position'])) {
-                    $pref->setPosition(max(0, (int)$data['position']));
+                    $pref->setPosition(max(0, LooseValue::castInt($data['position'])));
                 }
                 $this->preferenceRepository->save($pref, true);
             }
         }
 
-        $requestedPosition = isset($data['position']) ? max(0, (int)$data['position']) : null;
+        $requestedPosition = isset($data['position']) ? max(0, LooseValue::castInt($data['position'])) : null;
 
         // Recalculer les positions de tous les widgets de ce dashboard
         // pour garantir un enchaînement contigu (0, 1, 2, ...) uniquement sur les widgets enabled

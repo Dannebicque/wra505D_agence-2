@@ -12,7 +12,7 @@ class PrevisionnelAllPersonnelsDto
     protected string $libelle;
     #[Groups(['previsionnel_all_personnels:read'])]
     protected ?Personnel $personnel;
-    /** @var array<string, float|int> */
+    /** @var array<string, float|int|string> */
     #[Groups(['previsionnel_all_personnels:read'])]
     protected array $heures = [];
     #[Groups(['previsionnel_all_personnels:read'])]
@@ -68,13 +68,13 @@ class PrevisionnelAllPersonnelsDto
         $this->personnel = $personnel;
     }
 
-    /** @return array<string, float|int> */
+    /** @return array<string, float|int|string> */
     public function getHeures(): array
     {
         return $this->heures;
     }
 
-    /** @param array<string, float|int> $heures */
+    /** @param array<string, float|int|string> $heures */
     public function setHeures(array $heures): void
     {
         $this->heures = $heures;

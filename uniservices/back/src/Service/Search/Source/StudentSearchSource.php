@@ -10,6 +10,7 @@ use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Service\Search\Candidate;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Utils\LooseValue;
 
 /**
  * Étudiants inscrits cette année dans le département, comme dans la recherche de l'intranet V3.
@@ -36,21 +37,24 @@ final readonly class StudentSearchSource implements SearchSourceInterface
 
         // Une ligne par semestre : on regroupe par étudiant.
         $students = [];
-        foreach ($rows as $row) {
-            $students[$row['id']] ??= $row + ['semestres' => []];
+        $semesters = [];
+        foreach (LooseValue::rows($rows) as $row) {
+            $id = LooseValue::key($row['id']);
+            $students[$id] ??= $row;
+            $semesters[$id] ??= [];
             if (null !== $row['semestre']) {
-                $students[$row['id']]['semestres'][] = $row['semestre'];
+                $semesters[$id][] = LooseValue::string($row['semestre']);
             }
         }
 
-        foreach ($students as $student) {
+        foreach ($students as $id => $student) {
             yield new Candidate(
                 'etudiant',
-                $student['id'],
-                $student['prenom'].' '.$student['nom'],
-                [] === $student['semestres'] ? null : implode(', ', array_unique($student['semestres'])),
-                $student['prenom'].' '.$student['nom'].' '.$student['username'],
-                $student['mailUniv'],
+                LooseValue::int($student['id']),
+                LooseValue::castString($student['prenom']).' '.LooseValue::castString($student['nom']),
+                [] === $semesters[$id] ? null : implode(', ', array_unique($semesters[$id])),
+                LooseValue::castString($student['prenom']).' '.LooseValue::castString($student['nom']).' '.LooseValue::castString($student['username']),
+                LooseValue::nullableString($student['mailUniv']),
             );
         }
     }

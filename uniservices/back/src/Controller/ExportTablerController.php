@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Utils\LooseValue;
 use Davidannebicque\HtmlToSpreadsheetBundle\Controller\SpreadsheetTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,14 +43,15 @@ class ExportTablerController extends AbstractController
     public function exportHeures(Request $request): Response
     {
         $content = (string) $request->getContent();
-        $allData = json_decode($content, true) ?? [];
+        $allData = json_decode($content, true);
+        $allData = is_array($allData) ? $allData : [];
 
-        $source = $allData['export_data'] ?? [];
+        $source = LooseValue::rows($allData['export_data'] ?? []);
 
         // Grouper les événements par semestre
         $bySemestre = [];
         foreach ($source as $item) {
-            $semestre = $item['semestre'] ?? 'Inconnu';
+            $semestre = LooseValue::key($item['semestre'] ?? 'Inconnu');
             $bySemestre[$semestre][] = $item;
         }
 
@@ -60,9 +62,9 @@ class ExportTablerController extends AbstractController
                 $dateB = $b['date'] ?? '';
                 if ($dateA === $dateB) {
                     // Si les dates sont identiques, trier par heure de début
-                    return strcmp($a['debut'] ?? '', $b['debut'] ?? '');
+                    return strcmp(LooseValue::string($a['debut'] ?? ''), LooseValue::string($b['debut'] ?? ''));
                 }
-                return strcmp($dateA, $dateB);
+                return strcmp(LooseValue::string($dateA), LooseValue::string($dateB));
             });
         }
         unset($events);
@@ -77,11 +79,11 @@ class ExportTablerController extends AbstractController
                 $fin = $ev['fin'] ?? null;
                 if ($debut && $fin) {
                     if ($date) {
-                        $startTs = strtotime($date.' '.$debut);
-                        $endTs = strtotime($date.' '.$fin);
+                        $startTs = strtotime(LooseValue::castString($date).' '.LooseValue::castString($debut));
+                        $endTs = strtotime(LooseValue::castString($date).' '.LooseValue::castString($fin));
                     } else {
-                        $startTs = strtotime((string)$debut);
-                        $endTs = strtotime((string)$fin);
+                        $startTs = strtotime(LooseValue::castString($debut));
+                        $endTs = strtotime(LooseValue::castString($fin));
                     }
                     if ($startTs && $endTs && $endTs > $startTs) {
                         $total += ($endTs - $startTs) / 3600.0;

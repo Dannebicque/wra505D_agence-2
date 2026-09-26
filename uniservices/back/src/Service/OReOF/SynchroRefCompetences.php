@@ -10,6 +10,7 @@ use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureDiplome;
 use App\Repository\Structure\StructureDepartementRepository;
 use App\Repository\Structure\StructureDiplomeRepository;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -61,7 +62,7 @@ class SynchroRefCompetences
             throw new \Exception('Erreur lors de la décodage de la réponse JSON: ' . json_last_error_msg());
         }
 
-        $competences = $competences["hydra:member"] ?? [];
+        $competences = LooseValue::rows(LooseValue::row($competences)["hydra:member"] ?? []);
 
         // créer le référentiel de compétences
         $refCompetences = new ApcReferentiel();
@@ -73,11 +74,11 @@ class SynchroRefCompetences
         foreach ($competences as $competence) {
             $comp = new ApcCompetence();
             $comp->setReferentiel($refCompetences);
-            $comp->setNomCourt($competence['nom_court']);
-            $comp->setLibelle($competence['libelle']);
-            $comp->setCouleur($competence['couleur']);
+            $comp->setNomCourt(LooseValue::nullableString($competence['nom_court']));
+            $comp->setLibelle(LooseValue::string($competence['libelle']));
+            $comp->setCouleur(LooseValue::nullableString($competence['couleur']));
             $tabComposantes = [];
-            foreach ($competence['apcComposanteEssentielles'] as $composanteEssentielle) {
+            foreach (LooseValue::rows($competence['apcComposanteEssentielles'] ?? []) as $composanteEssentielle) {
                 $tabComposantes[] = [
                     'libelle' => $composanteEssentielle['libelle'],
                     'code' => $composanteEssentielle['code'],
@@ -85,22 +86,22 @@ class SynchroRefCompetences
             }
             $comp->setComposantesEssentielles($tabComposantes);
             $tabSitPro = [];
-            foreach ($competence['apcSituationProfessionnelles'] as $situationProfessionnelle) {
+            foreach (LooseValue::rows($competence['apcSituationProfessionnelles'] ?? []) as $situationProfessionnelle) {
                 $tabSitPro[] = [
                     'libelle' => $situationProfessionnelle['libelle'],
                 ];
             }
             $comp->setSituationsProfessionnelles($tabSitPro);
 
-            foreach ($competence['apcNiveaux'] as $apcNiveau) {
+            foreach (LooseValue::rows($competence['apcNiveaux'] ?? []) as $apcNiveau) {
                 $apcN = new ApcNiveau($comp);
-                $apcN->setLibelle($apcNiveau['libelle']);
-                $apcN->setOrdre($apcNiveau['ordre']);
+                $apcN->setLibelle(LooseValue::string($apcNiveau['libelle']));
+                $apcN->setOrdre(LooseValue::int($apcNiveau['ordre']));
                 //todo: gestion de l'année associée
-                foreach ($apcNiveau['apcApprentissageCritiques'] as $ac) {
+                foreach (LooseValue::rows($apcNiveau['apcApprentissageCritiques'] ?? []) as $ac) {
                     $apcAc = new ApcApprentissageCritique($apcN);
-                    $apcAc->setLibelle($ac['libelle']);
-                    $apcAc->setCode($ac['code']);
+                    $apcAc->setLibelle(LooseValue::string($ac['libelle']));
+                    $apcAc->setCode(LooseValue::nullableString($ac['code']));
                     $this->entityManager->persist($apcAc);
                 }
 

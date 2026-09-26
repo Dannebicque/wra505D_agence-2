@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -44,7 +45,7 @@ class RssController extends AbstractController
     {
         // récupérer l'url depuis .env
         $actus_url = $_ENV['URL_ACTUS'];
-        $actus = $this->loadRss($actus_url);
+        $actus = $this->loadRss(LooseValue::string($actus_url));
         $data = [];
         if ($actus && isset($actus->channel->item)) {
             $count = 0;

@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Traits\OptionTrait;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Enum\QuestTypeRepeatEnum;
 use QuestionnaireBundle\Enum\QuestTypeSectionEnum;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireSectionRepository;
@@ -281,6 +282,6 @@ class QuestionnaireSection
         if (!array_key_exists('repeat_source', $opts) || $opts['repeat_source'] === null) {
             return null;
         }
-        return QuestTypeRepeatEnum::tryFrom($opts['repeat_source']);
+        return QuestTypeRepeatEnum::tryFrom(LooseValue::key($opts['repeat_source']));
     }
 }

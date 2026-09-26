@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Structure;
 
+use App\Utils\LooseValue;
 use LogicException;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
@@ -32,7 +33,7 @@ final class QuestionnaireStructureService
 
             // Section configurable : on boucle sur les éléments sauvegardés dans le JSON opt
             $opts = $st->getOpt();
-            $elements = $opts['elements'] ?? [];
+            $elements = LooseValue::rows($opts['elements'] ?? []);
             foreach ($elements as $el) {
                 $elementName = $el['name'] ?? '';
                 $elementId = $el['id'] ?? '';

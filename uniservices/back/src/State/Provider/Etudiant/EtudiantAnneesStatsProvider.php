@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Structure\StructureAnnee;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 
 /** @implements ProviderInterface<StructureAnnee> */
@@ -52,7 +53,7 @@ class EtudiantAnneesStatsProvider implements ProviderInterface
                 return [];
             }
 
-            $countByAnneeId = $this->getEtudiantsCountByAnnee($anneeIds, $context['filters'] ?? []);
+            $countByAnneeId = $this->getEtudiantsCountByAnnee($anneeIds, LooseValue::row($context['filters'] ?? []));
 
             foreach ($countByAnneeId as $anneeId => $count) {
                 if (!isset($annees[$anneeId])) {
@@ -70,7 +71,7 @@ class EtudiantAnneesStatsProvider implements ProviderInterface
 
     /**
      * @param list<int> $anneeIds
-     * @param array<string, mixed> $filters
+     * @param array<mixed> $filters
      * @return array<int, int>
      */
     private function getEtudiantsCountByAnnee(array $anneeIds, array $filters): array
@@ -111,14 +112,14 @@ class EtudiantAnneesStatsProvider implements ProviderInterface
         }
 
         $counts = [];
-        foreach ($qb->getQuery()->getArrayResult() as $row) {
-            $counts[(int) $row['anneeId']] = (int) $row['total'];
+        foreach (LooseValue::rows($qb->getQuery()->getArrayResult()) as $row) {
+            $counts[LooseValue::castInt($row['anneeId'])] = LooseValue::castInt($row['total']);
         }
 
         return $counts;
     }
 
-    /** @param array<string, mixed> $filters */
+    /** @param array<mixed> $filters */
     private function resolveFilterValue(array $filters, string $key): mixed
     {
         $value = $filters[$key] ?? null;

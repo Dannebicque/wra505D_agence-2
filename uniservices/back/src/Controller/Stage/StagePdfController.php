@@ -3,6 +3,7 @@
 namespace App\Controller\Stage;
 
 use App\Entity\Etablissement;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StageAvenant;
@@ -181,7 +182,7 @@ class StagePdfController extends AbstractController
             }
         }
         if ($etab && $etab->getAdresse()) {
-            $deptAdresse = implode(', ', $etab->getAdresse());
+            $deptAdresse = implode(', ', array_map(LooseValue::castString(...), $etab->getAdresse()));
         }
 
         // Annee universitaire display

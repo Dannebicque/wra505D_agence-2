@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -59,21 +60,21 @@ class EtudiantScolariteSemestreFilter extends AbstractFilter
                 ->join("$alias.scolarite", 'scolarite3')
                 ->join('scolarite3.etudiant', 'etudiant2')
                 ->andWhere('etudiant2.nom LIKE :nom')
-                ->setParameter("nom", "$value%");
+                ->setParameter("nom", LooseValue::castString($value).'%');
         }
         if ('prenom' === $property) {
             $queryBuilder
                 ->join("$alias.scolarite", 'scolarite4')
                 ->join('scolarite4.etudiant', 'etudiant3')
                 ->andWhere('etudiant3.prenom LIKE :prenom')
-                ->setParameter("prenom", "$value%");
+                ->setParameter("prenom", LooseValue::castString($value).'%');
         }
         if ('numEtudiant' === $property) {
             $queryBuilder
                 ->join("$alias.scolarite", 'scolarite5')
                 ->join('scolarite5.etudiant', 'etudiant4')
                 ->andWhere('etudiant4.num_etudiant LIKE :numEtudiant')
-                ->setParameter("numEtudiant", "$value%");
+                ->setParameter("numEtudiant", LooseValue::castString($value).'%');
         }
 
         if ('anneeUniversitaire' === $property) {

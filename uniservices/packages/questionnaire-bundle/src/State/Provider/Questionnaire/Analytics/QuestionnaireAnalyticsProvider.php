@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Analytics;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Services\Analytics\QuestionnaireAnalyticsService;
@@ -20,7 +21,7 @@ final class QuestionnaireAnalyticsProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): QuestionnaireAnalyticsDto
     {
-        $surveyId = (string) $uriVariables['surveyId'];
+        $surveyId = LooseValue::castString($uriVariables['surveyId']);
 
         $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $surveyId]);
         if (!$q) {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Celcat;
 
+use App\Utils\LooseValue;
+
 /**
  * Transforme une ligne d'événement Celcat en créneaux datés.
  *
@@ -22,9 +24,9 @@ final class CelcatEventConverter
     {
         // Le masque de la salle prime : une salle peut n'être réservée qu'une partie des
         // semaines du cours. Même ordre de priorité que l'intranet V3.
-        $mask = (string) ($row['room_weeks'] ?? $row['weeks'] ?? '');
-        $day = (int) $row['day_of_week'];
-        $isCourse = '' !== (string) ($row['module_code'] ?? '');
+        $mask = LooseValue::castString($row['room_weeks'] ?? $row['weeks'] ?? '');
+        $day = LooseValue::castInt($row['day_of_week']);
+        $isCourse = '' !== LooseValue::castString($row['module_code'] ?? '');
         $category = $this->text($row['category'] ?? null) ?? '';
 
         $slots = [];
@@ -43,17 +45,17 @@ final class CelcatEventConverter
             $date = $mondays[$week]->modify('+'.$day.' days');
 
             $slots[] = new CelcatSlot(
-                celcatId: (int) $row['event_id'],
+                celcatId: LooseValue::castInt($row['event_id']),
                 week: $week,
                 day: $day,
                 date: $date,
-                start: $this->time($date, (string) $row['start_time']),
-                end: $this->time($date, (string) $row['end_time']),
+                start: $this->time($date, LooseValue::castString($row['start_time'])),
+                end: $this->time($date, LooseValue::castString($row['end_time'])),
                 isCourse: $isCourse,
                 // La catégorie arrive entre crochets, « [TD] ». Pour un événement qui n'est pas
                 // un cours, le type dépend du groupe : c'est au synchroniseur de le déduire.
                 type: $isCourse ? mb_substr($category, 1, -1) : null,
-                moduleCode: $isCourse ? (string) $row['module_code'] : (string) $row['event_id'],
+                moduleCode: $isCourse ? LooseValue::castString($row['module_code']) : LooseValue::castString($row['event_id']),
                 moduleLabel: $isCourse
                     ? ($this->text($row['module_name'] ?? null) ?? '')
                     : trim($category.' '.($this->text($row['notes'] ?? null) ?? '')),
@@ -88,7 +90,7 @@ final class CelcatEventConverter
             return null;
         }
 
-        $date = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', substr((string) $value, 0, 19));
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', substr(LooseValue::castString($value), 0, 19));
 
         return false === $date ? null : $date;
     }
@@ -104,7 +106,7 @@ final class CelcatEventConverter
             return null;
         }
 
-        $text = trim((string) $value);
+        $text = trim(LooseValue::castString($value));
         if ('' === $text) {
             return null;
         }

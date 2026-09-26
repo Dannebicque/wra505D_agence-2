@@ -7,6 +7,7 @@ use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Utils\LooseValue;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelPersonnelDto;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
 
@@ -94,7 +95,7 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
                 if ($personnelId === null) {
                     throw new \LogicException('Personnel ID is required');
                 }
-                $departementId = $context['filters']['departement'] ?? null;
+                $departementId = LooseValue::row($context['filters'] ?? [])['departement'] ?? null;
 
                 $departement = null;
                 if (null !== $departementId) {
@@ -164,24 +165,56 @@ class PrevisionnelPersonnelProvider implements ProviderInterface
             return array_values($output);
         } else {
             $data = $this->itemProvider->provide($operation, $uriVariables, $context);
+            if (!$data instanceof \IntranetBundle\Entity\Previsionnel\Previsionnel) {
+                throw new \LogicException('Expected a Previsionnel.');
+            }
         }
 
         return $this->toDto($data);
     }
 
-    public function toDto(mixed $item): PrevisionnelPersonnelDto
+    public function toDto(\IntranetBundle\Entity\Previsionnel\Previsionnel $item): PrevisionnelPersonnelDto
     {
+        $personnel = $item->getPersonnel();
+        $enseignement = $item->getEnseignement();
+        if (null === $personnel || null === $enseignement) {
+            throw new \LogicException('Previsionnel without personnel or enseignement.');
+        }
+        $id = $item->getId();
+        if (null === $id) {
+            throw new \LogicException('Previsionnel ID is required.');
+        }
+        $personnelId = $personnel->getId();
+        if (null === $personnelId) {
+            throw new \LogicException('Personnel ID is required.');
+        }
+        $statut = $personnel->getStatut();
+        if (null === $statut) {
+            throw new \LogicException('Personnel statut is required.');
+        }
+        $enseignementId = $enseignement->getId();
+        if (null === $enseignementId) {
+            throw new \LogicException('Enseignement ID is required.');
+        }
+        $codeEnseignement = $enseignement->getCodeEnseignement();
+        if (null === $codeEnseignement) {
+            throw new \LogicException('Enseignement code is required.');
+        }
+        $anneeUniversitaire = $item->getAnneeUniversitaire();
+        if (null === $anneeUniversitaire) {
+            throw new \LogicException('Annee universitaire is required.');
+        }
         $prevPers = new PrevisionnelPersonnelDto();
-        $prevPers->setId($item->getId());
-        $prevPers->setPersonnel($item->getPersonnel());
-        $prevPers->setIdPersonnel($item->getPersonnel()->getId());
-        $prevPers->setStructureAnneeUniversitaire($item->getAnneeUniversitaire());
-        $prevPers->setStatut($item->getPersonnel()->getStatut()->getLibelle());
-        $prevPers->setIdEnseignement($item->getEnseignement()->getId());
-        $prevPers->setCodeEnseignement($item->getEnseignement()->getCodeEnseignement());
-        $prevPers->setLibelleEnseignement($item->getEnseignement()->getDisplay());
-        $prevPers->setTypeEnseignement($item->getEnseignement()->getType());
-        $prevPers->setLibelle($item->getPersonnel()->getDisplay());
+        $prevPers->setId($id);
+        $prevPers->setPersonnel($personnel);
+        $prevPers->setIdPersonnel($personnelId);
+        $prevPers->setStructureAnneeUniversitaire($anneeUniversitaire);
+        $prevPers->setStatut($statut->getLibelle());
+        $prevPers->setIdEnseignement($enseignementId);
+        $prevPers->setCodeEnseignement($codeEnseignement);
+        $prevPers->setLibelleEnseignement($enseignement->getDisplay());
+        $prevPers->setTypeEnseignement($enseignement->getType());
+        $prevPers->setLibelle($personnel->getDisplay());
         $prevPers->setHeures([
             'CM' => [
                 'NbHrGrp' => round($item->getGroupes()['CM'] !== 0 ? $item->getHeures()['CM'] / $item->getGroupes()['CM'] : $item->getHeures()['CM'], 1),

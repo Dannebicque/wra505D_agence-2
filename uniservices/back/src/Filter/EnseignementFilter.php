@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -39,7 +40,7 @@ class EnseignementFilter extends AbstractFilter
         }
 
         if ('departement' === $property) {
-            $anneeUniversitaireId = $context['filters']['anneeUniversitaire'] ?? null;
+            $anneeUniversitaireId = LooseValue::row($context['filters'] ?? [])['anneeUniversitaire'] ?? null;
 
             $queryBuilder
                 ->join("$alias.enseignementUes", "enseignementUe")

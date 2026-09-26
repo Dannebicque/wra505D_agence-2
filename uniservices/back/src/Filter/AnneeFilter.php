@@ -6,7 +6,9 @@ use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query\Expr\Join;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
 #[ApiFilter(AnneeFilter::class)]
@@ -117,10 +119,10 @@ class AnneeFilter extends AbstractFilter
     private function getOrCreateJoin(QueryBuilder $qb, QueryNameGeneratorInterface $queryNameGenerator, string $fromAlias, string $association): string
     {
         // Try to find an existing join for the association
-        foreach ($qb->getDQLPart('join') as $alias => $joins) {
-            foreach ($joins as $join) {
-                if ($join->getJoin() === "$fromAlias.$association") {
-                    return $join->getAlias();
+        foreach (LooseValue::row($qb->getDQLPart('join')) as $alias => $joins) {
+            foreach (LooseValue::row($joins) as $join) {
+                if ($join instanceof Join && $join->getJoin() === "$fromAlias.$association") {
+                    return $join->getAlias() ?? throw new \LogicException('Doctrine join without alias.');
                 }
             }
         }

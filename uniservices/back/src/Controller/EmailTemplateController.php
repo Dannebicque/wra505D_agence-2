@@ -7,6 +7,7 @@ use App\Entity\Structure\StructureDepartement;
 use App\Repository\Email\EmailTemplateRepository;
 use App\Repository\Structure\StructureDepartementRepository;
 use App\Service\Email\EmailRegistry;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -134,12 +135,13 @@ class EmailTemplateController extends AbstractController
     public function saveTemplate(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        $data = is_array($data) ? $data : [];
 
         if (empty($data['emailKey']) || empty($data['subject']) || empty($data['bodyHtml'])) {
             return $this->json(['error' => 'Champs requis : emailKey, subject, bodyHtml'], Response::HTTP_BAD_REQUEST);
         }
 
-        $key = $data['emailKey'];
+        $key = LooseValue::string($data['emailKey']);
 
         if ($this->registry->get($key) === null) {
             return $this->json(['error' => 'Clé d\'email inconnue : ' . $key], Response::HTTP_NOT_FOUND);
@@ -160,12 +162,12 @@ class EmailTemplateController extends AbstractController
             : $this->templateRepository->findGlobal($key);
 
         if ($template === null) {
-            $template = new EmailTemplate($key, $data['subject'], $data['bodyHtml']);
+            $template = new EmailTemplate($key, LooseValue::string($data['subject']), LooseValue::string($data['bodyHtml']));
             $template->setDepartement($departement);
             $this->em->persist($template);
         } else {
-            $template->setSubject($data['subject']);
-            $template->setBodyHtml($data['bodyHtml']);
+            $template->setSubject(LooseValue::string($data['subject']));
+            $template->setBodyHtml(LooseValue::string($data['bodyHtml']));
         }
 
         $this->em->flush();

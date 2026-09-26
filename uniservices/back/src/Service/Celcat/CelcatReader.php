@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Celcat;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use App\Utils\LooseValue;
 
 /**
  * Lecture seule de la base Celcat de l'université.
@@ -42,7 +43,7 @@ final class CelcatReader implements CelcatSource
     {
         $mondays = [];
         foreach ($this->executeQuery('SELECT week_no, week_date FROM CT_WEEK_CONFIG ORDER BY week_no') as $row) {
-            $mondays[(int) $row['week_no']] = new \DateTimeImmutable(substr((string) $row['week_date'], 0, 10));
+            $mondays[LooseValue::castInt($row['week_no'])] = new \DateTimeImmutable(substr(LooseValue::castString($row['week_date']), 0, 10));
         }
 
         return $mondays;

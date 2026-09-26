@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Runtime;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\StudentInvitationDto;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use Doctrine\ORM\EntityManagerInterface;
@@ -62,7 +63,7 @@ final class StudentInvitationsProvider implements ProviderInterface
                 deadline: $q->getClosingDate()?->format('d/m/Y'),
                 token: $token,
                 status: $status->value,
-                anonymous: $q->getOpt()['anonymous'] ?? true
+                anonymous: LooseValue::bool($q->getOpt()['anonymous'] ?? true)
             );
         }
 

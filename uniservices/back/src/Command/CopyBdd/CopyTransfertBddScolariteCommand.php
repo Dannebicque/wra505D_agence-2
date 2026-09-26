@@ -27,6 +27,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Uid\UuidV4;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use App\Utils\LooseValue;
 
 #[AsCommand(
     name: 'copy:transfert-bdd:scolarite',
@@ -121,30 +122,30 @@ FOREIGN_KEY_CHECKS=1');
         $etudiants = $this->em->executeQuery($sql)->fetchAllAssociative();
 
         foreach ($etudiants as $etu) {
-            $response = $this->httpClient->request('GET', $this->base_url . '/etudiant/' . LegacyValue::castString($etu['id']));
+            $response = $this->httpClient->request('GET', $this->base_url . '/etudiant/' . LooseValue::castString($etu['id']));
             $scolarites = json_decode($response->getContent(), true);
 
-            if ($scolarites && isset($this->tEtudiants[LegacyValue::key($etu['id'])])) {
-                $scolarites = LegacyValue::rows($scolarites);
+            if ($scolarites && isset($this->tEtudiants[LooseValue::key($etu['id'])])) {
+                $scolarites = LooseValue::rows($scolarites);
                 foreach ($scolarites as $scol) {
-                    if (!array_key_exists(LegacyValue::key($scol['annee']), $this->tAnneeUniversitaire)) {
+                    if (!array_key_exists(LooseValue::key($scol['annee']), $this->tAnneeUniversitaire)) {
                         continue;
                     }
 
                     $scolarite = new EtudiantScolarite();
                     $scolarite->setUuid(UuidV4::v4());
-                    $scolarite->setEtudiant($this->tEtudiants[LegacyValue::key($etu['id'])]);
-                    $scolarite->setAnneeUniversitaire($this->tAnneeUniversitaire[LegacyValue::key($scol['annee'])]);
-                    if ($this->tAnneeUniversitaire[LegacyValue::key($scol['annee'])]->isActif()) {
+                    $scolarite->setEtudiant($this->tEtudiants[LooseValue::key($etu['id'])]);
+                    $scolarite->setAnneeUniversitaire($this->tAnneeUniversitaire[LooseValue::key($scol['annee'])]);
+                    if ($this->tAnneeUniversitaire[LooseValue::key($scol['annee'])]->isActif()) {
                         $scolarite->setActif(true);
                     }
 
                     // Définir les propriétés globales de la scolarité
-                    $bilan = LegacyValue::row($scol['bilan'] ?? []);
-                    $scolarite->setMoyenne(isset($bilan['moyenne']) ? round(LegacyValue::float($bilan['moyenne']), 2) : 0);
-                    $scolarite->setNbAbsences(LegacyValue::int($bilan['nbAbsences'] ?? 0));
+                    $bilan = LooseValue::row($scol['bilan'] ?? []);
+                    $scolarite->setMoyenne(isset($bilan['moyenne']) ? round(LooseValue::float($bilan['moyenne']), 2) : 0);
+                    $scolarite->setNbAbsences(LooseValue::int($bilan['nbAbsences'] ?? 0));
 
-                    $scolarite->setCommentaire(LegacyValue::nullableString($bilan['commentaire'] ?? ''));
+                    $scolarite->setCommentaire(LooseValue::nullableString($bilan['commentaire'] ?? ''));
 
                     // Set decision from bilan data (convert string to boolean if needed)
                     $decision = $bilan['decision'] ?? null;
@@ -157,7 +158,7 @@ FOREIGN_KEY_CHECKS=1');
                     }
 
                     // Set proposition if available in the last semester
-                    $semestres = LegacyValue::rows($scol['semestres'] ?? []);
+                    $semestres = LooseValue::rows($scol['semestres'] ?? []);
                     if (!empty($semestres)) {
                         $lastSemester = end($semestres);
                         if (isset($lastSemester['proposition'])) {
@@ -173,7 +174,7 @@ FOREIGN_KEY_CHECKS=1');
                         }
                     }
 
-                    $scolarite->setOrdre(LegacyValue::int($scol['ordre'] ?? count($scolarites)));
+                    $scolarite->setOrdre(LooseValue::int($scol['ordre'] ?? count($scolarites)));
 
                     foreach ($this->tDepartements as $departement) {
                         if ($departement->getOldId() === $etu['departement_id']) {
@@ -191,9 +192,9 @@ FOREIGN_KEY_CHECKS=1');
                                 $etudiantScolSemestre = new EtudiantScolariteSemestre();
                                 $etudiantScolSemestre->setScolarite($scolarite);
                                 $etudiantScolSemestre->setSemestre($semestreDest);
-                                foreach (LegacyValue::rows($semestre['groupes'] ?? []) as $groupe) {
-                                    if (isset($this->tGroupes[LegacyValue::key($groupe['id'])])) {
-                                        $etudiantScolSemestre->addGroupe($this->tGroupes[LegacyValue::key($groupe['id'])]);
+                                foreach (LooseValue::rows($semestre['groupes'] ?? []) as $groupe) {
+                                    if (isset($this->tGroupes[LooseValue::key($groupe['id'])])) {
+                                        $etudiantScolSemestre->addGroupe($this->tGroupes[LooseValue::key($groupe['id'])]);
                                     }
                                 }
 
@@ -219,7 +220,7 @@ FOREIGN_KEY_CHECKS=1');
                                 }
 
                                 // Set moyenne from semestre data
-                                $etudiantScolSemestre->setMoyenne(isset($semestre['moyenne']) ? round(LegacyValue::float($semestre['moyenne']), 2) : 0);
+                                $etudiantScolSemestre->setMoyenne(isset($semestre['moyenne']) ? round(LooseValue::float($semestre['moyenne']), 2) : 0);
 
                                 $this->entityManager->persist($etudiantScolSemestre);
                                 $semestresCrees[$semestreDest->getId()] = true;
@@ -267,10 +268,10 @@ FOREIGN_KEY_CHECKS=1');
 
         foreach ($bacs as $bac) {
             $scolBac = new ScolBac();
-            $scolBac->setLibelle(LegacyValue::string($bac['libelle']));
-            $scolBac->setLibelleLong(LegacyValue::string($bac['libelle_long']));
-            $scolBac->setOldId(LegacyValue::nullableInt($bac['id']));
-            $scolBac->setCodeApogee(LegacyValue::nullableString($bac['code_apogee']));
+            $scolBac->setLibelle(LooseValue::string($bac['libelle']));
+            $scolBac->setLibelleLong(LooseValue::string($bac['libelle_long']));
+            $scolBac->setOldId(LooseValue::nullableInt($bac['id']));
+            $scolBac->setCodeApogee(LooseValue::nullableString($bac['code_apogee']));
             $this->entityManager->persist($scolBac);
         }
         $this->entityManager->flush();

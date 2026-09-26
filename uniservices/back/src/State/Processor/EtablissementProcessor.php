@@ -8,6 +8,7 @@ use App\Entity\Etablissement;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
 
 /** @implements ProcessorInterface<mixed, mixed> */
 class EtablissementProcessor implements ProcessorInterface
@@ -22,9 +23,7 @@ class EtablissementProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $request = $context['request'] ?? null;
-        $isLogoUploadOperation = $request && str_ends_with((string) $request->getPathInfo(), '/logo');
-
-        if ($isLogoUploadOperation) {
+        if ($request instanceof Request && str_ends_with($request->getPathInfo(), '/logo')) {
             $entity = $data instanceof Etablissement ? $data : ($context['previous_data'] ?? null);
             if (!$entity instanceof Etablissement) {
                 throw new \RuntimeException('Établissement introuvable pour l\'upload du logo.');
@@ -42,7 +41,7 @@ class EtablissementProcessor implements ProcessorInterface
                 }
             }
 
-            if (!$file) {
+            if (!$file instanceof UploadedFile) {
                 return $entity;
             }
 

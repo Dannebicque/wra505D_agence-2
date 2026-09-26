@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -35,11 +36,12 @@ class EtudiantFilter extends AbstractFilter
                 ->andWhere('anneeUniversitaire.id = :anneeUniversitaire')
                 ->setParameter('anneeUniversitaire', $value);
 
-            if (isset($context['filters']['annee'])) {
+            $annee = LooseValue::row($context['filters'] ?? [])['annee'] ?? null;
+            if (null !== $annee) {
                 $queryBuilder
                     ->join('scolarites.annee', 'annee')
                     ->andWhere('annee.id = :annee')
-                    ->setParameter('annee', $context['filters']['annee']);
+                    ->setParameter('annee', $annee);
             }
         }
 

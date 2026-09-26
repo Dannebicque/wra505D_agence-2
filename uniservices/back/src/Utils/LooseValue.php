@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Command\CopyBdd;
+namespace App\Utils;
 
 /**
- * Donne un type exact à une valeur lue dans la base de l'intranet V3, où chaque colonne arrive en mixed.
+ * Donne un type exact à une valeur mixed : colonne lue dans la base de l'intranet V3, filtre
+ * de requête, sous-tableau JSON.
  *
- * Les commandes de copie ne déclarent pas strict_types : PHP y convertissait lui-même la valeur
- * passée à un setter typé, ou levait une TypeError. Chaque méthode reproduit cette conversion
- * à l'identique et lève une exception là où PHP levait l'erreur, pour que la copie se comporte
- * comme avant avec des types exacts.
+ * Le code qui l'emploie ne déclarait pas strict_types : PHP y convertissait lui-même la valeur
+ * passée à un paramètre typé, ou levait une TypeError. Chaque méthode reproduit cette conversion
+ * à l'identique et lève une exception là où PHP levait l'erreur, pour garder le comportement avec
+ * des types exacts.
  */
-final class LegacyValue
+final class LooseValue
 {
     /**
      * Valeur passée à un paramètre string.
@@ -81,6 +82,43 @@ final class LegacyValue
     public static function nullableFloat(mixed $value): ?float
     {
         return null === $value ? null : self::float($value);
+    }
+
+    /**
+     * Valeur passée à un paramètre int|float : un nombre garde son type, une chaîne numérique
+     * devient le nombre qu'elle écrit.
+     */
+    public static function number(mixed $value): int|float
+    {
+        if (is_int($value) || is_float($value)) {
+            return $value;
+        }
+        if (is_bool($value)) {
+            return (int) $value;
+        }
+        if (is_string($value) && is_numeric($value)) {
+            return $value + 0;
+        }
+
+        throw self::unexpected('int|float', $value);
+    }
+
+    /**
+     * Résultat d'une requête Doctrine renvoyé par une méthode typée ?Classe.
+     *
+     * @template T of object
+     *
+     * @param class-string<T> $class
+     *
+     * @return T|null
+     */
+    public static function nullableInstance(mixed $value, string $class): ?object
+    {
+        if (null === $value || $value instanceof $class) {
+            return $value;
+        }
+
+        throw self::unexpected($class, $value);
     }
 
     /**
@@ -217,6 +255,6 @@ final class LegacyValue
 
     private static function unexpected(string $expected, mixed $value): \UnexpectedValueException
     {
-        return new \UnexpectedValueException(sprintf('Expected %s from the V3 database, got %s.', $expected, get_debug_type($value)));
+        return new \UnexpectedValueException(sprintf('Expected %s, got %s.', $expected, get_debug_type($value)));
     }
 }

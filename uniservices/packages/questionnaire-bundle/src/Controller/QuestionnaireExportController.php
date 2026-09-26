@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Controller;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Services\Analytics\QuestionnaireAnalyticsService;
@@ -98,11 +99,11 @@ class QuestionnaireExportController extends AbstractController
                     $statsSheet->getStyle('A' . $rowIdx . ':C' . $rowIdx)->getFont()->setBold(true);
                     $rowIdx++;
 
-                    $choices = $stats['choices'] ?? [];
+                    $choices = LooseValue::rows($stats['choices'] ?? []);
                     foreach ($choices as $choice) {
                         $statsSheet->setCellValue('A' . $rowIdx, $choice['text']);
                         $statsSheet->setCellValue('B' . $rowIdx, $choice['count']);
-                        $statsSheet->setCellValue('C' . $rowIdx, $choice['percentage'] / 100);
+                        $statsSheet->setCellValue('C' . $rowIdx, LooseValue::castFloat($choice['percentage']) / 100);
                         $statsSheet->getStyle('C' . $rowIdx)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_PERCENTAGE_00);
                         $rowIdx++;
                     }
@@ -116,7 +117,7 @@ class QuestionnaireExportController extends AbstractController
                     $statsSheet->getStyle('A' . $rowIdx . ':B' . $rowIdx)->getFont()->setBold(true);
                     $rowIdx++;
 
-                    $dist = $stats['distribution'] ?? [];
+                    $dist = LooseValue::row($stats['distribution'] ?? []);
                     foreach ($dist as $val => $cnt) {
                         $statsSheet->setCellValue('A' . $rowIdx, $val);
                         $statsSheet->setCellValue('B' . $rowIdx, $cnt);
@@ -128,16 +129,16 @@ class QuestionnaireExportController extends AbstractController
                     $statsSheet->getStyle('A' . $rowIdx . ':B' . $rowIdx)->getFont()->setBold(true);
                     $rowIdx++;
 
-                    $ranking = $stats['ranking'] ?? [];
+                    $ranking = LooseValue::rows($stats['ranking'] ?? []);
                     foreach ($ranking as $item) {
                         $statsSheet->setCellValue('A' . $rowIdx, $item['text']);
                         $statsSheet->setCellValue('B' . $rowIdx, $item['averageRank']);
                         $rowIdx++;
                     }
                 } elseif ($qt->questionType === 'matrix') {
-                    $rows = $stats['rows'] ?? [];
-                    $cols = $stats['columns'] ?? [];
-                    $grid = $stats['grid'] ?? [];
+                    $rows = LooseValue::row($stats['rows'] ?? []);
+                    $cols = LooseValue::row($stats['columns'] ?? []);
+                    $grid = LooseValue::row($stats['grid'] ?? []);
 
                     // Header
                     $colLetter = 'B';
@@ -150,9 +151,10 @@ class QuestionnaireExportController extends AbstractController
 
                     foreach ($rows as $row) {
                         $statsSheet->setCellValue('A' . $rowIdx, $row);
+                        $gridRow = LooseValue::row($grid[LooseValue::key($row)] ?? []);
                         $colLetter = 'B';
                         foreach ($cols as $col) {
-                            $statsSheet->setCellValue($colLetter . $rowIdx, $grid[$row][$col] ?? 0);
+                            $statsSheet->setCellValue($colLetter . $rowIdx, $gridRow[LooseValue::key($col)] ?? 0);
                             $colLetter++;
                         }
                         $rowIdx++;
@@ -183,7 +185,7 @@ class QuestionnaireExportController extends AbstractController
         foreach ($analytics->sections as $sec) {
             foreach ($sec->questions as $qt) {
                 if ($qt->questionType === 'text_short' || $qt->questionType === 'text_long') {
-                    $samples = $qt->stats['samples'] ?? [];
+                    $samples = LooseValue::row($qt->stats['samples'] ?? []);
                     foreach ($samples as $sample) {
                         $commentsSheet->setCellValue('A' . $commentRow, $sec->sectionTitle);
                         $commentsSheet->setCellValue('B' . $commentRow, $qt->questionLabel);

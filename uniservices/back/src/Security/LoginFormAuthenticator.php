@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use App\Utils\LooseValue;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,6 +33,7 @@ class LoginFormAuthenticator extends AbstractAuthenticator
     public function authenticate(Request $request): Passport
     {
         $data = json_decode($request->getContent(), true);
+        $data = is_array($data) ? $data : [];
         $username = $data['username'] ?? $request->request->get('username') ?? '';
         $password = $data['password'] ?? $request->request->get('password') ?? '';
 
@@ -41,8 +43,8 @@ class LoginFormAuthenticator extends AbstractAuthenticator
         }
 
         return new Passport(
-            new UserBadge($username),
-            new PasswordCredentials($password),
+            new UserBadge(LooseValue::string($username)),
+            new PasswordCredentials(LooseValue::string($password)),
             [
                 new RememberMeBadge(),
             ]

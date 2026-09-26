@@ -7,6 +7,7 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Structure\StructureAnnee;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -24,7 +25,7 @@ class TicketFilter extends AbstractFilter
         if ('latest' === $property) {
             $queryBuilder
                 ->orderBy(sprintf('%s.created', $alias), 'DESC')
-                ->setMaxResults($value);
+                ->setMaxResults(LooseValue::nullableInt($value));
             ;
         }
 

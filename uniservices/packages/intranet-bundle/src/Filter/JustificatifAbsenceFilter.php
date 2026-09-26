@@ -5,7 +5,10 @@ namespace IntranetBundle\Filter;
 use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query\Expr\Join;
+use IntranetBundle\Enum\EtatJustificatifEnum;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
 class JustificatifAbsenceFilter extends AbstractFilter
@@ -44,7 +47,11 @@ class JustificatifAbsenceFilter extends AbstractFilter
             $param = $queryNameGenerator->generateParameterName('etat');
 
             if (is_string($value) && defined('IntranetBundle\\Enum\\EtatJustificatifEnum::'.$value)) {
-                $value = constant('IntranetBundle\\Enum\\EtatJustificatifEnum::'.$value)->value;
+                $etat = constant('IntranetBundle\\Enum\\EtatJustificatifEnum::'.$value);
+                if (!$etat instanceof EtatJustificatifEnum) {
+                    throw new \LogicException(sprintf('%s is not an EtatJustificatifEnum case.', $value));
+                }
+                $value = $etat->value;
             }
 
             $queryBuilder
@@ -57,7 +64,7 @@ class JustificatifAbsenceFilter extends AbstractFilter
 
             $queryBuilder
                 ->andWhere(sprintf('%s.motif LIKE :%s', $alias, $param))
-                ->setParameter($param, sprintf('%%%s%%', $value));
+                ->setParameter($param, sprintf('%%%s%%', LooseValue::castString($value)));
         }
 
         if ('etudiant' === $property) {
@@ -68,7 +75,7 @@ class JustificatifAbsenceFilter extends AbstractFilter
 
             $queryBuilder
                 ->andWhere(sprintf("LOWER(CONCAT(%s.prenom, ' ', %s.nom)) LIKE :%s OR LOWER(CONCAT(%s.nom, ' ', %s.prenom)) LIKE :%s", $etudiantAlias, $etudiantAlias, $param, $etudiantAlias, $etudiantAlias, $param))
-                ->setParameter($param, sprintf('%%%s%%', mb_strtolower((string) $value)));
+                ->setParameter($param, sprintf('%%%s%%', mb_strtolower(LooseValue::castString($value))));
         }
 
         if ('debut' === $property) {
@@ -90,9 +97,9 @@ class JustificatifAbsenceFilter extends AbstractFilter
 
     private function getOrCreateJoin(QueryBuilder $qb, QueryNameGeneratorInterface $queryNameGenerator, string $fromAlias, string $association): string
     {
-        foreach ($qb->getDQLPart('join')[$fromAlias] ?? [] as $join) {
-            if ($join->getJoin() === sprintf('%s.%s', $fromAlias, $association)) {
-                return $join->getAlias();
+        foreach (LooseValue::row(LooseValue::row($qb->getDQLPart('join'))[$fromAlias] ?? []) as $join) {
+            if ($join instanceof Join && $join->getJoin() === sprintf('%s.%s', $fromAlias, $association)) {
+                return $join->getAlias() ?? throw new \LogicException('Doctrine join without alias.');
             }
         }
 

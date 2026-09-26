@@ -7,6 +7,7 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Structure\StructureAnnee;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -75,7 +76,7 @@ class EdtFilter extends AbstractFilter
         }
 
         if ('day' === $property) {
-            $date = new \DateTime($value);
+            $date = new \DateTime(LooseValue::castString($value));
             $date->setTime(0, 0, 0);
             $nextDay = clone $date;
             $nextDay->modify('+1 day');
@@ -88,7 +89,7 @@ class EdtFilter extends AbstractFilter
         }
 
         if ('debut' === $property) {
-            $date = new \DateTime($value);
+            $date = new \DateTime(LooseValue::castString($value));
             $date->setTime(0, 0, 0);
 
             $queryBuilder
@@ -97,7 +98,7 @@ class EdtFilter extends AbstractFilter
         }
 
         if ('fin' === $property) {
-            $date = new \DateTime($value);
+            $date = new \DateTime(LooseValue::castString($value));
             $date->setTime(23, 59, 59);
 
             $queryBuilder
@@ -115,7 +116,7 @@ class EdtFilter extends AbstractFilter
         if ('salle' === $property) {
             $queryBuilder
                 ->andWhere(sprintf('%s.salle LIKE :salle', $alias))
-                ->setParameter('salle', '%'.$value.'%');
+                ->setParameter('salle', '%'.LooseValue::castString($value).'%');
         }
 
         if ('annee' === $property) {

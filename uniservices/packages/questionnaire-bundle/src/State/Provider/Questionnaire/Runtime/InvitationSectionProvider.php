@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Runtime;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Domain\Questionnaire\Mapping\QuestionRuntimeMapper;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
@@ -22,8 +23,8 @@ final class InvitationSectionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): SectionRuntimeDto
     {
-        $token = (string) $uriVariables['token'];
-        $id = (int) $uriVariables['id'];
+        $token = LooseValue::castString($uriVariables['token']);
+        $id = LooseValue::castInt($uriVariables['id']);
 
         $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
         if (!$inv) {
