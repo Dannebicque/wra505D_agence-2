@@ -242,14 +242,21 @@ PHPUnit, écrit par Codex, échoue dès qu'un mot de passe est de nouveau attrib
 apparaître une dépréciation PHP 8.4 : `str_getcsv()` reçoit désormais son caractère d'échappement
 explicitement, sans changement de comportement.
 
-### E18 · [back] Trois routes du client en erreur 500 · S
+### E18 · [back] Trois routes du client en erreur 500 · S · fait
 **Pourquoi** Constaté pendant E15, avant tout changement : `/api/oreof/ref-competences/synchronisation`,
 `/api/oreof/ref-formation/synchronisation` et `/api/stats/edt_events` répondent 500, en étudiant,
 personnel et superadmin. Écrans du personnel : correction de bug seulement.
 **Terminé quand** chacune répond un code défendable (200, 400 ou 403), couvert par un test.
-**En partie fait** `/api/stats/edt_events` ne plante plus depuis le niveau 8 de E15 : un créneau
-sans semestre faisait échouer toute la statistique, il est désormais compté sous un libellé vide.
-À trancher : la route répond aussi à un étudiant.
+**Fait** Les deux synchronisations ORéOF n'acceptent que POST (405 sinon) et exigent un droit :
+`CAN_EDIT_APC_REFERENTIEL` pour les compétences, `CAN_EDIT_PN` pour la formation (401 sans
+connexion, 403 pour un étudiant). Un corps sans identifiants entiers répond 400, un diplôme ou une
+année inconnus 404. `/api/stats/edt_events` ne plantait plus depuis le niveau 8 de E15 ; elle est
+désormais réservée au personnel, comme les notes : elle expose les heures de chaque enseignant.
+Couvert par `cypress/e2e/routes-reservees.cy.js`.
+**Reste, hors de notre périmètre** l'écran du personnel « Référentiels de compétences » envoie
+seulement `departementId` : sans `diplomeId`, sa synchronisation répond 400. À signaler au client.
+Tout `^/api` est en `PUBLIC_ACCESS` dans `security.yaml` : chaque route doit donc porter son
+propre contrôle d'accès.
 
 ### E19 · [back] Deux incohérences de données révélées par le niveau 9 · S
 **Pourquoi** Constaté pendant E15 (niveau 9).

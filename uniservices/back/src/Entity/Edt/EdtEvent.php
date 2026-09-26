@@ -43,6 +43,7 @@ use Symfony\Component\Uid\UuidV4;
             normalizationContext: ['groups' => ['edt_stats:read']],
             provider: EdtStatsProvider::class,
             output: EdtStatsDto::class,
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
         new Get(normalizationContext: ['groups' => ['edt_event:read:agenda']]),
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_EDT', object)"),

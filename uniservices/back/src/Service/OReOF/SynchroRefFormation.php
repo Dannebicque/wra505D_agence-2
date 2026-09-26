@@ -22,6 +22,7 @@ use App\Repository\Structure\StructureDepartementRepository;
 use App\Repository\Structure\StructureDiplomeRepository;
 use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SynchroRefFormation
@@ -45,7 +46,7 @@ class SynchroRefFormation
 
 
         if (!$anneeUniversitaire instanceof StructureAnneeUniversitaire || !$diplome instanceof StructureDiplome) {
-            throw new \Exception('Année Universitaire ou diplôme introuvable');
+            throw new NotFoundHttpException('Année Universitaire ou diplôme introuvable');
         }
 
         if ($diplome->getTypeDiplome()?->isApc() === true) {
