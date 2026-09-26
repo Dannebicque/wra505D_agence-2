@@ -29,15 +29,15 @@ class CopyTransfertBddEdtCommand extends Command
 {
     protected Connection $em;
 
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Scolarite\ScolEnseignement> */
     protected array $tMatieres = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Users\Personnel> */
     protected array $tPersonnels = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Structure\StructureSemestre> */
     protected array $tSemestres = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Structure\StructureAnneeUniversitaire> */
     protected array $tAnneesUniversitaires = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Structure\StructureGroupe> */
     protected array $tGroupes = [];
     protected string $base_url;
 
@@ -57,10 +57,10 @@ class CopyTransfertBddEdtCommand extends Command
     ) {
         parent::__construct();
         $this->em = $copyConnection;
-        $this->tPersonnels = $personnelRepository->findAllByOldIdArray();
-        $this->tSemestres = $structureSemestreRepository->findAllByOldIdArray();
-        $this->tAnneesUniversitaires = $structureAnneeUniversitaireRepository->findAllByOldIdArray();
-        $this->tGroupes = $structureGroupeRepository->findAllByOldIdArray();
+        $this->tPersonnels = array_filter($personnelRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Users\Personnel);
+        $this->tSemestres = array_filter($structureSemestreRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureSemestre);
+        $this->tAnneesUniversitaires = array_filter($structureAnneeUniversitaireRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureAnneeUniversitaire);
+        $this->tGroupes = array_filter($structureGroupeRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureGroupe);
         $matieres = $scolEnseignementRepository->findAll();
 
         foreach ($matieres as $matiere) {
@@ -107,29 +107,29 @@ FOREIGN_KEY_CHECKS=1');
         $reponses = $this->httpClient->request('GET', $this->base_url . '/edt-intranet');
         $edts = $reponses->toArray();
         foreach ($edts as $ed) {
-            if (array_key_exists($ed['prof'], $this->tPersonnels) && array_key_exists($ed['matiere'], $this->tMatieres)) {
+            if (array_key_exists(LegacyValue::key($ed['prof']), $this->tPersonnels) && array_key_exists(LegacyValue::key($ed['matiere']), $this->tMatieres)) {
                 $edt = new EdtEvent();
                 $edt->setUuid(UuidV4::v4());
-                $edt->setDate(new \DateTime($ed['date']));
-                $edt->setDebut(new \DateTime($ed['debut']));
-                $edt->setFin(new \DateTime($ed['fin']));
-                $edt->setSalle($ed['salle']);
-                $edt->setPersonnel($this->tPersonnels[$ed['prof']]);
-                $edt->setLibPersonnel($ed['libprof']);
-                $edt->setCodePersonnel($ed['codeRh']);
-                $edt->setGroupe($this->tGroupes[$ed['groupe']] ?? null);
-                $edt->setType($ed['type']);
-                $edt->setCouleur($ed['couleur']);
-                $edt->setEvaluation($ed['evaluation']);
+                $edt->setDate(new \DateTime(LegacyValue::string($ed['date'])));
+                $edt->setDebut(new \DateTime(LegacyValue::string($ed['debut'])));
+                $edt->setFin(new \DateTime(LegacyValue::string($ed['fin'])));
+                $edt->setSalle(LegacyValue::string($ed['salle']));
+                $edt->setPersonnel($this->tPersonnels[LegacyValue::key($ed['prof'])]);
+                $edt->setLibPersonnel(LegacyValue::nullableString($ed['libprof']));
+                $edt->setCodePersonnel(LegacyValue::nullableString($ed['codeRh']));
+                $edt->setGroupe($this->tGroupes[LegacyValue::key($ed['groupe'])] ?? null);
+                $edt->setType(LegacyValue::nullableString($ed['type']));
+                $edt->setCouleur(LegacyValue::nullableString($ed['couleur']));
+                $edt->setEvaluation(LegacyValue::bool($ed['evaluation']));
                 //$edt->setCodeGroupe($this->tGroupes[$ed['groupe']]->getCodeApogee());
-                $edt->setCodeModule($this->tMatieres[$ed['matiere']]->getCodeApogee());
-                $edt->setEnseignement($this->tMatieres[$ed['matiere']]);
-                $edt->setJour($ed['jour']);
+                $edt->setCodeModule(LegacyValue::nullableString($this->tMatieres[LegacyValue::key($ed['matiere'])]->getCodeApogee()));
+                $edt->setEnseignement($this->tMatieres[LegacyValue::key($ed['matiere'])]);
+                $edt->setJour(LegacyValue::nullableInt($ed['jour']));
                 // $edt->setLibGroupe($this->tGroupes[$ed['groupe']]->getLibelle());
-                $edt->setLibModule($this->tMatieres[$ed['matiere']]->getLibelle());
-                $edt->setSemestre($this->tSemestres[$ed['semestre']]);
-                $edt->setSemaineFormation($ed['semaine']);
-                $edt->setAnneeUniversitaire($this->tAnneesUniversitaires[$ed['anneeUniversitaire']]);
+                $edt->setLibModule(LegacyValue::nullableString($this->tMatieres[LegacyValue::key($ed['matiere'])]->getLibelle()));
+                $edt->setSemestre($this->tSemestres[LegacyValue::key($ed['semestre'])]);
+                $edt->setSemaineFormation(LegacyValue::nullableInt($ed['semaine']));
+                $edt->setAnneeUniversitaire($this->tAnneesUniversitaires[LegacyValue::key($ed['anneeUniversitaire'])]);
 
                 $this->entityManager->persist($edt);
             }

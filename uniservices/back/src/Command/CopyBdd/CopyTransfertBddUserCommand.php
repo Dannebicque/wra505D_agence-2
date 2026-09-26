@@ -29,17 +29,17 @@ class CopyTransfertBddUserCommand extends Command
 {
     protected Connection $em;
 
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, Personnel> */
     protected array $tPersonnels = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, Etudiant> */
     protected array $tEtudiants = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Structure\StructureAnneeUniversitaire> */
     protected array $tAnneeUniversitaire = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Structure\StructureDepartement> */
     protected array $tDepartements = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Structure\StructureGroupe> */
     protected array $tGroupes = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, \App\Entity\Scolarite\ScolBac> */
     protected array $tBacs = [];
 
     protected SymfonyStyle $io;
@@ -55,11 +55,11 @@ class CopyTransfertBddUserCommand extends Command
     ) {
         parent::__construct();
         $this->em = $copyConnection;
-        $this->tAnneeUniversitaire = $structureAnneeUniversitaireRepository->findAllByIdArray();
-        $this->tDepartements = $structureDepartementRepository->findAllByIdArray();
-        $this->tGroupes = $structureGroupeRepository->findAllByOldIdArray();
-        $this->tEtudiants = $etudiantRepository->findAllByOldIdArray();
-        $this->tBacs = $scolBacRepository->findAllByOldIdArray();
+        $this->tAnneeUniversitaire = array_filter($structureAnneeUniversitaireRepository->findAllByIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureAnneeUniversitaire);
+        $this->tDepartements = array_filter($structureDepartementRepository->findAllByIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureDepartement);
+        $this->tGroupes = array_filter($structureGroupeRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Structure\StructureGroupe);
+        $this->tEtudiants = array_filter($etudiantRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof Etudiant);
+        $this->tBacs = array_filter($scolBacRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof \App\Entity\Scolarite\ScolBac);
     }
 
     protected function configure(): void
@@ -103,43 +103,43 @@ FOREIGN_KEY_CHECKS=1');
 
         foreach ($personnels as $pers) {
             $personnel = new Personnel();
-            $personnel->setNom($pers['nom']);
-            $personnel->setPrenom($pers['prenom']);
-            $personnel->setMailUniv($pers['mail_univ']);
-            $personnel->setUsername($pers['username']);
-            $personnel->setPassword($pers['password']);
-            $personnel->setPhotoName($pers['photo_name']);
-            $personnel->setInitiales(substr($pers['initiales'], 0, 3));
-            $personnel->setOldId($pers['id']);
-            $personnel->setAnneeUniversitaire($this->tAnneeUniversitaire[$pers['annee_universitaire_id']]);
-            $personnel->setEntreprise($pers['entreprise']);
-            $personnel->setTelBureau($pers['tel_bureau']);
+            $personnel->setNom(LegacyValue::string($pers['nom']));
+            $personnel->setPrenom(LegacyValue::string($pers['prenom']));
+            $personnel->setMailUniv(LegacyValue::string($pers['mail_univ']));
+            $personnel->setUsername(LegacyValue::string($pers['username']));
+            $personnel->setPassword(LegacyValue::nullableString($pers['password']));
+            $personnel->setPhotoName(LegacyValue::nullableString($pers['photo_name']));
+            $personnel->setInitiales(substr(LegacyValue::string($pers['initiales']), 0, 3));
+            $personnel->setOldId(LegacyValue::nullableInt($pers['id']));
+            $personnel->setAnneeUniversitaire($this->tAnneeUniversitaire[LegacyValue::key($pers['annee_universitaire_id'])]);
+            $personnel->setEntreprise(LegacyValue::nullableString($pers['entreprise']));
+            $personnel->setTelBureau(LegacyValue::nullableString($pers['tel_bureau']));
             $personnel->setDomaines(
                 // transformer le string $pers['domaines'] en tableau
-                explode(',', $pers['domaines'])
+                explode(',', LegacyValue::string($pers['domaines']))
             );
-            $personnel->setBureau($pers['bureau1']);
-            $personnel->setNumeroHarpege($pers['numero_harpege']);
-            $personnel->setNbHeuresService($pers['nb_heures_service']);
-            $personnel->setMailPerso($pers['mail_perso']);
-            $personnel->setSitePerso($pers['site_perso']);
-            $personnel->setSiteUniv($pers['site_univ']);
-            $personnel->setResponsabilites($pers['responsabilites']);
-            $personnel->setPosteInterne($pers['poste_interne']);
-            $personnel->setStatut(StatutEnum::tryFrom($pers['statut']));
+            $personnel->setBureau(LegacyValue::nullableString($pers['bureau1']));
+            $personnel->setNumeroHarpege(LegacyValue::nullableInt($pers['numero_harpege']));
+            $personnel->setNbHeuresService(LegacyValue::nullableInt($pers['nb_heures_service']));
+            $personnel->setMailPerso(LegacyValue::nullableString($pers['mail_perso']));
+            $personnel->setSitePerso(LegacyValue::nullableString($pers['site_perso']));
+            $personnel->setSiteUniv(LegacyValue::nullableString($pers['site_univ']));
+            $personnel->setResponsabilites(LegacyValue::nullableString($pers['responsabilites']));
+            $personnel->setPosteInterne(LegacyValue::nullableString($pers['poste_interne']));
+            $personnel->setStatut(StatutEnum::tryFrom(LegacyValue::key($pers['statut'])));
 
             // gestion des adresses
             if ($pers['adresse_id'] !== null && $pers['adresse_id'] !== '') {
-                $sql = 'SELECT * FROM adresse WHERE id = ' . $pers['adresse_id'];
+                $sql = 'SELECT * FROM adresse WHERE id = ' . LegacyValue::castString($pers['adresse_id']);
                 $adresse = $this->em->executeQuery($sql)->fetchAssociative();
 
                 $objAdresse = new Adresse(
-                    $adresse['adresse1'] ?? '',
-                    $adresse['adresse2'] ?? '',
-                    $adresse['adresse3'] ?? '',
-                    $adresse['code_postal'] ?? '',
-                    $adresse['ville'] ?? '',
-                    $adresse['pays'] ?? 'France'
+                    LegacyValue::string($adresse['adresse1'] ?? ''),
+                    LegacyValue::string($adresse['adresse2'] ?? ''),
+                    LegacyValue::string($adresse['adresse3'] ?? ''),
+                    LegacyValue::string($adresse['code_postal'] ?? ''),
+                    LegacyValue::string($adresse['ville'] ?? ''),
+                    LegacyValue::string($adresse['pays'] ?? 'France')
                 );
                 $personnel->setAdressePersonnelle($objAdresse);
             }
@@ -181,10 +181,10 @@ FOREIGN_KEY_CHECKS=1');
   "id_edu_sign" => "{"3":"xwdv9d59utg5fafu"}"
              */
 
-            $this->tPersonnels[$pers['id']] = $personnel;
+            $this->tPersonnels[LegacyValue::key($pers['id'])] = $personnel;
 
             $this->entityManager->persist($personnel);
-            $this->io->info('Personnel : ' . $pers['nom'] . ' ajouté pour insertion');
+            $this->io->info('Personnel : ' . LegacyValue::castString($pers['nom']) . ' ajouté pour insertion');
         }
 
         $this->entityManager->flush();
@@ -199,65 +199,65 @@ FOREIGN_KEY_CHECKS=1');
 
         foreach ($etudiants as $etu) {
             $etudiant = new Etudiant();
-            $etudiant->setNom($etu['nom']);
-            $etudiant->setPrenom($etu['prenom']);
-            $etudiant->setMailUniv($etu['mail_univ']);
-            $etudiant->setMailPerso($etu['mail_perso']);
-            $etudiant->setUsername($etu['username']);
-            $etudiant->setPhotoName($etu['photo_name']);
-            $etudiant->setOldId($etu['id']);
-            $etudiant->setPassword($etu['password']);
-            $etudiant->setRoles(json_decode($etu['roles'], true) ?? ["ROLE_ETUDIANT"]);
-            $etudiant->setSitePerso($etu['site_perso']);
-            $etudiant->setSiteUniv($etu['site_univ']);
-            $etudiant->setNumEtudiant($etu['num_etudiant']);
-            $etudiant->setNumIne($etu['num_ine']);
-            $etudiant->setAnneeBac($etu['annee_bac']);
-            $etudiant->setBoursier((bool)$etu['boursier']);
-            $etudiant->setAmenagementsParticuliers($etu['amenagements_particuliers']);
-            $etudiant->setPromotion($etu['promotion']);
-            $etudiant->setAnneeSortie($etu['annee_sortie']);
-            $etudiant->setDateNaissance(new \DateTime($etu['date_naissance']));
-            $etudiant->setTel1($etu['tel1']);
-            $etudiant->setTel2($etu['tel2']);
-            $etudiant->setLieuNaissance($etu['lieu_naissance']);
+            $etudiant->setNom(LegacyValue::string($etu['nom']));
+            $etudiant->setPrenom(LegacyValue::string($etu['prenom']));
+            $etudiant->setMailUniv(LegacyValue::string($etu['mail_univ']));
+            $etudiant->setMailPerso(LegacyValue::nullableString($etu['mail_perso']));
+            $etudiant->setUsername(LegacyValue::string($etu['username']));
+            $etudiant->setPhotoName(LegacyValue::nullableString($etu['photo_name']));
+            $etudiant->setOldId(LegacyValue::nullableInt($etu['id']));
+            $etudiant->setPassword(LegacyValue::nullableString($etu['password']));
+            $etudiant->setRoles(LegacyValue::strings(json_decode(LegacyValue::string($etu['roles']), true) ?? ["ROLE_ETUDIANT"]));
+            $etudiant->setSitePerso(LegacyValue::nullableString($etu['site_perso']));
+            $etudiant->setSiteUniv(LegacyValue::nullableString($etu['site_univ']));
+            $etudiant->setNumEtudiant(LegacyValue::nullableString($etu['num_etudiant']));
+            $etudiant->setNumIne(LegacyValue::nullableString($etu['num_ine']));
+            $etudiant->setAnneeBac(LegacyValue::nullableInt($etu['annee_bac']));
+            $etudiant->setBoursier(LegacyValue::bool($etu['boursier']));
+            $etudiant->setAmenagementsParticuliers(LegacyValue::nullableString($etu['amenagements_particuliers']));
+            $etudiant->setPromotion(LegacyValue::nullableInt($etu['promotion']));
+            $etudiant->setAnneeSortie(LegacyValue::nullableInt($etu['annee_sortie']));
+            $etudiant->setDateNaissance(new \DateTime(LegacyValue::string($etu['date_naissance'])));
+            $etudiant->setTel1(LegacyValue::nullableString($etu['tel1']));
+            $etudiant->setTel2(LegacyValue::nullableString($etu['tel2']));
+            $etudiant->setLieuNaissance(LegacyValue::nullableString($etu['lieu_naissance']));
 
             // gestion des adresses : adresse etudiante et adresse parentale
             if ($etu['adresse_id'] !== null && $etu['adresse_id'] !== '') {
-                $sql = 'SELECT * FROM adresse WHERE id = ' . $etu['adresse_id'];
+                $sql = 'SELECT * FROM adresse WHERE id = ' . LegacyValue::castString($etu['adresse_id']);
                 $adresse = $this->em->executeQuery($sql)->fetchAssociative();
 
                 $objAdresseEtudiante = new Adresse(
-                    $adresse['adresse1'] ?? '',
-                    $adresse['adresse2'] ?? '',
-                    $adresse['adresse3'] ?? '',
-                    $adresse['ville'] ?? '',
-                    $adresse['code_postal'] ?? '',
-                    $adresse['pays'] ?? 'France'
+                    LegacyValue::string($adresse['adresse1'] ?? ''),
+                    LegacyValue::string($adresse['adresse2'] ?? ''),
+                    LegacyValue::string($adresse['adresse3'] ?? ''),
+                    LegacyValue::string($adresse['ville'] ?? ''),
+                    LegacyValue::string($adresse['code_postal'] ?? ''),
+                    LegacyValue::string($adresse['pays'] ?? 'France')
                 );
                 $etudiant->setAdresseEtudiante($objAdresseEtudiante);
             }
 
             if ($etu['adresse_parentale_id'] !== null && $etu['adresse_parentale_id'] !== '') {
-                $sql = 'SELECT * FROM adresse WHERE id = ' . $etu['adresse_parentale_id'];
+                $sql = 'SELECT * FROM adresse WHERE id = ' . LegacyValue::castString($etu['adresse_parentale_id']);
                 $adresse = $this->em->executeQuery($sql)->fetchAssociative();
 
                 $objAdresseParentale = new Adresse(
-                    $adresse['adresse1'] ?? '',
-                    $adresse['adresse2'] ?? '',
-                    $adresse['adresse3'] ?? '',
-                    $adresse['ville'] ?? '',
-                    $adresse['code_postal'] ?? '',
-                    $adresse['pays'] ?? 'France'
+                    LegacyValue::string($adresse['adresse1'] ?? ''),
+                    LegacyValue::string($adresse['adresse2'] ?? ''),
+                    LegacyValue::string($adresse['adresse3'] ?? ''),
+                    LegacyValue::string($adresse['ville'] ?? ''),
+                    LegacyValue::string($adresse['code_postal'] ?? ''),
+                    LegacyValue::string($adresse['pays'] ?? 'France')
                 );
                 $etudiant->setAdresseParentale($objAdresseParentale);
             }
 
             // Appel à addEtudiantBac
-            $this->addEtudiantBac($etudiant, $etu['bac_id']);
+            $this->addEtudiantBac($etudiant, LegacyValue::nullableInt($etu['bac_id']));
 
             $this->entityManager->persist($etudiant);
-            $this->io->info('Etudiant : ' . $etu['nom'] . ' ajouté pour insertion');
+            $this->io->info('Etudiant : ' . LegacyValue::castString($etu['nom']) . ' ajouté pour insertion');
 
             /*
              * "id" => 30
@@ -303,24 +303,24 @@ FOREIGN_KEY_CHECKS=1');
 
     private function addEtudiantsGroupes(): void
     {
-        $this->tEtudiants = $this->entityManager->getRepository(Etudiant::class)->findAllByOldIdArray();
+        $this->tEtudiants = array_filter($this->entityManager->getRepository(Etudiant::class)->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof Etudiant);
         $sql = 'SELECT * FROM etudiant_groupe';
         $etudiantsGroupes = $this->em->executeQuery($sql)->fetchAllAssociative();
 
         foreach ($etudiantsGroupes as $etuGroupe) {
             // Chercher l'étudiant correspondant
-            if (!isset($this->tEtudiants[$etuGroupe['etudiant_id']])) {
-                $this->io->warning('Etudiant ID ' . $etuGroupe['etudiant_id'] . ' non trouvé, skip.');
+            if (!isset($this->tEtudiants[LegacyValue::key($etuGroupe['etudiant_id'])])) {
+                $this->io->warning('Etudiant ID ' . LegacyValue::castString($etuGroupe['etudiant_id']) . ' non trouvé, skip.');
                 continue;
             }
-            $etudiant = $this->tEtudiants[$etuGroupe['etudiant_id']];
+            $etudiant = $this->tEtudiants[LegacyValue::key($etuGroupe['etudiant_id'])];
 
             // Chercher le groupe correspondant
-            if (!isset($this->tGroupes[$etuGroupe['groupe_id']])) {
-                $this->io->warning('Groupe ID ' . $etuGroupe['groupe_id'] . ' non trouvé, skip.');
+            if (!isset($this->tGroupes[LegacyValue::key($etuGroupe['groupe_id'])])) {
+                $this->io->warning('Groupe ID ' . LegacyValue::castString($etuGroupe['groupe_id']) . ' non trouvé, skip.');
                 continue;
             }
-            $groupe = $this->tGroupes[$etuGroupe['groupe_id']];
+            $groupe = $this->tGroupes[LegacyValue::key($etuGroupe['groupe_id'])];
 
             // Ajouter l'étudiant au groupe
             $groupe->addEtudiant($etudiant);
@@ -356,7 +356,7 @@ FOREIGN_KEY_CHECKS=1');
             // Chercher le département correspondant
             $departementTrouve = null;
             foreach ($this->tDepartements as $departement) {
-                if ($departement->getOldId() === $persDept['departement_id']) {
+                if ($departement->getOldId() === LegacyValue::nullableInt($persDept['departement_id'])) {
                     $departementTrouve = $departement;
                     break;
                 }
@@ -366,9 +366,9 @@ FOREIGN_KEY_CHECKS=1');
                 continue;
             }
             $depPers->setDepartement($departementTrouve);
-            $depPers->setPersonnel($this->tPersonnels[$persDept['personnel_id']]);
-            $depPers->setDefaut((bool)$persDept['defaut']);
-            $depPers->setPermissions(json_decode($persDept['roles'], true) ?? []);
+            $depPers->setPersonnel($this->tPersonnels[LegacyValue::key($persDept['personnel_id'])]);
+            $depPers->setDefaut(LegacyValue::bool($persDept['defaut']));
+            $depPers->setPermissions(LegacyValue::strings(json_decode(LegacyValue::string($persDept['roles']), true) ?? []));
 
             $this->entityManager->persist($depPers);
             // $this->io->info('Personnel : ' . $this->tPersonnels[$persDept['personnel_id']]->getNom() . ' ajouté au département ' . $departementTrouve->getLibelle());

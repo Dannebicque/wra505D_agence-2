@@ -29,13 +29,13 @@ class CopyTransfertBddApcCommand extends Command
 
     protected SymfonyStyle $io;
 
-    /** @var array<int, ApcReferentiel> */
+    /** @var array<int|string, ApcReferentiel> */
     private array $tReferentiels = [];
-    /** @var array<int, ApcCompetence> */
+    /** @var array<int|string, ApcCompetence> */
     private array $tCompetences = [];
-    /** @var array<int, ApcParcours> */
+    /** @var array<int|string, ApcParcours> */
     private array $tParcours = [];
-    /** @var array<int, ApcNiveau> */
+    /** @var array<int|string, ApcNiveau> */
     private array $tNiveaux = [];
 
     public function __construct(
@@ -85,8 +85,8 @@ FOREIGN_KEY_CHECKS=1');
 
     public function addReferentiel(): void
     {
-        $diplomes = $this->entityManager->getRepository(StructureTypeDiplome::class)->findAllByIdArray();
-        $departements = $this->entityManager->getRepository(StructureDepartement::class)->findAllByIdArray();
+        $diplomes = array_filter($this->entityManager->getRepository(StructureTypeDiplome::class)->findAllByIdArray(), static fn (mixed $entity): bool => $entity instanceof StructureTypeDiplome);
+        $departements = array_filter($this->entityManager->getRepository(StructureDepartement::class)->findAllByIdArray(), static fn (mixed $entity): bool => $entity instanceof StructureDepartement);
 
 
         $sql = "SELECT * FROM apc_referentiel";
@@ -94,18 +94,18 @@ FOREIGN_KEY_CHECKS=1');
 
         foreach ($referentiels as $ref) {
             $referentiel = new ApcReferentiel();
-            $referentiel->setLibelle($ref['libelle']);
-            $referentiel->setDescription($ref['description']);
-            $referentiel->setAnneePublication((int)$ref['annee_publication']);
-            $referentiel->setDepartement($departements[$ref['departement_id']]);
+            $referentiel->setLibelle(LegacyValue::string($ref['libelle']));
+            $referentiel->setDescription(LegacyValue::nullableString($ref['description']));
+            $referentiel->setAnneePublication(LegacyValue::castInt($ref['annee_publication']));
+            $referentiel->setDepartement($departements[LegacyValue::key($ref['departement_id'])]);
             $referentiel->setTypeDiplome(
-                $diplomes[$ref['type_diplome_id']]
+                $diplomes[LegacyValue::key($ref['type_diplome_id'])]
             );
 
-            $this->tReferentiels[$ref['id']] = $referentiel;
+            $this->tReferentiels[LegacyValue::key($ref['id'])] = $referentiel;
 
             $this->entityManager->persist($referentiel);
-            $this->io->info('Referentiel ' . $ref['id'] . ' ajouté');
+            $this->io->info('Referentiel ' . LegacyValue::castString($ref['id']) . ' ajouté');
         }
 
         $this->entityManager->flush();
@@ -117,21 +117,21 @@ FOREIGN_KEY_CHECKS=1');
 
         foreach ($parcours as $par) {
             $parcour = new ApcParcours();
-            $parcour->setLibelle($par['libelle']);
-            $parcour->setOldId($par['id']);
-            $parcour->setActif($par['actif']);
-            $parcour->setSigle($par['code']);
-            $parcour->setCouleur($par['couleur']);
+            $parcour->setLibelle(LegacyValue::string($par['libelle']));
+            $parcour->setOldId(LegacyValue::nullableInt($par['id']));
+            $parcour->setActif(LegacyValue::bool($par['actif']));
+            $parcour->setSigle(LegacyValue::nullableString($par['code']));
+            $parcour->setCouleur(LegacyValue::nullableString($par['couleur']));
             $parcour->setOpt(
                 [
-                    'formation_continue' => (bool)$par['formation_continue'],
+                    'formation_continue' => LegacyValue::bool($par['formation_continue']),
                 ]
             );
 
-            $this->tParcours[$par['id']] = $parcour;
+            $this->tParcours[LegacyValue::key($par['id'])] = $parcour;
 
             $this->entityManager->persist($parcour);
-            $this->io->info('Parcours ' . $par['id'] . ' ajouté');
+            $this->io->info('Parcours ' . LegacyValue::castString($par['id']) . ' ajouté');
         }
 
         $this->entityManager->flush();
@@ -143,36 +143,36 @@ FOREIGN_KEY_CHECKS=1');
 
         foreach ($competences as $comp) {
             $competence = new ApcCompetence();
-            $competence->setOldId($comp['id']);
-            $competence->setReferentiel($this->tReferentiels[$comp['apc_referentiel_id']]);
-            $competence->setLibelle($comp['libelle']);
-            $competence->setNomCourt($comp['nom_court']);
-            $competence->setCouleur($comp['couleur']);
+            $competence->setOldId(LegacyValue::nullableInt($comp['id']));
+            $competence->setReferentiel($this->tReferentiels[LegacyValue::key($comp['apc_referentiel_id'])]);
+            $competence->setLibelle(LegacyValue::string($comp['libelle']));
+            $competence->setNomCourt(LegacyValue::nullableString($comp['nom_court']));
+            $competence->setCouleur(LegacyValue::nullableString($comp['couleur']));
 
             // récupérer les composantes essentielles et les ajouter dans le tableau
 
-            $sqlCompEss = "SELECT * FROM apc_composante_essentielle WHERE competence_id = " . $comp['id'];
+            $sqlCompEss = "SELECT * FROM apc_composante_essentielle WHERE competence_id = " . LegacyValue::castInt($comp['id']);
             $compEss = $this->em->executeQuery($sqlCompEss)->fetchAllAssociative();
             $tCompEss = [];
             foreach ($compEss as $ce) {
-                $tCompEss[] = $ce['libelle'];
+                $tCompEss[] = LegacyValue::string($ce['libelle']);
             }
             $competence->setComposantesEssentielles($tCompEss);
 
             // récupérer les situations professionnelles et les ajouter dans le tableau
 
-            $sqlSitPro = "SELECT * FROM apc_situation_professionnelle WHERE competence_id = " . $comp['id'];
+            $sqlSitPro = "SELECT * FROM apc_situation_professionnelle WHERE competence_id = " . LegacyValue::castInt($comp['id']);
             $sitPro = $this->em->executeQuery($sqlSitPro)->fetchAllAssociative();
             $tSitPro = [];
             foreach ($sitPro as $sp) {
-                $tSitPro[] = $sp['libelle'];
+                $tSitPro[] = LegacyValue::string($sp['libelle']);
             }
             $competence->setSituationsProfessionnelles($tSitPro);
 
-            $this->tCompetences[$comp['id']] = $competence;
+            $this->tCompetences[LegacyValue::key($comp['id'])] = $competence;
 
             $this->entityManager->persist($competence);
-            $this->io->info('Competence ' . $comp['id'] . ' ajouté');
+            $this->io->info('Competence ' . LegacyValue::castString($comp['id']) . ' ajouté');
         }
 
         $this->entityManager->flush();
@@ -184,25 +184,25 @@ FOREIGN_KEY_CHECKS=1');
 
         foreach ($niveaux as $niv) {
             $niveau = new ApcNiveau();
-            $niveau->setCompetence($this->tCompetences[$niv['competence_id']]);
-            $niveau->setLibelle($niv['libelle']);
-            $niveau->setOrdre($niv['ordre']);
+            $niveau->setCompetence($this->tCompetences[LegacyValue::key($niv['competence_id'])]);
+            $niveau->setLibelle(LegacyValue::string($niv['libelle']));
+            $niveau->setOrdre(LegacyValue::int($niv['ordre']));
 
             // récupérer les parcours associés au niveau pour les ajouter dans la collection
-            $sqlNivPar = "SELECT * FROM apc_parcours_niveau WHERE niveau_id = " . $niv['id'];
+            $sqlNivPar = "SELECT * FROM apc_parcours_niveau WHERE niveau_id = " . LegacyValue::castInt($niv['id']);
             $nivPar = $this->em->executeQuery($sqlNivPar)->fetchAllAssociative();
             foreach ($nivPar as $np) {
-                $niveau->addParcours($this->tParcours[$np['parcours_id']]);
+                $niveau->addParcours($this->tParcours[LegacyValue::key($np['parcours_id'])]);
             }
 
             //todo: récupérer toutes les années sur l'ordre du diplome associé...
             // ajouter toutes les années
             //$niveau->addAnnee();
 
-            $this->tNiveaux[$niv['id']] = $niveau;
+            $this->tNiveaux[LegacyValue::key($niv['id'])] = $niveau;
 
             $this->entityManager->persist($niveau);
-            $this->io->info('Niveau ' . $niv['id'] . ' ajouté');
+            $this->io->info('Niveau ' . LegacyValue::castString($niv['id']) . ' ajouté');
         }
 
         $this->entityManager->flush();
@@ -215,13 +215,13 @@ FOREIGN_KEY_CHECKS=1');
 
         foreach ($apcs as $ap) {
             $apc = new ApcApprentissageCritique();
-            $apc->setNiveau($this->tNiveaux[$ap['niveau_id']]);
-            $apc->setLibelle($ap['libelle']);
-            $apc->setCode($ap['code']);
-            $apc->setOldId($ap['id']);
+            $apc->setNiveau($this->tNiveaux[LegacyValue::key($ap['niveau_id'])]);
+            $apc->setLibelle(LegacyValue::string($ap['libelle']));
+            $apc->setCode(LegacyValue::nullableString($ap['code']));
+            $apc->setOldId(LegacyValue::nullableInt($ap['id']));
 
             $this->entityManager->persist($apc);
-            $this->io->info('Apprentissage critique ' . $ap['id'] . ' ajouté');
+            $this->io->info('Apprentissage critique ' . LegacyValue::castString($ap['id']) . ' ajouté');
         }
 
         $this->entityManager->flush();

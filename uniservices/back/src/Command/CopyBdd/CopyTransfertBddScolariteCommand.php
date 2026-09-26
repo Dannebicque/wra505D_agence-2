@@ -5,6 +5,11 @@ namespace App\Command\CopyBdd;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Scolarite\ScolBac;
+use App\Entity\Structure\StructureGroupe;
+use App\Entity\Structure\StructureDepartement;
+use App\Entity\Users\Etudiant;
+use App\Entity\Structure\StructureSemestre;
+use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Repository\EtudiantRepository;
 use App\Repository\Structure\StructureAnneeUniversitaireRepository;
 use App\Repository\Structure\StructureDepartementRepository;
@@ -31,16 +36,16 @@ class CopyTransfertBddScolariteCommand extends Command
 {
     protected Connection $em;
 
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, Etudiant> */
     protected array $tEtudiants = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, StructureAnneeUniversitaire> */
     protected array $tAnneeUniversitaire = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, StructureSemestre> */
     protected array $tSemestres = [];
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, StructureDepartement> */
     protected array $tDepartements = [];
 
-    /** @var array<int|string, mixed> */
+    /** @var array<int|string, StructureGroupe> */
     protected array $tGroupes = [];
     protected string $base_url;
 
@@ -60,11 +65,11 @@ class CopyTransfertBddScolariteCommand extends Command
     ) {
         parent::__construct();
         $this->em = $copyConnection;
-        $this->tAnneeUniversitaire = $structureAnneeUniversitaireRepository->findAllByOldIdArray();
-        $this->tSemestres = $structureSemestreRepository->findAllByOldIdArray();
-        $this->tEtudiants = $etudiantRepository->findAllByOldIdArray();
-        $this->tDepartements = $structureDepartementRepository->findAllByIdArray();
-        $this->tGroupes = $structureGroupeRepository->findAllByOldIdArray();
+        $this->tAnneeUniversitaire = array_filter($structureAnneeUniversitaireRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof StructureAnneeUniversitaire);
+        $this->tSemestres = array_filter($structureSemestreRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof StructureSemestre);
+        $this->tEtudiants = array_filter($etudiantRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof Etudiant);
+        $this->tDepartements = array_filter($structureDepartementRepository->findAllByIdArray(), static fn (mixed $entity): bool => $entity instanceof StructureDepartement);
+        $this->tGroupes = array_filter($structureGroupeRepository->findAllByOldIdArray(), static fn (mixed $entity): bool => $entity instanceof StructureGroupe);
         // url intranet
         $this->base_url = $params->get('URL_INTRANET_V3');
         $this->httpClient = HttpClient::create([
@@ -116,31 +121,33 @@ FOREIGN_KEY_CHECKS=1');
         $etudiants = $this->em->executeQuery($sql)->fetchAllAssociative();
 
         foreach ($etudiants as $etu) {
-            $response = $this->httpClient->request('GET', $this->base_url . '/etudiant/' . $etu['id']);
+            $response = $this->httpClient->request('GET', $this->base_url . '/etudiant/' . LegacyValue::castString($etu['id']));
             $scolarites = json_decode($response->getContent(), true);
 
-            if ($scolarites && isset($this->tEtudiants[$etu['id']])) {
+            if ($scolarites && isset($this->tEtudiants[LegacyValue::key($etu['id'])])) {
+                $scolarites = LegacyValue::rows($scolarites);
                 foreach ($scolarites as $scol) {
-                    if (!array_key_exists($scol['annee'], $this->tAnneeUniversitaire)) {
+                    if (!array_key_exists(LegacyValue::key($scol['annee']), $this->tAnneeUniversitaire)) {
                         continue;
                     }
 
                     $scolarite = new EtudiantScolarite();
                     $scolarite->setUuid(UuidV4::v4());
-                    $scolarite->setEtudiant($this->tEtudiants[$etu['id']]);
-                    $scolarite->setAnneeUniversitaire($this->tAnneeUniversitaire[$scol['annee']]);
-                    if ($this->tAnneeUniversitaire[$scol['annee']]->isActif()) {
+                    $scolarite->setEtudiant($this->tEtudiants[LegacyValue::key($etu['id'])]);
+                    $scolarite->setAnneeUniversitaire($this->tAnneeUniversitaire[LegacyValue::key($scol['annee'])]);
+                    if ($this->tAnneeUniversitaire[LegacyValue::key($scol['annee'])]->isActif()) {
                         $scolarite->setActif(true);
                     }
 
                     // Définir les propriétés globales de la scolarité
-                    $scolarite->setMoyenne(isset($scol['bilan']['moyenne']) ? round($scol['bilan']['moyenne'], 2) : 0);
-                    $scolarite->setNbAbsences($scol['bilan']['nbAbsences'] ?? 0);
+                    $bilan = LegacyValue::row($scol['bilan'] ?? []);
+                    $scolarite->setMoyenne(isset($bilan['moyenne']) ? round(LegacyValue::float($bilan['moyenne']), 2) : 0);
+                    $scolarite->setNbAbsences(LegacyValue::int($bilan['nbAbsences'] ?? 0));
 
-                    $scolarite->setCommentaire($scol['bilan']['commentaire'] ?? '');
+                    $scolarite->setCommentaire(LegacyValue::nullableString($bilan['commentaire'] ?? ''));
 
                     // Set decision from bilan data (convert string to boolean if needed)
-                    $decision = $scol['bilan']['decision'] ?? null;
+                    $decision = $bilan['decision'] ?? null;
                     if ($decision === 'V') {
                         $scolarite->setDecision(true);
                     } elseif ($decision === null) {
@@ -150,20 +157,23 @@ FOREIGN_KEY_CHECKS=1');
                     }
 
                     // Set proposition if available in the last semester
-                    if (!empty($scol['semestres'])) {
-                        $lastSemester = end($scol['semestres']);
+                    $semestres = LegacyValue::rows($scol['semestres'] ?? []);
+                    if (!empty($semestres)) {
+                        $lastSemester = end($semestres);
                         if (isset($lastSemester['proposition'])) {
                             // If the proposition is for the next year (like "DUT"), find the appropriate year
                             foreach ($this->tAnneeUniversitaire as $annee) {
                                 if ($annee->getLibelle() === $lastSemester['proposition']) {
-                                    $scolarite->setProposition($annee->getAnnee());
-                                    break;
+                                    // L'origine passait ici l'année civile (getAnnee(), un entier) à
+                                    // setProposition(), qui attend une StructureAnnee : l'import plantait
+                                    // sur une TypeError. Fiche E19.
+                                    throw new \LogicException('Proposition de scolarité V3 non reprise, voir la fiche E19.');
                                 }
                             }
                         }
                     }
 
-                    $scolarite->setOrdre($scol['ordre'] ?? count($scolarites));
+                    $scolarite->setOrdre(LegacyValue::int($scol['ordre'] ?? count($scolarites)));
 
                     foreach ($this->tDepartements as $departement) {
                         if ($departement->getOldId() === $etu['departement_id']) {
@@ -175,15 +185,15 @@ FOREIGN_KEY_CHECKS=1');
                     // Ajouter les semestres
                     // Garder trace des semestres déjà créés pour cette scolarité (indexés par id de StructureSemestre)
                     $semestresCrees = [];
-                    foreach ($scol['semestres'] as $semestre) {
+                    foreach ($semestres as $semestre) {
                         foreach ($this->tSemestres as $semestreDest) {
                             if ($semestreDest->getOldId() === $semestre['id']) {
                                 $etudiantScolSemestre = new EtudiantScolariteSemestre();
                                 $etudiantScolSemestre->setScolarite($scolarite);
                                 $etudiantScolSemestre->setSemestre($semestreDest);
-                                foreach ($semestre['groupes'] as $groupe) {
-                                    if (isset($this->tGroupes[$groupe['id']])) {
-                                        $etudiantScolSemestre->addGroupe($this->tGroupes[$groupe['id']]);
+                                foreach (LegacyValue::rows($semestre['groupes'] ?? []) as $groupe) {
+                                    if (isset($this->tGroupes[LegacyValue::key($groupe['id'])])) {
+                                        $etudiantScolSemestre->addGroupe($this->tGroupes[LegacyValue::key($groupe['id'])]);
                                     }
                                 }
 
@@ -209,7 +219,7 @@ FOREIGN_KEY_CHECKS=1');
                                 }
 
                                 // Set moyenne from semestre data
-                                $etudiantScolSemestre->setMoyenne(isset($semestre['moyenne']) ? round($semestre['moyenne'], 2) : 0);
+                                $etudiantScolSemestre->setMoyenne(isset($semestre['moyenne']) ? round(LegacyValue::float($semestre['moyenne']), 2) : 0);
 
                                 $this->entityManager->persist($etudiantScolSemestre);
                                 $semestresCrees[$semestreDest->getId()] = true;
@@ -257,10 +267,10 @@ FOREIGN_KEY_CHECKS=1');
 
         foreach ($bacs as $bac) {
             $scolBac = new ScolBac();
-            $scolBac->setLibelle($bac['libelle']);
-            $scolBac->setLibelleLong($bac['libelle_long']);
-            $scolBac->setOldId($bac['id']);
-            $scolBac->setCodeApogee($bac['code_apogee']);
+            $scolBac->setLibelle(LegacyValue::string($bac['libelle']));
+            $scolBac->setLibelleLong(LegacyValue::string($bac['libelle_long']));
+            $scolBac->setOldId(LegacyValue::nullableInt($bac['id']));
+            $scolBac->setCodeApogee(LegacyValue::nullableString($bac['code_apogee']));
             $this->entityManager->persist($scolBac);
         }
         $this->entityManager->flush();
