@@ -1,23 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace DocumentBundle\Repository;
 
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use DocumentBundle\Entity\Document;
-use DocumentBundle\Entity\DocumentFavori;
+use DocumentBundle\Entity\FavoriteDocument;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<DocumentFavori>
+ * @extends ServiceEntityRepository<FavoriteDocument>
  */
-class DocumentFavoriRepository extends ServiceEntityRepository
+class FavoriteDocumentRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, DocumentFavori::class);
+        parent::__construct($registry, FavoriteDocument::class);
     }
 
     /**
@@ -25,35 +27,35 @@ class DocumentFavoriRepository extends ServiceEntityRepository
      *
      * @return list<int>
      */
-    public function idsDocuments(Etudiant|Personnel $utilisateur): array
+    public function documentIds(Etudiant|Personnel $user): array
     {
-        return array_map('intval', $this->pour($utilisateur)
+        return array_map('intval', $this->forUser($user)
             ->select('IDENTITY(f.document)')
             ->getQuery()
             ->getSingleColumnResult());
     }
 
-    public function compter(Etudiant|Personnel $utilisateur): int
+    public function countFor(Etudiant|Personnel $user): int
     {
-        return (int) $this->pour($utilisateur)
+        return (int) $this->forUser($user)
             ->select('COUNT(f.id)')
             ->getQuery()
             ->getSingleScalarResult();
     }
 
-    public function trouver(Etudiant|Personnel $utilisateur, Document $document): ?DocumentFavori
+    public function findFor(Etudiant|Personnel $user, Document $document): ?FavoriteDocument
     {
-        return $this->pour($utilisateur)
+        return $this->forUser($user)
             ->andWhere('f.document = :document')
             ->setParameter('document', $document)
             ->getQuery()
             ->getOneOrNullResult();
     }
 
-    private function pour(Etudiant|Personnel $utilisateur): QueryBuilder
+    private function forUser(Etudiant|Personnel $user): QueryBuilder
     {
         return $this->createQueryBuilder('f')
-            ->where($utilisateur instanceof Etudiant ? 'f.etudiant = :utilisateur' : 'f.personnel = :utilisateur')
-            ->setParameter('utilisateur', $utilisateur);
+            ->where($user instanceof Etudiant ? 'f.student = :utilisateur' : 'f.staff = :utilisateur')
+            ->setParameter('utilisateur', $user);
     }
 }

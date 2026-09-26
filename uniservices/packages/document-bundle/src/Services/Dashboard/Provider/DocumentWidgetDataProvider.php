@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace DocumentBundle\Services\Dashboard\Provider;
 
 use App\Domain\Dashboard\WidgetDataProviderInterface;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use DocumentBundle\Repository\DocumentCategoryRepository;
-use DocumentBundle\Repository\DocumentFavoriRepository;
+use DocumentBundle\Repository\FavoriteDocumentRepository;
 use DocumentBundle\Repository\DocumentRepository;
 
 class DocumentWidgetDataProvider implements WidgetDataProviderInterface
@@ -14,7 +16,7 @@ class DocumentWidgetDataProvider implements WidgetDataProviderInterface
     public function __construct(
         private readonly DocumentRepository $documentRepository,
         private readonly DocumentCategoryRepository $categoryRepository,
-        private readonly DocumentFavoriRepository $favoriRepository,
+        private readonly FavoriteDocumentRepository $favoriteRepository,
     ) {
     }
 
@@ -43,7 +45,7 @@ class DocumentWidgetDataProvider implements WidgetDataProviderInterface
             'document.stats' => [
                 'totalDocuments' => $this->documentRepository->count([]),
                 'totalCategories' => $this->categoryRepository->count([]),
-                'favoriteCount' => $this->favoriRepository->compter($user),
+                'favoriteCount' => $this->favoriteRepository->countFor($user),
             ],
             default => [],
         };
