@@ -319,7 +319,13 @@ réponses 400). Les deux copies de l'import CSV sont de nouveau identiques.
 en PHPDoc seulement : hors commentaires, les jetons PHP des 144 fichiers sont inchangés. Seul code
 modifié : `StructureGroupe::addEnfant()` n'accepte plus `null`. Délégué à Codex ; un lot parti sur
 un périmètre trop large a tourné trois heures, arrêté et repris en trois petits lots.
-**Reste** exclusions `doctrine.*` (185), niveaux 9 et 10, puis `phpstan-strict-rules`.
+**Exclusions `doctrine.*` retirées** 180 erreurs. `objectManagerLoader` donne à PHPStan le vrai
+mapping, types Carbon compris (66 erreurs venaient de là). `allowNullablePropertyForRequiredField`
+admet le motif Doctrine voulu : une propriété nullable sur une colonne NOT NULL, pour une entité
+remplie après sa construction (environ 130). Les 14 erreurs restantes, révélées par le vrai
+mapping, sont corrigées ; la collection d'enfants d'une catégorie du helpdesk est désormais
+initialisée. Schéma SQL identique. `phpstan.neon` n'ignore plus rien.
+**Reste** niveaux 9 et 10, puis `phpstan-strict-rules`.
 ### A1 · Masquer les ligatures d'icônes aux lecteurs d'écran · S
 **Obsolète** corrigé : plus aucune ligature n'est lue (A11Y-1, audit 05). La suite est A10.
 **Pourquoi** A11Y-1. Les libellés de navigation contiennent la ligature de l'icône, non masquée.
