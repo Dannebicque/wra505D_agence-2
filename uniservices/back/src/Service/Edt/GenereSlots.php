@@ -4,6 +4,7 @@ namespace App\Service\Edt;
 
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Structure\StructureSemestre;
+use App\Utils\LooseValue;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -35,7 +36,7 @@ class GenereSlots
         if ($previsionnel->getProgression() !== null) {
             $progression = $previsionnel->getProgression();
             foreach ($progression->getProgression() ?? [] as $semaine => $value) {
-                $this->genereSlotsFromProgression($value, $semaine, $previsionnel);
+                $this->genereSlotsFromProgression(LooseValue::string($value), $semaine, $previsionnel);
             }
         }
     }

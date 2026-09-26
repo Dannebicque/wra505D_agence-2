@@ -3,6 +3,7 @@
 namespace App\Scheduler;
 
 use App\Repository\Scheduler\SchedulerTaskRepository;
+use App\Utils\LooseValue;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\Schedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
@@ -30,7 +31,7 @@ class AppScheduleProvider implements ScheduleProviderInterface
                 $commandLine = $task->getCommand();
                 $args = $task->getArguments() ?? [];
                 if (!empty($args)) {
-                    $commandLine .= ' ' . implode(' ', $args);
+                    $commandLine .= ' ' . implode(' ', array_map(LooseValue::castString(...), $args));
                 }
 
                 $message = new RunCommandMessage($commandLine);

@@ -11,6 +11,7 @@ use App\Entity\Users\Personnel;
 use App\Enum\TypeEnseignementEnum;
 use App\Service\Search\Candidate;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Utils\LooseValue;
 
 /**
  * Ressources, SAÉ et matières des diplômes du département.
@@ -41,24 +42,25 @@ final readonly class SubjectSearchSource implements SearchSourceInterface
             ->getQuery()
             ->getArrayResult();
 
-        foreach ($subjects as $subject) {
+        foreach (LooseValue::rows($subjects) as $subject) {
             if (null === $subject['libelle']) {
                 continue;
             }
 
             $type = $subject['type'] instanceof TypeEnseignementEnum ? $subject['type']->getLibelle() : null;
-            $code = $subject['codeEnseignement'];
+            $code = LooseValue::nullableString($subject['codeEnseignement']);
+            $label = LooseValue::string($subject['libelle']);
 
             yield new Candidate(
                 'enseignement',
-                $subject['id'],
-                null === $code ? $subject['libelle'] : $code.' '.$subject['libelle'],
+                LooseValue::int($subject['id']),
+                null === $code ? $label : $code.' '.$label,
                 $type,
                 implode(' ', array_filter([
                     $code,
-                    $subject['libelle'],
-                    $subject['libelle_court'],
-                    $subject['motsCles'],
+                    $label,
+                    LooseValue::nullableString($subject['libelle_court']),
+                    LooseValue::nullableString($subject['motsCles']),
                 ])),
             );
         }

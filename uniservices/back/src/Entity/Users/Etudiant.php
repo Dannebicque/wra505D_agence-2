@@ -19,6 +19,7 @@ use App\Entity\Traits\OldIdTrait;
 use App\Filter\EtudiantFilter;
 use App\Repository\EtudiantRepository;
 use App\State\Provider\Etudiant\EtudiantTrombinoscopeProvider;
+use App\Utils\LooseValue;
 use App\ValueObject\Adresse;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -360,12 +361,12 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $data = [
-            'adresse' => $this->adresseEtudiante['adresse'],
-            'complement1' => $this->adresseEtudiante['complement1'],
-            'complement2' => $this->adresseEtudiante['complement2'],
-            'ville' => $this->adresseEtudiante['ville'],
-            'codePostal' => $this->adresseEtudiante['codePostal'],
-            'pays' => $this->adresseEtudiante['pays'],
+            'adresse' => LooseValue::string($this->adresseEtudiante['adresse']),
+            'complement1' => LooseValue::string($this->adresseEtudiante['complement1']),
+            'complement2' => LooseValue::string($this->adresseEtudiante['complement2']),
+            'ville' => LooseValue::string($this->adresseEtudiante['ville']),
+            'codePostal' => LooseValue::string($this->adresseEtudiante['codePostal']),
+            'pays' => LooseValue::string($this->adresseEtudiante['pays']),
         ];
 
         return Adresse::fromArray($data);
@@ -383,12 +384,12 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $data = [
-            'adresse' => $this->adresseParentale['adresse'],
-            'complement1' => $this->adresseParentale['complement1'],
-            'complement2' => $this->adresseParentale['complement2'],
-            'ville' => $this->adresseParentale['ville'],
-            'codePostal' => $this->adresseParentale['codePostal'],
-            'pays' => $this->adresseParentale['pays'],
+            'adresse' => LooseValue::string($this->adresseParentale['adresse']),
+            'complement1' => LooseValue::string($this->adresseParentale['complement1']),
+            'complement2' => LooseValue::string($this->adresseParentale['complement2']),
+            'ville' => LooseValue::string($this->adresseParentale['ville']),
+            'codePostal' => LooseValue::string($this->adresseParentale['codePostal']),
+            'pays' => LooseValue::string($this->adresseParentale['pays']),
         ];
 
         return Adresse::fromArray($data);

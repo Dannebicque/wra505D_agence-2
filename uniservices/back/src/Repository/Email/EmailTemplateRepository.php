@@ -4,6 +4,7 @@ namespace App\Repository\Email;
 
 use App\Entity\Email\EmailTemplate;
 use App\Entity\Structure\StructureDepartement;
+use App\Utils\LooseValue;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -26,7 +27,7 @@ class EmailTemplateRepository extends ServiceEntityRepository
      */
     public function findByKeyAndDepartement(string $key, StructureDepartement $departement, string $locale = 'fr'): ?EmailTemplate
     {
-        return $this->createQueryBuilder('et')
+        $result = $this->createQueryBuilder('et')
             ->andWhere('et.emailKey = :key')
             ->andWhere('et.departement = :departement')
             ->andWhere('et.locale = :locale')
@@ -35,6 +36,8 @@ class EmailTemplateRepository extends ServiceEntityRepository
             ->setParameter('locale', $locale)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return LooseValue::nullableInstance($result, EmailTemplate::class);
     }
 
     /**
@@ -42,7 +45,7 @@ class EmailTemplateRepository extends ServiceEntityRepository
      */
     public function findGlobal(string $key, string $locale = 'fr'): ?EmailTemplate
     {
-        return $this->createQueryBuilder('et')
+        $result = $this->createQueryBuilder('et')
             ->andWhere('et.emailKey = :key')
             ->andWhere('et.departement IS NULL')
             ->andWhere('et.locale = :locale')
@@ -50,6 +53,8 @@ class EmailTemplateRepository extends ServiceEntityRepository
             ->setParameter('locale', $locale)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return LooseValue::nullableInstance($result, EmailTemplate::class);
     }
 
     /**

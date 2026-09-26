@@ -20,6 +20,7 @@ use App\Repository\Apc\ApcCompetenceRepository;
 use App\Repository\Structure\StructureAnneeUniversitaireRepository;
 use App\Repository\Structure\StructureDepartementRepository;
 use App\Repository\Structure\StructureDiplomeRepository;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -78,6 +79,7 @@ class SynchroRefFormation
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \Exception('Erreur lors de la décodage de la réponse JSON: ' . json_last_error_msg());
         }
+        $semestresOreof = LooseValue::rows(LooseValue::row($parcours)['semestres']);
 
         // construires les semestres, puis générer les années (pas dans ORéOF), puis attacher les semestres aux années, puis les années au parcours/diplome
 
@@ -91,7 +93,7 @@ class SynchroRefFormation
 
 
         // création des années
-        $nbAnnees = ceil(count($parcours['semestres']) / 2);
+        $nbAnnees = ceil(count($semestresOreof) / 2);
         $annees = [];
         for ($i = 1; $i <= $nbAnnees; $i++) {
             $annee = new StructureAnnee();
@@ -104,67 +106,61 @@ class SynchroRefFormation
         }
 
         $semestres = [];
-        foreach ($parcours['semestres'] as $semestre) {
+        foreach ($semestresOreof as $semestre) {
             $sem = new StructureSemestre();
+            $ordre = LooseValue::int($semestre['ordre']);
 
             // lien avec l'année
-            $annee = $annees[(int) ceil($semestre['ordre'] / 2)];
+            $annee = $annees[(int) ceil($ordre / 2)];
             $sem->setAnnee($annee);
-            $sem->setLibelle('Semestre ' . $semestre['ordre']);
-            $sem->setOrdreAnnee((int) ceil($semestre['ordre'] / 2));
-            $sem->setOrdreLmd($semestre['ordre']);
+            $sem->setLibelle('Semestre ' . $ordre);
+            $sem->setOrdreAnnee((int) ceil($ordre / 2));
+            $sem->setOrdreLmd($ordre);
             $semestres[] = $sem;
             $ecs = [];
             $this->entityManager->persist($sem);
-            foreach ($semestre['ues'] as $ue) {
+            foreach (LooseValue::rows($semestre['ues'] ?? []) as $ue) {
                 $u = new StructureUe();
                 $u->setSemestre($sem);
-                $u->setLibelle($ue['libelleOrdre']);
-                $u->setNumero($ue['ordre']);
-                $u->setNbEcts($ue['ects']);
-                $u->setCompetence($this->competencesDips[$ue['libelle']] ?? null); //trouver la bonne compétence
+                $u->setLibelle(LooseValue::string($ue['libelleOrdre']));
+                $u->setNumero(LooseValue::int($ue['ordre']));
+                $u->setNbEcts(LooseValue::float($ue['ects']));
+                $u->setCompetence($this->competencesDips[LooseValue::key($ue['libelle'])] ?? null); //trouver la bonne compétence
                 $this->entityManager->persist($u);
 
-                foreach ($ue['ec'] as $e) {
+                foreach (LooseValue::row($ue['ec'] ?? []) as $e) {
                     if (is_array($e)) {
+                        $sigle = LooseValue::key($e['sigle']);
                         if ($e['nature_ec'] === 'SAE' || $e['nature_ec'] === 'Ressource') {
                             //vérifier si EC pas déjà existante
-                            if (array_key_exists($e['sigle'], $ecs)) {
-                                $ecue = new ScolEnseignementUe($ecs[$e['sigle']], $u);
-                                $ecue->setCoefficient($e['ects']);
+                            if (array_key_exists($sigle, $ecs)) {
+                                $ecue = new ScolEnseignementUe($ecs[$sigle], $u);
+                                $ecue->setCoefficient(LooseValue::float($e['ects']));
                                 $this->entityManager->persist($ecue);
                             } else {
                                 $ec = new ScolEnseignement();
-                                $ec->setLibelle($e['libelle']);
+                                $ec->setLibelle(LooseValue::string($e['libelle']));
                                 $ec->setType($e['nature_ec'] === 'SAE' ? TypeEnseignementEnum::TYPE_SAE : TypeEnseignementEnum::TYPE_RESSOURCE);
-                                $ec->setCodeEnseignement($e['sigle']);
-                                $ec->setDescription($e['description']);
-                                $ec->setObjectif($e['objectifs']);
-                                $ec->setLibelleCourt($e['sigle']);
-                                $ec->setHeures([
-                                    'CM' => ['PN' => $e['volumes']['CM']['presentiel'], 'IUT' => $e['volumes']['CM']['presentiel']],
-                                    'TD' => ['PN' => $e['volumes']['TD']['presentiel'], 'IUT' => $e['volumes']['TD']['presentiel']],
-                                    'TP' => ['PN' => $e['volumes']['TP']['presentiel'], 'IUT' => $e['volumes']['TP']['presentiel']],
-                                ]);
-                                $ecs[$e['sigle']] = $ec;
+                                $ec->setCodeEnseignement(LooseValue::nullableString($e['sigle']));
+                                $ec->setDescription(LooseValue::nullableString($e['description']));
+                                $ec->setObjectif(LooseValue::nullableString($e['objectifs']));
+                                $ec->setLibelleCourt(LooseValue::nullableString($e['sigle']));
+                                $ec->setHeures($this->volumesHoraires($e));
+                                $ecs[$sigle] = $ec;
                                 $ecue = new ScolEnseignementUe($ec, $u);
-                                $ecue->setCoefficient($e['ects']);
+                                $ecue->setCoefficient(LooseValue::float($e['ects']));
                                 $this->entityManager->persist($ecue);
                                 $this->entityManager->persist($ec);
                             }
                         } else {
                             $ec = new ScolEnseignement();
-                            $ec->setLibelle($e['libelle']);
+                            $ec->setLibelle(LooseValue::string($e['libelle']));
                             $ec->setType(TypeEnseignementEnum::TYPE_MATIERE);
-                            $ec->setCodeEnseignement($e['sigle']);
-                            $ec->setDescription($e['description']);
-                            $ec->setObjectif($e['objectifs']);
-                            $ec->setLibelleCourt($e['sigle']);
-                            $ec->setHeures([
-                                'CM' => ['PN' => $e['volumes']['CM']['presentiel'], 'IUT' => $e['volumes']['CM']['presentiel']],
-                                'TD' => ['PN' => $e['volumes']['TD']['presentiel'], 'IUT' => $e['volumes']['TD']['presentiel']],
-                                'TP' => ['PN' => $e['volumes']['TP']['presentiel'], 'IUT' => $e['volumes']['TP']['presentiel']],
-                            ]);
+                            $ec->setCodeEnseignement(LooseValue::nullableString($e['sigle']));
+                            $ec->setDescription(LooseValue::nullableString($e['description']));
+                            $ec->setObjectif(LooseValue::nullableString($e['objectifs']));
+                            $ec->setLibelleCourt(LooseValue::nullableString($e['sigle']));
+                            $ec->setHeures($this->volumesHoraires($e));
                             $ecue = new ScolEnseignementUe($ec, $u);
                             $this->entityManager->persist($ecue);
                             $this->entityManager->persist($ec);
@@ -177,5 +173,23 @@ class SynchroRefFormation
 
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * Volumes présentiels CM, TD et TP d'un EC d'ORéOF, repris à l'identique pour le PN et l'IUT.
+     *
+     * @param array<mixed> $ec
+     *
+     * @return array<string, array<string, float|int>>
+     */
+    private function volumesHoraires(array $ec): array
+    {
+        $heures = [];
+        foreach (['CM', 'TD', 'TP'] as $type) {
+            $volume = LooseValue::number(LooseValue::row(LooseValue::row($ec['volumes'])[$type])['presentiel']);
+            $heures[$type] = ['PN' => $volume, 'IUT' => $volume];
+        }
+
+        return $heures;
     }
 }

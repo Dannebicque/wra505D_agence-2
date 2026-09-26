@@ -13,6 +13,7 @@ use App\Security\PermissionResolver;
 use App\Security\UserEffectivePermissionService;
 use App\Entity\Users\Personnel;
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
@@ -128,7 +129,7 @@ class SecurityController extends AbstractController
 
             $this->resetTokenRepository->save($tokenEntity, true);
 
-            $url_front = $_ENV['URL_FRONTEND'];
+            $url_front = LooseValue::castString($_ENV['URL_FRONTEND']);
             // Construire le mail de réinitialisation
             $resetUrl = sprintf(
                 $url_front.'/auth/reset-password/confirm?token=%s',
@@ -173,6 +174,7 @@ class SecurityController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
+        $data = is_array($data) ? $data : [];
 
         if (!isset($data['token']) || !isset($data['password'])) {
             return new JsonResponse(['error' => 'Token et mot de passe requis'], JsonResponse::HTTP_BAD_REQUEST);
@@ -180,8 +182,8 @@ class SecurityController extends AbstractController
 
         // Créer et valider le DTO
         $resetPasswordDto = new ResetPasswordDto();
-        $resetPasswordDto->token = $data['token'];
-        $resetPasswordDto->password = $data['password'];
+        $resetPasswordDto->token = LooseValue::string($data['token']);
+        $resetPasswordDto->password = LooseValue::string($data['password']);
 
         $errors = $validator->validate($resetPasswordDto);
 
@@ -197,7 +199,7 @@ class SecurityController extends AbstractController
         $password = $data['password'];
 
         // Hasher le token reçu pour le comparer avec celui stocké en base
-        $hashedToken = hash('sha256', $token);
+        $hashedToken = hash('sha256', LooseValue::castString($token));
 
         // Rechercher le token dans la base de données
         $resetToken = $this->resetTokenRepository->findOneByTokenSecure($hashedToken);
@@ -220,7 +222,7 @@ class SecurityController extends AbstractController
         }
 
         // Hasher le nouveau mot de passe
-        $hashedPassword = $passwordHasher->hashPassword($user, $password);
+        $hashedPassword = $passwordHasher->hashPassword($user, LooseValue::string($password));
         $user->setPassword($hashedPassword);
 
         // Sauvegarder le nouveau mot de passe

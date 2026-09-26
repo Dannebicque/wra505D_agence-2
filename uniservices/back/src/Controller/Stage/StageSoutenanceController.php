@@ -3,6 +3,7 @@
 namespace App\Controller\Stage;
 
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StageSoutenance;
@@ -22,6 +23,19 @@ class StageSoutenanceController extends AbstractController
         $this->em = $em;
     }
 
+    /**
+     * Corps JSON de la requête. Un corps qui n'est pas un objet se lit comme vide : les paramètres
+     * requis manquent et la route répond 400.
+     *
+     * @return array<mixed>
+     */
+    private function payload(Request $request): array
+    {
+        $data = json_decode($request->getContent(), true);
+
+        return is_array($data) ? $data : [];
+    }
+
     private function getIdFromIri(mixed $id): ?int
     {
         if ($id === null || $id === '') {
@@ -31,17 +45,17 @@ class StageSoutenanceController extends AbstractController
             $parts = explode('/', $id);
             return (int)end($parts);
         }
-        return (int)$id;
+        return LooseValue::castInt($id);
     }
 
     #[Route('/api/stage_soutenances/validate-conflict', name: 'api_stage_soutenances_validate_conflict', methods: ['POST'])]
     public function validateConflict(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = $this->payload($request);
         $stageEtudiantId = $this->getIdFromIri($data['stageEtudiantId'] ?? null);
         $enseignantJuryId = $this->getIdFromIri($data['enseignantJuryId'] ?? null);
         $dateStr = $data['dateSoutenance'] ?? null;
-        $duree = (int)($data['duree'] ?? 30);
+        $duree = LooseValue::castInt($data['duree'] ?? 30);
         $soutenanceId = $this->getIdFromIri($data['soutenanceId'] ?? null);
         $stagePeriodeId = $this->getIdFromIri($data['stagePeriodeId'] ?? null);
 
@@ -57,7 +71,7 @@ class StageSoutenanceController extends AbstractController
         }
 
         $enseignantJury = $enseignantJuryId ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
-        $start = new \DateTime($dateStr);
+        $start = new \DateTime(LooseValue::string($dateStr));
         $end = (clone $start)->modify("+$duree minutes");
 
         $conflicts = $this->checkConflicts($stagePeriode, $stageEtudiant, $enseignantJury, $start, $end, $soutenanceId);
@@ -71,13 +85,13 @@ class StageSoutenanceController extends AbstractController
     #[Route('/api/stage_soutenances/save', name: 'api_stage_soutenances_save', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = $this->payload($request);
         $soutenanceId = $this->getIdFromIri($data['id'] ?? null);
         $stageEtudiantId = $this->getIdFromIri($data['stageEtudiantId'] ?? null);
         $enseignantJuryId = $this->getIdFromIri($data['enseignantJuryId'] ?? null);
         $dateStr = $data['dateSoutenance'] ?? null;
         $salle = $data['salle'] ?? '';
-        $duree = (int)($data['duree'] ?? 30);
+        $duree = LooseValue::castInt($data['duree'] ?? 30);
         $stagePeriodeId = $this->getIdFromIri($data['stagePeriodeId'] ?? null);
 
         if (!$dateStr) {
@@ -92,7 +106,7 @@ class StageSoutenanceController extends AbstractController
         }
 
         $enseignantJury = $enseignantJuryId ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
-        $start = new \DateTime($dateStr);
+        $start = new \DateTime(LooseValue::string($dateStr));
         $end = (clone $start)->modify("+$duree minutes");
 
         // Validate conflicts
@@ -128,7 +142,7 @@ class StageSoutenanceController extends AbstractController
             ->setStageEtudiant($stageEtudiant)
             ->setEnseignantJury($enseignantJury)
             ->setDateSoutenance($start)
-            ->setSalle($salle)
+            ->setSalle(LooseValue::nullableString($salle))
             ->setDuree($duree);
 
         $this->em->persist($soutenance);
@@ -143,13 +157,13 @@ class StageSoutenanceController extends AbstractController
     #[Route('/api/stage_soutenances/bulk-generate', name: 'api_stage_soutenances_bulk_generate', methods: ['POST'])]
     public function bulkGenerate(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = $this->payload($request);
         $stagePeriodeId = $this->getIdFromIri($data['stagePeriodeId'] ?? null);
         $dateStr = $data['date'] ?? null; // YYYY-MM-DD
         $startTimeStr = $data['startTime'] ?? null; // HH:MM
         $endTimeStr = $data['endTime'] ?? null; // HH:MM
-        $duree = (int)($data['duree'] ?? 30);
-        $pauseDuree = (int)($data['pauseDuree'] ?? 0);
+        $duree = LooseValue::castInt($data['duree'] ?? 30);
+        $pauseDuree = LooseValue::castInt($data['pauseDuree'] ?? 0);
         $salle = $data['salle'] ?? '';
 
         if (!$stagePeriodeId || !$dateStr || !$startTimeStr || !$endTimeStr) {
@@ -161,8 +175,8 @@ class StageSoutenanceController extends AbstractController
             return new JsonResponse(['error' => 'Période de stage non trouvée.'], Response::HTTP_NOT_FOUND);
         }
 
-        $start = new \DateTime($dateStr . ' ' . $startTimeStr);
-        $endLimit = new \DateTime($dateStr . ' ' . $endTimeStr);
+        $start = new \DateTime(LooseValue::castString($dateStr) . ' ' . LooseValue::castString($startTimeStr));
+        $endLimit = new \DateTime(LooseValue::castString($dateStr) . ' ' . LooseValue::castString($endTimeStr));
         $slotsCreated = 0;
 
         while ($start < $endLimit) {
@@ -175,7 +189,7 @@ class StageSoutenanceController extends AbstractController
             $slot->setStagePeriode($periode)
                 ->setDateSoutenance(clone $start)
                 ->setDuree($duree)
-                ->setSalle($salle);
+                ->setSalle(LooseValue::nullableString($salle));
 
             $this->em->persist($slot);
             $slotsCreated++;

@@ -11,6 +11,7 @@ use App\Entity\Users\Personnel;
 use App\Enum\StatutEnum;
 use App\Service\Search\Candidate;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Utils\LooseValue;
 
 /**
  * Personnels rattachés au département, avec leur statut pour les distinguer.
@@ -32,14 +33,14 @@ final readonly class StaffSearchSource implements SearchSourceInterface
             ->getQuery()
             ->getArrayResult();
 
-        foreach ($staffMembers as $staffMember) {
+        foreach (LooseValue::rows($staffMembers) as $staffMember) {
             yield new Candidate(
                 'personnel',
-                $staffMember['id'],
-                $staffMember['prenom'].' '.$staffMember['nom'],
+                LooseValue::int($staffMember['id']),
+                LooseValue::castString($staffMember['prenom']).' '.LooseValue::castString($staffMember['nom']),
                 $staffMember['statut'] instanceof StatutEnum ? $staffMember['statut']->getLibelle() : null,
-                $staffMember['prenom'].' '.$staffMember['nom'].' '.$staffMember['username'],
-                $staffMember['mailUniv'],
+                LooseValue::castString($staffMember['prenom']).' '.LooseValue::castString($staffMember['nom']).' '.LooseValue::castString($staffMember['username']),
+                LooseValue::nullableString($staffMember['mailUniv']),
             );
         }
     }

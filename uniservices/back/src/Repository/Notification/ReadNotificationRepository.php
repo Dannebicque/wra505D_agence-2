@@ -4,6 +4,7 @@ namespace App\Repository\Notification;
 
 use App\Entity\Notification\ReadNotification;
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -30,7 +31,7 @@ class ReadNotificationRepository extends ServiceEntityRepository
             return [];
         }
 
-        return array_values(array_map('strval', $this->createQueryBuilder('l')
+        return array_values(array_map(LooseValue::castString(...), $this->createQueryBuilder('l')
             ->select('l.key')
             ->where('l.student = :student')
             ->andWhere('l.key IN (:keys)')

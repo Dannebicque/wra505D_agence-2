@@ -13,6 +13,7 @@ use App\Entity\Users\Personnel;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
 use App\Security\DepartmentPermissionChecker;
 use App\Service\Search\SearchEngine;
+use App\Utils\LooseValue;
 use Symfony\Bundle\SecurityBundle\Security;
 
 /**
@@ -36,7 +37,7 @@ final readonly class SearchProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $user = $this->security->getUser();
-        $query = $context['filters']['q'] ?? '';
+        $query = LooseValue::row($context['filters'] ?? [])['q'] ?? '';
         if (!$user instanceof Etudiant && !$user instanceof Personnel || !is_string($query)) {
             return [];
         }

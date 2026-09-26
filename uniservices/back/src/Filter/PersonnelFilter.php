@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Operation;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -57,31 +58,31 @@ class PersonnelFilter extends AbstractFilter
         if ('nom' === $property) {
             $queryBuilder
                 ->andWhere(sprintf('%s.nom LIKE :nom', $alias))
-                ->setParameter('nom', "$value%");
+                ->setParameter('nom', LooseValue::castString($value).'%');
         }
 
         if ('prenom' === $property) {
             $queryBuilder
                 ->andWhere(sprintf('%s.prenom LIKE :prenom', $alias))
-                ->setParameter('prenom', "$value%");
+                ->setParameter('prenom', LooseValue::castString($value).'%');
         }
 
         if ('mailUniv' === $property) {
             $queryBuilder
                 ->andWhere(sprintf('%s.mailUniv LIKE :mailUniv', $alias))
-                ->setParameter('mailUniv', "$value%");
+                ->setParameter('mailUniv', LooseValue::castString($value).'%');
         }
 
         if ('numeroHarpege' === $property) {
             $queryBuilder
                 ->andWhere(sprintf('%s.numeroHarpege LIKE :numeroHarpege', $alias))
-                ->setParameter('numeroHarpege', "$value%");
+                ->setParameter('numeroHarpege', LooseValue::castString($value).'%');
         }
 
         if ('statut' === $property) {
             $queryBuilder
                 ->andWhere(sprintf('%s.statut LIKE :statut', $alias))
-                ->setParameter('statut', "$value%");
+                ->setParameter('statut', LooseValue::castString($value).'%');
         }
 
     }

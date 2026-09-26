@@ -8,6 +8,7 @@ use App\Repository\EtudiantScolariteSemestreRepository;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Structure\StructureSemestre;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /** @implements ProcessorInterface<object, object> */
 class GroupeDeletefromSemestreProcessor implements ProcessorInterface
@@ -25,7 +26,7 @@ class GroupeDeletefromSemestreProcessor implements ProcessorInterface
         }
 
         $request = $context['request'] ?? null;
-        if ($request) {
+        if ($request instanceof Request) {
             $body = $request->toArray();
             $semestreId = $body['semestre'] ?? null;
 

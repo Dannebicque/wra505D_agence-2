@@ -6,6 +6,7 @@ use App\Service\OReOF\SynchroRefCompetences;
 use App\Service\OReOF\SynchroRefFormation;
 use App\Utils\JsonRequest;
 use App\Utils\JsonResponse;
+use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +23,7 @@ class RefProgrammeSynchronisationController extends AbstractController
         if (!is_array($data)) {
             throw new \UnexpectedValueException('Expected a JSON object.');
         }
-        $synchro = $synchroRefFormation->synchroniser($data['selectedDiplome'], $data['anneeUniversitaire'], $data['oreofId']);
+        $synchro = $synchroRefFormation->synchroniser(LooseValue::int($data['selectedDiplome']), LooseValue::int($data['anneeUniversitaire']), LooseValue::int($data['oreofId']));
 
         return JsonResponse::Success('Synchronisation des compétences terminée', [
             'synchronisation' => $synchro,

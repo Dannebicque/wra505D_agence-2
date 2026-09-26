@@ -6,6 +6,7 @@ use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Etudiant;
 use App\Repository\Traits\FindAllByIdArrayTrait;
 use App\Repository\Traits\FindAllByOldIdArrayTrait;
+use App\Utils\LooseValue;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -32,6 +33,6 @@ class StructureDepartementRepository extends ServiceEntityRepository
             ->setParameter('etudiant', $etudiant)
             ->setMaxResults(1);
 
-        return $qb->getQuery()->getOneOrNullResult();
+        return LooseValue::nullableInstance($qb->getQuery()->getOneOrNullResult(), StructureDepartement::class);
     }
 }

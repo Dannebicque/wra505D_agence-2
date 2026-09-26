@@ -8,6 +8,7 @@ use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDiplome;
 use App\Service\Celcat\CelcatSource;
 use App\Service\Celcat\CelcatSynchronizer;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -49,7 +50,7 @@ final class CelcatSyncCommand extends Command
 
         $repositories = $this->entityManager->getRepository(StructureAnneeUniversitaire::class);
         $academicYear = null !== $input->getOption('annee')
-            ? $repositories->find((int) $input->getOption('annee'))
+            ? $repositories->find(LooseValue::castInt($input->getOption('annee')))
             : $repositories->findOneBy(['actif' => true]);
         if (null === $academicYear) {
             $io->error('Aucune année universitaire trouvée.');
@@ -58,7 +59,7 @@ final class CelcatSyncCommand extends Command
         }
 
         $departments = null !== $input->getOption('departement')
-            ? [(int) $input->getOption('departement')]
+            ? [LooseValue::castInt($input->getOption('departement'))]
             : $this->celcatDepartments();
         if ([] === $departments) {
             $io->warning('Aucun diplôme n\'a de code de département Celcat.');

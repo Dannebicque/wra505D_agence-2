@@ -6,10 +6,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class JsonRequest
 {
-    /** @var array<string, mixed> */
+    /** @var array<mixed> */
     protected static array $data = [];
 
-    /** @return Response|array<string, mixed> */
+    /** @return Response|array<mixed> */
     public static function getValuesFromString(
         ?string $content = null
     ): Response|array {
@@ -32,8 +32,8 @@ class JsonRequest
             throw new \InvalidArgumentException('Content is null');
         }
 
-        self::$data = json_decode($content, true, 512, JSON_THROW_ON_ERROR)
-            ?? [];
+        self::$data = LooseValue::row(json_decode($content, true, 512, JSON_THROW_ON_ERROR)
+            ?? []);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             self::$data = [];
