@@ -752,7 +752,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['diplome:detail', 'maquette:detail', 'personnel:detail', 'personnel:light', 'previsionnel:read', 'previsionnel_enseignement:read', 'previsionnel_personnel:read', 'previsionnel_semestre:read', 'previsionnel_all_personnels:read', 'edt_event:read:agenda'])]
     public function getDisplayCourt(): string
     {
-        return mb_substr($this->getPrenom(), 0, 1) . '. ' . mb_substr($this->getNom(), 0, 3);
+        return mb_substr($this->getPrenom() ?? '', 0, 1) . '. ' . mb_substr($this->getNom() ?? '', 0, 3);
     }
 
     public function getInitiales(): ?string
@@ -812,7 +812,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['personnel:detail', 'previsionnel_personnel:read', 'previsionnel_all_personnels:read', 'personnel:liste'])]
     public function getStatutSeverity(): string
     {
-        return $this->statut->getBadge();
+        return $this->statut?->getBadge() ?? '';
     }
 
     /**

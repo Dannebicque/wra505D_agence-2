@@ -32,7 +32,7 @@ class StagePdfController extends AbstractController
         }
 
         $template = $this->em->getRepository(StageConventionTemplate::class)->findOneBy(['code' => 'default_convention']);
-        $templateText = $template ? $template->getTexte() : "CONVENTION DE STAGE\n(Modèle par défaut non configuré en base)";
+        $templateText = $template?->getTexte() ?? "CONVENTION DE STAGE\n(Modèle par défaut non configuré en base)";
 
         // Replace placeholders
         $text = $this->replacePlaceholders($templateText, $stage);
@@ -67,7 +67,7 @@ class StagePdfController extends AbstractController
         }
 
         $template = $this->em->getRepository(StageConventionTemplate::class)->findOneBy(['code' => 'default_avenant']);
-        $templateText = $template ? $template->getTexte() : "AVENANT À LA CONVENTION DE STAGE\n(Modèle par défaut non configuré en base)";
+        $templateText = $template?->getTexte() ?? "AVENANT À LA CONVENTION DE STAGE\n(Modèle par défaut non configuré en base)";
 
         // Replace placeholders
         $text = $this->replacePlaceholders($templateText, $stage, $avenant);
@@ -195,7 +195,7 @@ class StagePdfController extends AbstractController
 
         $replaces = [
             '{annee_universitaire}' => $anneeUnivStr,
-            '{etudiant.nom}' => $etu ? mb_strtoupper($etu->getNom()) : '',
+            '{etudiant.nom}' => $etu ? mb_strtoupper($etu->getNom() ?? '') : '',
             '{etudiant.prenom}' => $etu ? $etu->getPrenom() : '',
             '{etudiant.sexe}' => $etu && method_exists($etu, 'getCivilite') && $etu->getCivilite() === 'Mme' ? 'Femme' : 'Homme',
             '{etudiant.date_naissance}' => $etu && $etu->getDateNaissance() ? $fmtDate($etu->getDateNaissance()) : '',

@@ -62,6 +62,10 @@ class StructureAnneeUniversitaireFixtures extends Fixture implements OrderedFixt
         $pn1 = $this->pnRepository->findOneBy(['libelle' => 'PN BUT MMI']);
         $pn2 = $this->pnRepository->findOneBy(['libelle' => 'PN BUT MMI DWEB']);
 
+        if (null === $personnel || null === $pn1 || null === $pn2) {
+            throw new \LogicException('Les données nécessaires aux années universitaires sont introuvables.');
+        }
+
         $anneeUniversitaire1 = new StructureAnneeUniversitaire();
         $anneeUniversitaire1
             ->setLibelle(self::libelle(-1))

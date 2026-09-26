@@ -86,7 +86,7 @@ class CreateEtudiantController extends AbstractController
             }
 
             // Créer un tableau associatif avec les en-têtes comme clés
-            $rowData = array_combine($headers, $values);
+            $rowData = array_combine(array_map(static fn (?string $header): string => $header ?? '', $headers), $values);
 
             // Récupérer le nom et prénom pour l'information de ligne
             $lineInfo['nom'] = $rowData['nom'] ?? '';
@@ -111,7 +111,7 @@ class CreateEtudiantController extends AbstractController
                 if (!$existingEtudiant && !empty($rowData['nom']) && !empty($rowData['prenom'])) {
                     // Générer un username basé sur le prénom et le nom comme dans createEtudiantFromData
                     $username = strtolower($rowData['prenom'] . '.' . $rowData['nom']);
-                    $username = preg_replace('/[^a-z0-9.]/', '', $username);
+                    $username = preg_replace('/[^a-z0-9.]/', '', $username) ?? '';
                     $existingEtudiant = $this->etudiantRepository->findOneBy(['username' => $username]);
                 }
 
@@ -122,6 +122,9 @@ class CreateEtudiantController extends AbstractController
                     $lineInfo['etudiantId'] = $existingEtudiant->getId();
                 } else {
                     // Créer un nouvel étudiant
+                    if (!$anneeUniv) {
+                        throw new \LogicException('Année universitaire non trouvée');
+                    }
                     $etudiant = $this->createEtudiantFromData($rowData, $anneeUniv);
                     $this->entityManager->persist($etudiant);
                     $etudiantSco = $this->createEtudiantScolariteFromData($etudiant, $anneeUniv, $annee);
@@ -166,7 +169,7 @@ class CreateEtudiantController extends AbstractController
 
         // Générer un username basé sur le prénom et le nom
         $username = strtolower($data['prenom'] . '.' . $data['nom']);
-        $username = preg_replace('/[^a-z0-9.]/', '', $username); // Supprimer les caractères spéciaux
+        $username = preg_replace('/[^a-z0-9.]/', '', $username) ?? ''; // Supprimer les caractères spéciaux
         $etudiant->setUsername($username);
 
         // Générer un email universitaire

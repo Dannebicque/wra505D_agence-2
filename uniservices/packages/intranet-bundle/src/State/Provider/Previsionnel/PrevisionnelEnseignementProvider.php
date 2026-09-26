@@ -53,11 +53,15 @@ class PrevisionnelEnseignementProvider implements ProviderInterface
                     throw new \LogicException('Expected a Previsionnel.');
                 }
                 if ($item->getPersonnel()) {
-                    $nbHrAttenduCM = $item->getEnseignement()->getHeures()['CM']['IUT'];
+                    $enseignement = $item->getEnseignement();
+                    if ($enseignement === null) {
+                        throw new \LogicException('Enseignement is required');
+                    }
+                    $nbHrAttenduCM = $enseignement->getHeures()['CM']['IUT'];
                     $nbHrSaisiCM += $item->getHeures()['CM'];
-                    $nbHrAttenduTD = $item->getEnseignement()->getHeures()['TD']['IUT'];
+                    $nbHrAttenduTD = $enseignement->getHeures()['TD']['IUT'];
                     $nbHrSaisiTD += $item->getHeures()['TD'];
-                    $nbHrAttenduTP = $item->getEnseignement()->getHeures()['TP']['IUT'];
+                    $nbHrAttenduTP = $enseignement->getHeures()['TP']['IUT'];
                     $nbHrSaisiTP += $item->getHeures()['TP'];
 
                     $totalCM += $item->getHeures()['CM'] * $item->getGroupes()['CM'];

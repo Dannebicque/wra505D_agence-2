@@ -136,7 +136,7 @@ class SecurityController extends AbstractController
             );
 
             // Déterminer l'adresse email à utiliser (mail universitaire en priorité, sinon mail personnel)
-            $recipientEmail = $user->getMailUniv() ?? $user->getMailPerso();
+            $recipientEmail = $user->getMailUniv() ?? $user->getMailPerso() ?? '';
 
             $email = (new TemplatedEmail())
                 ->from('no-reply@univ-reims.fr')

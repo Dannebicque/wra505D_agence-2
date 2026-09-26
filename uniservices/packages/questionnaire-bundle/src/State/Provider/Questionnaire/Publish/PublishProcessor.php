@@ -29,10 +29,14 @@ final class PublishProcessor implements ProcessorInterface
         }
 
         $result = $this->service->publish($q, $data->recipients);
+        $status = $q->getStatus();
+        if ($status === null) {
+            throw new \LogicException('Questionnaire status is required');
+        }
 
         return new PublishOutputDto(
-            questionnaireUuid: $q->getUuid(),
-            status: $q->getStatus(),
+            questionnaireUuid: $q->getUuidString(),
+            status: $status,
             publishedAt: $result['publishedAt'],
             sectionsCount: $result['sectionsCount'],
             invitationsCount: $result['invitationsCount']

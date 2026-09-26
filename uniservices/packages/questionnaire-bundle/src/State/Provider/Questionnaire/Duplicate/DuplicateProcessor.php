@@ -32,11 +32,16 @@ final class DuplicateProcessor implements ProcessorInterface
 
         /** @var Questionnaire $duplicate */
         $duplicate = $result['questionnaire'];
+        $title = $duplicate->getTitle();
+        $status = $duplicate->getStatus();
+        if ($title === null || $status === null) {
+            throw new \LogicException('Duplicated questionnaire fields are required');
+        }
 
         return new DuplicateOutputDto(
             uuid: (string)$duplicate->getUuid(),
-            title: $duplicate->getTitle(),
-            status: $duplicate->getStatus()->value,
+            title: $title,
+            status: $status->value,
             sectionsCount: $result['sectionsCount'],
             questionsCount: $result['questionsCount']
         );

@@ -89,6 +89,9 @@ class CopyTransfertCommand extends Command
     {
         $io->info('Executing users...');
         $command = $this->getApplication()?->find('copy:transfert-bdd:user');
+        if (null === $command) {
+            throw new \LogicException('La commande de transfert des utilisateurs est introuvable.');
+        }
         $arguments = [
             'command' => 'copy:transfert-bdd:user',
         ];
@@ -111,6 +114,9 @@ class CopyTransfertCommand extends Command
     {
         $io->info('Executing enseignements (ressources, SAE, matières...');
         $command = $this->getApplication()?->find('copy:transfert-bdd:enseignements');
+        if (null === $command) {
+            throw new \LogicException('La commande de transfert des enseignements est introuvable.');
+        }
         $arguments = [
             'command' => 'copy:transfert-bdd:enseignements',
         ];
@@ -133,6 +139,9 @@ class CopyTransfertCommand extends Command
     {
         $io->info('Executing structure...');
         $command = $this->getApplication()?->find('copy:transfert-bdd:structure');
+        if (null === $command) {
+            throw new \LogicException('La commande de transfert de la structure est introuvable.');
+        }
 
         if (!$io->confirm('Do you really want to execute this command?', false)) {
             $io->warning('Command execution aborted.');
@@ -162,6 +171,9 @@ class CopyTransfertCommand extends Command
     {
         $io->info('Executing APC...');
         $command = $this->getApplication()?->find('copy:transfert-bdd:apc');
+        if (null === $command) {
+            throw new \LogicException('La commande de transfert APC est introuvable.');
+        }
         $arguments = [
             'command' => 'copy:transfert-bdd:apc',
         ];
@@ -184,6 +196,9 @@ class CopyTransfertCommand extends Command
     {
         $io->info('Executing EDT...');
         $command = $this->getApplication()?->find('copy:transfert-bdd:edt');
+        if (null === $command) {
+            throw new \LogicException('La commande de transfert EDT est introuvable.');
+        }
         $arguments = [
             'command' => 'copy:transfert-bdd:edt',
         ];
@@ -206,6 +221,9 @@ class CopyTransfertCommand extends Command
     {
         $io->info('Executing APC...');
         $command = $this->getApplication()?->find('copy:transfert-bdd:scolarite');
+        if (null === $command) {
+            throw new \LogicException('La commande de transfert de la scolarité est introuvable.');
+        }
         $arguments = [
             'command' => 'copy:transfert-bdd:scolarite',
         ];
@@ -228,6 +246,9 @@ class CopyTransfertCommand extends Command
     {
         $io->info('Executing Previsionnel...');
         $command = $this->getApplication()?->find('copy:transfert-bdd:previsionnel');
+        if (null === $command) {
+            throw new \LogicException('La commande de transfert prévisionnel est introuvable.');
+        }
         $arguments = [
             'command' => 'copy:transfert-bdd:previsionnel',
         ];

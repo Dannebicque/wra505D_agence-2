@@ -40,22 +40,27 @@ class PrevisionnelSemestreTestProvider implements ProviderInterface
                     throw new \LogicException('Expected a Previsionnel.');
                 }
                 if ($item->getPersonnel() !== null && $item->getEnseignement() !== null) {
-                    if (!array_key_exists($item->getEnseignement()->getId(), $output['heures'])) {
-                        $output['heures'][$item->getEnseignement()->getId()] = [];
+                    $enseignementId = $item->getEnseignement()->getId();
+                    $personnelId = $item->getPersonnel()->getId();
+                    if ($enseignementId === null || $personnelId === null) {
+                        throw new \LogicException('Entity ID is required');
                     }
-                    if (!array_key_exists($item->getPersonnel()->getId(), $output['heures'][$item->getEnseignement()->getId()])) {
-                        $output['heures'][$item->getEnseignement()->getId()][$item->getPersonnel()->getId()] = [];
+                    if (!array_key_exists($enseignementId, $output['heures'])) {
+                        $output['heures'][$enseignementId] = [];
+                    }
+                    if (!array_key_exists($personnelId, $output['heures'][$enseignementId])) {
+                        $output['heures'][$enseignementId][$personnelId] = [];
                     }
 
-                    if (!array_key_exists($item->getEnseignement()->getId(), $output['groupes'])) {
-                        $output['groupes'][$item->getEnseignement()->getId()] = [];
+                    if (!array_key_exists($enseignementId, $output['groupes'])) {
+                        $output['groupes'][$enseignementId] = [];
                     }
-                    if (!array_key_exists($item->getPersonnel()->getId(), $output['groupes'][$item->getEnseignement()->getId()])) {
-                        $output['groupes'][$item->getEnseignement()->getId()][$item->getPersonnel()->getId()] = [];
+                    if (!array_key_exists($personnelId, $output['groupes'][$enseignementId])) {
+                        $output['groupes'][$enseignementId][$personnelId] = [];
                     }
                     $output['prevSem'][] = $this->formToDto($item);
-                    $output['heures'][$item->getEnseignement()->getId()][$item->getPersonnel()->getId()] = $item->getHeures();
-                    $output['groupes'][$item->getEnseignement()->getId()][$item->getPersonnel()->getId()] = $item->getGroupes();
+                    $output['heures'][$enseignementId][$personnelId] = $item->getHeures();
+                    $output['groupes'][$enseignementId][$personnelId] = $item->getGroupes();
                 }
             }
 

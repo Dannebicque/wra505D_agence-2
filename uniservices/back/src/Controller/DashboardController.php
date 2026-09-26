@@ -19,6 +19,16 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class DashboardController extends AbstractController
 {
+    private function getDashboard(string $code): \App\Domain\Dashboard\DashboardDefinitionInterface
+    {
+        $dashboard = $this->dashboardRegistry->get($code);
+        if (null === $dashboard) {
+            throw new \LogicException('Dashboard introuvable.');
+        }
+
+        return $dashboard;
+    }
+
     public function __construct(
         private readonly CoreWidgetRegistry $coreWidgetRegistry,
         private readonly WidgetDataRegistry $widgetDataRegistry,
@@ -50,7 +60,7 @@ class DashboardController extends AbstractController
         $preferences = $this->preferenceRepository->findByUser($user, $structureDepartementPersonnel, $dashboardCode);
 
         $widgets = [];
-        $dashboard = $this->dashboardRegistry->get($dashboardCode);
+        $dashboard = $this->getDashboard($dashboardCode);
 
         if (empty($preferences)) {
             // Si aucune préférence n'existe, on charge le layout par défaut
@@ -111,7 +121,7 @@ class DashboardController extends AbstractController
             $structureDepartementPersonnel = $this->structureDepartementPersonnelRepository->find($structureDepartementPersonnelId);
         }
 
-        $dashboard = $this->dashboardRegistry->get($dashboardCode);
+        $dashboard = $this->getDashboard($dashboardCode);
 
         // Récupération des préférences
         $preferences = [];
@@ -223,7 +233,7 @@ class DashboardController extends AbstractController
 
         $data = json_decode($request->getContent(), true) ?? [];
 
-        $dashboard = $this->dashboardRegistry->get($dashboardCode);
+        $dashboard = $this->getDashboard($dashboardCode);
 
         // Construire un index d'ordre du layout par défaut pour le tri
         $defaultOrder = [];

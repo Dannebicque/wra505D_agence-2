@@ -35,7 +35,11 @@ class AnneeUnivInitProcessor implements ProcessorInterface
         // Créer un "pn" par diplôme
         $diplomes = $data->getDiplomes();
         // récupérer les diplomes existants pour cette année universitaire
-        $existingDiplomes = $this->structureDiplomeRepository->findByAnneeUniversitaire($data->getId());
+        $anneeId = $data->getId();
+        if (null === $anneeId) {
+            throw new \LogicException('L’année universitaire doit être persistée.');
+        }
+        $existingDiplomes = $this->structureDiplomeRepository->findByAnneeUniversitaire($anneeId);
 
         // si existingDiplomes n'est pas dans diplomes alors on supprime son pn
         foreach ($existingDiplomes as $existingDiplome) {
@@ -71,7 +75,7 @@ class AnneeUnivInitProcessor implements ProcessorInterface
         $pn = new StructurePn($diplome);
         $pn->setAnneeUniversitaire($anneeUniversitaire);
         $pn->setLibelle('PN ' . $diplome->getDepartement()?->getLibelle() . '-' . $diplome->getLibelle() . '-' . $anneeUniversitaire->getLibelle());
-        $pn->setAnneePublication($anneeUniversitaire->getAnnee());
+        $pn->setAnneePublication($anneeUniversitaire->getAnnee() ?? 0);
 
         return $pn;
     }

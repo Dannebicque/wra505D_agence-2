@@ -32,7 +32,8 @@ final class SaveAnswersProcessor implements ProcessorInterface
         }
 
         $psi = $this->em->getRepository(QuestionnaireSectionInstance::class)->find($data->publishedSectionInstanceId);
-        if (!$psi || $psi->getQuestionnaire()->getId() !== $inv->getQuestionnaire()->getId()) {
+        $questionnaire = $inv->getQuestionnaire();
+        if (!$psi || $questionnaire === null || $psi->getQuestionnaire()?->getId() !== $questionnaire->getId()) {
             throw new \RuntimeException('Invalid section');
         }
 
@@ -40,7 +41,11 @@ final class SaveAnswersProcessor implements ProcessorInterface
         $questions = $this->em->getRepository(QuestionnaireQuestion::class)->findBy(['id' => $questionIds]);
         $qById = [];
         foreach ($questions as $q) {
-            $qById[$q->getId()] = $q;
+            $questionId = $q->getId();
+            if ($questionId === null) {
+                throw new \LogicException('Question ID is required');
+            }
+            $qById[$questionId] = $q;
         }
 
         $existing = $this->em->getRepository(QuestionnaireAnswer::class)->findBy([
@@ -49,7 +54,11 @@ final class SaveAnswersProcessor implements ProcessorInterface
         ]);
         $aByQid = [];
         foreach ($existing as $a) {
-            $aByQid[$a->getQuestion()->getId()] = $a;
+            $question = $a->getQuestion();
+            if ($question === null || $question->getId() === null) {
+                throw new \LogicException('Answer question is required');
+            }
+            $aByQid[$question->getId()] = $a;
         }
 
         foreach ($data->answers as $incoming) {

@@ -18,7 +18,7 @@ final class QuestionRuntimeMapper
         $choices = null;
         if (in_array($q->getTypeQuestion(), [QuestTypeQuestionEnum::MultipleChoice, QuestTypeQuestionEnum::SingleChoice], true)) {
             $choices = [];
-            foreach ($config as $c) {
+            foreach ($config ?? [] as $c) {
                 $choices[] = new ChoiceDto((string) $c['id'], (string) $c['text'], (string) $c['value']);
             }
         }
@@ -134,11 +134,18 @@ final class QuestionRuntimeMapper
             }
         }
 
+        $typeQuestion = $q->getTypeQuestion();
+        $label = $q->getLabel();
+        $required = $q->isObligatoire();
+        if ($typeQuestion === null || $label === null || $required === null) {
+            throw new \LogicException('Question runtime fields are required');
+        }
+
         return new QuestionRuntimeDto(
             questionId: (int) $q->getId(),
-            typeQuestion: $q->getTypeQuestion(),
-            label: $q->getLabel(),
-            required: $q->isObligatoire(),
+            typeQuestion: $typeQuestion,
+            label: $label,
+            required: $required,
             answer: $answerValue,
             choices: $choices,
             scale: $scale,

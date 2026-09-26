@@ -46,8 +46,12 @@ class GroupeDeletefromSemestreProcessor implements ProcessorInterface
 
     private function removeGroupeFromSemestre(StructureGroupe $groupe, int $semestreId): void
     {
+        $groupeId = $groupe->getId();
+        if (null === $groupeId) {
+            throw new \LogicException('Le groupe doit être persisté.');
+        }
         // Retirer le groupe des EtudiantScolariteSemestre liés à ce groupe et ce semestre
-        $etudiantScolariteSemestres = $this->etudiantScolariteSemestreRepository->findByGroupeAndSemestre($groupe->getId(), $semestreId);
+        $etudiantScolariteSemestres = $this->etudiantScolariteSemestreRepository->findByGroupeAndSemestre($groupeId, $semestreId);
         foreach ($etudiantScolariteSemestres as $etudiantScolariteSemestre) {
             $etudiantScolariteSemestre->removeGroupe($groupe);
         }
@@ -56,9 +60,11 @@ class GroupeDeletefromSemestreProcessor implements ProcessorInterface
         foreach ($groupe->getEnfants() as $enfant) {
             if ($enfant->getSemestres()->exists(fn (int $k, $s) => $s->getId() === $semestreId)) {
                 $this->removeGroupeFromSemestre($enfant, $semestreId);
-                $enfant->removeSemestre(
-                    $this->em->getRepository(StructureSemestre::class)->find($semestreId)
-                );
+                $semestre = $this->em->getRepository(StructureSemestre::class)->find($semestreId);
+                if (null === $semestre) {
+                    throw new \LogicException('Le semestre est introuvable.');
+                }
+                $enfant->removeSemestre($semestre);
             }
         }
     }

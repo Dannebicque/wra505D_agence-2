@@ -98,7 +98,7 @@ class StructureGroupe
 
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
     #[Groups(['groupe:detail', 'edt_event:read:agenda', 'groupe:structure'])]
-    private ?Collection $enfants;
+    private Collection $enfants;
 
     #[ORM\ManyToOne(targetEntity: ApcParcours::class, inversedBy: 'groupes')]
     #[Groups(['groupe:detail', 'groupe:structure'])]

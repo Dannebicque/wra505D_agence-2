@@ -58,7 +58,11 @@ class EtudiantScolariteSemestreProvider implements ProviderInterface
                     }
                     $dto->setGroupes($groupesArray);
 
-                    $dto->setId($item->getId());
+                    $id = $item->getId();
+                    if (null === $id) {
+                        throw new \LogicException('La scolarité doit être persistée.');
+                    }
+                    $dto->setId($id);
 
                     $items[] = $dto;
                 }
@@ -111,7 +115,11 @@ class EtudiantScolariteSemestreProvider implements ProviderInterface
                 }
                 $dto->setGroupes($groupesArray);
 
-                $dto->setId($item->getId());
+                $id = $item->getId();
+                if (null === $id) {
+                    throw new \LogicException('La scolarité doit être persistée.');
+                }
+                $dto->setId($id);
 
                 $items[] = $dto;
             }

@@ -104,6 +104,9 @@ class StructureCalendrier
 
     public function getJours(): array
     {
+        if (null === $this->dateLundi) {
+            throw new \LogicException('La date du lundi est requise.');
+        }
         $jours = [];
         $date = \DateTime::createFromInterface($this->dateLundi);
         for ($i = 0; $i < 5; $i++) {

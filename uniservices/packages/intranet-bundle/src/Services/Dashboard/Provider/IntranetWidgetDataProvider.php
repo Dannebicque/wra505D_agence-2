@@ -77,7 +77,7 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         $today = new \DateTimeImmutable('today');
         $tomorrow = $today->modify('+1 day');
         $events = $user instanceof Personnel
-            ? $this->edtEventRepository->findByPersonnelAndRange($user->getId(), $today, $tomorrow)
+            ? $this->edtEventRepository->findByPersonnelAndRange($user->getId() ?? throw new \LogicException('Personnel ID is required'), $today, $tomorrow)
             : $this->edtEventRepository->findByGroupesAndRange($this->groupes($user), $today, $tomorrow);
         $formatter = new \IntlDateFormatter('fr_FR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, \IntlDateFormatter::GREGORIAN, 'EEEE d MMMM yyyy');
         return [

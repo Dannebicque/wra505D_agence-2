@@ -30,8 +30,15 @@ final class InvitationSectionProvider implements ProviderInterface
         }
 
         $psi = $this->em->getRepository(QuestionnaireSectionInstance::class)->find($id);
-        if (!$psi || $psi->getQuestionnaire()->getId() !== $inv->getQuestionnaire()->getId()) {
+        $questionnaire = $inv->getQuestionnaire();
+        if (!$psi || $questionnaire === null || $psi->getQuestionnaire()?->getId() !== $questionnaire->getId()) {
             throw new \RuntimeException('Section not found');
+        }
+        $section = $psi->getSection();
+        $title = $psi->getTitleSnapshot();
+        $publishedSectionInstanceId = $psi->getId();
+        if ($section === null || $title === null || $publishedSectionInstanceId === null) {
+            throw new \LogicException('Section instance fields are required');
         }
 
         // Charger answers existantes pour cette section
@@ -42,19 +49,23 @@ final class InvitationSectionProvider implements ProviderInterface
 
         $answersByQid = [];
         foreach ($answers as $a) {
-            $answersByQid[$a->getQuestion()->getId()] = $a->getValue();
+            $question = $a->getQuestion();
+            if ($question === null) {
+                throw new \LogicException('Answer question is required');
+            }
+            $answersByQid[$question->getId()] = $a->getValue();
         }
 
-        $allQuestions = iterator_to_array($psi->getSection()->getQuestions());
+        $allQuestions = iterator_to_array($section->getQuestions());
         $questions = [];
-        foreach ($psi->getSection()->getQuestions() as $qt) {
+        foreach ($section->getQuestions() as $qt) {
             $questions[] = $this->mapper->map($qt, $answersByQid[$qt->getId()] ?? null, $allQuestions);
         }
 
         return new SectionRuntimeDto(
-            questionnaireTitle: $inv->getQuestionnaire()->getTitle(),
-            publishedSectionInstanceId: $psi->getId(),
-            title: $psi->getTitleSnapshot(),
+            questionnaireTitle: $questionnaire->getTitle() ?? throw new \LogicException('Questionnaire title is required'),
+            publishedSectionInstanceId: $publishedSectionInstanceId,
+            title: $title,
             repeatItemType: $psi->getRepeatSectionItemType(),
             repeatItemId: $psi->getRepeatSectionItemId() ? (string) $psi->getRepeatSectionItemId() : null,
             questions: $questions

@@ -247,6 +247,9 @@ explicitement, sans changement de comportement.
 `/api/oreof/ref-formation/synchronisation` et `/api/stats/edt_events` répondent 500, en étudiant,
 personnel et superadmin. Écrans du personnel : correction de bug seulement.
 **Terminé quand** chacune répond un code défendable (200, 400 ou 403), couvert par un test.
+**En partie fait** `/api/stats/edt_events` ne plante plus depuis le niveau 8 de E15 : un créneau
+sans semestre faisait échouer toute la statistique, il est désormais compté sous un libellé vide.
+À trancher : la route répond aussi à un étudiant.
 
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,
@@ -305,7 +308,14 @@ de plus, corrigées par Codex en deux lots parallèles : génériques des dépô
 `instanceof` suivis d'une exception, unions réduites. Une de ses corrections changeait le calcul
 du service des vacataires du prévisionnel ; elle est réécrite à l'identique de l'original. Filet :
 les 65 routes GET sans paramètre, en étudiant, personnel et superadmin, répondent comme avant.
-**Reste** niveaux 8, 9, 10, les exclusions de `phpstan.neon`, puis `phpstan-strict-rules`.
+**Niveau 8 fait** 149 erreurs de nullabilité, corrigées par Codex en deux lots parallèles, avec
+la règle : garder ce qui se passait vraiment avec `null`. Il a ajouté 72 exceptions ; un troisième
+Codex les a auditées une à une contre le code d'origine, et chaque cas signalé a été vérifié. Neuf
+changeaient un comportement qui fonctionnait. Deux étaient faux (le code plantait déjà) ; trois
+portaient sur des cas impossibles en pratique et sont gardés ; quatre sont corrigés pour rendre
+l'ancien résultat (titre de section nul, en-tête CSV nul, contrôle de l'année placé après les
+réponses 400). Les deux copies de l'import CSV sont de nouveau identiques.
+**Reste** niveaux 9 et 10, les exclusions de `phpstan.neon`, puis `phpstan-strict-rules`.
 ### A1 · Masquer les ligatures d'icônes aux lecteurs d'écran · S
 **Obsolète** corrigé : plus aucune ligature n'est lue (A11Y-1, audit 05). La suite est A10.
 **Pourquoi** A11Y-1. Les libellés de navigation contiennent la ligature de l'icône, non masquée.

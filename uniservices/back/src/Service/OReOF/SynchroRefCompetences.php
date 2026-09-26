@@ -65,7 +65,7 @@ class SynchroRefCompetences
 
         // créer le référentiel de compétences
         $refCompetences = new ApcReferentiel();
-        $refCompetences->setLibelle($diplome->getLibelle());
+        $refCompetences->setLibelle($diplome->getLibelle() ?? '');
         $refCompetences->setDepartement($departement);
         $refCompetences->setTypeDiplome($diplome->getTypeDiplome());
         $this->entityManager->persist($refCompetences);

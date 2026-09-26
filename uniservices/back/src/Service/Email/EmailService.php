@@ -67,8 +67,14 @@ final class EmailService
         $context = $this->enrichContext($context, $departement);
 
         if ($resolved->isFromTwigFile()) {
+            if (null === $resolved->definition) {
+                throw new \LogicException('La définition du template est introuvable.');
+            }
             [$subject, $htmlBody, $txtBody] = $this->renderFromTwigFile($resolved->definition, $context);
         } else {
+            if (null === $resolved->dbTemplate) {
+                throw new \LogicException('Le template en base est introuvable.');
+            }
             [$subject, $htmlBody, $txtBody] = $this->renderFromDatabase($resolved->dbTemplate, $context);
         }
 

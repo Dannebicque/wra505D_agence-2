@@ -78,7 +78,12 @@ final readonly class PreviewSectionProvider implements ProviderInterface
     private function buildTitleSnapshot(QuestionnaireSection $section, ?QuestTypeRepeatEnum $repeatType, string $repeatId): string
     {
         if ($repeatType === null) {
-            return $section->getTitle();
+            $title = $section->getTitle();
+            if ($title === null) {
+                throw new \LogicException('Section title is required');
+            }
+
+            return $title;
         }
         $opts = $section->getOpt();
         $elements = $opts['elements'] ?? [];
@@ -88,6 +93,6 @@ final readonly class PreviewSectionProvider implements ProviderInterface
                 return str_replace('{element}', $el['name'] ?? '', $titleTemplate);
             }
         }
-        return sprintf('%s – %s %s', $section->getTitle(), $repeatType->value, $repeatId);
+        return sprintf('%s – %s %s', $section->getTitle() ?? '', $repeatType->value, $repeatId);
     }
 }
