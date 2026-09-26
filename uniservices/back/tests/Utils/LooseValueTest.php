@@ -74,6 +74,16 @@ final class LooseValueTest extends TestCase
     }
 
     /**
+     * Des options résolues n'ont que des clés nommées ; une clé entière signale un autre tableau.
+     */
+    public function testKeepsAssociativeArray(): void
+    {
+        self::assertSame(['CM' => 1.5, 'TD' => 2], LooseValue::assoc(['CM' => 1.5, 'TD' => 2]));
+        $this->expectException(\UnexpectedValueException::class);
+        LooseValue::assoc([1.5, 2]);
+    }
+
+    /**
      * Une chaîne non numérique passée à un paramètre int levait une TypeError.
      */
     public function testRejectsNonNumericStringForInt(): void
