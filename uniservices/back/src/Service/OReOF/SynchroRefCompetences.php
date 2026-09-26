@@ -12,6 +12,7 @@ use App\Repository\Structure\StructureDepartementRepository;
 use App\Repository\Structure\StructureDiplomeRepository;
 use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SynchroRefCompetences
@@ -30,7 +31,7 @@ class SynchroRefCompetences
         $diplome = $this->structureDiplomeRepository->find($diplomeId);
 
         if (!$departement instanceof StructureDepartement || !$diplome instanceof StructureDiplome) {
-            throw new \Exception('Département ou diplôme introuvable');
+            throw new NotFoundHttpException('Département ou diplôme introuvable');
         }
 
         if ($diplome->getTypeDiplome()?->isApc() === true) {

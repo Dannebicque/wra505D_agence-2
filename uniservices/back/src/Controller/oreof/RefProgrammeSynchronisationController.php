@@ -2,28 +2,32 @@
 
 namespace App\Controller\oreof;
 
-use App\Service\OReOF\SynchroRefCompetences;
+use App\Security\StructureVoter;
 use App\Service\OReOF\SynchroRefFormation;
-use App\Utils\JsonRequest;
 use App\Utils\JsonResponse;
-use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route(path: '/api/oreof/ref-formation/synchronisation', name: 'oreof_programme_synchronisation')]
+#[Route(path: '/api/oreof/ref-formation/synchronisation', name: 'oreof_programme_synchronisation', methods: ['POST'])]
+#[IsGranted(StructureVoter::CAN_EDIT_PN)]
 class RefProgrammeSynchronisationController extends AbstractController
 {
     public function __invoke(
         SynchroRefFormation $synchroRefFormation,
         Request               $request
     ): Response {
-        $data = JsonRequest::getValuesFromString($request->getContent());
-        if (!is_array($data)) {
-            throw new \UnexpectedValueException('Expected a JSON object.');
+        $payload = $request->getPayload();
+        $ids = [];
+        foreach (['selectedDiplome', 'anneeUniversitaire', 'oreofId'] as $key) {
+            $ids[$key] = $payload->filter($key, null, FILTER_VALIDATE_INT, ['flags' => FILTER_NULL_ON_FAILURE]);
+            if (!is_int($ids[$key])) {
+                return JsonResponse::Error('selectedDiplome, anneeUniversitaire et oreofId, entiers, sont requis.');
+            }
         }
-        $synchro = $synchroRefFormation->synchroniser(LooseValue::int($data['selectedDiplome']), LooseValue::int($data['anneeUniversitaire']), LooseValue::int($data['oreofId']));
+        $synchro = $synchroRefFormation->synchroniser($ids['selectedDiplome'], $ids['anneeUniversitaire'], $ids['oreofId']);
 
         return JsonResponse::Success('Synchronisation des compétences terminée', [
             'synchronisation' => $synchro,
