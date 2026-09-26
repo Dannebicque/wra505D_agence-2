@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Uid\UuidV4;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use App\Utils\LooseValue;
 
 #[AsCommand(
     name: 'copy:transfert-bdd:enseignements',
@@ -109,30 +110,30 @@ FOREIGN_KEY_CHECKS=1');
         $matieres = $this->em->executeQuery($sql)->fetchAllAssociative();
 
         foreach ($matieres as $mat) {
-            if (array_key_exists(LegacyValue::key($mat['ue_id']), $this->tUes)) {
+            if (array_key_exists(LooseValue::key($mat['ue_id']), $this->tUes)) {
                 $matiere = new ScolEnseignement();
-                $matiere->setLibelle(LegacyValue::string($mat['libelle']));
-                $matiere->setCodeEnseignement(LegacyValue::nullableString($mat['code_matiere']));
-                $matiere->setCodeApogee(LegacyValue::nullableString($mat['code_element']));
+                $matiere->setLibelle(LooseValue::string($mat['libelle']));
+                $matiere->setCodeEnseignement(LooseValue::nullableString($mat['code_matiere']));
+                $matiere->setCodeApogee(LooseValue::nullableString($mat['code_element']));
                 $matiere->setHeures([
-                    'CM' => ['PN' => LegacyValue::float($mat['cm_ppn']), 'IUT' => LegacyValue::float($mat['cm_formation'])],
-                    'TD' => ['PN' => LegacyValue::float($mat['td_ppn']), 'IUT' => LegacyValue::float($mat['td_formation'])],
-                    'TP' => ['PN' => LegacyValue::float($mat['tp_ppn']), 'IUT' => LegacyValue::float($mat['tp_formation'])],
+                    'CM' => ['PN' => LooseValue::float($mat['cm_ppn']), 'IUT' => LooseValue::float($mat['cm_formation'])],
+                    'TD' => ['PN' => LooseValue::float($mat['td_ppn']), 'IUT' => LooseValue::float($mat['td_formation'])],
+                    'TP' => ['PN' => LooseValue::float($mat['tp_ppn']), 'IUT' => LooseValue::float($mat['tp_formation'])],
                     'Projet' => ['PN' => 0, 'IUT' => 0],
                 ]);
                 $matiere->setType(TypeEnseignementEnum::TYPE_MATIERE);
-                $matiere->setBonification(LegacyValue::bool($mat['pac']));
-                $matiere->setDescription(LegacyValue::nullableString($mat['description']));
-                $matiere->setNbNotes(LegacyValue::castInt($mat['nb_notes']));
-                $matiere->setLibelleCourt(LegacyValue::nullableString($mat['libelle_court']));
-                $matiere->setSuspendu(LegacyValue::bool($mat['suspendu']));
-                $matiere->setMutualisee(LegacyValue::bool($mat['mutualisee']));
-                $matiere->setMotsCles(LegacyValue::nullableString($mat['mots_cles']));
-                $matiere->setObjectif(LegacyValue::nullableString($mat['objectifs_module']));
-                $matiere->setPrerequis(LegacyValue::nullableString($mat['pre_requis']));
-                $matiere->setOldId(LegacyValue::nullableInt($mat['id']));
+                $matiere->setBonification(LooseValue::bool($mat['pac']));
+                $matiere->setDescription(LooseValue::nullableString($mat['description']));
+                $matiere->setNbNotes(LooseValue::castInt($mat['nb_notes']));
+                $matiere->setLibelleCourt(LooseValue::nullableString($mat['libelle_court']));
+                $matiere->setSuspendu(LooseValue::bool($mat['suspendu']));
+                $matiere->setMutualisee(LooseValue::bool($mat['mutualisee']));
+                $matiere->setMotsCles(LooseValue::nullableString($mat['mots_cles']));
+                $matiere->setObjectif(LooseValue::nullableString($mat['objectifs_module']));
+                $matiere->setPrerequis(LooseValue::nullableString($mat['pre_requis']));
+                $matiere->setOldId(LooseValue::nullableInt($mat['id']));
 
-                $nbNotes = LegacyValue::castInt($mat['nb_notes']);
+                $nbNotes = LooseValue::castInt($mat['nb_notes']);
                 for ($i = 1; $i <= $nbNotes; $i++) {
                     $evaluation = new ScolEvaluation();
                     $evaluation->setLibelle('Évaluation ' . $i);
@@ -151,21 +152,21 @@ FOREIGN_KEY_CHECKS=1');
     ]
                  */
                 $this->entityManager->persist($matiere);
-                $this->tMatieres[LegacyValue::key($mat['id'])] = $matiere;
+                $this->tMatieres[LooseValue::key($mat['id'])] = $matiere;
 
-                if (LegacyValue::string($mat['ue_id']) !== '') {
+                if (LooseValue::string($mat['ue_id']) !== '') {
 
                     $matiereUe = new ScolEnseignementUe(
                         $matiere,
-                        $this->tUes[LegacyValue::key($mat['ue_id'])],
+                        $this->tUes[LooseValue::key($mat['ue_id'])],
                     );
-                    $matiereUe->setCoefficient(LegacyValue::float($mat['coefficient']));
-                    $matiereUe->setEcts(LegacyValue::float($mat['nb_ects']));
+                    $matiereUe->setCoefficient(LooseValue::float($mat['coefficient']));
+                    $matiereUe->setEcts(LooseValue::float($mat['nb_ects']));
                     $this->entityManager->persist($matiereUe);
 
                 }
 
-                $this->io->info('Matière : ' . LegacyValue::castString($mat['libelle']) . ' ajouté pour insertion');
+                $this->io->info('Matière : ' . LooseValue::castString($mat['libelle']) . ' ajouté pour insertion');
             }
         }
 
@@ -173,29 +174,29 @@ FOREIGN_KEY_CHECKS=1');
         $matieres = $this->em->executeQuery($sql)->fetchAllAssociative();
 
         foreach ($matieres as $mat) {
-            if (array_key_exists(LegacyValue::key($mat['ue_id']), $this->tUes)) {
+            if (array_key_exists(LooseValue::key($mat['ue_id']), $this->tUes)) {
                 $matiere = new ScolEnseignement();
-                $matiere->setLibelle(LegacyValue::string($mat['libelle']));
-                $matiere->setCodeEnseignement(LegacyValue::nullableString($mat['code_matiere']));
-                $matiere->setCodeApogee(LegacyValue::nullableString($mat['code_element']));
+                $matiere->setLibelle(LooseValue::string($mat['libelle']));
+                $matiere->setCodeEnseignement(LooseValue::nullableString($mat['code_matiere']));
+                $matiere->setCodeApogee(LooseValue::nullableString($mat['code_element']));
                 $matiere->setHeures([
-                    'CM' => ['PN' => LegacyValue::float($mat['cm_ppn']), 'IUT' => LegacyValue::float($mat['cm_formation'])],
-                    'TD' => ['PN' => LegacyValue::float($mat['td_ppn']), 'IUT' => LegacyValue::float($mat['td_formation'])],
-                    'TP' => ['PN' => LegacyValue::float($mat['tp_ppn']), 'IUT' => LegacyValue::float($mat['tp_formation'])],
+                    'CM' => ['PN' => LooseValue::float($mat['cm_ppn']), 'IUT' => LooseValue::float($mat['cm_formation'])],
+                    'TD' => ['PN' => LooseValue::float($mat['td_ppn']), 'IUT' => LooseValue::float($mat['td_formation'])],
+                    'TP' => ['PN' => LooseValue::float($mat['tp_ppn']), 'IUT' => LooseValue::float($mat['tp_formation'])],
                     'Projet' => ['PN' => 0, 'IUT' => 0],
                 ]);
                 $matiere->setType(TypeEnseignementEnum::TYPE_MATIERE);
-                $matiere->setBonification(LegacyValue::bool($mat['pac']));
-                $matiere->setDescription(LegacyValue::nullableString($mat['description']));
-                $matiere->setNbNotes(LegacyValue::castInt($mat['nb_notes']));
-                $matiere->setLibelleCourt(LegacyValue::nullableString($mat['libelle_court']));
-                $matiere->setSuspendu(LegacyValue::bool($mat['suspendu']));
-                $matiere->setMutualisee(LegacyValue::bool($mat['mutualisee']));
-                $matiere->setMotsCles(LegacyValue::nullableString($mat['mots_cles']));
-                $matiere->setObjectif(LegacyValue::nullableString($mat['objectifs_module']));
-                $matiere->setPrerequis(LegacyValue::nullableString($mat['pre_requis']));
-                $matiere->setParent($this->tMatieres[LegacyValue::key($mat['matiere_parent_id'])]);
-                $matiere->setOldId(LegacyValue::nullableInt($mat['id']));
+                $matiere->setBonification(LooseValue::bool($mat['pac']));
+                $matiere->setDescription(LooseValue::nullableString($mat['description']));
+                $matiere->setNbNotes(LooseValue::castInt($mat['nb_notes']));
+                $matiere->setLibelleCourt(LooseValue::nullableString($mat['libelle_court']));
+                $matiere->setSuspendu(LooseValue::bool($mat['suspendu']));
+                $matiere->setMutualisee(LooseValue::bool($mat['mutualisee']));
+                $matiere->setMotsCles(LooseValue::nullableString($mat['mots_cles']));
+                $matiere->setObjectif(LooseValue::nullableString($mat['objectifs_module']));
+                $matiere->setPrerequis(LooseValue::nullableString($mat['pre_requis']));
+                $matiere->setParent($this->tMatieres[LooseValue::key($mat['matiere_parent_id'])]);
+                $matiere->setOldId(LooseValue::nullableInt($mat['id']));
 
                 /*
                  * array:30 [
@@ -205,18 +206,18 @@ FOREIGN_KEY_CHECKS=1');
                  */
                 $this->entityManager->persist($matiere);
 
-                if (LegacyValue::string($mat['ue_id']) !== '') {
+                if (LooseValue::string($mat['ue_id']) !== '') {
                     $matiereUe = new ScolEnseignementUe(
                         $matiere,
-                        $this->tUes[LegacyValue::key($mat['ue_id'])],
+                        $this->tUes[LooseValue::key($mat['ue_id'])],
                     );
-                    $matiereUe->setCoefficient(LegacyValue::float($mat['coefficient']));
-                    $matiereUe->setEcts(LegacyValue::float($mat['nb_ects']));
+                    $matiereUe->setCoefficient(LooseValue::float($mat['coefficient']));
+                    $matiereUe->setEcts(LooseValue::float($mat['nb_ects']));
                     $this->entityManager->persist($matiereUe);
 
                 }
 
-                $this->io->info('Matière : ' . LegacyValue::castString($mat['libelle']) . ' ajouté pour insertion');
+                $this->io->info('Matière : ' . LooseValue::castString($mat['libelle']) . ' ajouté pour insertion');
             }
         }
 
@@ -235,31 +236,31 @@ FOREIGN_KEY_CHECKS=1');
             $this->io->error('JSON decoding error: ' . json_last_error_msg());
             return Command::FAILURE;
         }
-        $matieres = LegacyValue::rows($matieres);
+        $matieres = LooseValue::rows($matieres);
 
         foreach ($matieres as $mat) {
             $matiere = new ScolEnseignement();
-            $matiere->setLibelle(LegacyValue::string($mat['libelle']));
-            $matiere->setCodeEnseignement(LegacyValue::nullableString($mat['code_matiere']));
-            $matiere->setCodeApogee(LegacyValue::nullableString($mat['code_element']));
+            $matiere->setLibelle(LooseValue::string($mat['libelle']));
+            $matiere->setCodeEnseignement(LooseValue::nullableString($mat['code_matiere']));
+            $matiere->setCodeApogee(LooseValue::nullableString($mat['code_element']));
             $matiere->setHeures([
-                'CM' => ['PN' => LegacyValue::float($mat['cm_ppn']), 'IUT' => LegacyValue::float($mat['cm_formation'])],
-                'TD' => ['PN' => LegacyValue::float($mat['td_ppn']), 'IUT' => LegacyValue::float($mat['td_formation'])],
-                'TP' => ['PN' => LegacyValue::float($mat['tp_ppn']), 'IUT' => LegacyValue::float($mat['tp_formation'])],
+                'CM' => ['PN' => LooseValue::float($mat['cm_ppn']), 'IUT' => LooseValue::float($mat['cm_formation'])],
+                'TD' => ['PN' => LooseValue::float($mat['td_ppn']), 'IUT' => LooseValue::float($mat['td_formation'])],
+                'TP' => ['PN' => LooseValue::float($mat['tp_ppn']), 'IUT' => LooseValue::float($mat['tp_formation'])],
                 'Projet' => ['PN' => 0, 'IUT' => 0],
             ]);
             $matiere->setType(TypeEnseignementEnum::TYPE_RESSOURCE);
             $matiere->setBonification(false);
-            $matiere->setDescription(LegacyValue::nullableString($mat['description']));
-            $matiere->setNbNotes(LegacyValue::castInt($mat['nb_notes']));
-            $matiere->setLibelleCourt(LegacyValue::nullableString($mat['libelle_court']));
-            $matiere->setSuspendu(LegacyValue::bool($mat['suspendu']));
-            $matiere->setMutualisee(LegacyValue::bool($mat['mutualisee']));
-            $matiere->setMotsCles(LegacyValue::nullableString($mat['mots_cles']));
-            $matiere->setPrerequis(LegacyValue::nullableString($mat['pre_requis']));
-            $matiere->setOldId(LegacyValue::nullableInt($mat['id']));
+            $matiere->setDescription(LooseValue::nullableString($mat['description']));
+            $matiere->setNbNotes(LooseValue::castInt($mat['nb_notes']));
+            $matiere->setLibelleCourt(LooseValue::nullableString($mat['libelle_court']));
+            $matiere->setSuspendu(LooseValue::bool($mat['suspendu']));
+            $matiere->setMutualisee(LooseValue::bool($mat['mutualisee']));
+            $matiere->setMotsCles(LooseValue::nullableString($mat['mots_cles']));
+            $matiere->setPrerequis(LooseValue::nullableString($mat['pre_requis']));
+            $matiere->setOldId(LooseValue::nullableInt($mat['id']));
 
-            $nbNotes = LegacyValue::castInt($mat['nb_notes']);
+            $nbNotes = LooseValue::castInt($mat['nb_notes']);
             for ($i = 1; $i <= $nbNotes; $i++) {
                 $evaluation = new ScolEvaluation();
                 $evaluation->setLibelle('Évaluation ' . $i);
@@ -287,15 +288,15 @@ FOREIGN_KEY_CHECKS=1');
             if (array_key_exists('ues', $mat)) {
                 foreach ($mat['ues'] as $apcCompetence) {
                     //                    dd($apcCompetence);
-                    if (array_key_exists(LegacyValue::key($apcCompetence['ue_id']), $this->tUes) &&
-                        !array_key_exists(LegacyValue::key($this->tUes[LegacyValue::key($apcCompetence['ue_id'])]->getId()), $taddUes)
+                    if (array_key_exists(LooseValue::key($apcCompetence['ue_id']), $this->tUes) &&
+                        !array_key_exists(LooseValue::key($this->tUes[LooseValue::key($apcCompetence['ue_id'])]->getId()), $taddUes)
                     ) {
                         dump($apcCompetence['ue_id']);
                         $apc = new ScolEnseignementUe(
                             $matiere,
-                            $this->tUes[LegacyValue::key($apcCompetence['ue_id'])],
+                            $this->tUes[LooseValue::key($apcCompetence['ue_id'])],
                         );
-                        $taddUes[LegacyValue::key($this->tUes[LegacyValue::key($apcCompetence['ue_id'])]->getId())] = $apc;
+                        $taddUes[LooseValue::key($this->tUes[LooseValue::key($apcCompetence['ue_id'])]->getId())] = $apc;
                         $apc->setCoefficient((float)$apcCompetence['coefficient']);
                         $apc->setEcts((float)$apcCompetence['coefficient']);
                         //todo: parcours
@@ -306,14 +307,14 @@ FOREIGN_KEY_CHECKS=1');
                 }
             }
 
-            $sqlApcCritique = 'SELECT * FROM apc_ressource_apprentissage_critique WHERE ressource_id = ' . LegacyValue::castInt($mat['id']);
+            $sqlApcCritique = 'SELECT * FROM apc_ressource_apprentissage_critique WHERE ressource_id = ' . LooseValue::castInt($mat['id']);
             $apcCritiques = $this->em->executeQuery($sqlApcCritique)->fetchAllAssociative();
 
             foreach ($apcCritiques as $apcCritique) {
-                if (array_key_exists(LegacyValue::key($apcCritique['apprentissage_critique_id']), $this->tApprentissages) &&
-                    !$matiere->getApprentissageCritique()->contains($this->tApprentissages[LegacyValue::key($apcCritique['apprentissage_critique_id'])])
+                if (array_key_exists(LooseValue::key($apcCritique['apprentissage_critique_id']), $this->tApprentissages) &&
+                    !$matiere->getApprentissageCritique()->contains($this->tApprentissages[LooseValue::key($apcCritique['apprentissage_critique_id'])])
                 ) {
-                    $matiere->addApprentissageCritique($this->tApprentissages[LegacyValue::key($apcCritique['apprentissage_critique_id'])]);
+                    $matiere->addApprentissageCritique($this->tApprentissages[LooseValue::key($apcCritique['apprentissage_critique_id'])]);
                 }
             }
 
@@ -391,32 +392,32 @@ FOREIGN_KEY_CHECKS=1');
     {
         $response = $this->httpClient->request('GET', $this->base_url . '/saes');
         // Un JSON invalide ne copiait rien : null est parcouru comme une liste vide.
-        $matieres = LegacyValue::rows(json_decode($response->getContent(), true) ?? []);
+        $matieres = LooseValue::rows(json_decode($response->getContent(), true) ?? []);
         // matières, ressources, SAE
 
         foreach ($matieres as $mat) {
             $matiere = new ScolEnseignement();
-            $matiere->setLibelle(LegacyValue::string($mat['libelle']));
-            $matiere->setCodeEnseignement(LegacyValue::nullableString($mat['code_matiere']));
-            $matiere->setCodeApogee(LegacyValue::nullableString($mat['code_element']));
+            $matiere->setLibelle(LooseValue::string($mat['libelle']));
+            $matiere->setCodeEnseignement(LooseValue::nullableString($mat['code_matiere']));
+            $matiere->setCodeApogee(LooseValue::nullableString($mat['code_element']));
             $matiere->setHeures([
-                'CM' => ['PN' => LegacyValue::float($mat['cm_ppn']), 'IUT' => LegacyValue::float($mat['cm_formation'])],
-                'TD' => ['PN' => LegacyValue::float($mat['td_ppn']), 'IUT' => LegacyValue::float($mat['td_formation'])],
-                'TP' => ['PN' => LegacyValue::float($mat['tp_ppn']), 'IUT' => LegacyValue::float($mat['tp_formation'])],
-                'Projet' => ['PN' => LegacyValue::float($mat['projet_ppn']), 'IUT' => LegacyValue::float($mat['projet_formation'])],
+                'CM' => ['PN' => LooseValue::float($mat['cm_ppn']), 'IUT' => LooseValue::float($mat['cm_formation'])],
+                'TD' => ['PN' => LooseValue::float($mat['td_ppn']), 'IUT' => LooseValue::float($mat['td_formation'])],
+                'TP' => ['PN' => LooseValue::float($mat['tp_ppn']), 'IUT' => LooseValue::float($mat['tp_formation'])],
+                'Projet' => ['PN' => LooseValue::float($mat['projet_ppn']), 'IUT' => LooseValue::float($mat['projet_formation'])],
             ]);
             $matiere->setType(TypeEnseignementEnum::TYPE_SAE);
             $matiere->setBonification(false);
-            $matiere->setDescription(LegacyValue::nullableString($mat['description']));
-            $matiere->setNbNotes(LegacyValue::castInt($mat['nb_notes']));
-            $matiere->setLibelleCourt(LegacyValue::nullableString($mat['libelle_court']));
-            $matiere->setSuspendu(LegacyValue::bool($mat['suspendu']));
-            $matiere->setMutualisee(LegacyValue::bool($mat['mutualisee']));
-            $matiere->setExemple(LegacyValue::nullableString($mat['exemple']));
-            $matiere->setLivrables(LegacyValue::nullableString($mat['livrables']));
-            $matiere->setOldId(LegacyValue::nullableInt($mat['id']));
+            $matiere->setDescription(LooseValue::nullableString($mat['description']));
+            $matiere->setNbNotes(LooseValue::castInt($mat['nb_notes']));
+            $matiere->setLibelleCourt(LooseValue::nullableString($mat['libelle_court']));
+            $matiere->setSuspendu(LooseValue::bool($mat['suspendu']));
+            $matiere->setMutualisee(LooseValue::bool($mat['mutualisee']));
+            $matiere->setExemple(LooseValue::nullableString($mat['exemple']));
+            $matiere->setLivrables(LooseValue::nullableString($mat['livrables']));
+            $matiere->setOldId(LooseValue::nullableInt($mat['id']));
 
-            $nbNotes = LegacyValue::castInt($mat['nb_notes']);
+            $nbNotes = LooseValue::castInt($mat['nb_notes']);
             for ($i = 1; $i <= $nbNotes; $i++) {
                 $evaluation = new ScolEvaluation();
                 $evaluation->setLibelle('Évaluation ' . $i);
@@ -440,15 +441,15 @@ FOREIGN_KEY_CHECKS=1');
             if (array_key_exists('ues', $mat)) {
                 foreach ($mat['ues'] as $apcCompetence) {
                     //dd($apcCompetence);
-                    if (array_key_exists(LegacyValue::key($apcCompetence['ue_id']), $this->tUes) &&
-                        !array_key_exists(LegacyValue::key($this->tUes[LegacyValue::key($apcCompetence['ue_id'])]->getId()), $taddUes)
+                    if (array_key_exists(LooseValue::key($apcCompetence['ue_id']), $this->tUes) &&
+                        !array_key_exists(LooseValue::key($this->tUes[LooseValue::key($apcCompetence['ue_id'])]->getId()), $taddUes)
                     ) {
                         dump($apcCompetence['ue_id']);
                         $apc = new ScolEnseignementUe(
                             $matiere,
-                            $this->tUes[LegacyValue::key($apcCompetence['ue_id'])],
+                            $this->tUes[LooseValue::key($apcCompetence['ue_id'])],
                         );
-                        $taddUes[$this->tUes[LegacyValue::key($apcCompetence['ue_id'])]->getId()] = $apc;
+                        $taddUes[$this->tUes[LooseValue::key($apcCompetence['ue_id'])]->getId()] = $apc;
                         $apc->setCoefficient((float)$apcCompetence['coefficient']);
                         $apc->setEcts((float)$apcCompetence['coefficient']);
                         //todo: parcours
@@ -457,15 +458,15 @@ FOREIGN_KEY_CHECKS=1');
                 }
             }
 
-            $sqlApcCritique = 'SELECT * FROM apc_sae_apprentissage_critique WHERE sae_id = ' . LegacyValue::castInt($mat['id']);
+            $sqlApcCritique = 'SELECT * FROM apc_sae_apprentissage_critique WHERE sae_id = ' . LooseValue::castInt($mat['id']);
             $apcCritiques = $this->em->executeQuery($sqlApcCritique)->fetchAllAssociative();
 
 
             foreach ($apcCritiques as $apcCritique) {
-                if (array_key_exists(LegacyValue::key($apcCritique['apprentissage_critique_id']), $this->tApprentissages) &&
-                    !$matiere->getApprentissageCritique()->contains($this->tApprentissages[LegacyValue::key($apcCritique['apprentissage_critique_id'])])
+                if (array_key_exists(LooseValue::key($apcCritique['apprentissage_critique_id']), $this->tApprentissages) &&
+                    !$matiere->getApprentissageCritique()->contains($this->tApprentissages[LooseValue::key($apcCritique['apprentissage_critique_id'])])
                 ) {
-                    $matiere->addApprentissageCritique($this->tApprentissages[LegacyValue::key($apcCritique['apprentissage_critique_id'])]);
+                    $matiere->addApprentissageCritique($this->tApprentissages[LooseValue::key($apcCritique['apprentissage_critique_id'])]);
                 }
             }
 

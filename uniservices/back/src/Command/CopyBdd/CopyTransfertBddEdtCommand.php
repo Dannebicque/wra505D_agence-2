@@ -20,6 +20,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Uid\UuidV4;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use App\Utils\LooseValue;
 
 #[AsCommand(
     name: 'copy:transfert-bdd:edt',
@@ -107,29 +108,29 @@ FOREIGN_KEY_CHECKS=1');
         $reponses = $this->httpClient->request('GET', $this->base_url . '/edt-intranet');
         $edts = $reponses->toArray();
         foreach ($edts as $ed) {
-            if (array_key_exists(LegacyValue::key($ed['prof']), $this->tPersonnels) && array_key_exists(LegacyValue::key($ed['matiere']), $this->tMatieres)) {
+            if (array_key_exists(LooseValue::key($ed['prof']), $this->tPersonnels) && array_key_exists(LooseValue::key($ed['matiere']), $this->tMatieres)) {
                 $edt = new EdtEvent();
                 $edt->setUuid(UuidV4::v4());
-                $edt->setDate(new \DateTime(LegacyValue::string($ed['date'])));
-                $edt->setDebut(new \DateTime(LegacyValue::string($ed['debut'])));
-                $edt->setFin(new \DateTime(LegacyValue::string($ed['fin'])));
-                $edt->setSalle(LegacyValue::string($ed['salle']));
-                $edt->setPersonnel($this->tPersonnels[LegacyValue::key($ed['prof'])]);
-                $edt->setLibPersonnel(LegacyValue::nullableString($ed['libprof']));
-                $edt->setCodePersonnel(LegacyValue::nullableString($ed['codeRh']));
-                $edt->setGroupe($this->tGroupes[LegacyValue::key($ed['groupe'])] ?? null);
-                $edt->setType(LegacyValue::nullableString($ed['type']));
-                $edt->setCouleur(LegacyValue::nullableString($ed['couleur']));
-                $edt->setEvaluation(LegacyValue::bool($ed['evaluation']));
+                $edt->setDate(new \DateTime(LooseValue::string($ed['date'])));
+                $edt->setDebut(new \DateTime(LooseValue::string($ed['debut'])));
+                $edt->setFin(new \DateTime(LooseValue::string($ed['fin'])));
+                $edt->setSalle(LooseValue::string($ed['salle']));
+                $edt->setPersonnel($this->tPersonnels[LooseValue::key($ed['prof'])]);
+                $edt->setLibPersonnel(LooseValue::nullableString($ed['libprof']));
+                $edt->setCodePersonnel(LooseValue::nullableString($ed['codeRh']));
+                $edt->setGroupe($this->tGroupes[LooseValue::key($ed['groupe'])] ?? null);
+                $edt->setType(LooseValue::nullableString($ed['type']));
+                $edt->setCouleur(LooseValue::nullableString($ed['couleur']));
+                $edt->setEvaluation(LooseValue::bool($ed['evaluation']));
                 //$edt->setCodeGroupe($this->tGroupes[$ed['groupe']]->getCodeApogee());
-                $edt->setCodeModule(LegacyValue::nullableString($this->tMatieres[LegacyValue::key($ed['matiere'])]->getCodeApogee()));
-                $edt->setEnseignement($this->tMatieres[LegacyValue::key($ed['matiere'])]);
-                $edt->setJour(LegacyValue::nullableInt($ed['jour']));
+                $edt->setCodeModule(LooseValue::nullableString($this->tMatieres[LooseValue::key($ed['matiere'])]->getCodeApogee()));
+                $edt->setEnseignement($this->tMatieres[LooseValue::key($ed['matiere'])]);
+                $edt->setJour(LooseValue::nullableInt($ed['jour']));
                 // $edt->setLibGroupe($this->tGroupes[$ed['groupe']]->getLibelle());
-                $edt->setLibModule(LegacyValue::nullableString($this->tMatieres[LegacyValue::key($ed['matiere'])]->getLibelle()));
-                $edt->setSemestre($this->tSemestres[LegacyValue::key($ed['semestre'])]);
-                $edt->setSemaineFormation(LegacyValue::nullableInt($ed['semaine']));
-                $edt->setAnneeUniversitaire($this->tAnneesUniversitaires[LegacyValue::key($ed['anneeUniversitaire'])]);
+                $edt->setLibModule(LooseValue::nullableString($this->tMatieres[LooseValue::key($ed['matiere'])]->getLibelle()));
+                $edt->setSemestre($this->tSemestres[LooseValue::key($ed['semestre'])]);
+                $edt->setSemaineFormation(LooseValue::nullableInt($ed['semaine']));
+                $edt->setAnneeUniversitaire($this->tAnneesUniversitaires[LooseValue::key($ed['anneeUniversitaire'])]);
 
                 $this->entityManager->persist($edt);
             }
