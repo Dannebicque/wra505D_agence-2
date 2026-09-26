@@ -156,7 +156,11 @@ FOREIGN_KEY_CHECKS=1');
             $compEss = $this->em->executeQuery($sqlCompEss)->fetchAllAssociative();
             $tCompEss = [];
             foreach ($compEss as $ce) {
-                $tCompEss[] = LooseValue::string($ce['libelle']);
+                $tCompEss[] = [
+                    'libelle' => LooseValue::string($ce['libelle']),
+                    'code' => LooseValue::nullableString($ce['code'] ?? null),
+                    'ordre' => LooseValue::nullableInt($ce['ordre'] ?? null),
+                ];
             }
             $competence->setComposantesEssentielles($tCompEss);
 
@@ -166,7 +170,7 @@ FOREIGN_KEY_CHECKS=1');
             $sitPro = $this->em->executeQuery($sqlSitPro)->fetchAllAssociative();
             $tSitPro = [];
             foreach ($sitPro as $sp) {
-                $tSitPro[] = LooseValue::string($sp['libelle']);
+                $tSitPro[] = ['libelle' => LooseValue::string($sp['libelle'])];
             }
             $competence->setSituationsProfessionnelles($tSitPro);
 

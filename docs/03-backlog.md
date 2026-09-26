@@ -258,7 +258,7 @@ seulement `departementId` : sans `diplomeId`, sa synchronisation répond 400. À
 Tout `^/api` est en `PUBLIC_ACCESS` dans `security.yaml` : chaque route doit donc porter son
 propre contrôle d'accès.
 
-### E19 · [back] Deux incohérences de données révélées par le niveau 9 · S
+### E19 · [back] Deux incohérences de données révélées par le niveau 9 · S · fait
 **Pourquoi** Constaté pendant E15 (niveau 9).
 - `CopyTransfertBddScolariteCommand` passait l'année civile (`getAnnee()`, un entier) à
   `EtudiantScolarite::setProposition()`, qui attend une `StructureAnnee` : l'import plantait dès
@@ -269,6 +269,13 @@ propre contrôle d'accès.
   `string[]` mais lit `composante.xxx`.
 **Terminé quand** la règle est décidée (avec le client si besoin), appliquée et testée, et que
 les deux sources produisent la même forme.
+**Fait, décidé par l'équipe, à revoir si le client s'y oppose.**
+- La proposition V3 désigne l'année de formation proposée. Elle est cherchée par libellé d'année
+  ou de semestre, dans le diplôme du dernier semestre suivi ; seule une correspondance unique est
+  retenue. Sinon la proposition reste vide et la commande l'annonce en fin de copie, sans deviner.
+- Composantes et situations prennent la forme d'ORéOF (`{libelle, code, ordre}` et `{libelle}`),
+  celle que le front affiche. La copie V3 l'écrit désormais ; les libellés déjà en base sont lus
+  sous cette forme par les getters, sans migration. Le type partagé `ApcCompetence.ts` suit.
 
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,

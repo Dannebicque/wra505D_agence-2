@@ -13,6 +13,7 @@ use App\Entity\Structure\StructureUe;
 use App\Entity\Traits\OldIdTrait;
 use App\Filter\CompetenceFilter;
 use App\Repository\Apc\ApcCompetenceRepository;
+use App\Utils\LooseValue;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -171,10 +172,22 @@ class ApcCompetence
         return $this;
     }
 
-    /** @return list<string|array<string, mixed>> */
+    /**
+     * Forme unique, celle d'ORéOF. La copie de la V3 enregistrait de simples libellés : ils sont
+     * lus comme une composante sans code ni ordre.
+     *
+     * @return list<array{libelle: string, code: string|null, ordre: int|null}>
+     */
     public function getComposantesEssentielles(): array
     {
-        return $this->composantesEssentielles;
+        return array_map(
+            static fn (mixed $composante): array => [
+                'libelle' => LooseValue::string(is_array($composante) ? $composante['libelle'] ?? '' : $composante),
+                'code' => is_array($composante) ? LooseValue::nullableString($composante['code'] ?? null) : null,
+                'ordre' => is_array($composante) ? LooseValue::nullableInt($composante['ordre'] ?? null) : null,
+            ],
+            $this->composantesEssentielles,
+        );
     }
 
     /** @param list<string|array<string, mixed>> $composantesEssentielles */
@@ -185,10 +198,19 @@ class ApcCompetence
         return $this;
     }
 
-    /** @return list<string|array<string, mixed>> */
+    /**
+     * Même forme que les composantes : un libellé V3 est lu comme une situation.
+     *
+     * @return list<array{libelle: string}>
+     */
     public function getSituationsProfessionnelles(): array
     {
-        return $this->situationsProfessionnelles;
+        return array_map(
+            static fn (mixed $situation): array => [
+                'libelle' => LooseValue::string(is_array($situation) ? $situation['libelle'] ?? '' : $situation),
+            ],
+            $this->situationsProfessionnelles,
+        );
     }
 
     /** @param list<string|array<string, mixed>> $situationsProfessionnelles */

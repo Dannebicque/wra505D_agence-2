@@ -5,6 +5,7 @@ namespace App\Command\CopyBdd;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Scolarite\ScolBac;
+use App\Entity\Structure\StructureAnnee;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Etudiant;
@@ -49,6 +50,7 @@ class CopyTransfertBddScolariteCommand extends Command
     /** @var array<int|string, StructureGroupe> */
     protected array $tGroupes = [];
     protected string $base_url;
+    private int $propositionsNonReprises = 0;
 
 
     protected SymfonyStyle $io;
@@ -77,6 +79,40 @@ class CopyTransfertBddScolariteCommand extends Command
             'verify_peer' => false,
             'verify_host' => false,
         ]);
+    }
+
+    /**
+     * Année de formation proposée pour la suite du parcours. La V3 la désigne par un libellé
+     * d'année ou de semestre ; on ne la cherche que dans le diplôme du dernier semestre suivi, et
+     * seule une correspondance unique est retenue. Sinon la proposition reste vide.
+     *
+     * @param array<int|string, StructureSemestre> $semestres
+     */
+    public static function anneeProposee(array $semestres, mixed $dernierSemestreOldId, string $proposition): ?StructureAnnee
+    {
+        $diplome = null;
+        foreach ($semestres as $semestre) {
+            if ($semestre->getOldId() === $dernierSemestreOldId) {
+                $diplome = $semestre->getAnnee()?->getDiplome();
+                break;
+            }
+        }
+        if ($diplome === null) {
+            return null;
+        }
+
+        $annees = [];
+        foreach ($semestres as $semestre) {
+            $annee = $semestre->getAnnee();
+            if ($annee === null || $annee->getDiplome() !== $diplome) {
+                continue;
+            }
+            if (in_array($proposition, [$annee->getLibelle(), $annee->getLibelleLong(), $semestre->getLibelle()], true)) {
+                $annees[spl_object_id($annee)] = $annee;
+            }
+        }
+
+        return count($annees) === 1 ? reset($annees) : null;
     }
 
     protected function configure(): void
@@ -110,6 +146,9 @@ FOREIGN_KEY_CHECKS=1');
         $this->addEtudiantScolarite();
         $this->addScolBac();
 
+        if ($this->propositionsNonReprises > 0) {
+            $this->io->warning(sprintf('%d propositions de la V3 sans année de formation correspondante : laissées vides.', $this->propositionsNonReprises));
+        }
         $this->io->success('Processus de recopie terminé.');
 
         return Command::SUCCESS;
@@ -162,14 +201,10 @@ FOREIGN_KEY_CHECKS=1');
                     if ($semestres !== []) {
                         $lastSemester = end($semestres);
                         if (isset($lastSemester['proposition'])) {
-                            // If the proposition is for the next year (like "DUT"), find the appropriate year
-                            foreach ($this->tAnneeUniversitaire as $annee) {
-                                if ($annee->getLibelle() === $lastSemester['proposition']) {
-                                    // L'origine passait ici l'année civile (getAnnee(), un entier) à
-                                    // setProposition(), qui attend une StructureAnnee : l'import plantait
-                                    // sur une TypeError. Fiche E19.
-                                    throw new \LogicException('Proposition de scolarité V3 non reprise, voir la fiche E19.');
-                                }
+                            $proposition = self::anneeProposee($this->tSemestres, $lastSemester['id'], LooseValue::string($lastSemester['proposition']));
+                            $scolarite->setProposition($proposition);
+                            if ($proposition === null) {
+                                ++$this->propositionsNonReprises;
                             }
                         }
                     }
