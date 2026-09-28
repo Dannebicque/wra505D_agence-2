@@ -279,6 +279,17 @@ les deux sources produisent la même forme.
   celle que le front affiche. La copie V3 l'écrit désormais ; les libellés déjà en base sont lus
   sous cette forme par les getters, sans migration. Le type partagé `ApcCompetence.ts` suit.
 
+
+### E20 · [back] Contrôleurs du client en double · S · fait
+**Pourquoi** Constaté après E15 : sept contrôleurs existaient à la fois dans `App` et dans un
+bundle, sous le même nom, ce qui faisait corriger deux fois le même code.
+**Fait** Seul `back/src/Controller` est chargé par le routage : les copies des bundles
+(`AuthController` dans `auth-bundle` ; `PersonnelController`, `CreateEtudiantController`,
+`DemissionEtudiantController`, `ImportApogeeEtudiantController`,
+`AnneeUniversitaireDiplomeController`, `GroupesParSemestreController` dans `intranet-bundle`)
+n'étaient jamais appelées, et `GroupesParSemestreController` n'avait de route dans aucune de ses
+deux copies. Les huit fichiers sont supprimés. Preuve : `debug:router` identique avant et après,
+et les 189 appels GET rendent le même JSON que `develop`.
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,
 `CentreNotifications`, `marquerLues()`, `synchroniserCalendrier()`.
