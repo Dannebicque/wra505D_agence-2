@@ -3,7 +3,7 @@
 État du projet et suite à donner, pour qu'une nouvelle session reparte sans rien redécouvrir.
 À lire après `CLAUDE.md`. À mettre à jour à chaque étape importante.
 
-Dernière mise à jour : 25/09/2026.
+Dernière mise à jour : 28/09/2026.
 
 ---
 
@@ -13,6 +13,8 @@ Dernière mise à jour : 25/09/2026.
   ce dépôt. C'est lui qui porte la contrainte Jamstack du sujet.
 - **Volet 2**, l'espace étudiant : on reprend la base du client, uniServices, importée dans
   `uniservices/`. Front Vue 3 + Vite + PrimeVue, back Symfony 8.1 + API Platform, MariaDB.
+- Le back est remis en forme (E9 à E20) : PSR-12 partout, Symfony 8.1, Doctrine DBAL 4, notre
+  code en anglais, PHPStan au niveau 10 avec `phpstan-strict-rules` et sans baseline.
 - Le détail des tâches est dans `docs/03-backlog.md`, les constats d'audit dans
   `docs/01-audit-existant.md`, l'audit informel de l'équipe dans le `.docx` du dossier Drive.
 
@@ -116,6 +118,26 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #73, #74 | PHP-CS-Fixer, PSR-12 sur les fichiers modifiés, code de l'équipe remis à la norme |
 | #77 | bouton « Retour » retiré de l'accueil étudiant (JEREMY) |
 | #78 | `components.d.ts` n'est plus suivi par Git ni surveillé par Vite |
+| #79 | `CLAUDE.md`, backlog et reprise remis à jour |
+| #80 | intervenants de l'agenda présents dans l'annuaire MMI (C16, JEREMY) |
+| #81 | **E9** : tout le code PHP au format PSR-12, `make cs` vérifie tout l'arbre |
+| #82 | bouton « Retour » retiré de toutes les pages étudiantes (JEREMY) |
+| #83, #84, #86, #87, #90, #92, #93 | Documents : titres, catégories en vrais liens, filtres dans l'adresse, mobile, titres lisibles, clavier (B2, B1, B4, B5, B9, B8, JEREMY) |
+| #85 | **E10** : Symfony 7.4 LTS, zéro dépréciation, Rector ajouté |
+| #88 | **E11** : Doctrine DBAL 4, schéma SQL identique |
+| #89 | emploi du temps lisible sur téléphone (C3, JEREMY) |
+| #91 | test E2E aligné sur le titre `h2` des matières |
+| #94 | **E12** : gesdinet JWT refresh 2.2 |
+| #95 à #98 | menu mobile fermé, aucun débordement, connexion accessible, icônes décoratives masquées (A12, A13, A11, A10, JEREMY) |
+| #99 | **E13** : Symfony 8.1 |
+| #100 | **E17** : les étudiants créés par le personnel n'ont plus de mot de passe fixe |
+| #101, #118 | **E16** : jetons de rafraîchissement hachés en base, puis jetons encore en clair refusés |
+| #102 à #106 | **E14** : notre code back en anglais (recherche, notifications, relevé, Celcat, favoris), API inchangée |
+| #107 à #114 | **E15** : PHPStan du niveau 6 au niveau 10, puis `phpstan-strict-rules`, sans baseline |
+| #115 | **E18** : trois routes en 500 corrigées, synchronisations ORéOF protégées, statistiques d'emploi du temps réservées au personnel |
+| #116 | **E19** : proposition de poursuite V3 reprise en année de formation, une seule forme pour les compétences |
+| #117 | commits amont #247 et #248 examinés et écartés : ils publiaient des clés d'API |
+| #119 | **E20** : huit contrôleurs du client en double supprimés |
 
 Le connecteur Celcat, en bref :
 
@@ -200,8 +222,9 @@ Suivie dans le tableau de tâches de l'équipe, hors de ce dépôt.
 | LOU | A, accessibilité transverse |
 | JEREMY | C, tableau de bord et emploi du temps |
 
-La colonne B (documents) n'a pas de titulaire : LCS y a fait B6, B7 et B10. La colonne D
-(recherche) est terminée, sauf D6.
+La colonne B (documents) n'a pas eu de titulaire : LCS y a fait B6, B7 et B10, JEREMY B1, B2,
+B4, B5, B8 et B9 ; il reste B11. La colonne D (recherche) est terminée, sauf D6. La colonne E
+(back et CI) est terminée, sauf E8.
 
 `gh` n'est installé et connecté que sur le poste de LCS. Sans lui, pousser la branche et donner
 l'URL de comparaison.
@@ -215,15 +238,18 @@ l'URL de comparaison.
 2. **P1, fiche matière** : prochains cours, documents, notes et absences d'une matière, réunis.
    Dernière étape du plan de navigation, les données existent déjà (`TranscriptBuilder`,
    `Document.enseignement`, `EdtEvent`).
-3. **Colonne B** : B11 (mode sombre de Documents), puis B1, B2, B4, B5, B8 et B9.
-4. **Emploi du temps mobile**, fiche C3 et priorité 4, côté JEREMY ; C6 et C16 ensuite.
+3. **B11** : mode sombre de Documents.
+4. **C6** (modalités de contrôle), **D6** (recherche en mobile), puis **F2 à F5** (cahier de
+   texte, profil, trombinoscope).
 5. **P5, reste** : le fil d'Ariane dit « Dashboard » quand le menu dit « Accueil ».
-6. **Logo de la page de connexion** : l'image ne se charge pas, son texte de remplacement
-   s'affiche.
-7. **Examiner les 18 alertes de sécurité** remontées par `composer audit`, antérieures à nous.
+6. **Symfony 8.2**, à sa sortie en novembre 2026 et avant fin janvier 2027 (fin de maintenance de
+   la 8.1).
+7. **`composer audit`** : il reste 3 alertes, toutes sur `phpoffice/phpspreadsheet`.
 8. **Import d'étudiants** : il inscrit chaque étudiant dans *tous* les groupes du semestre, TD et
    TP compris, au lieu des siens.
-9. Le reste du backlog, et les questions au client ci-dessous.
+9. **À transmettre au client** : la fuite des clés d'API de leur commit #247, et l'écran du
+   personnel « Référentiels de compétences », qui n'envoie pas `diplomeId` (E18).
+10. Le reste du backlog (P2, P4), et les questions au client ci-dessous.
 
 ## Décisions
 
@@ -241,6 +267,11 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Notifications et messages | un seul fil pour l'étudiant : notes publiées, absences, documents de ses matières, actualités et messages. Les notifications sont recalculées, seule leur lecture est stockée. Les « messages » sont les copies des e-mails que l'intranet envoie (écoute du mailer) : la boîte universitaire n'est pas lue. La décision sur un justificatif n'a pas de date : son état figure dans le texte de l'absence | nous, validé par LCS |
 | Favoris de documents (B7) | propres à chaque utilisateur (table `document_favori`), lus et modifiés par `/api/me/documents-favoris`. L'ancien champ `Document::isFavorite`, partagé par tous, est supprimé : un étudiant qui marquait un favori le marquait pour tout le monde | nous, validé par LCS |
 | Couleur primaire (A6) | une seule primaire pour tous les modules : le violet de la DA `#4D3677`, avec une palette dérivée en OKLab (`VIOLET_IUT`, `packages/shell/assets/main.js`). Le jaune `#F7B000`, primaire d'origine de la DA, devient l'accent (`--accent-color`), toujours avec du texte `#4D3677`. La couleur par module (`primaryColor`) est supprimée | LCS |
+| Accès aux routes | `^/api` reste en `PUBLIC_ACCESS`, choix du client : chaque route porte son propre contrôle. Synchronisations ORéOF en POST avec droit d'édition ; statistiques d'emploi du temps réservées au personnel, comme les notes (E18) | nous |
+| Proposition de poursuite V3 (E19) | l'année de formation proposée, cherchée par libellé d'année ou de semestre dans le diplôme du dernier semestre suivi ; une seule correspondance est retenue, sinon elle reste vide et la commande le signale | nous |
+| Composantes et situations (E19) | une seule forme, celle d'ORéOF (`{libelle, code, ordre}`) ; les libellés V3 déjà en base sont lus sous cette forme | nous |
+| Jetons en clair (E16) | refusés dès le 26/09/2026, sans attendre 14 jours : pas de production | LCS |
+| Providers qui renvoient un tableau (E15) | `@phpstan-ignore method.childReturnType` justifié sur 12 providers, plutôt qu'un DTO qui changerait le JSON-LD | nous |
 | Barre latérale | façon GitHub : chaque entrée montre son icône puis son libellé ; repliée, la barre devient une colonne d'icônes, nommées par une infobulle au survol comme au focus, les libellés restant lus par les lecteurs d'écran. Le repli se fait depuis un bouton en bas de la barre, avec une icône de panneau latéral ; le ☰ de la barre haute ne sert plus qu'en mobile, pour ouvrir le tiroir. Icônes, bouton de repli et logo sont centrés sur un même axe. Le nom du module (« INTRANET ») est retiré de la barre haute de l'étudiant. La barre latérale est partagée : elle change aussi pour le personnel | nous |
 
 ## Questions en attente du client

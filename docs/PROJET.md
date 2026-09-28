@@ -56,6 +56,12 @@ Le client est le responsable des outils informatiques de son IUT. Il veut modern
 
 ## 2. État d'avancement et priorités immédiates
 
+**État au 28/09/2026.** Le pitch a eu lieu. L'espace étudiant avance sur la base du client,
+colonne par colonne : recherche (D) et back (E) terminés, sauf D6 et E8 ; documents (B), tableau
+de bord et emploi du temps (C), accessibilité (A) en grande partie faits. Le détail, PR par PR,
+est dans `docs/04-reprise.md`, la suite dans `docs/03-backlog.md`. La liste ci-dessous est celle
+d'avant le pitch, gardée pour mémoire.
+
 **Le pitch client est demain, mardi 22 septembre 2026 à 12h00.** Ordre de priorité réaliste pour les prochaines heures :
 
 1. **[x] Audit de l'existant réalisé et intégré** (section 4.2) — reste à couvrir avant la fin du sprint 1 : écrans Agenda, Applications, Trombinoscope et Messagerie, parcours utilisateurs chronométrés (tri par cartes, test d'arborescence), audit RGAA formel au lecteur d'écran.
