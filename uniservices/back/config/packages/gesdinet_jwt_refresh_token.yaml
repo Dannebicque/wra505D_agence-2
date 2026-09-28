@@ -2,11 +2,10 @@ gesdinet_jwt_refresh_token:
     refresh_token_class: App\Entity\RefreshToken
     ttl: 1209600 # 14 jours (14 * 24 * 60 * 60)
     # Stocke sha256$ et le haché : une copie de la base ne permet plus de rafraîchir une session.
-    # Les jetons en clair émis avant E16 restent acceptés puis réécrits hachés ; passer
-    # accept_stored_in_the_clear à false quand ils ont tous expiré (14 jours après le déploiement).
+    # Un jeton encore stocké en clair (émis avant E16) est refusé : sa session doit se reconnecter.
     hash_tokens:
         enabled: true
-        accept_stored_in_the_clear: true
+        accept_stored_in_the_clear: false
     single_use: true # Rotation : nouveau token à chaque refresh pour plus de sécurité
     cookie:
         enabled: true
