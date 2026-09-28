@@ -35,7 +35,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 | CI-Back : PHPStan | niveau 10 (max) et `phpstan-strict-rules`, 0 erreur ; 12 `@phpstan-ignore` justifiés (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
-| CI-Cypress : 9 fichiers, 33 tests, sur une base de fixtures neuve et un Vite froid | vert |
+| CI-Cypress : 13 fichiers, 59 tests, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
@@ -325,7 +325,7 @@ génération de la fausse base, synchronisation (290 créneaux) et contenu de `e
 `/api/me/documents-favoris` ne change pas. Délégué à Codex. Vérifié : liste, widgets et SQL
 identiques ; ajout, retrait, doublon et 404 testés sur l'API.
 **Fait** les cinq modules de notre code back sont en anglais.
-### E15 · [back] PHPStan au niveau max, sans baseline · L, à redécouper
+### E15 · [back] PHPStan au niveau max, sans baseline · L · fait
 **Pourquoi** le niveau 6 laisse passer le `mixed` et les nullabilités, et 4 identifiants sont
 ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au 9, 2 871 au 10,
 3 481 au 10 sans les exclusions. 193 des 229 du niveau 7 sont un seul motif dans
@@ -405,6 +405,7 @@ Le minimum est 4,5:1. Les blocs de cours de l'emploi du temps ont le même défa
 **Terminé quand** le texte sur succès est `#0B3D26` (5,33:1) et sur danger `#4A1010` (5,25:1),
 valeurs déjà mesurées et consignées dans `CLAUDE.md`. Vérifier aussi les blocs d'emploi du temps,
 que l'audit n'avait pas pu mesurer.
+**Fait** (LOU, #31), mergé sur `develop`.
 
 ### A3 · Lien d'évitement, un seul `header`, titres continus · S
 **Audit 05** le constat reste entier : A11Y-7 (pas de lien d'évitement), A11Y-8 (repères `main`,
@@ -419,12 +420,14 @@ par page et qu'aucun niveau de titre n'est sauté.
 **Pourquoi** MOB-4. 26 éléments interactifs sur 66 mesurent moins de 44 px dans au moins une
 dimension.
 **Terminé quand** aucun élément interactif ne passe sous 44 px en émulation 375 x 812.
+**Fait** (LOU, #31), mergé sur `develop`.
 
 ### A5 · Charger la police Roboto · S
 **Pourquoi** la direction artistique impose Roboto. Elle est déclarée dans les styles mais n'est
 téléchargée nulle part : l'interface s'affiche dans la police système.
 **Terminé quand** Roboto est servie par l'application, sans dépendance à un service tiers si
 possible, et que le texte rendu correspond à la DA.
+**Fait** (LOU, #31), mergé sur `develop`.
 
 ### A6 · Une seule couleur primaire, celle de la DA · M
 **Pourquoi** DA-1, A11Y-10, A11Y-11, A11Y-13. Chaque module déclare sa propre primaire Tailwind
@@ -450,19 +453,23 @@ chevrons des catégories sans nom ; recherche des documents, filtres du trombino
 
 ### A10 · Masquer les icônes décoratives · S
 **Pourquoi** A11Y-18 : 12 à 21 PrimeIcons par page, aucune avec `aria-hidden`. Remplace A1.
+**Fait** (JEREMY, #98), mergé sur `develop`.
 
 ### A11 · Page de connexion accessible · M
 **Pourquoi** CNX-1 à CNX-4 : logo absent, carrousel en tête de tabulation avec des noms de code,
 case « Se souvenir de moi » sans `id`, « Connexion URCA » à 1,92:1. S'y ajoute un défaut relevé
 en écrivant les tests E2E : le bouton « Connexion invité » reste désactivé tant que le focus est
 dans le mot de passe.
+**Fait** (JEREMY, #97), mergé sur `develop`.
 
 ### A12 · Menu mobile de la barre haute fermé au chargement · S
 **Pourquoi** MOB-6 : le menu d'actions est ouvert à chaque page et recouvre le contenu.
+**Fait** (JEREMY, #95), mergé sur `develop`.
 
 ### A13 · Blocs qui débordent en mobile · S
 **Pourquoi** MOB-10 : la carte « Mon dashboard » du portail sort de l'écran, d'autres blocs sont
 rognés sur le tableau de bord, le trombinoscope et le profil.
+**Fait** (JEREMY, #96), mergé sur `develop`.
 
 ### A14 · Retirer « Messages » et « Notifications », sans action · S
 **Pourquoi** NAV-1 : deux entrées mortes sur chaque page. La vraie fonction reste P3.
@@ -482,10 +489,12 @@ rôle : ni atteignables au clavier, ni annoncées comme cliquables, et sans URL.
 peut être ni mise en favori ni partagée.
 **Terminé quand** chaque catégorie est un lien avec sa propre adresse, atteignable au clavier,
 et qu'un rechargement restitue la vue.
+**Fait** (JEREMY, #84), mergé sur `develop`.
 
 ### B2 · Réparer la hiérarchie de titres · S
 **Audit 05** DOC-12 : plus de `h5` en rafale, mais plus de `h1` non plus.
 **Pourquoi** DOC-5. Un `h1` suivi directement de neuf `h5`, sans `h2`.
+**Fait** (JEREMY, #83), mergé sur `develop`.
 
 ### B3 · Afficher le compteur de documents · S
 **Obsolète** corrigé : les compteurs s'affichent (DOC-3, audit 05).
@@ -505,12 +514,14 @@ annoncé dans une région `aria-live`.
 **Attention** `GET /api/documents` n'accepte **aucun filtre**, seulement la pagination. Soit on
 filtre côté client sur la collection complète (`pagination=false`), soit on ajoute les filtres à
 l'API — voir B6.
+**Fait** (JEREMY, #86), mergé sur `develop`.
 
 ### B5 · Densifier la grille en mobile · S
 **Audit 05** aggravé et passé **Critique** : en mobile, la liste est écrasée dans une colonne
 d'environ 40 px (MOB-9). Taille revue à M.
 **Pourquoi** DOC-6. À 800 px, une carte par ligne pour trois mots utiles : neuf catégories
 demandent plusieurs écrans de défilement.
+**Fait** (JEREMY, #87 et #90), mergé sur `develop`.
 
 ### B6 · [back + front] Relier document, matière et SAE · L
 **Pourquoi** DOC-1, et c'est la **priorité 2** du projet. Les catégories reflètent l'organigramme
@@ -534,9 +545,11 @@ survit à un rechargement.
 ### B8 · Documents utilisables au clavier · M
 **Pourquoi** DOC-7, **Critique** : 80 cartes et étiquettes sont des `div` non focalisables.
 DOC-8 : « Télécharger » reçoit le focus en restant invisible.
+**Fait** (JEREMY, #93), mergé sur `develop`.
 
 ### B9 · Titres de documents lisibles · S
 **Pourquoi** DOC-9 : à 1 280 px, les titres sont tronqués à 4 ou 5 caractères.
+**Fait** (JEREMY, #92), mergé sur `develop`.
 
 ### B10 · Remplacer les emoji par des icônes · S
 **Pourquoi** DOC-11 : les emoji servent d'icônes et sont lus par les lecteurs d'écran.
@@ -579,6 +592,7 @@ cours est dans une colonne décalée, sans axe horaire ni en-tête de jour, avec
 à sa gauche. Deux barres de navigation temporelle empilées aux styles incohérents. Le libellé
 « Déposer un justificatif » déborde. L'avertissement Celcat occupe quatre lignes avant tout
 contenu utile.
+**Fait** (JEREMY, #89), mergé sur `develop`.
 
 ### C8 · [back] Connecteur Celcat · L
 **Kanban** C0.
@@ -669,6 +683,7 @@ changement de semaine n'est pas annoncé (A11Y-17).
 donc la recherche ne les trouve pas. C'est la réserve de C9.
 
 ---
+**Fait** (JEREMY, #80), mergé sur `develop`.
 
 ## Colonne D — Recherche
 
