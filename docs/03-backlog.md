@@ -368,6 +368,13 @@ déjà dessus, et chaque reprise future en dépend.
 | E21.10 | écrans du client : super admin, refonte du questionnaire, avec le même `forms.css` corrigé | OpenCode (reprise), LCS |
 | E21.11 | intégrations de l'établissement (#247, #248) et pointage (#252), corrigés : clés d'API en écriture seule, routes du pointage réservées au personnel | LCS |
 
+**E21.7, proposition de poursuite** comparée le 12/10 (Antigravity, constats vérifiés) : le
+migrateur du client cherche par libellé de semestre seul, rend la première correspondance sans
+vérifier qu'elle est unique, et ne résout que l'année `2026`, écrite en dur. Il apporte en
+revanche la casse et les espaces normalisés, les valeurs `?`, `E.C.` et `EC` ignorées, et la
+valeur brute conservée quand rien ne correspond. On garde les deux : nos critères (libellé
+d'année ou de semestre, refus d'une ambiguïté, toutes les années) avec sa normalisation et sa
+conservation, et nos quatre tests d'E19 reportés.
 **Agents** Codex est hors quota jusqu'au 25/10/2026 : d'ici là, OpenCode pour le mécanique dans
 un worktree, Antigravity en lecture, le reste à la main. Mesure de départ : 977 erreurs, dont
 236 `cast.int`, 227 `argument.type`, 124 `method.nonObject`, 113 `cast.string`, 54 méthodes ou
