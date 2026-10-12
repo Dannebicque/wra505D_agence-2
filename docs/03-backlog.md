@@ -368,6 +368,51 @@ ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au
 quand le niveau visé est à 0 ; les exclusions sont retirées entre le 8 et le 9 ; les
 `phpstan-strict-rules` en dernier. Un type PHP s'aligne sur le mapping Doctrine, jamais l'inverse,
 sauf migration décidée et notée.
+### E21 · [back + front] Reprise de la migration V3 du client, à nos normes · L, 11 lots
+**Pourquoi** Examiné le 12/10/2026 : de `9cda32da8` à `63374484f` (releases 0.1.12 à 0.1.16),
+le client a refondu son modèle pour migrer les données de l'intranet V3. On ne peut pas
+l'appliquer tel quel : 977 erreurs PHPStan niveau 10 sur le seul code de migration, des routes
+sans contrôle d'accès, des références à des classes supprimées, et une étiquette « WIP ». On ne
+peut pas non plus l'ignorer : le super admin, le stage et le questionnaire du client s'appuient
+déjà dessus, et chaque reprise future en dépend.
+**Règles communes**
+- Le schéma SQL, les URL, les champs JSON et les noms des commandes `app:` restent ceux du
+  client : sa base de production doit pouvoir migrer, et ses commits suivants s'appliquer. Ses
+  migrations Doctrine sont reprises telles quelles dans `back/migrations` ; la CI garde
+  `doctrine:schema:update`.
+- Nouvelles classes hors entités en anglais, commentaires en français, comme E14. Table de
+  correspondance fixée avant le lot E21.4 et appliquée par un agent, vérifiée par
+  `comparer-litteraux.php`.
+- Chaque lot : une PR, PHPStan niveau 10 sans baseline, `make check`, CI-Cypress verte.
+- Toute route ajoutée porte son contrôle d'accès : `^/api` est public (choix du client).
+**Lots**, dans l'ordre :
+
+| Lot | Contenu | Agents |
+|---|---|---|
+| E21.0 | petit lot sûr : objet `Adresse`, `LoginFormAuthenticator::start()`, expéditeur des mails par défaut, contraste de `QuickActionCard` | LCS |
+| E21.1 | horodatage : `TimestampableInterface`, `TimestampableTrait`, écouteurs Doctrine, 23 entités de `created`/`updated` à `createdAt`/`updatedAt` ; nos sources de notifications et les écrans qui lisent `created` adaptés | OpenCode (remplacements), LCS (revue, Cypress) |
+| E21.2 | colonnes d'origine V3 (`oldId`) et métadonnées reprises, avec leurs migrations | OpenCode |
+| E21.3 | modèle : `StructurePn` annuel, date d'`EdtEvent` en `DATE` (synchro Celcat adaptée), rattrapages en heures, totaux d'absences ; entités uniEdt inutiles retirées, avec leurs références restées chez le client (`EdtCalendrierContraintesController`, `PersonnelsContraintes`) | LCS |
+| E21.4 | socle du migrateur : contrat, registre, contexte, résultat, exécution, commande `app:` du client, initialisation de l'établissement | LCS |
+| E21.5 | migrateurs Structure et Maquette (≈ 210 erreurs, 4 sous-lots) | OpenCode (`LooseValue`, PHPDoc), LCS |
+| E21.6 | migrateurs APC (≈ 150 erreurs, 3 sous-lots) | OpenCode, LCS |
+| E21.7 | migrateurs Utilisateurs, Scolarité, Emploi du temps (≈ 410 erreurs, 8 sous-lots) ; `CopyBdd` retiré, la proposition de poursuite d'E19 et son test reportés dans le migrateur | OpenCode, LCS |
+| E21.8 | stage : entités renommées par le client, contexte et type de stage, contrôleurs et voter dans le bundle, migrateurs, écrans refondus ; leur `forms.css` aux contrastes RGAA ; parcours étudiant « Demande de convention » en E2E | LCS, Antigravity (relecture) |
+| E21.9 | documents : migrateurs, `oldId` ; notre lien matière (B6) et les favoris (B7) préservés | OpenCode, LCS |
+| E21.10 | écrans du client : super admin, refonte du questionnaire, avec le même `forms.css` corrigé | OpenCode (reprise), LCS |
+| E21.11 | intégrations de l'établissement (#247, #248) et pointage (#252), corrigés : clés d'API en écriture seule, routes du pointage réservées au personnel | LCS |
+
+**E21.7, proposition de poursuite** comparée le 12/10 (Antigravity, constats vérifiés) : le
+migrateur du client cherche par libellé de semestre seul, rend la première correspondance sans
+vérifier qu'elle est unique, et ne résout que l'année `2026`, écrite en dur. Il apporte en
+revanche la casse et les espaces normalisés, les valeurs `?`, `E.C.` et `EC` ignorées, et la
+valeur brute conservée quand rien ne correspond. On garde les deux : nos critères (libellé
+d'année ou de semestre, refus d'une ambiguïté, toutes les années) avec sa normalisation et sa
+conservation, et nos quatre tests d'E19 reportés.
+**Agents** Codex est hors quota jusqu'au 25/10/2026 : d'ici là, OpenCode pour le mécanique dans
+un worktree, Antigravity en lecture, le reste à la main. Mesure de départ : 977 erreurs, dont
+236 `cast.int`, 227 `argument.type`, 124 `method.nonObject`, 113 `cast.string`, 54 méthodes ou
+classes absentes chez nous (levées par E21.2 et E21.3).
 
 ---
 
