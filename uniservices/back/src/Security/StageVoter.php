@@ -8,6 +8,8 @@ use App\Entity\Users\Personnel;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use StageBundle\Entity\Stages\StageEtudiant;
+use StageBundle\Enum\EtatStageEnum;
 
 /**
  * Voter pour les opérations sur les entités Stage
@@ -111,7 +113,7 @@ class StageVoter extends Voter
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_CHEF_DEPT',
-            'ROLE_RESP_STAGES',
+            'ROLE_STAGE_MANAGER',
             'ROLE_SCOLARITE'
         ]);
     }
@@ -121,7 +123,7 @@ class StageVoter extends Voter
         return $user instanceof Personnel && $this->hasAnyRole($user, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
-            'ROLE_RESP_STAGES'
+            'ROLE_STAGE_MANAGER'
         ]);
     }
 
@@ -134,14 +136,15 @@ class StageVoter extends Voter
                 'SUPER_ADMIN',
                 'ROLE_ADMIN',
                 'ROLE_CHEF_DEPT',
-                'ROLE_RESP_STAGES',
+                'ROLE_STAGE_MANAGER',
+                'ROLE_STAGE_VIEW',
                 'ROLE_SCOLARITE',
                 'ROLE_PERMANENT'
-            ]);
+            ]) || $this->isTutor($subject, $user);
         }
 
         // Un étudiant peut voir ses propres stages
-        return true;
+        return $subject instanceof StageEtudiant && $subject->getEtudiant() === $user;
     }
 
     private function canEditStage(mixed $subject, Personnel|Etudiant $user): bool
@@ -151,13 +154,28 @@ class StageVoter extends Voter
                 'SUPER_ADMIN',
                 'ROLE_ADMIN',
                 'ROLE_CHEF_DEPT',
-                'ROLE_RESP_STAGES',
+                'ROLE_STAGE_MANAGER',
                 'ROLE_SCOLARITE'
-            ]);
+            ]) || $this->isTutor($subject, $user);
         }
 
-        // Un étudiant peut modifier son propre stage (dans certaines limites)
-        return true;
+        // Un étudiant peut modifier son propre stage, tant qu'il n'est ni validé ni évalué
+        return $subject instanceof StageEtudiant
+            && $subject->getEtudiant() === $user
+            && in_array($subject->getEtatStage(), [EtatStageEnum::AUTORISE, EtatStageEnum::DEPOSE, EtatStageEnum::INCOMPLET], true)
+            && null === $subject->getDateValidation()
+            && null === $subject->getEvaluationNote();
+    }
+
+    /**
+     * Le tuteur universitaire suit le stage. Seul un stage enregistré compte : un enseignant ne
+     * se crée pas un stage en s'y désignant tuteur.
+     */
+    private function isTutor(mixed $subject, Personnel $user): bool
+    {
+        return $subject instanceof StageEtudiant
+            && null !== $subject->getId()
+            && $subject->getTuteurUniversitaire() === $user;
     }
 
     private function canDeleteStage(Personnel|Etudiant $user): bool
@@ -165,7 +183,7 @@ class StageVoter extends Voter
         return $user instanceof Personnel && $this->hasAnyRole($user, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
-            'ROLE_RESP_STAGES'
+            'ROLE_STAGE_MANAGER'
         ]);
     }
 
@@ -175,7 +193,7 @@ class StageVoter extends Voter
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_CHEF_DEPT',
-            'ROLE_RESP_STAGES',
+            'ROLE_STAGE_MANAGER',
             'ROLE_DIRECTEUR_ETUDES'
         ]);
     }
