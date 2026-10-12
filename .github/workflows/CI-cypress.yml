@@ -85,6 +85,10 @@ jobs:
         working-directory: uniservices/back
         # Le serveur intégré ne transmet l'environnement à PHP qu'avec variables_order=EGPCS :
         # sans cela, l'API ignore DATABASE_URL et interroge la base du .env.
+        # Seul, il ne sert qu'une requête à la fois, alors qu'une page de l'intranet en lance une
+        # dizaine : les pages dépassaient les délais de Cypress au hasard.
+        env:
+          PHP_CLI_SERVER_WORKERS: 4
         run: php -d variables_order=EGPCS -S 127.0.0.1:8000 -t public > /tmp/symfony-server.log 2>&1 &
 
       - name: Wait for Symfony server
