@@ -74,7 +74,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['personnel:detail', 'personnel:light', 'departement:read', 'previsionnel:read', 'previsionnel_semestre:read', 'previsionnel_personnel:read', 'edt_event:read:agenda', 'evaluation:init', 'departement_personnel:read', 'stage_etudiant:read', 'personnel:config'])]
+    #[Groups(['personnel:detail', 'personnel:light', 'departement:read', 'previsionnel:read', 'previsionnel_semestre:read', 'previsionnel_personnel:read', 'edt_event:read:agenda', 'evaluation:init', 'departement_personnel:read', 'stage_etudiant:read', 'personnel:config', 'stage_periode:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 75)]
@@ -82,18 +82,18 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     private string $username;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['personnel:detail', 'departement_personnel:read', 'personnel:config'])]
+    #[Groups(['personnel:detail', 'personnel:light', 'stage_periode:read', 'departement_personnel:read', 'personnel:config'])]
     private string $mailUniv;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $password = null;
 
     #[ORM\Column(length: 75)]
-    #[Groups(['personnel:detail', 'previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read', 'previsionnel_enseignement:read', 'personnel:liste', 'departement_personnel:read', 'stage_etudiant:read', 'personnel:config'])]
+    #[Groups(['personnel:detail', 'personnel:light', 'stage_periode:read', 'previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read', 'previsionnel_enseignement:read', 'personnel:liste', 'departement_personnel:read', 'stage_etudiant:read', 'personnel:config'])]
     private string $prenom;
 
     #[ORM\Column(length: 75)]
-    #[Groups(['personnel:detail', 'previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read', 'previsionnel_enseignement:read', 'personnel:liste', 'departement_personnel:read', 'stage_etudiant:read', 'personnel:config'])]
+    #[Groups(['personnel:detail', 'personnel:light', 'stage_periode:read', 'previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read', 'previsionnel_enseignement:read', 'personnel:liste', 'departement_personnel:read', 'stage_etudiant:read', 'personnel:config'])]
     private string $nom;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -168,7 +168,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     #[Groups(['personnel:detail'])]
     private ?array $domaines = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?string $bureau = null;
 
@@ -196,7 +196,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     #[Groups(['personnel:detail', 'personnel:liste'])]
     private ?string $responsabilites = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
+    #[ORM\Column(length: 50, nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?string $posteInterne = null;
 
@@ -204,7 +204,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     #[Groups(['personnel:detail', 'previsionnel_personnel:read', 'previsionnel_all_personnels:read', 'personnel:liste', 'departement_personnel:read', 'personnel:config'])]
     private ?StatutEnum $statut = null;
 
-    #[ORM\Column(length: 3, nullable: true)]
+    #[ORM\Column(length: 10, nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?string $initiales = null;
 
@@ -487,17 +487,22 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
         return $this;
     }
 
-    public function setAdressePersonnelle(Adresse $adresse): void
+    /** @param Adresse|array<array-key, mixed>|null $adresse */
+    public function setAdressePersonnelle(Adresse|array|null $adresse): static
     {
-        $this->adressePersonnelle = $adresse->toArray();
+        if ($adresse instanceof Adresse) {
+            $this->adressePersonnelle = $adresse->toArray();
+        } elseif (is_array($adresse)) {
+            $this->adressePersonnelle = Adresse::fromArray($adresse)?->toArray();
+        } else {
+            $this->adressePersonnelle = null;
+        }
+
+        return $this;
     }
 
     public function getAdressePersonnelle(): ?Adresse
     {
-        if ($this->adressePersonnelle === null) {
-            return null;
-        }
-
         return Adresse::fromArray($this->adressePersonnelle);
     }
 
@@ -752,7 +757,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
         return $this->statut?->getLibelle() ?? '-';
     }
 
-    #[Groups(['diplome:detail', 'maquette:detail', 'personnel:detail', 'personnel:light', 'previsionnel:read', 'previsionnel_enseignement:read', 'previsionnel_personnel:read', 'previsionnel_semestre:read', 'previsionnel_all_personnels:read', 'edt_event:read:agenda', 'ticket:read', 'evaluation:init', 'absence:administration'])]
+    #[Groups(['diplome:detail', 'maquette:detail', 'personnel:detail', 'personnel:light', 'previsionnel:read', 'previsionnel_enseignement:read', 'previsionnel_personnel:read', 'previsionnel_semestre:read', 'previsionnel_all_personnels:read', 'edt_event:read:agenda', 'ticket:read', 'evaluation:init', 'absence:administration', 'edt_pointage:read'])]
     public function getDisplay(): string
     {
         return $this->getPrenom() . ' ' . $this->getNom();

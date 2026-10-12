@@ -10,7 +10,6 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Entity\Edt\EdtContraintesSemestre;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Personnel\PersonnelEnseignantHrs;
@@ -82,11 +81,11 @@ class StructureSemestre implements TimestampableInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'enseignement:read', 'annee:read'])]
+    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'enseignement:read', 'annee:read', 'stage_periode:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'etudiant:read', 'pn:read', 'enseignant_hrs:read', 'edt_event:read:agenda', 'annee:read'])]
+    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'etudiant:read', 'pn:read', 'enseignant_hrs:read', 'edt_event:read:agenda', 'annee:read', 'stage_periode:read'])]
     private string $libelle;
 
     #[ORM\Column]
@@ -125,7 +124,7 @@ class StructureSemestre implements TimestampableInterface
     private Collection $groupes;
 
     #[ORM\ManyToOne(inversedBy: 'semestres')]
-    #[Groups(['semestre:detail', 'semestre:light', 'annee:light', 'scolarite:read', 'enseignement:read', 'etudiant:read'])]
+    #[Groups(['semestre:detail', 'semestre:light', 'annee:light', 'scolarite:read', 'enseignement:read', 'etudiant:read', 'stage_periode:read'])]
     private ?StructureAnnee $annee = null;
 
     /**
@@ -147,12 +146,6 @@ class StructureSemestre implements TimestampableInterface
      */
     #[ORM\OneToMany(targetEntity: EdtEvent::class, mappedBy: 'semestre', orphanRemoval: true, cascade: ['remove'])]
     private Collection $events;
-
-    /**
-     * @var Collection<int, EdtContraintesSemestre>
-     */
-    #[ORM\OneToMany(targetEntity: EdtContraintesSemestre::class, mappedBy: 'semestre', orphanRemoval: true, cascade: ['remove'])]
-    private Collection $contraintesSemestres;
 
     /** @var Collection<int, EtudiantScolariteSemestre> */
     #[ORM\OneToMany(mappedBy: 'semestre', targetEntity: EtudiantScolariteSemestre::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -176,7 +169,6 @@ class StructureSemestre implements TimestampableInterface
         $this->ues = new ArrayCollection();
         $this->evaluations = new ArrayCollection();
         $this->events = new ArrayCollection();
-        $this->contraintesSemestres = new ArrayCollection();
         $this->scolariteSemestre = new ArrayCollection();
         $this->scolariteSemestrePropositions = new ArrayCollection();
         $this->enseignantHrs = new ArrayCollection();
@@ -443,36 +435,6 @@ class StructureSemestre implements TimestampableInterface
             // set the owning side to null (unless already changed)
             if ($event->getSemestre() === $this) {
                 $event->setSemestre(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, EdtContraintesSemestre>
-     */
-    public function getContraintesSemestres(): Collection
-    {
-        return $this->contraintesSemestres;
-    }
-
-    public function addContraintesSemestre(EdtContraintesSemestre $contraintesSemestre): static
-    {
-        if (!$this->contraintesSemestres->contains($contraintesSemestre)) {
-            $this->contraintesSemestres->add($contraintesSemestre);
-            $contraintesSemestre->setSemestre($this);
-        }
-
-        return $this;
-    }
-
-    public function removeContraintesSemestre(EdtContraintesSemestre $contraintesSemestre): static
-    {
-        if ($this->contraintesSemestres->removeElement($contraintesSemestre)) {
-            // set the owning side to null (unless already changed)
-            if ($contraintesSemestre->getSemestre() === $this) {
-                $contraintesSemestre->setSemestre(null);
             }
         }
 

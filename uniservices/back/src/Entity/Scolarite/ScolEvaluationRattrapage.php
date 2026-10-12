@@ -31,10 +31,10 @@ class ScolEvaluationRattrapage implements TimestampableInterface
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $date = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
     private ?\DateTime $heure_debut = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
     private ?\DateTime $heure_fin = null;
 
     #[ORM\ManyToOne(inversedBy: 'scolEvaluationRattrapages')]
@@ -50,6 +50,11 @@ class ScolEvaluationRattrapage implements TimestampableInterface
     #[ORM\ManyToOne(inversedBy: 'scolEvaluationRattrapages')]
     #[ORM\JoinColumn(nullable: false)]
     private ?ScolEvaluation $evaluation = null;
+
+    public function __construct()
+    {
+        $this->setUuid();
+    }
 
     public function getId(): ?int
     {
@@ -121,9 +126,9 @@ class ScolEvaluationRattrapage implements TimestampableInterface
         return $this->heure_fin;
     }
 
-    public function setHeureFin(\DateTime $heure_fin): static
+    public function setHeureFin(?\DateTime $heureFin): static
     {
-        $this->heure_fin = $heure_fin;
+        $this->heure_fin = $heureFin;
 
         return $this;
     }
