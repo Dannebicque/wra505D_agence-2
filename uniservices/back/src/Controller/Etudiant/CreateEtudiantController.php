@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class CreateEtudiantController extends AbstractController
 {
@@ -34,6 +35,7 @@ class CreateEtudiantController extends AbstractController
     }
 
     #[Route('/api/etudiants/new', methods: ['POST'], name: 'create_etudiant')]
+    #[IsGranted('CAN_EDIT_ETUDIANT_SCOLARITE')]
     public function create(Request $request): Response
     {
         // Récupérer les données JSON envoyées dans la requête
@@ -226,16 +228,8 @@ class CreateEtudiantController extends AbstractController
         // Par défaut, on considère que l'étudiant n'est pas boursier
         $etudiant->setBoursier(false);
 
-        // Créer l'adresse étudiante si les champs nécessaires sont présents
-        if (isset($data['LIB_AD1']) && ($data['LIB_AD1'] !== '' && $data['LIB_AD1'] !== '0') || isset($data['ville']) && ($data['ville'] !== '' && $data['ville'] !== '0') || isset($data['codepostal']) && ($data['codepostal'] !== '' && $data['codepostal'] !== '0')) {
-            $adresse = new Adresse(
-                $data['LIB_AD1'] ?? '',
-                $data['LIB_AD2'] ?? '',
-                $data['LIB_AD3'] ?? '',
-                $data['ville'] ?? '',
-                $data['codepostal'] ?? '',
-                'France' // Pays par défaut
-            );
+        $adresse = Adresse::fromArray($data);
+        if ($adresse instanceof Adresse) {
             $etudiant->setAdresseEtudiante($adresse);
         }
 

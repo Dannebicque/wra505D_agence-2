@@ -44,10 +44,10 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
             'questionnaire.last_answers' => [
                 // List the 5 most recently created questionnaires
                 'items' => array_map(
-                    fn ($q) => $q->getTitle() . ' (' . ($q->getCreated()?->format('d/m H:i') ?? 'N/A') . ')',
+                    fn ($q) => $q->getTitle() . ' (' . ($q->getCreatedAt()?->format('d/m H:i') ?? 'N/A') . ')',
                     $this->questionnaireRepository->findBy(
                         [],
-                        ['created' => 'DESC'],
+                        ['createdAt' => 'DESC'],
                         5
                     )
                 ),

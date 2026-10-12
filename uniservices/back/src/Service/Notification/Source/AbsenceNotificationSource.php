@@ -35,7 +35,7 @@ final class AbsenceNotificationSource implements NotificationSourceInterface
             ->leftJoin('a.event', 'ev')
             ->leftJoin('a.absenceJustificatif', 'j')
             ->where('a.scolariteSemestre IN (:scolariteSemesters)')
-            ->andWhere('a.created >= :since')
+            ->andWhere('a.createdAt >= :since')
             ->setParameter('scolariteSemesters', $scolariteSemesters)
             ->setParameter('since', $since)
             ->getQuery()
@@ -60,7 +60,7 @@ final class AbsenceNotificationSource implements NotificationSourceInterface
                 null === $classSession
                     ? ucfirst($justification)
                     : sprintf('Cours du %s à %s, %s', $classSession->format('d/m'), $classSession->format('H\hi'), $justification),
-                \DateTimeImmutable::createFromInterface($absence->getCreated() ?? new \DateTimeImmutable()),
+                $absence->getCreatedAt() ?? new \DateTimeImmutable(),
                 '/intranet/scolarite',
             );
         }

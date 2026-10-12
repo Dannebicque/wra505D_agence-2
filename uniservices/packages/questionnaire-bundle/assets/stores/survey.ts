@@ -417,8 +417,8 @@ console.log(questionId)
                 surveyCount.value = await _questionnaires['totalItems']
                 surveys.value = parsed.map((s: any) => ({
                     ...s,
-                    createdAt: new Date(s.created),
-                    updatedAt: new Date(s.updated),
+                    createdAt: s.createdAt ? new Date(s.createdAt) : undefined,
+                    updatedAt: s.updatedAt ? new Date(s.updatedAt) : undefined,
                     openingDate: s.openingDate ? new Date(s.openingDate) : undefined,
                     closingDate: s.closingDate ? new Date(s.closingDate) : undefined,
                     settings: {

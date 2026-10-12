@@ -25,7 +25,7 @@ const props = defineProps({
       </div>
 
       <div class="flex items-center">
-        <span class="text-sm text-gray-600 italic dark:text-gray-400">{{formatDateCourt(ticket.created)}}</span>
+        <span class="text-sm text-gray-600 italic dark:text-gray-400">{{formatDateCourt(ticket.createdAt)}}</span>
       </div>
 
     </div>

@@ -14,12 +14,12 @@ use App\Entity\Scolarite\ScolBac;
 use App\Entity\Scolarite\ScolEvaluationRattrapage;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Traits\EduSignTrait;
-use App\Entity\Traits\LifeCycleTrait;
+use App\Entity\Contracts\TimestampableInterface;
+use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\OldIdTrait;
 use App\Filter\EtudiantFilter;
 use App\Repository\EtudiantRepository;
 use App\State\Provider\Etudiant\EtudiantTrombinoscopeProvider;
-use App\Utils\LooseValue;
 use App\ValueObject\Adresse;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -33,26 +33,37 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 #[ORM\Entity(repositoryClass: EtudiantRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']]),
+        new Get(
+            normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']],
+            security: "is_granted('CAN_VIEW_ETUDIANT', object)",
+        ),
         new Get(
             uriTemplate: '/scolarite/etudiant/{id}',
             normalizationContext: ['groups' => ['etudiant:scolarite']],
+            security: "is_granted('CAN_VIEW_ETUDIANT', object)",
         ),
-        new GetCollection(normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']]),
-        new Patch(normalizationContext: ['groups' => ['etudiant:write']], securityPostDenormalize: "is_granted('CAN_EDIT_ETUDIANT', object)"),
+        new GetCollection(
+            normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']],
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
+        ),
+        // Sans groupe de dénormalisation, un étudiant pouvait écrire tous les champs de sa fiche, rôles compris.
+        new Patch(
+            normalizationContext: ['groups' => ['etudiant:write']],
+            denormalizationContext: ['groups' => ['etudiant:write']],
+            securityPostDenormalize: "is_granted('CAN_EDIT_ETUDIANT', object)",
+        ),
     ],
     order: ['nom' => 'ASC']
 )]
-#[ORM\HasLifecycleCallbacks]
 #[ApiFilter(EtudiantFilter::class)]
 #[ApiFilter(SearchFilter::class, properties: [
     'nom' => 'start',
     'prenom' => 'start',
     'mailUniv' => 'partial'
 ])]
-class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
+class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, TimestampableInterface
 {
-    use LifeCycleTrait;
+    use TimestampableTrait;
     use EduSignTrait;
     use OldIdTrait; //a supprimer après transfert
 
@@ -356,20 +367,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getAdresseEtudiante(): ?Adresse
     {
-        if ($this->adresseEtudiante === null) {
-            return null;
-        }
-
-        $data = [
-            'adresse' => LooseValue::string($this->adresseEtudiante['adresse']),
-            'complement1' => LooseValue::string($this->adresseEtudiante['complement1']),
-            'complement2' => LooseValue::string($this->adresseEtudiante['complement2']),
-            'ville' => LooseValue::string($this->adresseEtudiante['ville']),
-            'codePostal' => LooseValue::string($this->adresseEtudiante['codePostal']),
-            'pays' => LooseValue::string($this->adresseEtudiante['pays']),
-        ];
-
-        return Adresse::fromArray($data);
+        return Adresse::fromArray($this->adresseEtudiante);
     }
 
     public function setAdresseParentale(Adresse $adresse): void
@@ -379,20 +377,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getAdresseParentale(): ?Adresse
     {
-        if ($this->adresseParentale === null) {
-            return null;
-        }
-
-        $data = [
-            'adresse' => LooseValue::string($this->adresseParentale['adresse']),
-            'complement1' => LooseValue::string($this->adresseParentale['complement1']),
-            'complement2' => LooseValue::string($this->adresseParentale['complement2']),
-            'ville' => LooseValue::string($this->adresseParentale['ville']),
-            'codePostal' => LooseValue::string($this->adresseParentale['codePostal']),
-            'pays' => LooseValue::string($this->adresseParentale['pays']),
-        ];
-
-        return Adresse::fromArray($data);
+        return Adresse::fromArray($this->adresseParentale);
     }
 
     /** @return list<string> */

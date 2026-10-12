@@ -27,7 +27,7 @@ final class NewsNotificationSource implements NotificationSourceInterface
 
         $notifications = [];
         foreach ($this->news->findByDepartementAndPublic($departement, 'etudiant') as $newsItem) {
-            $date = $newsItem->getCreated();
+            $date = $newsItem->getCreatedAt();
             if (null === $date || $date < $since) {
                 continue;
             }
