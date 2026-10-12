@@ -138,6 +138,13 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #116 | **E19** : proposition de poursuite V3 reprise en année de formation, une seule forme pour les compétences |
 | #117 | commits amont #247 et #248 examinés et écartés : ils publiaient des clés d'API |
 | #119 | **E20** : huit contrôleurs du client en double supprimés |
+| #121 | examen de uniServices jusqu'à 0.1.16, reprise découpée en fiche E21 (onze lots) |
+| #122 | **E21.0** : objet `Adresse` du client, 401 JSON hors de l'API, expéditeur des mails par défaut, contraste de `QuickActionCard` |
+| #123 | **E21.1** : horodatage du client (`createdAt`, `updatedAt`) sur 25 entités, écouteurs Doctrine pour les dates et les uuid |
+| #124 | **E22** : liste des étudiants réservée au personnel, fiche soumise au voter, PATCH limité à `etudiant:write` |
+| #125 | **E23** : création et import d'étudiants réservés au droit d'écrire les scolarités |
+| #126, #127 | CI-Cypress : délais d'attente adaptés au Vite froid du runner GitHub |
+| #128 | migration d'horodatage retirée, le client ayant supprimé toutes les siennes |
 
 Le connecteur Celcat, en bref :
 
@@ -176,9 +183,12 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
 - **Au déploiement**, vider aussi les pools de cache :
   `php bin/console cache:pool:clear cache.global_clearer`. Le cache de métadonnées d'API Platform
   survit à `cache:clear` et garde des groupes de sérialisation périmés.
-- Dernier commit examiné : `63374484f` (release 0.1.16, 12/10/2026). Dernière base reprise :
-  `ef38ca880`. Les 37 commits examinés le 12/10 sont repris par la fiche E21 du backlog, en
-  onze lots, aux normes du dépôt : ils refondent le modèle pour migrer l'intranet V3.
+- Dernier commit examiné : `2ecfb42fb` (release 0.1.17, 12/10/2026). Dernière base reprise :
+  `ef38ca880`. Les commits examinés le 12/10 sont repris par la fiche E21 du backlog, lot par
+  lot, aux normes du dépôt : ils refondent le modèle pour migrer l'intranet V3. E21.0 et E21.1
+  sont faits.
+- **Plus de migrations Doctrine** : le client a supprimé les 22 siennes (#260, 12/10/2026), le
+  schéma se construit depuis le mapping. Nous aussi (#128).
 - Écartés le 26/09/2026, à rouvrir ensemble si le client corrige le premier point :
   - `cf95b8a1b` (#247, intégrations de l'établissement) : la nouvelle colonne `settings` porte
     les clés d'API EduSign et ORéBUT dans le groupe `etablissement:read`, or

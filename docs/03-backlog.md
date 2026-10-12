@@ -35,7 +35,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 | CI-Back : PHPStan | niveau 10 (max) et `phpstan-strict-rules`, 0 erreur ; 12 `@phpstan-ignore` justifiés (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
-| CI-Cypress : 14 fichiers, 63 tests, sur une base de fixtures neuve et un Vite froid | vert |
+| CI-Cypress : 15 fichiers, 73 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
@@ -368,7 +368,7 @@ ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au
 quand le niveau visé est à 0 ; les exclusions sont retirées entre le 8 et le 9 ; les
 `phpstan-strict-rules` en dernier. Un type PHP s'aligne sur le mapping Doctrine, jamais l'inverse,
 sauf migration décidée et notée.
-### E21 · [back + front] Reprise de la migration V3 du client, à nos normes · L, 11 lots
+### E21 · [back + front] Reprise de la migration V3 du client, à nos normes · L, 12 lots, en cours
 **Pourquoi** Examiné le 12/10/2026 : de `9cda32da8` à `63374484f` (releases 0.1.12 à 0.1.16),
 le client a refondu son modèle pour migrer les données de l'intranet V3. On ne peut pas
 l'appliquer tel quel : 977 erreurs PHPStan niveau 10 sur le seul code de migration, des routes
@@ -377,9 +377,9 @@ peut pas non plus l'ignorer : le super admin, le stage et le questionnaire du cl
 déjà dessus, et chaque reprise future en dépend.
 **Règles communes**
 - Le schéma SQL, les URL, les champs JSON et les noms des commandes `app:` restent ceux du
-  client : sa base de production doit pouvoir migrer, et ses commits suivants s'appliquer. Ses
-  migrations Doctrine sont reprises telles quelles dans `back/migrations` ; la CI garde
-  `doctrine:schema:update`.
+  client : sa base de production doit pouvoir migrer, et ses commits suivants s'appliquer. Pas
+  de migration Doctrine : le client a supprimé les siennes (#260), le schéma se construit depuis
+  le mapping (`doctrine:schema:update`), comme en CI.
 - Nouvelles classes hors entités en anglais, commentaires en français, comme E14. Table de
   correspondance fixée avant le lot E21.4 et appliquée par un agent, vérifiée par
   `comparer-litteraux.php`.
@@ -389,9 +389,9 @@ déjà dessus, et chaque reprise future en dépend.
 
 | Lot | Contenu | Agents |
 |---|---|---|
-| E21.0 | petit lot sûr : objet `Adresse`, `LoginFormAuthenticator::start()`, expéditeur des mails par défaut, contraste de `QuickActionCard` | LCS |
-| E21.1 | horodatage : `TimestampableInterface`, `TimestampableTrait`, écouteurs Doctrine, 23 entités de `created`/`updated` à `createdAt`/`updatedAt` ; nos sources de notifications et les écrans qui lisent `created` adaptés | OpenCode (remplacements), LCS (revue, Cypress) |
-| E21.2 | colonnes d'origine V3 (`oldId`) et métadonnées reprises, avec leurs migrations | OpenCode |
+| E21.0 · fait (#122) | petit lot sûr : objet `Adresse`, `LoginFormAuthenticator::start()`, expéditeur des mails par défaut, contraste de `QuickActionCard` | LCS |
+| E21.1 · fait (#123) | horodatage : `TimestampableInterface`, `TimestampableTrait`, écouteurs Doctrine, 23 entités de `created`/`updated` à `createdAt`/`updatedAt` ; nos sources de notifications et les écrans qui lisent `created` adaptés | OpenCode (remplacements), LCS (revue, Cypress) |
+| E21.2 | colonnes d'origine V3 (`oldId`) et métadonnées reprises | OpenCode |
 | E21.3 | modèle : `StructurePn` annuel, date d'`EdtEvent` en `DATE` (synchro Celcat adaptée), rattrapages en heures, totaux d'absences ; entités uniEdt inutiles retirées, avec leurs références restées chez le client (`EdtCalendrierContraintesController`, `PersonnelsContraintes`) | LCS |
 | E21.4 | socle du migrateur : contrat, registre, contexte, résultat, exécution, commande `app:` du client, initialisation de l'établissement | LCS |
 | E21.5 | migrateurs Structure et Maquette (≈ 210 erreurs, 4 sous-lots) | OpenCode (`LooseValue`, PHPDoc), LCS |
@@ -401,6 +401,13 @@ déjà dessus, et chaque reprise future en dépend.
 | E21.9 | documents : migrateurs, `oldId` ; notre lien matière (B6) et les favoris (B7) préservés | OpenCode, LCS |
 | E21.10 | écrans du client : super admin, refonte du questionnaire, avec le même `forms.css` corrigé | OpenCode (reprise), LCS |
 | E21.11 | intégrations de l'établissement (#247, #248) et pointage (#252), corrigés : clés d'API en écriture seule, routes du pointage réservées au personnel | LCS |
+| E21.12 | uniServices #260 : plans de cours, compétences, filtres API Platform à jour | LCS, OpenCode |
+
+**Release 0.1.17** examinée le 12/10 (`2ecfb42fb`) : #260 (« Montée version SF 8.1 ») apporte
+aussi les plans de cours, la refonte des compétences, les filtres API Platform sans dépréciation
+et la suppression des migrations ; son code d'entités s'appuie sur la chaîne V3, il devient le
+lot E21.12, après E21.3. #249 (bundle finance, « WIP », personnel seul) est écarté pour
+l'instant ; la CI de commitlint et les fichiers `.idea` ne nous concernent pas.
 
 **E21.7, proposition de poursuite** comparée le 12/10 (Antigravity, constats vérifiés) : le
 migrateur du client cherche par libellé de semestre seul, rend la première correspondance sans
