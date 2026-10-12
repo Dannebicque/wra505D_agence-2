@@ -244,6 +244,22 @@ PHPUnit, écrit par Codex, échoue dès qu'un mot de passe est de nouveau attrib
 apparaître une dépréciation PHP 8.4 : `str_getcsv()` reçoit désormais son caractère d'échappement
 explicitement, sans changement de comportement.
 
+### E23 · [back] Import d'étudiants ouvert sans connexion · S · fait
+**Pourquoi** Constaté le 12/10/2026, pendant E22 : `POST /api/etudiants/new`
+(`CreateEtudiantController`) n'avait aucun contrôle d'accès. Un appel anonyme atteignait le
+contrôleur et pouvait créer des étudiants, avec leur scolarité, à partir d'un CSV.
+`POST /api/etudiants/import_apogee` était ouvert de même, mais ne fait rien pour l'instant. Même
+code dans le `main` du client. Écran du personnel : correction de bug seulement.
+**Terminé quand** un anonyme reçoit 401, un étudiant 403, le personnel habilité garde l'import, et
+un test le vérifie sans créer d'étudiant.
+**Fait** Les deux routes exigent `CAN_EDIT_ETUDIANT_SCOLARITE`, le droit du voter du client pour
+écrire une scolarité étudiante (super-admin, administrateur, scolarité, chef de département) :
+l'import crée des scolarités. Couvert par `cypress/e2e/creation-etudiants.cy.js`, qui échoue sur
+`develop` : un corps sans fichier s'arrête avant toute écriture.
+**Reste** l'écran « Ajouter des étudiants » s'affiche pour tout rôle qui voit l'Administration,
+dont l'assistant, le responsable de parcours, le directeur des études et le rôle « notes » : pour
+eux, l'import répond désormais 403. Écran du personnel, hors de notre périmètre.
+
 ### E18 · [back] Trois routes du client en erreur 500 · S · fait
 **Pourquoi** Constaté pendant E15, avant tout changement : `/api/oreof/ref-competences/synchronisation`,
 `/api/oreof/ref-formation/synchronisation` et `/api/stats/edt_events` répondent 500, en étudiant,

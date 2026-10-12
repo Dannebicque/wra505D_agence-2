@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class CreateEtudiantController extends AbstractController
 {
@@ -34,6 +35,7 @@ class CreateEtudiantController extends AbstractController
     }
 
     #[Route('/api/etudiants/new', methods: ['POST'], name: 'create_etudiant')]
+    #[IsGranted('CAN_EDIT_ETUDIANT_SCOLARITE')]
     public function create(Request $request): Response
     {
         // Récupérer les données JSON envoyées dans la requête
