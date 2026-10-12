@@ -249,8 +249,8 @@ class AbsenceEpisodeProvider implements ProviderInterface
             'id' => $absence->getId(),
             'justifiee' => $absence->isJustifiee(),
             'personnelDisplay' => $personnel?->getDisplay() ?? '-',
-            'created' => $absence->getCreated()?->format(DATE_ATOM),
-            'updated' => $absence->getUpdated()?->format(DATE_ATOM),
+            'created' => $absence->getCreatedAt()?->format(DATE_ATOM),
+            'updated' => $absence->getUpdatedAt()?->format(DATE_ATOM),
             'event' => $this->mapEvent($absence),
         ];
     }

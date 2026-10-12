@@ -24,7 +24,7 @@ class TicketFilter extends AbstractFilter
 
         if ('latest' === $property) {
             $queryBuilder
-                ->orderBy(sprintf('%s.created', $alias), 'DESC')
+                ->orderBy(sprintf('%s.createdAt', $alias), 'DESC')
                 ->setMaxResults(LooseValue::nullableInt($value));
             ;
         }
@@ -45,7 +45,7 @@ class TicketFilter extends AbstractFilter
 
             $queryBuilder
                 ->leftJoin(sprintf('%s.helpdeskMessages', $alias), 'm')
-                ->andWhere('m.created >= :dateLimite')
+                ->andWhere('m.createdAt >= :dateLimite')
                 ->setParameter('dateLimite', $dateLimite);
         }
     }
