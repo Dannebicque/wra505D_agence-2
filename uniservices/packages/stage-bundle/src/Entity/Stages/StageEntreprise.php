@@ -3,9 +3,10 @@
 namespace StageBundle\Entity\Stages;
 
 use App\Entity\Contracts\TimestampableInterface;
+use App\Entity\Traits\OldIdTrait;
 use App\Entity\Traits\TimestampableTrait;
 use App\ValueObject\Adresse;
-use StageBundle\Repository\Stages\EntrepriseRepository;
+use StageBundle\Repository\Stages\StageEntrepriseRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -13,10 +14,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: EntrepriseRepository::class)]
-class Entreprise implements TimestampableInterface
+#[ORM\Entity(repositoryClass: StageEntrepriseRepository::class)]
+class StageEntreprise implements TimestampableInterface
 {
     use TimestampableTrait;
+    use OldIdTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -39,12 +41,10 @@ class Entreprise implements TimestampableInterface
     private ?array $adresse = null;
 
     #[Groups(groups: ['stage_entreprise_administration', 'alternance_administration', 'stage_periode_gestion', 'stage_etudiant:read', 'stage_etudiant:write'])]
-    #[ORM\OneToOne(targetEntity: Contact::class, cascade: ['persist', 'remove'])]
-    private ?Contact $responsable = null;
+    #[ORM\OneToOne(targetEntity: StageContact::class, cascade: ['persist', 'remove'])]
+    private ?StageContact $responsable = null;
 
-    /**
-     * @var Collection<int, StageEtudiant>
-     */
+    /** @var Collection<int, StageEtudiant> */
     #[ORM\OneToMany(mappedBy: 'entreprise', targetEntity: StageEtudiant::class)]
     private Collection $stageEtudiants;
 
@@ -84,25 +84,29 @@ class Entreprise implements TimestampableInterface
 
     public function getAdresse(): ?Adresse
     {
-        if ($this->adresse === null) {
-            return null;
-        }
-        return Adresse::fromArray($this->adresse);
+        return null === $this->adresse ? null : Adresse::fromArray($this->adresse);
     }
 
-    public function setAdresse(?Adresse $adresse): self
+    /** @param Adresse|array<array-key, mixed>|null $adresse */
+    public function setAdresse(Adresse|array|null $adresse): self
     {
-        $this->adresse = $adresse instanceof Adresse ? $adresse->toArray() : null;
+        if ($adresse instanceof Adresse) {
+            $this->adresse = $adresse->toArray();
+        } elseif (is_array($adresse)) {
+            $this->adresse = Adresse::fromArray($adresse)?->toArray();
+        } else {
+            $this->adresse = null;
+        }
 
         return $this;
     }
 
-    public function getResponsable(): ?Contact
+    public function getResponsable(): ?StageContact
     {
         return $this->responsable;
     }
 
-    public function setResponsable(?Contact $responsable): self
+    public function setResponsable(?StageContact $responsable): self
     {
         $this->responsable = $responsable;
 
@@ -129,10 +133,8 @@ class Entreprise implements TimestampableInterface
 
     public function removeStageEtudiant(StageEtudiant $stageEtudiant): self
     {
-        if ($this->stageEtudiants->removeElement($stageEtudiant)) {
-            if ($stageEtudiant->getEntreprise() === $this) {
-                $stageEtudiant->setEntreprise(null);
-            }
+        if ($this->stageEtudiants->removeElement($stageEtudiant) && $stageEtudiant->getEntreprise() === $this) {
+            $stageEtudiant->setEntreprise(null);
         }
 
         return $this;

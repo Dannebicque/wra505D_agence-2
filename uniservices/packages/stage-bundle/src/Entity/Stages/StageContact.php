@@ -3,16 +3,19 @@
 namespace StageBundle\Entity\Stages;
 
 use App\Entity\Contracts\TimestampableInterface;
+use App\Entity\Traits\OldIdTrait;
 use App\Entity\Traits\TimestampableTrait;
-use StageBundle\Repository\Stages\ContactRepository;
+use App\ValueObject\Adresse;
+use StageBundle\Repository\Stages\StageContactRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-#[ORM\Entity(repositoryClass: ContactRepository::class)]
-class Contact implements TimestampableInterface
+#[ORM\Entity(repositoryClass: StageContactRepository::class)]
+class StageContact implements TimestampableInterface
 {
     use TimestampableTrait;
+    use OldIdTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -51,6 +54,11 @@ class Contact implements TimestampableInterface
     #[ORM\Column(type: Types::STRING, length: 25, nullable: true)]
     #[Groups(['stage_etudiant:read', 'stage_etudiant:write'])]
     private ?string $fax = null;
+
+    /** @var array<string, mixed>|null */
+    #[Groups(['alternance_administration', 'stage_entreprise_administration', 'stage_periode_gestion', 'stage_entreprise', 'stage_etudiant:read', 'stage_etudiant:write'])]
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $adresse = null;
 
     public function getId(): ?int
     {
@@ -129,9 +137,28 @@ class Contact implements TimestampableInterface
         return $this;
     }
 
+    public function getAdresse(): ?Adresse
+    {
+        return null === $this->adresse ? null : Adresse::fromArray($this->adresse);
+    }
+
+    /** @param Adresse|array<array-key, mixed>|null $adresse */
+    public function setAdresse(Adresse|array|null $adresse): self
+    {
+        if ($adresse instanceof Adresse) {
+            $this->adresse = $adresse->toArray();
+        } elseif (is_array($adresse)) {
+            $this->adresse = Adresse::fromArray($adresse)?->toArray();
+        } else {
+            $this->adresse = null;
+        }
+
+        return $this;
+    }
+
     public function getDisplay(): string
     {
-        return ucfirst((string)$this->getPrenom()) . ' ' . mb_strtoupper((string)$this->getNom());
+        return ucfirst((string) $this->getPrenom()) . ' ' . mb_strtoupper((string) $this->getNom());
     }
 
     public function getPrenom(): ?string

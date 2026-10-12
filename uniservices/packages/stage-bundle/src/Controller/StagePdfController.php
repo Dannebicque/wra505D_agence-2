@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Stage;
+namespace StageBundle\Controller;
 
 use App\Entity\Etablissement;
 use App\Entity\Structure\StructureAnnee;
@@ -14,8 +14,8 @@ use App\Entity\Users\Personnel;
 use App\Utils\LooseValue;
 use App\ValueObject\Adresse;
 use Doctrine\ORM\EntityManagerInterface;
-use StageBundle\Entity\Stages\Contact;
-use StageBundle\Entity\Stages\Entreprise;
+use StageBundle\Entity\Stages\StageContact;
+use StageBundle\Entity\Stages\StageEntreprise;
 use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StageAvenant;
 use StageBundle\Entity\Stages\StageConventionTemplate;
@@ -25,6 +25,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+//todo: a déplacer dans le bundle stage
 class StagePdfController extends AbstractController
 {
     private EntityManagerInterface $em;
@@ -126,7 +127,7 @@ class StagePdfController extends AbstractController
             if (null !== $avenant->getNewGratificationMontant()) {
                 $stage->setGratificationMontant($avenant->getNewGratificationMontant());
             }
-            if ($avenant->getNewTuteur() instanceof Contact) {
+            if ($avenant->getNewTuteur() instanceof StageContact) {
                 $stage->setTuteur($avenant->getNewTuteur());
             }
         }
@@ -212,20 +213,20 @@ class StagePdfController extends AbstractController
             '{etudiant.prenom}' => $etu instanceof Etudiant ? $etu->getPrenom() : '',
             '{etudiant.sexe}' => $etu instanceof Etudiant && method_exists($etu, 'getCivilite') && $etu->getCivilite() === 'Mme' ? 'Femme' : 'Homme',
             '{etudiant.date_naissance}' => $etu instanceof Etudiant && $etu->getDateNaissance() instanceof \DateTimeInterface ? $fmtDate($etu->getDateNaissance()) : '',
-            '{etudiant.adresse}' => $etu instanceof Etudiant && $etu->getAdresseEtudiante() instanceof Adresse ? $etu->getAdresseEtudiante()->getAdresse() : '',
+            '{etudiant.adresse}' => $etu instanceof Etudiant ? (string) ($etu->getAdresseEtudiante() ?? '') : '',
             '{etudiant.telephones}' => $telephones,
             '{etudiant.email}' => $etu instanceof Etudiant ? $etu->getMailUniv() : '',
             '{etudiant.formation}' => $formationLibelle,
             '{formation.volume_horaire}' => $volumeHoraire,
-            '{etudiant.secu}' => $etu instanceof Etudiant && method_exists($etu, 'getIntituleSecuriteSociale') && (bool) $etu->getIntituleSecuriteSociale() ? $etu->getIntituleSecuriteSociale() : 'CPAM de l\'Aube',
-            '{etudiant.secu_adresse}' => $etu instanceof Etudiant && method_exists($etu, 'getAdresseSecuriteSociale') && (bool) $etu->getAdresseSecuriteSociale() ? $etu->getAdresseSecuriteSociale() : '',
+            '{etudiant.secu}' => ($etu instanceof Etudiant ? LooseValue::truthyString($etu->getOpt()['intitule_securite_sociale'] ?? null) : null) ?? 'CPAM de l\'Aube',
+            '{etudiant.secu_adresse}' => ($etu instanceof Etudiant ? LooseValue::truthyString($etu->getOpt()['adresse_securite_sociale'] ?? null) : null) ?? '',
 
-            '{entreprise.nom}' => $ent instanceof Entreprise ? $ent->getRaisonSociale() : '',
-            '{entreprise.adresse}' => $stage->getAdresseStage() ?? ($ent instanceof Entreprise && $ent->getAdresse() instanceof Adresse ? $ent->getAdresse()->getAdresse() : ''),
-            '{entreprise.signataire}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getDisplay() : '',
-            '{entreprise.signataire_fonction}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getFonction() : '',
-            '{entreprise.telephone}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
-            '{entreprise.email}' => $ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getEmail() : '',
+            '{entreprise.nom}' => $ent instanceof StageEntreprise ? $ent->getRaisonSociale() : '',
+            '{entreprise.adresse}' => (string) ($stage->getAdresseStage() ?? ($ent instanceof StageEntreprise ? $ent->getAdresse() : null) ?? ''),
+            '{entreprise.signataire}' => $ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getDisplay() : '',
+            '{entreprise.signataire_fonction}' => $ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getFonction() : '',
+            '{entreprise.telephone}' => $ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
+            '{entreprise.email}' => $ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getEmail() : '',
             '{stage.service}' => $stage->getServiceStageEntreprise() ?? 'Service Technique',
 
             '{stage.sujet}' => $stage->getSujetStage() ?? '',
@@ -251,10 +252,10 @@ class StagePdfController extends AbstractController
             '{tuteur.telephone}' => $tutUniv instanceof Personnel ? $tutUniv->getTelBureau() : '',
             '{tuteur.email}' => $tutUniv instanceof Personnel ? $tutUniv->getMailUniv() : '',
 
-            '{tuteur_entreprise.nom}' => $tut instanceof Contact ? $tut->getDisplay() : ($ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getDisplay() : ''),
-            '{tuteur_entreprise.fonction}' => $tut instanceof Contact ? $tut->getFonction() : ($ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getFonction() : ''),
-            '{tuteur_entreprise.telephone}' => $tut instanceof Contact ? ($tut->getTelephone() ?? $tut->getPortable() ?? '') : ($ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : ''),
-            '{tuteur_entreprise.email}' => $tut instanceof Contact ? $tut->getEmail() : ($ent instanceof Entreprise && $ent->getResponsable() instanceof Contact ? $ent->getResponsable()->getEmail() : ''),
+            '{tuteur_entreprise.nom}' => $tut instanceof StageContact ? $tut->getDisplay() : ($ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getDisplay() : ''),
+            '{tuteur_entreprise.fonction}' => $tut instanceof StageContact ? $tut->getFonction() : ($ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getFonction() : ''),
+            '{tuteur_entreprise.telephone}' => $tut instanceof StageContact ? ($tut->getTelephone() ?? $tut->getPortable() ?? '') : ($ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : ''),
+            '{tuteur_entreprise.email}' => $tut instanceof StageContact ? $tut->getEmail() : ($ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getEmail() : ''),
 
             '{etablissement.signataire}' => 'Martial Martin',
             '{date_creation}' => date('d/m/Y'),
