@@ -20,7 +20,6 @@ use App\Entity\Traits\OldIdTrait;
 use App\Filter\EtudiantFilter;
 use App\Repository\EtudiantRepository;
 use App\State\Provider\Etudiant\EtudiantTrombinoscopeProvider;
-use App\Utils\LooseValue;
 use App\ValueObject\Adresse;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -368,20 +367,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
 
     public function getAdresseEtudiante(): ?Adresse
     {
-        if ($this->adresseEtudiante === null) {
-            return null;
-        }
-
-        $data = [
-            'adresse' => LooseValue::string($this->adresseEtudiante['adresse']),
-            'complement1' => LooseValue::string($this->adresseEtudiante['complement1']),
-            'complement2' => LooseValue::string($this->adresseEtudiante['complement2']),
-            'ville' => LooseValue::string($this->adresseEtudiante['ville']),
-            'codePostal' => LooseValue::string($this->adresseEtudiante['codePostal']),
-            'pays' => LooseValue::string($this->adresseEtudiante['pays']),
-        ];
-
-        return Adresse::fromArray($data);
+        return Adresse::fromArray($this->adresseEtudiante);
     }
 
     public function setAdresseParentale(Adresse $adresse): void
@@ -391,20 +377,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
 
     public function getAdresseParentale(): ?Adresse
     {
-        if ($this->adresseParentale === null) {
-            return null;
-        }
-
-        $data = [
-            'adresse' => LooseValue::string($this->adresseParentale['adresse']),
-            'complement1' => LooseValue::string($this->adresseParentale['complement1']),
-            'complement2' => LooseValue::string($this->adresseParentale['complement2']),
-            'ville' => LooseValue::string($this->adresseParentale['ville']),
-            'codePostal' => LooseValue::string($this->adresseParentale['codePostal']),
-            'pays' => LooseValue::string($this->adresseParentale['pays']),
-        ];
-
-        return Adresse::fromArray($data);
+        return Adresse::fromArray($this->adresseParentale);
     }
 
     /** @return list<string> */
