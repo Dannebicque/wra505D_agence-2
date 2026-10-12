@@ -145,7 +145,15 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #125 | **E23** : création et import d'étudiants réservés au droit d'écrire les scolarités |
 | #126, #127 | CI-Cypress : délais d'attente adaptés au Vite froid du runner GitHub |
 | #128 | migration d'horodatage retirée, le client ayant supprimé toutes les siennes |
+| #131 | **E21.2, E21.3** : modèle V3 du client (identifiants d'origine, métadonnées, PN annuel), entités uniEdt retirées ; `getDecision()` du client corrigé |
+| #132 | **E21.4** : socle de la migration V3, commande `app:migrate-intranet-v3`, initialisation de l'établissement |
+| #133 | **E21.5, E21.6** : migrateurs structure, maquette et APC |
+| #135 | **E21.7** : migrateurs utilisateurs, scolarité, emploi du temps ; règle E19 dans `ProposedSemesterResolver` ; `CopyBdd` retiré |
+| #136 | **E21.8** : stage du client (entités, migrateurs, écrans) ; demande de convention aux normes RGAA, routes du stage rétablies |
+| #137 | **E21.9** : migration des documents |
 | #138 | **E24** : stages, soutenances, avenants et périodes soumis au `StageVoter` du client, corrigé ; l'étudiant ne lit et ne dépose que son propre stage |
+| #139 | **E21.10** : écrans du client, super admin et questionnaire, `forms.css` aux contrastes RGAA |
+| #140 | **E21.11** : intégrations de l'établissement à clés d'API en écriture seule, pointage réservé au personnel |
 
 Le connecteur Celcat, en bref :
 
@@ -245,7 +253,8 @@ l'URL de comparaison.
 
 ## Ce qu'il reste à faire, dans l'ordre
 
-0. **E21, reprise de la migration V3 du client** : onze lots, détail dans le backlog.
+0. **E21.12** : dernier lot de la reprise du client (plans de cours, compétences de #260), et une
+   fausse base V3 pour exécuter les migrateurs.
 1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture
    impossible à quiconque (`ROLE_PERSONNEL` jamais attribué).
 2. **P1, fiche matière** : prochains cours, documents, notes et absences d'une matière, réunis.
@@ -284,6 +293,10 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Fiches étudiantes (E22) | liste `/api/etudiants` réservée au personnel ; fiche et `/scolarite/etudiant/{id}` soumises au voter du client `CAN_VIEW_ETUDIANT` : tout le personnel, et l'étudiant pour sa seule fiche, inoffensif et prévu par le client. Le PATCH n'écrit plus que le groupe `etudiant:write` : un étudiant pouvait se donner tous les rôles | nous |
 | Proposition de poursuite V3 (E19) | l'année de formation proposée, cherchée par libellé d'année ou de semestre dans le diplôme du dernier semestre suivi ; une seule correspondance est retenue, sinon elle reste vide et la commande le signale | nous |
 | Composantes et situations (E19) | une seule forme, celle d'ORéOF (`{libelle, code, ordre}`) ; les libellés V3 déjà en base sont lus sous cette forme | nous |
+| Filtres API Platform (E21) | `#[ApiFilter]` gardé, pas de `QueryParameter` comme le client (#260) : non déprécié en 4.3, et la conversion changerait 23 ressources | nous |
+| Clés d'API de l'établissement (E21.11) | `settings` en écriture seule ; lecture masquée (`apiKeySet`) réservée à `CAN_EDIT_ETABLISSEMENT` ; clé vide = clé conservée ; la lecture publique ne dit que les intégrations actives | nous |
+| Bordure d'élément d'interface (E21.8) | jeton du preset `--ui-border-color` (`#7E848D`, `#666B73` en sombre) ; les champs PrimeVue (1,48:1 avec Aura) restent à brancher dessus, avec LOU | nous |
+| Année de bascule V3 (E21.5) | `FIRST_V4_ACADEMIC_YEAR` = 2026, choix du client, en une constante et en paramètre SQL | client |
 | Jetons en clair (E16) | refusés dès le 26/09/2026, sans attendre 14 jours : pas de production | LCS |
 | Stages (E24) | le `StageVoter` du client fait foi, corrigé : l'étudiant lit ses seuls stages, la liste étant filtrée côté serveur, et écrit sa demande tant qu'elle n'est ni validée ni notée ; le personnel du module Stages lit tout, le tuteur universitaire modifie le stage qu'il suit, le responsable des stages gère stages et périodes ; soutenances, avenants et modèles de convention réservés au personnel. `ROLE_RESP_STAGES`, absent du registre, devient `ROLE_STAGE_MANAGER` ; `ROLE_STAGE`, que personne n'a, cède la place aux droits du voter sur les périodes | nous |
 | Import d'étudiants (E23) | `POST /api/etudiants/new` et `/import_apogee` exigent `CAN_EDIT_ETUDIANT_SCOLARITE` (super-admin, administrateur, scolarité, chef de département) : l'import crée des scolarités, et c'est le droit que le client donne pour les écrire. Les autres rôles de l'Administration voient encore l'écran mais reçoivent 403 | nous |
