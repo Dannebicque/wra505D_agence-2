@@ -10,3 +10,10 @@ stage_controllers:
         path: '../../packages/stage-bundle/src/Controller/'
         namespace: StageBundle\Controller
     type: attribute
+
+# API des plans de cours, ajoutée par le client dans le bundle intranet.
+intranet_controllers:
+    resource:
+        path: '../../packages/intranet-bundle/src/Controller/'
+        namespace: IntranetBundle\Controller
+    type: attribute
