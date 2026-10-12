@@ -188,7 +188,7 @@ const onBlurModelValue = async (event: Event, handleBlurFn: Function) => {
   <div class="validated-input">
     <label v-if="label" :for="name" class="block mb-1">
       {{ label }}
-      <span v-if="rules && (rules === 'required' || (Array.isArray(rules) && (rules.includes('required') || rules.includes(validationRules.required))))" class="text-red-500">*</span>
+      <span v-if="rules && (rules === 'required' || (Array.isArray(rules) && (rules.includes('required') || rules.includes(validationRules.required))))" class="text-red-700 dark:text-red-400">*</span>
     </label>
     <FormValidator
         :model-value="modelValue"

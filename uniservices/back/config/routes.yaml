@@ -3,3 +3,10 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+# Contrôleurs déplacés dans le bundle stage par le client (convention en PDF, soutenances).
+stage_controllers:
+    resource:
+        path: '../../packages/stage-bundle/src/Controller/'
+        namespace: StageBundle\Controller
+    type: attribute

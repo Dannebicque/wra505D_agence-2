@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Stage;
+namespace StageBundle\Controller;
 
 use App\Entity\Users\Personnel;
 use App\Utils\LooseValue;
