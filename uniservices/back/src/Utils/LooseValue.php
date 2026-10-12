@@ -39,6 +39,15 @@ final class LooseValue
     }
 
     /**
+     * Valeur écrite `$value ?: null` puis passée à un paramètre ?string : null, false, '', '0', 0
+     * et 0.0 deviennent null, comme le faisait l'opérateur.
+     */
+    public static function truthyString(mixed $value): ?string
+    {
+        return in_array($value, [null, false, '', '0', 0, 0.0], true) ? null : self::string($value);
+    }
+
+    /**
      * Valeur passée à un paramètre int.
      */
     public static function int(mixed $value): int
