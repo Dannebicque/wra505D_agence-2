@@ -20,6 +20,7 @@ use App\Entity\Contracts\TimestampableInterface;
 use App\Entity\Traits\OldIdTrait;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\UuidTrait;
+use IntranetBundle\Entity\Edt\EdtAppel;
 use App\Entity\Users\Personnel;
 use App\Filter\EdtFilter;
 use App\Repository\Edt\EdtEventRepository;
@@ -45,6 +46,12 @@ use Symfony\Component\Uid\UuidV4;
             normalizationContext: ['groups' => ['edt_stats:read']],
             provider: EdtStatsProvider::class,
             output: EdtStatsDto::class,
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
+        ),
+        // Suivi du pointage : appel fait ou non sur chaque créneau, réservé au personnel.
+        new GetCollection(
+            uriTemplate: '/pointage/edt_events',
+            normalizationContext: ['groups' => ['edt_pointage:read']],
             security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
         new Get(normalizationContext: ['groups' => ['edt_event:read:agenda']]),
@@ -169,6 +176,10 @@ class EdtEvent implements TimestampableInterface
     /** @var Collection<int, EtudiantAbsence> */
     #[ORM\OneToMany(targetEntity: EtudiantAbsence::class, mappedBy: 'event')]
     private Collection $absences;
+
+    #[ORM\OneToOne(mappedBy: 'edtEvent')]
+    #[Groups(['edt_pointage:read'])]
+    private ?EdtAppel $appel = null;
 
     public function __construct()
     {
@@ -530,5 +541,15 @@ class EdtEvent implements TimestampableInterface
         }
 
         return $this;
+    }
+
+    public function getAppel(): ?EdtAppel
+    {
+        return $this->appel;
+    }
+
+    public function setAppel(?EdtAppel $appel): void
+    {
+        $this->appel = $appel;
     }
 }

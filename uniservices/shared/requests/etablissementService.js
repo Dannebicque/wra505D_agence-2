@@ -19,6 +19,22 @@ const getEtablissementService = async (showToast = false) => {
     }
 }
 
+// Réglages des intégrations, clés d'API masquées : réservés à qui peut modifier l'établissement.
+const getEtablissementSettingsService = async (etablissementId, showToast = false) => {
+    try {
+        return await apiCall(
+            api.get,
+            [`/api/etablissements/${etablissementId}/settings`],
+            'Réglages récupérés avec succès',
+            'Erreur lors de la récupération des réglages',
+            showToast
+        );
+    } catch (error) {
+        console.error('Erreur dans getEtablissementSettingsService:', error);
+        throw error;
+    }
+}
+
 // ----------------------------------------------
 // ------------------- CREATE -------------------
 // ----------------------------------------------
@@ -61,4 +77,4 @@ const uploadEtablissementLogoService = async (etablissementId, formData, showToa
 // ------------------- DELETE -------------------
 // ----------------------------------------------
 
-export { getEtablissementService, updateEtablissementService, uploadEtablissementLogoService };
+export { getEtablissementService, getEtablissementSettingsService, updateEtablissementService, uploadEtablissementLogoService };
