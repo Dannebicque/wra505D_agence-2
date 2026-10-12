@@ -57,6 +57,12 @@ const MyPreset = definePreset(Aura, {
         accent: {
             color: '#F7B000',
             contrastColor: '#4D3677'
+        },
+        // Bordure d'un élément d'interface (champ, case, carte de choix) : 3,49:1 en clair et
+        // 3,15:1 en sombre, au-dessus du seuil RGAA de 3:1, là où les gris d'Aura n'y arrivent pas.
+        colorScheme: {
+            light: { uiBorder: { color: '#7E848D' } },
+            dark: { uiBorder: { color: '#666B73' } }
         }
     },
     components: {
