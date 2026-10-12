@@ -253,8 +253,7 @@ l'URL de comparaison.
 
 ## Ce qu'il reste à faire, dans l'ordre
 
-0. **E21.12** : dernier lot de la reprise du client (plans de cours, compétences de #260), et une
-   fausse base V3 pour exécuter les migrateurs.
+0. **Fausse base V3** pour exécuter les migrateurs de la reprise E21 (dernier lot en PR #142).
 1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture
    impossible à quiconque (`ROLE_PERSONNEL` jamais attribué).
 2. **P1, fiche matière** : prochains cours, documents, notes et absences d'une matière, réunis.

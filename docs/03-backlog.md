@@ -410,7 +410,7 @@ ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au
 quand le niveau visé est à 0 ; les exclusions sont retirées entre le 8 et le 9 ; les
 `phpstan-strict-rules` en dernier. Un type PHP s'aligne sur le mapping Doctrine, jamais l'inverse,
 sauf migration décidée et notée.
-### E21 · [back + front] Reprise de la migration V3 du client, à nos normes · L, 12 lots, 12 faits sauf E21.12
+### E21 · [back + front] Reprise de la migration V3 du client, à nos normes · L, 12 lots, faits (E21.12 en PR #142)
 **Pourquoi** Examiné le 12/10/2026 : de `9cda32da8` à `63374484f` (releases 0.1.12 à 0.1.16),
 le client a refondu son modèle pour migrer les données de l'intranet V3. On ne peut pas
 l'appliquer tel quel : 977 erreurs PHPStan niveau 10 sur le seul code de migration, des routes
@@ -443,7 +443,7 @@ déjà dessus, et chaque reprise future en dépend.
 | E21.9 · fait (#137) | documents : migrateurs, `oldId` ; notre lien matière (B6) et les favoris (B7) préservés | OpenCode, LCS |
 | E21.10 · fait (#139) | écrans du client : super admin, refonte du questionnaire, avec le même `forms.css` corrigé | OpenCode (reprise), LCS |
 | E21.11 · fait (#140) | intégrations de l'établissement (#247, #248) et pointage (#252), corrigés : clés d'API en écriture seule, routes du pointage réservées au personnel | LCS |
-| E21.12 | uniServices #260 : plans de cours, compétences, filtres API Platform à jour | LCS, OpenCode |
+| E21.12 · PR #142 | uniServices #260 : plans de cours, compétences, filtres API Platform à jour | LCS, OpenCode |
 
 **Bilan au 12/10** : E21.0 à E21.11 mergés, PHPStan niveau 10 sans baseline à chaque lot (≈ 1 300
 erreurs du code client corrigées). Défauts du client corrigés en route : `getDecision()` qui
@@ -454,7 +454,8 @@ et pointage ouvert à tous. E21.5 et E21.6 ont fait une seule PR : la chaîne St
 migrateurs APC. Aucune base V3 n'est disponible en local : les migrateurs sont vérifiés par
 PHPStan et l'ordre de la commande, pas encore par une exécution réelle (une fausse base V3, comme
 celle de Celcat, reste à faire).
-**E21.12 restant** : plans de cours, refonte des compétences, réglages Symfony et fixtures de #260.
+**E21.12** (#142) : plans de cours, refonte des compétences et corrections de #260 ; les plans de cours
+n'avaient aucun contrôle d'accès, ils sont réservés au personnel. Bundle finance et ses fixtures écartés.
 Le passage de `#[ApiFilter]` aux `QueryParameter` n'est pas repris : `ApiFilter` n'est pas déprécié
 dans API Platform 4.3, et la vraie dépréciation (`PropertyInfo\Type`) est déjà corrigée chez nous.
 
