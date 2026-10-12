@@ -57,7 +57,7 @@ final class DocumentNotificationSource implements NotificationSourceInterface
                 Notification::TYPE_DOCUMENT,
                 sprintf('Nouveau document en %s %s', $enseignement?->getCodeEnseignement(), $enseignement?->getLibelle()),
                 $document->getTitre(),
-                $document->getCreatedAt(),
+                $document->getCreatedAt() ?? new \DateTimeImmutable(),
                 '/documents',
             );
         }
