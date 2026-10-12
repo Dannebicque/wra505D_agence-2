@@ -35,7 +35,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 | CI-Back : PHPStan | niveau 10 (max) et `phpstan-strict-rules`, 0 erreur ; 12 `@phpstan-ignore` justifiés (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
-| CI-Cypress : 16 fichiers, 77 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
+| CI-Cypress : 17 fichiers, 79 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
@@ -277,8 +277,8 @@ listes de rôles citaient `ROLE_RESP_STAGES`, absent du registre, au lieu de `RO
 
 Couvert par `cypress/e2e/stages-acces.cy.js` et `back/tests/Security/StageVoterTest.php`, qui
 échouent sur `develop`. Seuls les attributs de sécurité, le voter et une ligne par route de
-contrôleur changent : `chore/amont-e21-8-stage` renomme `Contact` et `Entreprise` et déplace
-voter et contrôleurs dans le bundle.
+contrôleur changent, pour ne pas croiser E21.8, qui a déplacé voter et contrôleurs dans le
+bundle.
 **Reste** l'écriture des modèles de convention exige toujours `ROLE_STAGE` : l'écran du
 super-admin « Modèles de Convention » n'enregistre rien (fermé, donc sans risque ; aucun droit du
 voter n'y correspond). Le voter ignore le département : un responsable des stages gère ceux de
