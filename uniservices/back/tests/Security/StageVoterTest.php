@@ -10,7 +10,7 @@ use App\Entity\Users\Personnel;
 use App\Security\CorePermissionProvider;
 use App\Security\PermissionRegistry;
 use App\Security\PermissionResolver;
-use App\Security\StageVoter;
+use StageBundle\Security\StageVoter;
 use App\Security\UserEffectivePermissionService;
 use PHPUnit\Framework\TestCase;
 use StageBundle\Entity\Stages\StageEtudiant;
