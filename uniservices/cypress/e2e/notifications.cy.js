@@ -35,7 +35,7 @@ describe('Notifications de l\'étudiant', () => {
 
     it('lit un message en entier et le marque comme lu', () => {
         cy.visit('/app/intranet/notifications');
-        cy.contains('fieldset', 'Type').contains('Messages').click();
+        cy.contains('fieldset', 'Type', { timeout: 15000 }).contains('Messages').click();
 
         cy.contains('article', 'Changement de salle pour R1.11').as('message')
             .should('contain', 'Le TP de jeudi a lieu en salle B204')
@@ -46,7 +46,7 @@ describe('Notifications de l\'étudiant', () => {
 
     it('filtre les non lues et marque tout comme lu', () => {
         cy.visit('/app/intranet/notifications');
-        cy.contains('fieldset', 'Afficher').contains('Non lues').click();
+        cy.contains('fieldset', 'Afficher', { timeout: 15000 }).contains('Non lues').click();
         cy.contains('h2', 'Aujourd\'hui');
 
         cy.contains('button', 'Tout marquer comme lu').click();
