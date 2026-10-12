@@ -35,7 +35,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 | CI-Back : PHPStan | niveau 10 (max) et `phpstan-strict-rules`, 0 erreur ; 12 `@phpstan-ignore` justifiés (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
-| CI-Cypress : 17 fichiers, 79 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
+| CI-Cypress : 17 fichiers, 80 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
