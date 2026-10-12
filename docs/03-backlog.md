@@ -366,6 +366,14 @@ tableau du responsable de stage et la demande de convention de l'étudiant. Couv
 **Reste, hors de cette fiche** `POST /api/etudiants/new` (`CreateEtudiantController`) n'a aucun
 contrôle d'accès : un anonyme peut créer des étudiants. La page Profil de l'étudiant appelle
 `/api/etudiants/undefined` (prop `etudiantId` jamais transmise) : déjà cassée avant cette fiche.
+**Pour l'équipe** ce qui change dans votre code :
+- Une page étudiante ne lit plus `/api/etudiants` (403) : ses propres données passent par une
+  route `/api/me/…`. Seule exception tolérée, `/api/etudiants/{id}` sur sa propre fiche.
+- Un PATCH de fiche étudiante n'écrit que `mailPerso`, `tel1`, `tel2`, `site_perso`,
+  `adresseEtudiante` et `adresseParentale`. Tout autre champ est ignoré sans erreur : pour en
+  ouvrir un, l'ajouter au groupe `etudiant:write` et le justifier.
+- Un test Cypress qui appelle ces routes doit se connecter (`personnel` pour la liste), et vider
+  ses cookies si `before()` s'est connecté (voir `fiches-etudiants.cy.js`).
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,
 `CentreNotifications`, `marquerLues()`, `synchroniserCalendrier()`.
