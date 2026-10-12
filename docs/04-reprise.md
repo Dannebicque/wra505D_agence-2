@@ -145,6 +145,7 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #125 | **E23** : création et import d'étudiants réservés au droit d'écrire les scolarités |
 | #126, #127 | CI-Cypress : délais d'attente adaptés au Vite froid du runner GitHub |
 | #128 | migration d'horodatage retirée, le client ayant supprimé toutes les siennes |
+| #138 | **E24** : stages, soutenances, avenants et périodes soumis au `StageVoter` du client, corrigé ; l'étudiant ne lit et ne dépose que son propre stage |
 
 Le connecteur Celcat, en bref :
 
