@@ -18,17 +18,25 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: StageAvenantRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['stage_avenant:read']]),
-        new GetCollection(normalizationContext: ['groups' => ['stage_avenant:read']]),
+        new Get(
+            normalizationContext: ['groups' => ['stage_avenant:read']],
+            security: "is_granted('CAN_VIEW_STAGE', object.getStageEtudiant())"
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['stage_avenant:read']],
+            security: "is_granted('CAN_VIEW_STAGE')"
+        ),
         new Post(
             normalizationContext: ['groups' => ['stage_avenant:read']],
-            denormalizationContext: ['groups' => ['stage_avenant:write']]
+            denormalizationContext: ['groups' => ['stage_avenant:write']],
+            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE')"
         ),
         new Patch(
             normalizationContext: ['groups' => ['stage_avenant:read']],
-            denormalizationContext: ['groups' => ['stage_avenant:write']]
+            denormalizationContext: ['groups' => ['stage_avenant:write']],
+            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE')"
         ),
-        new Delete()
+        new Delete(security: "is_granted('CAN_DELETE_STAGE')")
     ]
 )]
 class StageAvenant implements TimestampableInterface

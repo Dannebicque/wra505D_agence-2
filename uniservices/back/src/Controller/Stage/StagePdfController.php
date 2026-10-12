@@ -44,6 +44,8 @@ class StagePdfController extends AbstractController
             return new Response('Stage étudiant non trouvé', Response::HTTP_NOT_FOUND);
         }
 
+        $this->denyAccessUnlessGranted('CAN_VIEW_STAGE', $stage);
+
         $template = $this->em->getRepository(StageConventionTemplate::class)->findOneBy(['code' => 'default_convention']);
         $templateText = $template?->getTexte() ?? "CONVENTION DE STAGE\n(Modèle par défaut non configuré en base)";
 
@@ -79,6 +81,8 @@ class StagePdfController extends AbstractController
             return new Response('Stage associé à l\'avenant non trouvé', Response::HTTP_NOT_FOUND);
         }
 
+        $this->denyAccessUnlessGranted('CAN_VIEW_STAGE', $stage);
+
         $template = $this->em->getRepository(StageConventionTemplate::class)->findOneBy(['code' => 'default_avenant']);
         $templateText = $template?->getTexte() ?? "AVENANT À LA CONVENTION DE STAGE\n(Modèle par défaut non configuré en base)";
 
@@ -104,6 +108,8 @@ class StagePdfController extends AbstractController
     #[Route('/api/stage_avenants/{id}/validate', name: 'api_stage_avenants_validate', methods: ['POST'])]
     public function validateAvenant(int $id): Response
     {
+        $this->denyAccessUnlessGranted('CAN_VALIDATE_STAGE');
+
         $avenant = $this->em->getRepository(StageAvenant::class)->find($id);
         if (!$avenant instanceof StageAvenant) {
             return new Response('Avenant non trouvé', Response::HTTP_NOT_FOUND);

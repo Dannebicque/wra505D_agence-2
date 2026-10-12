@@ -51,6 +51,8 @@ class StageSoutenanceController extends AbstractController
     #[Route('/api/stage_soutenances/validate-conflict', name: 'api_stage_soutenances_validate_conflict', methods: ['POST'])]
     public function validateConflict(Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('CAN_EDIT_STAGE');
+
         $data = $this->payload($request);
         $stageEtudiantId = $this->getIdFromIri($data['stageEtudiantId'] ?? null);
         $enseignantJuryId = $this->getIdFromIri($data['enseignantJuryId'] ?? null);
@@ -85,6 +87,8 @@ class StageSoutenanceController extends AbstractController
     #[Route('/api/stage_soutenances/save', name: 'api_stage_soutenances_save', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('CAN_EDIT_STAGE');
+
         $data = $this->payload($request);
         $soutenanceId = $this->getIdFromIri($data['id'] ?? null);
         $stageEtudiantId = $this->getIdFromIri($data['stageEtudiantId'] ?? null);
@@ -157,6 +161,8 @@ class StageSoutenanceController extends AbstractController
     #[Route('/api/stage_soutenances/bulk-generate', name: 'api_stage_soutenances_bulk_generate', methods: ['POST'])]
     public function bulkGenerate(Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('CAN_EDIT_STAGE');
+
         $data = $this->payload($request);
         $stagePeriodeId = $this->getIdFromIri($data['stagePeriodeId'] ?? null);
         $dateStr = $data['date'] ?? null; // YYYY-MM-DD

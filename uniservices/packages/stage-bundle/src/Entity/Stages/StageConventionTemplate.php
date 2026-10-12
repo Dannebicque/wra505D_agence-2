@@ -16,8 +16,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: StageConventionTemplateRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['stage_template:read']]),
-        new GetCollection(normalizationContext: ['groups' => ['stage_template:read']]),
+        new Get(
+            normalizationContext: ['groups' => ['stage_template:read']],
+            security: "is_granted('CAN_VIEW_STAGE')"
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['stage_template:read']],
+            security: "is_granted('CAN_VIEW_STAGE')"
+        ),
         new Post(
             normalizationContext: ['groups' => ['stage_template:read']],
             denormalizationContext: ['groups' => ['stage_template:write']],
