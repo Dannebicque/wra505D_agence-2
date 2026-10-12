@@ -35,7 +35,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 | CI-Back : PHPStan | niveau 10 (max) et `phpstan-strict-rules`, 0 erreur ; 12 `@phpstan-ignore` justifiés (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
-| CI-Cypress : 13 fichiers, 59 tests, sur une base de fixtures neuve et un Vite froid | vert |
+| CI-Cypress : 14 fichiers, 63 tests, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
@@ -290,6 +290,24 @@ bundle, sous le même nom, ce qui faisait corriger deux fois le même code.
 n'étaient jamais appelées, et `GroupesParSemestreController` n'avait de route dans aucune de ses
 deux copies. Les huit fichiers sont supprimés. Preuve : `debug:router` identique avant et après,
 et les 189 appels GET rendent le même JSON que `develop`.
+
+### E22 · [back] Fiches étudiantes lisibles sans connexion · S · fait
+**Pourquoi** Constaté le 12/10/2026 : `GET /api/etudiants` sans jeton rend la liste de tous les
+étudiants (identifiant, adresses, scolarités, groupes), et `/api/etudiants/{id}` comme
+`/api/scolarite/etudiant/{id}` rendent n'importe quelle fiche, à un anonyme comme à un étudiant.
+En vérifiant le PATCH, pire : sans groupe de dénormalisation, il acceptait tous les champs, et un
+étudiant pouvait se donner `ROLE_SUPER_ADMIN` sur sa propre fiche.
+**Terminé quand** un anonyme reçoit 401 et un étudiant 403 sur la fiche d'un autre, le personnel
+garde ses écrans, et un test le vérifie.
+**Fait** La liste est réservée au personnel, comme en E18. La fiche et `/scolarite/etudiant/{id}`
+passent par `CAN_VIEW_ETUDIANT`, le voter du client, jusqu'ici inutilisé : tout le personnel, et
+l'étudiant pour sa seule fiche. Le PATCH n'écrit plus que le groupe `etudiant:write` (adresses,
+téléphones, e-mail et site personnels), soit exactement ce qu'envoient la fiche du personnel, le
+tableau du responsable de stage et la demande de convention de l'étudiant. Couvert par
+`cypress/e2e/fiches-etudiants.cy.js`, qui échoue sur `develop`.
+**Reste, hors de cette fiche** `POST /api/etudiants/new` (`CreateEtudiantController`) n'a aucun
+contrôle d'accès : un anonyme peut créer des étudiants. La page Profil de l'étudiant appelle
+`/api/etudiants/undefined` (prop `etudiantId` jamais transmise) : déjà cassée avant cette fiche.
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,
 `CentreNotifications`, `marquerLues()`, `synchroniserCalendrier()`.

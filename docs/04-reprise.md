@@ -3,7 +3,7 @@
 État du projet et suite à donner, pour qu'une nouvelle session reparte sans rien redécouvrir.
 À lire après `CLAUDE.md`. À mettre à jour à chaque étape importante.
 
-Dernière mise à jour : 28/09/2026.
+Dernière mise à jour : 12/10/2026.
 
 ---
 
@@ -268,6 +268,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Favoris de documents (B7) | propres à chaque utilisateur (table `document_favori`), lus et modifiés par `/api/me/documents-favoris`. L'ancien champ `Document::isFavorite`, partagé par tous, est supprimé : un étudiant qui marquait un favori le marquait pour tout le monde | nous, validé par LCS |
 | Couleur primaire (A6) | une seule primaire pour tous les modules : le violet de la DA `#4D3677`, avec une palette dérivée en OKLab (`VIOLET_IUT`, `packages/shell/assets/main.js`). Le jaune `#F7B000`, primaire d'origine de la DA, devient l'accent (`--accent-color`), toujours avec du texte `#4D3677`. La couleur par module (`primaryColor`) est supprimée | LCS |
 | Accès aux routes | `^/api` reste en `PUBLIC_ACCESS`, choix du client : chaque route porte son propre contrôle. Synchronisations ORéOF en POST avec droit d'édition ; statistiques d'emploi du temps réservées au personnel, comme les notes (E18) | nous |
+| Fiches étudiantes (E22) | liste `/api/etudiants` réservée au personnel ; fiche et `/scolarite/etudiant/{id}` soumises au voter du client `CAN_VIEW_ETUDIANT` : tout le personnel, et l'étudiant pour sa seule fiche, inoffensif et prévu par le client. Le PATCH n'écrit plus que le groupe `etudiant:write` : un étudiant pouvait se donner tous les rôles | nous |
 | Proposition de poursuite V3 (E19) | l'année de formation proposée, cherchée par libellé d'année ou de semestre dans le diplôme du dernier semestre suivi ; une seule correspondance est retenue, sinon elle reste vide et la commande le signale | nous |
 | Composantes et situations (E19) | une seule forme, celle d'ORéOF (`{libelle, code, ordre}`) ; les libellés V3 déjà en base sont lus sous cette forme | nous |
 | Jetons en clair (E16) | refusés dès le 26/09/2026, sans attendre 14 jours : pas de production | LCS |
@@ -288,13 +289,15 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 5. Les modules d'un étudiant sont codés en dur (`intranet`, `documents`, `SecurityController`) :
    doivent-ils suivre ceux de son département, pour lui ouvrir Stages et Assistance ?
 
-Trois failles à leur signaler, car elles sont dans leur code de production :
+Quatre failles à leur signaler, car elles sont dans leur code de production :
 
 - la déconnexion qui ne déconnectait pas, corrigée chez nous ;
 - le lien d'abonnement iCal de l'intranet V3 : son identifiant est `MD5(prenom.nom)`, donc
   n'importe qui peut obtenir l'emploi du temps d'un étudiant en connaissant son nom. Ne pas le
   tester sur le vrai site ;
 - les questionnaires, ouverts en modification à tout utilisateur connecté, corrigé chez nous (#36).
+- les fiches étudiantes, lisibles sans connexion, et le PATCH d'une fiche, qui laissait un
+  étudiant se donner `ROLE_SUPER_ADMIN`, corrigés chez nous (E22).
 
 ---
 
