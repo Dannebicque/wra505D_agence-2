@@ -27,6 +27,15 @@
 
       <!-- Quick Actions -->
       <div class="flex space-x-2">
+        <Button
+          v-if="typeApercu(document.type)"
+          label="Aperçu"
+          icon="pi pi-eye"
+          outlined
+          class="flex-1 min-h-[44px] border-primary!"
+          @click="$emit('preview', document)"
+        />
+
         <button
           @click="$emit('download', document)"
           class="flex-1 min-h-[44px] bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm"
@@ -118,10 +127,12 @@
 
 <script setup lang="ts">
 import Sidebar from 'primevue/sidebar';
+import Button from 'primevue/button';
 import type { Document } from '@types';
 import { ButtonDelete } from '@components';
 import { getFileIcon, getFileIconColor, formatFileSize, formatDate, getFileExtension } from '@/service/utils/fileUtils';
 import { libelleEnseignement } from '@/service/utils/enseignementUtils';
+import { typeApercu } from '@/service/utils/apercuUtils';
 
 interface Props {
   visible: boolean;
@@ -134,6 +145,7 @@ defineProps<Props>();
 defineEmits<{
   'update:visible': [value: boolean];
   download: [document: Document];
+  preview: [document: Document];
   delete: [document: Document];
   toggleFavorite: [documentId: string];
 }>();
