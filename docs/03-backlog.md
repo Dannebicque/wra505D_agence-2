@@ -393,7 +393,7 @@ déjà dessus, et chaque reprise future en dépend.
 | E21.1 · fait (#123) | horodatage : `TimestampableInterface`, `TimestampableTrait`, écouteurs Doctrine, 23 entités de `created`/`updated` à `createdAt`/`updatedAt` ; nos sources de notifications et les écrans qui lisent `created` adaptés | OpenCode (remplacements), LCS (revue, Cypress) |
 | E21.2 | colonnes d'origine V3 (`oldId`) et métadonnées reprises | OpenCode |
 | E21.3 | modèle : `StructurePn` annuel, date d'`EdtEvent` en `DATE` (synchro Celcat adaptée), rattrapages en heures, totaux d'absences ; entités uniEdt inutiles retirées, avec leurs références restées chez le client (`EdtCalendrierContraintesController`, `PersonnelsContraintes`) | LCS |
-| E21.4 | socle du migrateur : contrat, registre, contexte, résultat, exécution, commande `app:` du client, initialisation de l'établissement | LCS |
+| E21.4 · PR ouverte | socle du migrateur : contrat, registre, contexte, résultat, exécution, commande `app:` du client, initialisation de l'établissement | LCS |
 | E21.5 | migrateurs Structure et Maquette (≈ 210 erreurs, 4 sous-lots) | OpenCode (`LooseValue`, PHPDoc), LCS |
 | E21.6 | migrateurs APC (≈ 150 erreurs, 3 sous-lots) | OpenCode, LCS |
 | E21.7 | migrateurs Utilisateurs, Scolarité, Emploi du temps (≈ 410 erreurs, 8 sous-lots) ; `CopyBdd` retiré, la proposition de poursuite d'E19 et son test reportés dans le migrateur | OpenCode, LCS |
@@ -402,6 +402,20 @@ déjà dessus, et chaque reprise future en dépend.
 | E21.10 | écrans du client : super admin, refonte du questionnaire, avec le même `forms.css` corrigé | OpenCode (reprise), LCS |
 | E21.11 | intégrations de l'établissement (#247, #248) et pointage (#252), corrigés : clés d'API en écriture seule, routes du pointage réservées au personnel | LCS |
 | E21.12 | uniServices #260 : plans de cours, compétences, filtres API Platform à jour | LCS, OpenCode |
+
+**Noms anglais des migrateurs** (fixés en E21.4). Les noms de ligne de commande (`getName()` :
+`annees`, `notes`…) et la commande `app:migrate-intranet-v3` restent ceux du client.
+
+| Client | Chez nous |
+|---|---|
+| `Structure\` `AnneeMigrator`, `AnneeUniversitaireMigrator`, `CalendrierMigrator`, `DepartementMigrator`, `DiplomeMigrator`, `GroupeMigrator`, `PnMigrator`, `SalleMigrator`, `SemestreMigrator`, `TypeDiplomeMigrator` | `Structure\` `YearMigrator`, `AcademicYearMigrator`, `CalendarMigrator`, `DepartmentMigrator`, `DiplomaMigrator`, `GroupMigrator`, `NationalProgramMigrator`, `RoomMigrator`, `SemesterMigrator`, `DiplomaTypeMigrator` |
+| `Maquette\` `MatiereMigrator`, `UeMigrator` | `Curriculum\` `SubjectMigrator`, `TeachingUnitMigrator` |
+| `Apc\` `ApcApprentissageCritiqueMigrator`, `ApcCompetenceMigrator`, `ApcDiplomeLinkMigrator`, `ApcNiveauMigrator`, `ApcParcoursMigrator`, `ApcReferentielMigrator`, `ApcRessourceMigrator`, `ApcUeLinkMigrator` (`ApcRelationMigrator`, `ApcSaeMigrator` inchangés) | `Apc\` `ApcCriticalLearningMigrator`, `ApcCompetencyMigrator`, `ApcDiplomaLinkMigrator`, `ApcLevelMigrator`, `ApcPathwayMigrator`, `ApcFrameworkMigrator`, `ApcResourceMigrator`, `ApcTeachingUnitLinkMigrator` |
+| `Users\` `EtudiantMigrator`, `PersonnelMigrator`, `PersonnelDepartementMigrator` | `Users\` `StudentMigrator`, `StaffMigrator`, `StaffDepartmentMigrator` |
+| `Scolarite\` `ScolariteMigrator`, `ScolariteDetailsMigrator`, `EtudiantGroupeMigrator`, `BacMigrator`, `EvaluationMigrator`, `NoteMigrator`, `RattrapageMigrator`, `AbsenceActiveMigrator`, `JustificatifActiveMigrator`, `HrsMigrator`, `TypeHrsMigrator`, `PrevisionnelMigrator` | `Enrolment\` `EnrolmentMigrator`, `EnrolmentDetailsMigrator`, `StudentGroupMigrator`, `BaccalaureateMigrator`, `AssessmentMigrator`, `GradeMigrator`, `MakeUpExamMigrator`, `ActiveAbsenceMigrator`, `ActiveAbsenceJustificationMigrator`, `ActiveHrsMigrator`, `HrsTypeMigrator`, `TeachingForecastMigrator` |
+| `Edt\EdtEventMigrator` | `Timetable\TimetableEventMigrator` |
+| stage : `EntrepriseMigrator`, `ContactMigrator`, `StagePeriodeMigrator`, `StageEtudiantMigrator`, `StageDatabaseResetter`, `StageIntegrityChecker`, `StageMigrationRunner` | `CompanyMigrator`, `ContactMigrator`, `InternshipPeriodMigrator`, `StudentInternshipMigrator`, `InternshipDatabaseResetter`, `InternshipIntegrityChecker`, `InternshipMigrationRunner` |
+| `Initialization\EtablissementInitializer` | `Initialization\InstitutionInitializer` |
 
 **Release 0.1.17** examinée le 12/10 (`2ecfb42fb`) : #260 (« Montée version SF 8.1 ») apporte
 aussi les plans de cours, la refonte des compétences, les filtres API Platform sans dépréciation
