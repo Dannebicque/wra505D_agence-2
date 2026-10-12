@@ -81,8 +81,6 @@ final class GradeNotificationSource implements NotificationSourceInterface
 
     private static function lastModified(EtudiantNote $note): ?\DateTimeImmutable
     {
-        $date = $note->getUpdated() ?? $note->getCreated();
-
-        return null === $date ? null : \DateTimeImmutable::createFromInterface($date);
+        return $note->getUpdatedAt() ?? $note->getCreatedAt();
     }
 }

@@ -14,7 +14,8 @@ use App\Entity\Scolarite\ScolBac;
 use App\Entity\Scolarite\ScolEvaluationRattrapage;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Traits\EduSignTrait;
-use App\Entity\Traits\LifeCycleTrait;
+use App\Entity\Contracts\TimestampableInterface;
+use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\OldIdTrait;
 use App\Filter\EtudiantFilter;
 use App\Repository\EtudiantRepository;
@@ -43,16 +44,15 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
     ],
     order: ['nom' => 'ASC']
 )]
-#[ORM\HasLifecycleCallbacks]
 #[ApiFilter(EtudiantFilter::class)]
 #[ApiFilter(SearchFilter::class, properties: [
     'nom' => 'start',
     'prenom' => 'start',
     'mailUniv' => 'partial'
 ])]
-class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface
+class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, TimestampableInterface
 {
-    use LifeCycleTrait;
+    use TimestampableTrait;
     use EduSignTrait;
     use OldIdTrait; //a supprimer après transfert
 

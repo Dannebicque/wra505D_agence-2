@@ -11,7 +11,8 @@ use ApiPlatform\Metadata\Patch;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Traits\EduSignTrait;
-use App\Entity\Traits\LifeCycleTrait;
+use App\Entity\Contracts\TimestampableInterface;
+use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\UuidTrait;
 use App\Entity\Users\Personnel;
 use IntranetBundle\Enum\EtatJustificatifEnum;
@@ -25,28 +26,27 @@ use IntranetBundle\State\Processor\Absence\EtudiantAbsenceCreateProcessor;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: EtudiantAbsenceRepository::class)]
-#[ORM\HasLifecycleCallbacks]
 #[ApiFilter(AbsenceFilter::class)]
 #[ApiResource(
     operations: [
         new GetCollection(
             uriTemplate: '/administration/etudiant_absences',
-            normalizationContext: ['groups' => ['absence:administration']],
+            normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
             provider: AbsenceEpisodeProvider::class,
         ),
         new GetCollection(
             uriTemplate: '/administration/last/etudiant_absences',
-            normalizationContext: ['groups' => ['absence:administration']],
+            normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
         ),
         new GetCollection(
             uriTemplate: '/administration/stats/etudiant_absences',
             paginationEnabled: false,
-            normalizationContext: ['groups' => ['absence:administration']],
+            normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
             provider: AbsenceStatsProvider::class
         ),
         new GetCollection(
             uriTemplate: '/administration/repartition/etudiant_absences',
-            normalizationContext: ['groups' => ['absence:administration']],
+            normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
         ),
         new Post(
             uriTemplate: '/administration/etudiant_absences',
@@ -61,13 +61,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
             uriTemplate: '/administration/etudiant_absences/{id}',
         )
     ],
-    order: ['created' => 'ASC']
+    order: ['createdAt' => 'ASC']
 )]
-class EtudiantAbsence
+class EtudiantAbsence implements TimestampableInterface
 {
     use UuidTrait;
     use EduSignTrait;
-    use LifeCycleTrait;
+    use TimestampableTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

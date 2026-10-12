@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use App\Entity\Contracts\TimestampableInterface;
 use App\Entity\Structure\StructureDepartement;
 use DocumentBundle\Repository\DocumentCategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -35,7 +36,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     normalizationContext: ['groups' => ['document_category:read']],
     denormalizationContext: ['groups' => ['document_category:write']]
 )]
-class DocumentCategory
+class DocumentCategory implements TimestampableInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -89,6 +90,9 @@ class DocumentCategory
     #[ORM\Column]
     #[Groups(['document_category:read'])]
     private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     public function __construct()
     {
@@ -229,5 +233,20 @@ class DocumentCategory
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): void
+    {
+        $this->createdAt = $createdAt;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): void
+    {
+        $this->updatedAt = $updatedAt;
     }
 }
