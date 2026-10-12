@@ -11,7 +11,7 @@ trait OptionTrait
 {
     /** @var array<string, mixed> */
     #[ORM\Column]
-    #[Groups(['diplome:read:full', 'diplome:read', 'scolarite:read', 'semestre:detail', 'annee:read', 'etudiant:read', 'questionnaire:read', 'questionnaire_section:read'])]
+    #[Groups(['diplome:read:full', 'diplome:read', 'scolarite:read', 'semestre:detail', 'annee:read', 'etudiant:read', 'etudiant:detail', 'etudiant:write', 'questionnaire:read', 'questionnaire_section:read'])]
     private array $opt = [];
 
     /** @param array<string, mixed> $opt */

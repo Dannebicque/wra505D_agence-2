@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\GetCollection;
 use App\Entity\Apc\ApcNiveau;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Contracts\TimestampableInterface;
+use App\Entity\Traits\OldIdTrait;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\OptionTrait;
 use App\Filter\AnneeFilter;
@@ -41,15 +42,16 @@ class StructureAnnee implements TimestampableInterface
 {
     use TimestampableTrait;
     use OptionTrait;
+    use OldIdTrait; // à supprimer après stabilisation de la migration V3
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['maquette:detail', 'annee:light', 'annee:read', 'semestre:detail', 'scolarite:administration'])]
+    #[Groups(['maquette:detail', 'annee:light', 'annee:read', 'semestre:detail', 'scolarite:administration', 'stage_periode:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['maquette:detail', 'scolarite:read', 'annee:read', 'annee:light', 'semestre:detail', 'scolarite:administration'])]
+    #[Groups(['maquette:detail', 'scolarite:read', 'annee:read', 'annee:light', 'semestre:detail', 'scolarite:administration', 'stage_periode:read'])]
     private ?string $libelle = null;
 
     #[ORM\Column]
@@ -67,9 +69,7 @@ class StructureAnnee implements TimestampableInterface
     #[ORM\Column(length: 30, nullable: true)]
     private ?string $couleur = null;
 
-    /**
-     * @var Collection<int, StructureSemestre>
-     */
+    /** @var Collection<int, StructureSemestre> */
     #[ORM\OneToMany(targetEntity: StructureSemestre::class, mappedBy: 'annee', orphanRemoval: true, cascade: ['remove'])]
     #[Groups(['maquette:detail', 'annee:read'])]
     private Collection $semestres;
@@ -82,18 +82,15 @@ class StructureAnnee implements TimestampableInterface
     #[Groups(['annee:read', 'maquette:detail'])]
     private ?string $apogeeCodeEtape = null;
 
-    /**
-     * @var Collection<int, ApcNiveau>
-     */
+    /** @var Collection<int, ApcNiveau> */
     #[ORM\OneToMany(targetEntity: ApcNiveau::class, mappedBy: 'annee', orphanRemoval: true, cascade: ['remove'])]
     private Collection $niveaux;
 
     #[ORM\ManyToOne(inversedBy: 'annees')]
+    #[Groups(['semestre:detail', 'annee:detail', 'annee:read', 'maquette:detail', 'stage_periode:read'])]
     private ?StructurePn $pn = null;
 
-    /**
-     * @var Collection<int, EtudiantScolarite>
-     */
+    /** @var Collection<int, EtudiantScolarite> */
     #[ORM\OneToMany(targetEntity: EtudiantScolarite::class, mappedBy: 'proposition', orphanRemoval: true, cascade: ['remove'])]
     private Collection $etudiantScolaritesPropositions;
 
@@ -170,9 +167,7 @@ class StructureAnnee implements TimestampableInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, StructureSemestre>
-     */
+    /** @return Collection<int, StructureSemestre> */
     public function getSemestres(): Collection
     {
         return $this->semestres;
@@ -190,11 +185,8 @@ class StructureAnnee implements TimestampableInterface
 
     public function removeSemestre(StructureSemestre $semestre): static
     {
-        if ($this->semestres->removeElement($semestre)) {
-            // set the owning side to null (unless already changed)
-            if ($semestre->getAnnee() === $this) {
-                $semestre->setAnnee(null);
-            }
+        if ($this->semestres->removeElement($semestre) && $semestre->getAnnee() === $this) {
+            $semestre->setAnnee(null);
         }
 
         return $this;
@@ -233,9 +225,7 @@ class StructureAnnee implements TimestampableInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, ApcNiveau>
-     */
+    /** @return Collection<int, ApcNiveau> */
     public function getNiveaux(): Collection
     {
         return $this->niveaux;
@@ -253,11 +243,8 @@ class StructureAnnee implements TimestampableInterface
 
     public function removeNiveau(ApcNiveau $niveau): static
     {
-        if ($this->niveaux->removeElement($niveau)) {
-            // set the owning side to null (unless already changed)
-            if ($niveau->getAnnee() === $this) {
-                $niveau->setAnnee(null);
-            }
+        if ($this->niveaux->removeElement($niveau) && $niveau->getAnnee() === $this) {
+            $niveau->setAnnee(null);
         }
 
         return $this;
@@ -302,9 +289,7 @@ class StructureAnnee implements TimestampableInterface
         return $this->getDiplome()?->getDepartement();
     }
 
-    /**
-     * @return Collection<int, EtudiantScolarite>
-     */
+    /** @return Collection<int, EtudiantScolarite> */
     public function getEtudiantScolaritesPropositions(): Collection
     {
         return $this->etudiantScolaritesPropositions;
@@ -322,11 +307,9 @@ class StructureAnnee implements TimestampableInterface
 
     public function removeEtudiantScolaritesProposition(EtudiantScolarite $etudiantScolaritesProposition): static
     {
-        if ($this->etudiantScolaritesPropositions->removeElement($etudiantScolaritesProposition)) {
-            // set the owning side to null (unless already changed)
-            if ($etudiantScolaritesProposition->getProposition() === $this) {
-                $etudiantScolaritesProposition->setProposition(null);
-            }
+        if ($this->etudiantScolaritesPropositions->removeElement($etudiantScolaritesProposition)
+            && $etudiantScolaritesProposition->getProposition() === $this) {
+            $etudiantScolaritesProposition->setProposition(null);
         }
 
         return $this;

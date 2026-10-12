@@ -17,6 +17,7 @@ use App\Entity\Traits\EduSignTrait;
 use App\Entity\Contracts\TimestampableInterface;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\OldIdTrait;
+use App\Entity\Traits\OptionTrait;
 use App\Filter\EtudiantFilter;
 use App\Repository\EtudiantRepository;
 use App\State\Provider\Etudiant\EtudiantTrombinoscopeProvider;
@@ -25,6 +26,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -66,6 +68,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
     use TimestampableTrait;
     use EduSignTrait;
     use OldIdTrait; //a supprimer après transfert
+    use OptionTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -116,12 +119,12 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
     /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['etudiant:detail', 'etudiant:write'])]
-    private ?array $adresseEtudiante = null;
+    private ?array $adresseEtudiante = null; //faire un valueobject ?
 
     /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['etudiant:detail', 'etudiant:write'])]
-    private ?array $adresseParentale = null;
+    private ?array $adresseParentale = null; //faire un valueobject ?
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['etudiant:detail', 'etudiant:write'])]
@@ -202,6 +205,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
         $this->scolarites = new ArrayCollection();
         $this->groupes = new ArrayCollection();
         $this->scolEvaluationRattrapages = new ArrayCollection();
+        $this->setOpt([]);
     }
 
     /** @return list<string> */
@@ -263,9 +267,11 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
         return $this->mailPerso;
     }
 
-    public function setMailPerso(?string $mailPerso): void
+    public function setMailPerso(?string $mailPerso): static
     {
         $this->mailPerso = $mailPerso;
+
+        return $this;
     }
 
     public function getPassword(): ?string
@@ -360,9 +366,18 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
         return $this;
     }
 
-    public function setAdresseEtudiante(Adresse $adresse): void
+    /** @param Adresse|array<array-key, mixed>|null $adresse */
+    public function setAdresseEtudiante(Adresse|array|null $adresse): static
     {
-        $this->adresseEtudiante = $adresse->toArray();
+        if ($adresse instanceof Adresse) {
+            $this->adresseEtudiante = $adresse->toArray();
+        } elseif (is_array($adresse)) {
+            $this->adresseEtudiante = Adresse::fromArray($adresse)?->toArray();
+        } else {
+            $this->adresseEtudiante = null;
+        }
+
+        return $this;
     }
 
     public function getAdresseEtudiante(): ?Adresse
@@ -370,9 +385,18 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
         return Adresse::fromArray($this->adresseEtudiante);
     }
 
-    public function setAdresseParentale(Adresse $adresse): void
+    /** @param Adresse|array<array-key, mixed>|null $adresse */
+    public function setAdresseParentale(Adresse|array|null $adresse): static
     {
-        $this->adresseParentale = $adresse->toArray();
+        if ($adresse instanceof Adresse) {
+            $this->adresseParentale = $adresse->toArray();
+        } elseif (is_array($adresse)) {
+            $this->adresseParentale = Adresse::fromArray($adresse)?->toArray();
+        } else {
+            $this->adresseParentale = null;
+        }
+
+        return $this;
     }
 
     public function getAdresseParentale(): ?Adresse
@@ -500,6 +524,23 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
         $this->annee_sortie = $annee_sortie;
 
         return $this;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'demandeur_emploi' => false,
+            'login_specifique' => null,
+            'formation_continue' => false,
+            'intitule_securite_sociale' => null,
+            'adresse_securite_sociale' => null,
+        ]);
+
+        $resolver->setAllowedTypes('demandeur_emploi', 'bool');
+        $resolver->setAllowedTypes('login_specifique', ['null', 'string']);
+        $resolver->setAllowedTypes('formation_continue', 'bool');
+        $resolver->setAllowedTypes('intitule_securite_sociale', ['null', 'string']);
+        $resolver->setAllowedTypes('adresse_securite_sociale', ['null', 'string']);
     }
 
     public function getDateNaissance(): ?\DateTimeInterface

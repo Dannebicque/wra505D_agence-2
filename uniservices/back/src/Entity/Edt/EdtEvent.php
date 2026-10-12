@@ -17,6 +17,7 @@ use App\Entity\Structure\StructureGroupe;
 use App\Entity\Structure\StructureSemestre;
 use App\Entity\Traits\EduSignTrait;
 use App\Entity\Contracts\TimestampableInterface;
+use App\Entity\Traits\OldIdTrait;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\UuidTrait;
 use App\Entity\Users\Personnel;
@@ -57,11 +58,12 @@ class EdtEvent implements TimestampableInterface
     use UuidTrait;
     use TimestampableTrait;
     use EduSignTrait;
+    use OldIdTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['edt_event:read:agenda', 'absence:administration'])]
+    #[Groups(['edt_event:read:agenda', 'absence:administration', 'edt_pointage:read'])]
     private ?int $id = null;
 
     #[ORM\Column(nullable: true)]
@@ -71,15 +73,15 @@ class EdtEvent implements TimestampableInterface
     private ?int $jour = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
-    #[Groups(['edt_event:read:agenda', 'absence:administration'])]
+    #[Groups(['edt_event:read:agenda', 'absence:administration', 'edt_pointage:read'])]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
-    #[Groups(['edt_event:read:agenda', 'absence:administration', 'justificatif:administration'])]
+    #[Groups(['edt_event:read:agenda', 'absence:administration', 'justificatif:administration', 'edt_pointage:read'])]
     private ?\DateTimeInterface $debut = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
-    #[Groups(['edt_event:read:agenda', 'absence:administration', 'justificatif:administration'])]
+    #[Groups(['edt_event:read:agenda', 'absence:administration', 'justificatif:administration', 'edt_pointage:read'])]
     private ?\DateTimeInterface $fin = null;
 
     #[ORM\Column(length: 25)]
@@ -90,7 +92,7 @@ class EdtEvent implements TimestampableInterface
     private ?string $codeSalle = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
-    #[Groups(['edt_event:read:agenda', 'absence:administration'])]
+    #[Groups(['edt_event:read:agenda', 'absence:administration', 'edt_pointage:read'])]
     private ?Personnel $personnel = null;
 
     #[ORM\Column(length: 20, nullable: true)]
@@ -101,7 +103,7 @@ class EdtEvent implements TimestampableInterface
     private ?string $libPersonnel = null;
 
     #[ORM\ManyToOne(inversedBy: 'edtEvents')]
-    #[Groups(['edt_event:read:agenda'])]
+    #[Groups(['edt_event:read:agenda', 'edt_pointage:read'])]
     private ?ScolEnseignement $enseignement = null;
 
     #[ORM\Column(length: 20, nullable: true)]
@@ -113,13 +115,18 @@ class EdtEvent implements TimestampableInterface
     private ?string $libModule = null;
 
     #[ORM\ManyToOne(inversedBy: 'edtEvents')]
-    #[Groups(['edt_event:read:agenda'])]
+    #[Groups(['edt_event:read:agenda', 'edt_pointage:read'])]
     private ?StructureGroupe $groupe = null;
 
     #[ORM\Column(length: 30, nullable: true)]
     #[Groups(['edt_event:read:agenda', 'absence:administration', 'justificatif:administration'])]
     private ?string $codeGroupe = null;
 
+    /**
+     * Libellé du groupe tel que Celcat le donne : seule source quand le groupe Celcat ne correspond
+     * à aucun StructureGroupe. Le client l'a déclaré obsolète au profit de $groupe, ce qui ne vaut
+     * pas pour un créneau synchronisé.
+     */
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['edt_event:read:agenda', 'absence:administration', 'justificatif:administration'])]
     private ?string $libGroupe = null;
@@ -159,13 +166,9 @@ class EdtEvent implements TimestampableInterface
     #[ORM\Column(nullable: true)]
     private ?int $ordreSeance = null;
 
-    /**
-     * @var Collection<int, EtudiantAbsence>
-     */
+    /** @var Collection<int, EtudiantAbsence> */
     #[ORM\OneToMany(targetEntity: EtudiantAbsence::class, mappedBy: 'event')]
     private Collection $absences;
-
-
 
     public function __construct()
     {
@@ -204,7 +207,7 @@ class EdtEvent implements TimestampableInterface
 
     public function getUuid(): Uuid
     {
-        return $this->uuid;
+        return $this->uuid ?? throw new \LogicException('Un créneau reçoit son uuid à la construction.');
     }
 
     public function setUuid(UuidV4 $uuid): void
