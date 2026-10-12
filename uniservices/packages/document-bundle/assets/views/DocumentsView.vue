@@ -99,10 +99,16 @@
       v-model:visible="showDetailDrawer"
       :document="selectedDocument"
       :category-name="selectedDocumentCategoryName"
+      :close-on-escape="!showPreviewDialog"
       @download="handleDownloadDocument"
+      @preview="showPreviewDialog = true"
       @delete="confirmDeleteDocument"
       @toggleFavorite="toggleFavorite"
     />
+
+    <!-- Échap ne doit fermer que l'aperçu, ouvert par-dessus le panneau : d'où close-on-escape
+         ci-dessus, transmis au Drawer racine du panneau. -->
+    <DocumentPreviewDialog v-model:visible="showPreviewDialog" :document="selectedDocument" />
 
     <!-- Upload Modal -->
     <DocumentUploadModal
@@ -127,6 +133,7 @@ import DocumentGrid from '@/components/Documents/DocumentGrid.vue';
 import DocumentList from '@/components/Documents/DocumentList.vue';
 import DocumentUploadModal from '@/components/Documents/DocumentUploadModal.vue';
 import DocumentDetailDrawer from '@/components/Documents/DocumentDetailDrawer.vue';
+import DocumentPreviewDialog from '@/components/Documents/DocumentPreviewDialog.vue';
 import FiltresActifs, { type FiltreActif } from '@/components/Documents/FiltresActifs.vue';
 import { documentService } from '@/service/documentService';
 import { classerParEnseignement, libelleEnseignement } from '@/service/utils/enseignementUtils';
@@ -153,6 +160,7 @@ const router = useRouter();
 const loading = ref(true);
 const showUploadModal = ref(false);
 const showDetailDrawer = ref(false);
+const showPreviewDialog = ref(false);
 const selectedDocument = ref<Document | null>(null);
 
 const categories = ref<Category[]>([]);

@@ -126,6 +126,24 @@ describe('Documents par matière et par SAÉ', () => {
         });
     });
 
+    it('prévisualise un tableur sans le télécharger, et Échap ne referme que l\'aperçu', () => {
+        cy.contains('a', 'SAE1.01').click();
+        cy.contains('SAÉ 1.01 : grille d\'évaluation de la soutenance').click();
+        cy.get('.p-drawer').contains('button', 'Aperçu').focus();
+        cy.press(Cypress.Keyboard.Keys.SPACE);
+
+        cy.get('[role="dialog"][aria-modal="true"]')
+            .should('contain', 'Aperçu : SAÉ 1.01 : grille d\'évaluation de la soutenance')
+            .find('table[aria-label="Feuille Grille"]', { timeout: 15000 })
+            .should('contain', 'Analyse de la cible')
+            .and('contain', '20');
+
+        cy.press(Cypress.Keyboard.Keys.ESC);
+        cy.get('.p-dialog').should('not.exist');
+        cy.get('.p-drawer').should('be.visible');
+        cy.focused().should('contain', 'Aperçu');
+    });
+
     it('n\'affiche aucun emoji, ni dans les documents ni dans leur détail', () => {
         // Le pied de page commun écrit « Copyright © » : ©, ® et ™ comptent comme pictogrammes.
         const emoji = /(?![©®™])\p{Extended_Pictographic}/u;

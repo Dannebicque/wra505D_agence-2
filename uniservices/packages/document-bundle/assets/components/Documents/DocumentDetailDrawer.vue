@@ -2,10 +2,31 @@
   <Sidebar
     :visible="visible"
     position="right"
-    class="w-full md:w-96 p-sidebar-md"
+    class="w-full! md:w-(--largeur-panneau)! p-sidebar-md"
+    :style="{ '--largeur-panneau': `min(${largeur}px, 100vw - 320px)` }"
     @update:visible="$emit('update:visible', $event)"
   >
     <template #header>
+      <!-- Placée dans l'en-tête pour ne pas défiler avec le contenu ; positionnée sur le bord
+           gauche du panneau, qui sert de référence à cause de sa transformation. -->
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Largeur du panneau"
+        :aria-valuenow="largeur"
+        :aria-valuemin="LARGEUR_PANNEAU_MIN"
+        :aria-valuemax="largeurMax(largeurFenetre())"
+        tabindex="0"
+        class="group absolute inset-y-0 left-0 z-10 hidden md:flex w-[44px] -translate-x-1/2 cursor-col-resize touch-none select-none items-center justify-center focus-visible:outline-none"
+        @pointerdown="debuterRedimensionnement"
+        @keydown="redimensionnerAuClavier"
+      >
+        <span
+          aria-hidden="true"
+          class="h-12 w-1.5 rounded-full bg-surface-500 group-hover:bg-primary group-focus-visible:bg-primary group-focus-visible:outline-2 group-focus-visible:outline-offset-4 group-focus-visible:outline-primary"
+        ></span>
+      </div>
+
       <div class="flex items-center space-x-3">
         <i :class="[getFileIcon(document?.type || 'pdf'), 'text-2xl']" aria-hidden="true"></i>
         <div class="min-w-0">
@@ -27,6 +48,15 @@
 
       <!-- Quick Actions -->
       <div class="flex space-x-2">
+        <Button
+          v-if="typeApercu(document.type)"
+          label="Aperçu"
+          icon="pi pi-eye"
+          outlined
+          class="flex-1 min-h-[44px] border-primary!"
+          @click="$emit('preview', document)"
+        />
+
         <button
           @click="$emit('download', document)"
           class="flex-1 min-h-[44px] bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm"
@@ -117,11 +147,21 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import Sidebar from 'primevue/sidebar';
+import Button from 'primevue/button';
 import type { Document } from '@types';
 import { ButtonDelete } from '@components';
 import { getFileIcon, getFileIconColor, formatFileSize, formatDate, getFileExtension } from '@/service/utils/fileUtils';
 import { libelleEnseignement } from '@/service/utils/enseignementUtils';
+import { typeApercu } from '@/service/utils/apercuUtils';
+import {
+  LARGEUR_PANNEAU_DEFAUT,
+  LARGEUR_PANNEAU_MIN,
+  bornerLargeur,
+  largeurAuClavier,
+  largeurMax,
+} from '@/service/utils/largeurPanneau';
 
 interface Props {
   visible: boolean;
@@ -134,7 +174,39 @@ defineProps<Props>();
 defineEmits<{
   'update:visible': [value: boolean];
   download: [document: Document];
+  preview: [document: Document];
   delete: [document: Document];
   toggleFavorite: [documentId: string];
 }>();
+
+const largeur = ref(LARGEUR_PANNEAU_DEFAUT);
+const largeurFenetre = () => window.innerWidth;
+
+const debuterRedimensionnement = (evenement: PointerEvent) => {
+  const poignee = evenement.currentTarget as HTMLElement;
+  const departX = evenement.clientX;
+  const departLargeur = largeur.value;
+  // La capture garde le glisser actif quand le pointeur quitte la poignée, fine sous le doigt.
+  poignee.setPointerCapture(evenement.pointerId);
+  evenement.preventDefault();
+
+  const suivre = (deplacement: PointerEvent) => {
+    largeur.value = bornerLargeur(departLargeur + departX - deplacement.clientX, largeurFenetre());
+  };
+  const terminer = () => {
+    poignee.removeEventListener('pointermove', suivre);
+    poignee.removeEventListener('pointerup', terminer);
+    poignee.removeEventListener('pointercancel', terminer);
+  };
+  poignee.addEventListener('pointermove', suivre);
+  poignee.addEventListener('pointerup', terminer);
+  poignee.addEventListener('pointercancel', terminer);
+};
+
+const redimensionnerAuClavier = (evenement: KeyboardEvent) => {
+  const nouvelle = largeurAuClavier(evenement.key, largeur.value, largeurFenetre());
+  if (nouvelle === null) return;
+  evenement.preventDefault();
+  largeur.value = nouvelle;
+};
 </script>

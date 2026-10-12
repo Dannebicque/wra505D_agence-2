@@ -201,6 +201,11 @@ export const documentService = {
     return !currentStatus;
   },
 
+  async fetchFichier(documentId: string): Promise<Blob> {
+    const response = await api.get(`/api/me/documents/${documentId}/fichier`, { responseType: 'blob' });
+    return response.data;
+  },
+
   async createDocument(newDoc: {
     titre: string;
     description?: string;
