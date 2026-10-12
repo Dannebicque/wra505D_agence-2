@@ -6,7 +6,10 @@ use QuestionnaireBundle\Enum\QuestTypeQuestionEnum;
 
 final class QuestionRuntimeDto
 {
-    /** @param list<ChoiceDto>|null $choices */
+    /**
+     * @param list<ChoiceDto>|null              $choices
+     * @param array<int|string, mixed>|null     $conditionalRules
+     */
     public function __construct(
         public int                   $questionId,
         public QuestTypeQuestionEnum $typeQuestion,
@@ -15,7 +18,9 @@ final class QuestionRuntimeDto
         public mixed                 $answer,
         public ?array                $choices = null,
         public ?ScaleDto             $scale = null,
-        public ?VisibilityRuleDto    $visibility = null
+        public ?VisibilityRuleDto    $visibility = null,
+        public ?string               $uuid = null,
+        public ?array                $conditionalRules = null
     ) {
     }
 }

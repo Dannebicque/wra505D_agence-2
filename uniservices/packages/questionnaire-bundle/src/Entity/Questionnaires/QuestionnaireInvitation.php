@@ -55,6 +55,7 @@ class QuestionnaireInvitation implements TimestampableInterface
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Groups(['invitation:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
@@ -89,7 +90,6 @@ class QuestionnaireInvitation implements TimestampableInterface
         $this->questionnaire = $q;
         $this->token = $token;
         $this->email = $email;
-        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int

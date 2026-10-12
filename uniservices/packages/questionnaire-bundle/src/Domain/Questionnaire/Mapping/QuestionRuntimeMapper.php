@@ -22,7 +22,7 @@ final class QuestionRuntimeMapper
         if (in_array($q->getTypeQuestion(), [QuestTypeQuestionEnum::MultipleChoice, QuestTypeQuestionEnum::SingleChoice], true)) {
             $choices = [];
             foreach (LooseValue::rows($config ?? []) as $c) {
-                $choices[] = new ChoiceDto(LooseValue::castString($c['id']), LooseValue::castString($c['text']), LooseValue::castString($c['value']));
+                $choices[] = new ChoiceDto(LooseValue::castString($c['id']), LooseValue::castString($c['text']), LooseValue::castString($c['value'] ?? $c['text']));
             }
         }
 
@@ -78,7 +78,7 @@ final class QuestionRuntimeMapper
                     }
                 } else {
                     $dep = LooseValue::castString($r['dependsOnQuestionId'] ?? $r['dependsOn'] ?? '');
-                    if ($dep !== '' && $dep !== $qId && ($qUuid === null || $dep !== $qUuid) && (string)$sq->getId() === $qId) {
+                    if ($dep !== '' && $dep !== $qId && ($qUuid === null || $dep !== $qUuid) && ((string)$sq->getId() === $qId || ($qUuid !== null && (string)$sq->getUuid() === $qUuid))) {
                         $isTargeted = true;
                     }
                 }
@@ -102,8 +102,16 @@ final class QuestionRuntimeMapper
                     }
                     $dep = $cond['dependsOnQuestionId'] ?? $cond['dependsOn'] ?? null;
                     if ($dep !== null) {
+                        $depStr = LooseValue::castString($dep);
+                        $resolvedId = null;
+                        foreach ($searchQuestions as $item) {
+                            if ((string)$item->getUuid() === $depStr || (string)$item->getId() === $depStr) {
+                                $resolvedId = $item->getId();
+                                break;
+                            }
+                        }
                         $conditions[] = [
-                            'dependsOnQuestionId' => is_numeric($dep) ? LooseValue::castInt($dep) : LooseValue::castString($dep),
+                            'dependsOnQuestionId' => $resolvedId ?? (is_numeric($dep) ? LooseValue::castInt($dep) : $depStr),
                             'operator' => LooseValue::castString($cond['operator'] ?? ''),
                             'value' => $cond['value'] ?? null,
                         ];
@@ -116,8 +124,16 @@ final class QuestionRuntimeMapper
                 $dep = $targetedRule['dependsOnQuestionId'] ?? $targetedRule['dependsOn'] ?? null;
                 $operator = $targetedRule['operator'] ?? null;
                 if ($dep !== null && $operator !== null) {
+                    $depStr = LooseValue::castString($dep);
+                    $resolvedId = null;
+                    foreach ($searchQuestions as $item) {
+                        if ((string)$item->getUuid() === $depStr || (string)$item->getId() === $depStr) {
+                            $resolvedId = $item->getId();
+                            break;
+                        }
+                    }
                     $conditions[] = [
-                        'dependsOnQuestionId' => is_numeric($dep) ? LooseValue::castInt($dep) : LooseValue::castString($dep),
+                        'dependsOnQuestionId' => $resolvedId ?? (is_numeric($dep) ? LooseValue::castInt($dep) : $depStr),
                         'operator' => LooseValue::castString($operator),
                         'value' => $targetedRule['value'] ?? null,
                     ];
@@ -153,6 +169,8 @@ final class QuestionRuntimeMapper
             choices: $choices,
             scale: $scale,
             visibility: $visibility,
+            uuid: $q->getUuid() !== null ? (string) $q->getUuid() : null,
+            conditionalRules: $q->getConditionalRules()
         );
     }
 }
