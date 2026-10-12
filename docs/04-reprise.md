@@ -3,7 +3,7 @@
 État du projet et suite à donner, pour qu'une nouvelle session reparte sans rien redécouvrir.
 À lire après `CLAUDE.md`. À mettre à jour à chaque étape importante.
 
-Dernière mise à jour : 28/09/2026.
+Dernière mise à jour : 12/10/2026.
 
 ---
 
@@ -176,8 +176,9 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
 - **Au déploiement**, vider aussi les pools de cache :
   `php bin/console cache:pool:clear cache.global_clearer`. Le cache de métadonnées d'API Platform
   survit à `cache:clear` et garde des groupes de sérialisation périmés.
-- Dernier commit examiné : noté dans `.github/uniservices-amont-examine`, aujourd'hui `9cda32da8`.
-  Dernière base reprise : `ef38ca880`.
+- Dernier commit examiné : `63374484f` (release 0.1.16, 12/10/2026). Dernière base reprise :
+  `ef38ca880`. Les 37 commits examinés le 12/10 sont repris par la fiche E21 du backlog, en
+  onze lots, aux normes du dépôt : ils refondent le modèle pour migrer l'intranet V3.
 - Écartés le 26/09/2026, à rouvrir ensemble si le client corrige le premier point :
   - `cf95b8a1b` (#247, intégrations de l'établissement) : la nouvelle colonne `settings` porte
     les clés d'API EduSign et ORéBUT dans le groupe `etablissement:read`, or
@@ -233,6 +234,7 @@ l'URL de comparaison.
 
 ## Ce qu'il reste à faire, dans l'ordre
 
+0. **E21, reprise de la migration V3 du client** : onze lots, détail dans le backlog.
 1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture
    impossible à quiconque (`ROLE_PERSONNEL` jamais attribué).
 2. **P1, fiche matière** : prochains cours, documents, notes et absences d'une matière, réunis.
