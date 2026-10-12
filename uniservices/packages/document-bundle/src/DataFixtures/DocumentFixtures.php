@@ -5,6 +5,7 @@ namespace DocumentBundle\DataFixtures;
 use App\Entity\Scolarite\ScolEnseignement;
 use DocumentBundle\Entity\Document;
 use DocumentBundle\Entity\DocumentCategory;
+use DocumentBundle\Services\DocumentFiles;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
@@ -12,6 +13,23 @@ use Doctrine\Persistence\ObjectManager;
 
 class DocumentFixtures extends Fixture implements OrderedFixtureInterface, FixtureGroupInterface
 {
+    /** Fichier d'exemple joint aux documents de chaque type prévisualisable. */
+    private const SAMPLE_FILES = [
+        'pdf' => 'support-cours.pdf',
+        'excel' => 'budget-previsionnel.xlsx',
+        'image' => 'charte-graphique.png',
+    ];
+
+    private const MIME_TYPES = [
+        'pdf' => 'application/pdf',
+        'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'png' => 'image/png',
+    ];
+
+    public function __construct(private readonly DocumentFiles $files)
+    {
+    }
+
     public static function getGroups(): array
     {
         return ['document', 'default'];
@@ -132,6 +150,10 @@ class DocumentFixtures extends Fixture implements OrderedFixtureInterface, Fixtu
                     ->setVisibility('PUBLIC')
                     ->setCategory($category);
 
+                if (isset(self::SAMPLE_FILES[$type])) {
+                    $this->attachSampleFile($doc, 'document_' . $docIndex, self::SAMPLE_FILES[$type]);
+                }
+
                 $manager->persist($doc);
                 $docIndex++;
             }
@@ -148,20 +170,20 @@ class DocumentFixtures extends Fixture implements OrderedFixtureInterface, Fixtu
      */
     private function chargerSupportsDeCours(ObjectManager $manager): void
     {
-        // [code de l'enseignement, titre, type]
+        // [code de l'enseignement, titre, type, fichier d'exemple, null pour un type sans aperçu]
         $supports = [
-            ['R1.01', 'Anglais : vocabulaire du numérique', 'pdf'],
-            ['R1.01', 'Anglais : exercices de compréhension orale', 'audio'],
-            ['R1.02', 'Culture numérique : histoire du web', 'powerpoint'],
-            ['R1.06', 'Production graphique : charte et gabarits', 'archive'],
-            ['R1.11', 'Développement web : TP formulaires', 'pdf'],
-            ['R1.11', 'Développement web : corrigé du TP intégration', 'archive'],
-            ['SAE1.01', 'SAÉ 1.01 : sujet et attendus', 'pdf'],
-            ['SAE1.01', 'SAÉ 1.01 : grille d\'évaluation de la soutenance', 'excel'],
+            ['R1.01', 'Anglais : vocabulaire du numérique', 'pdf', 'support-cours.pdf'],
+            ['R1.01', 'Anglais : exercices de compréhension orale', 'audio', null],
+            ['R1.02', 'Culture numérique : histoire du web', 'powerpoint', null],
+            ['R1.06', 'Production graphique : charte et gabarits', 'image', 'charte-graphique.png'],
+            ['R1.11', 'Développement web : TP formulaires', 'pdf', 'support-cours.pdf'],
+            ['R1.11', 'Développement web : corrigé du TP intégration', 'archive', null],
+            ['SAE1.01', 'SAÉ 1.01 : sujet et attendus', 'pdf', 'sujet-sae101.pdf'],
+            ['SAE1.01', 'SAÉ 1.01 : grille d\'évaluation de la soutenance', 'excel', 'grille-evaluation.xlsx'],
         ];
 
         $repository = $manager->getRepository(ScolEnseignement::class);
-        foreach ($supports as $index => [$code, $titre, $type]) {
+        foreach ($supports as $index => [$code, $titre, $type, $sample]) {
             $enseignement = $repository->findOneBy(['codeEnseignement' => $code]);
             if (null === $enseignement) {
                 throw new \RuntimeException(sprintf('Enseignement %s introuvable.', $code));
@@ -183,7 +205,27 @@ class DocumentFixtures extends Fixture implements OrderedFixtureInterface, Fixtu
                 ->setVisibility('ETUDIANT')
                 ->setEnseignement($enseignement);
 
+            if (null !== $sample) {
+                $this->attachSampleFile($doc, 'support_' . ($index + 1), $sample);
+            }
+
             $manager->persist($doc);
         }
+    }
+
+    /**
+     * Copie un fichier d'exemple dans le stockage et aligne nom, type et taille du document sur
+     * lui : l'aperçu montre un vrai contenu, et la taille affichée est la sienne.
+     */
+    private function attachSampleFile(Document $doc, string $basename, string $sample): void
+    {
+        $source = __DIR__ . '/files/' . $sample;
+        $extension = pathinfo($sample, PATHINFO_EXTENSION);
+        $filename = $basename . '.' . $extension;
+
+        $this->files->store($source, $filename);
+        $doc->setFilename($filename)
+            ->setMimeType(self::MIME_TYPES[$extension])
+            ->setFileSize((int) filesize($source));
     }
 }
