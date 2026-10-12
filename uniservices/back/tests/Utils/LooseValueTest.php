@@ -168,4 +168,18 @@ final class LooseValueTest extends TestCase
         self::assertSame(1, LooseValue::key(true));
         self::assertSame(2, LooseValue::key(2.7));
     }
+
+    /**
+     * `$value ?: null` : une valeur fausse au sens de PHP disparaît, une autre devient une chaîne.
+     */
+    public function testTruthyStringDropsWhatPhpConsidersFalse(): void
+    {
+        foreach ([null, false, '', '0', 0, 0.0] as $falsy) {
+            self::assertNull(LooseValue::truthyString($falsy));
+        }
+        self::assertSame('R1.01', LooseValue::truthyString('R1.01'));
+        self::assertSame('00', LooseValue::truthyString('00'));
+        self::assertSame(' ', LooseValue::truthyString(' '));
+        self::assertSame('12', LooseValue::truthyString(12));
+    }
 }
