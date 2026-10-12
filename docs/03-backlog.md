@@ -301,6 +301,10 @@ l'import crée des scolarités. Couvert par `cypress/e2e/creation-etudiants.cy.j
 **Reste** l'écran « Ajouter des étudiants » s'affiche pour tout rôle qui voit l'Administration,
 dont l'assistant, le responsable de parcours, le directeur des études et le rôle « notes » : pour
 eux, l'import répond désormais 403. Écran du personnel, hors de notre périmètre.
+**Pour l'équipe** toute route déclarée dans un contrôleur sous `^/api` est publique tant qu'elle
+ne porte pas de contrôle : ajouter `#[IsGranted('…')]` avec un droit du `PostVoter` (ou
+`IS_AUTHENTICATED_FULLY`), puis un test Cypress qui vérifie 401 sans connexion et 403 pour un
+étudiant (modèle : `creation-etudiants.cy.js`). Un test d'accès ne doit rien écrire en base.
 
 ### E18 · [back] Trois routes du client en erreur 500 · S · fait
 **Pourquoi** Constaté pendant E15, avant tout changement : `/api/oreof/ref-competences/synchronisation`,
