@@ -34,13 +34,25 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 #[ORM\Entity(repositoryClass: EtudiantRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']]),
+        new Get(
+            normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']],
+            security: "is_granted('CAN_VIEW_ETUDIANT', object)",
+        ),
         new Get(
             uriTemplate: '/scolarite/etudiant/{id}',
             normalizationContext: ['groups' => ['etudiant:scolarite']],
+            security: "is_granted('CAN_VIEW_ETUDIANT', object)",
         ),
-        new GetCollection(normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']]),
-        new Patch(normalizationContext: ['groups' => ['etudiant:write']], securityPostDenormalize: "is_granted('CAN_EDIT_ETUDIANT', object)"),
+        new GetCollection(
+            normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']],
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
+        ),
+        // Sans groupe de dénormalisation, un étudiant pouvait écrire tous les champs de sa fiche, rôles compris.
+        new Patch(
+            normalizationContext: ['groups' => ['etudiant:write']],
+            denormalizationContext: ['groups' => ['etudiant:write']],
+            securityPostDenormalize: "is_granted('CAN_EDIT_ETUDIANT', object)",
+        ),
     ],
     order: ['nom' => 'ASC']
 )]
