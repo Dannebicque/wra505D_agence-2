@@ -2,6 +2,7 @@
 
 namespace DocumentBundle\Entity;
 
+use App\Entity\Traits\OldIdTrait;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -38,6 +39,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 class DocumentCategory implements TimestampableInterface
 {
+    use OldIdTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -87,18 +90,22 @@ class DocumentCategory implements TimestampableInterface
     #[Groups(['document_category:read', 'document_category:write'])]
     private bool $isSystem = false;
 
-    #[ORM\Column]
-    #[Groups(['document_category:read'])]
-    private \DateTimeImmutable $createdAt;
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['document_category:read', 'document_category:write'])]
+    private bool $isOriginal = false;
 
     #[ORM\Column]
+    #[Groups(['document_category:read'])]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column]
+    #[Groups(['document_category:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     public function __construct()
     {
         $this->children = new ArrayCollection();
         $this->documents = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -230,7 +237,18 @@ class DocumentCategory implements TimestampableInterface
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function isOriginal(): bool
+    {
+        return $this->isOriginal;
+    }
+
+    public function setIsOriginal(bool $isOriginal): static
+    {
+        $this->isOriginal = $isOriginal;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
