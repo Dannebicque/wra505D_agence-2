@@ -35,7 +35,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 | CI-Back : PHPStan | niveau 10 (max) et `phpstan-strict-rules`, 0 erreur ; 12 `@phpstan-ignore` justifiés (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
-| CI-Cypress : 15 fichiers, 73 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
+| CI-Cypress : 17 fichiers, 80 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
@@ -243,6 +243,48 @@ bug seulement, rien n'y est ajouté.
 PHPUnit, écrit par Codex, échoue dès qu'un mot de passe est de nouveau attribué. Il a aussi fait
 apparaître une dépréciation PHP 8.4 : `str_getcsv()` reçoit désormais son caractère d'échappement
 explicitement, sans changement de comportement.
+
+### E24 · [back] Stages des étudiants lisibles et modifiables sans connexion · S · fait
+**Pourquoi** Constaté le 12/10/2026 : `GET /api/stage_etudiants` sans jeton rend les stages de
+tous les étudiants (entreprise, tuteurs, gratification, évaluation, sujet), et le PATCH comme le
+DELETE d'un stage passent en anonyme. De même pour les soutenances, avenants, périodes et modèles
+de convention, et pour les routes des deux contrôleurs du module (PDF de convention et
+d'avenant, validation d'avenant, planification des soutenances). À l'inverse, l'écriture des
+périodes exigeait `ROLE_STAGE`, que personne n'a : même le super-admin recevait 403. Même code
+dans le `main` du client.
+**Terminé quand** un anonyme reçoit 401, un étudiant ne lit et ne dépose que son propre stage, le
+personnel garde ses écrans, et un test le vérifie.
+**Fait** Chaque opération passe par le `StageVoter` du client, jusqu'ici inutilisé, corrigé sur
+deux points : il laissait un étudiant voir et modifier tous les stages (`return true`), et ses
+listes de rôles citaient `ROLE_RESP_STAGES`, absent du registre, au lieu de `ROLE_STAGE_MANAGER`.
+- Lecture d'un stage (`CAN_VIEW_STAGE`) : le personnel qui a `ROLE_STAGE_VIEW` (accès par défaut
+  du module Stages) ou un rôle de gestion, le tuteur universitaire du stage, l'étudiant pour le
+  sien. La liste reste ouverte à l'étudiant, réduite à ses stages par
+  `StudentInternshipsExtension` : « Mon stage » l'appelle sans filtre.
+- Écriture (`CAN_EDIT_STAGE`, vérifiée avant et après le PATCH) : gestionnaires et tuteur
+  universitaire ; l'étudiant pour son propre stage, tant qu'il n'est ni validé (état autorisé,
+  déposé ou incomplet, sans date de validation) ni noté. Il dépose sa demande de convention,
+  mais ne peut ni la valider ni se noter. Suppression (`CAN_DELETE_STAGE`) : super-admin,
+  administrateur, responsable des stages.
+- Soutenances, avenants et modèles de convention : listes réservées au personnel ; l'étudiant
+  lit la soutenance et l'avenant de son propre stage.
+- Périodes, interruptions et soutenances de période : lecture pour tout utilisateur connecté
+  (`CAN_VIEW_STAGE_PERIODE`), écriture par `CAN_EDIT_STAGE_PERIODE` et
+  `CAN_DELETE_STAGE_PERIODE` au lieu de `ROLE_STAGE` : l'Espace Responsable enregistre de nouveau
+  ses périodes.
+- Contrôleurs : PDF soumis à `CAN_VIEW_STAGE` sur le stage, validation d'avenant à
+  `CAN_VALIDATE_STAGE`, planification des soutenances à `CAN_EDIT_STAGE`.
+
+Couvert par `cypress/e2e/stages-acces.cy.js` et `back/tests/Security/StageVoterTest.php`, qui
+échouent sur `develop`. Seuls les attributs de sécurité, le voter et une ligne par route de
+contrôleur changent, pour ne pas croiser E21.8, qui a déplacé voter et contrôleurs dans le
+bundle.
+**Reste** l'écriture des modèles de convention exige toujours `ROLE_STAGE` : l'écran du
+super-admin « Modèles de Convention » n'enregistre rien (fermé, donc sans risque ; aucun droit du
+voter n'y correspond). Le voter ignore le département : un responsable des stages gère ceux de
+tous les départements. Sur sa demande non validée, l'étudiant écrit encore tout le groupe
+`stage_etudiant:write` (dates de convention, tuteur universitaire) ; seuls l'état, la date de
+validation et la note sont tenus.
 
 ### E23 · [back] Import d'étudiants ouvert sans connexion · S · fait
 **Pourquoi** Constaté le 12/10/2026, pendant E22 : `POST /api/etudiants/new`

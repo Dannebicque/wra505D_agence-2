@@ -29,17 +29,26 @@ use ApiPlatform\Metadata\ApiFilter;
 #[ApiFilter(SearchFilter::class, properties: ['stagePeriode' => 'exact', 'tuteurUniversitaire' => 'exact'])]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']]),
-        new GetCollection(normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']]),
+        new Get(
+            normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']],
+            security: "is_granted('CAN_VIEW_STAGE', object)"
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']],
+            security: "is_granted('CAN_VIEW_STAGE') or is_granted('ROLE_ETUDIANT')"
+        ),
         new Post(
             normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']],
-            denormalizationContext: ['groups' => ['stage_etudiant:write']]
+            denormalizationContext: ['groups' => ['stage_etudiant:write']],
+            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object)"
         ),
         new Patch(
             normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']],
-            denormalizationContext: ['groups' => ['stage_etudiant:write']]
+            denormalizationContext: ['groups' => ['stage_etudiant:write']],
+            security: "is_granted('CAN_EDIT_STAGE', object)",
+            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object)"
         ),
-        new Delete()
+        new Delete(security: "is_granted('CAN_DELETE_STAGE', object)")
     ]
 )]
 class StageEtudiant implements TimestampableInterface

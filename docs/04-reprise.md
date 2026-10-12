@@ -145,6 +145,7 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #125 | **E23** : création et import d'étudiants réservés au droit d'écrire les scolarités |
 | #126, #127 | CI-Cypress : délais d'attente adaptés au Vite froid du runner GitHub |
 | #128 | migration d'horodatage retirée, le client ayant supprimé toutes les siennes |
+| #138 | **E24** : stages, soutenances, avenants et périodes soumis au `StageVoter` du client, corrigé ; l'étudiant ne lit et ne dépose que son propre stage |
 
 Le connecteur Celcat, en bref :
 
@@ -284,6 +285,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Proposition de poursuite V3 (E19) | l'année de formation proposée, cherchée par libellé d'année ou de semestre dans le diplôme du dernier semestre suivi ; une seule correspondance est retenue, sinon elle reste vide et la commande le signale | nous |
 | Composantes et situations (E19) | une seule forme, celle d'ORéOF (`{libelle, code, ordre}`) ; les libellés V3 déjà en base sont lus sous cette forme | nous |
 | Jetons en clair (E16) | refusés dès le 26/09/2026, sans attendre 14 jours : pas de production | LCS |
+| Stages (E24) | le `StageVoter` du client fait foi, corrigé : l'étudiant lit ses seuls stages, la liste étant filtrée côté serveur, et écrit sa demande tant qu'elle n'est ni validée ni notée ; le personnel du module Stages lit tout, le tuteur universitaire modifie le stage qu'il suit, le responsable des stages gère stages et périodes ; soutenances, avenants et modèles de convention réservés au personnel. `ROLE_RESP_STAGES`, absent du registre, devient `ROLE_STAGE_MANAGER` ; `ROLE_STAGE`, que personne n'a, cède la place aux droits du voter sur les périodes | nous |
 | Import d'étudiants (E23) | `POST /api/etudiants/new` et `/import_apogee` exigent `CAN_EDIT_ETUDIANT_SCOLARITE` (super-admin, administrateur, scolarité, chef de département) : l'import crée des scolarités, et c'est le droit que le client donne pour les écrire. Les autres rôles de l'Administration voient encore l'écran mais reçoivent 403 | nous |
 | Providers qui renvoient un tableau (E15) | `@phpstan-ignore method.childReturnType` justifié sur 12 providers, plutôt qu'un DTO qui changerait le JSON-LD | nous |
 | Barre latérale | façon GitHub : chaque entrée montre son icône puis son libellé ; repliée, la barre devient une colonne d'icônes, nommées par une infobulle au survol comme au focus, les libellés restant lus par les lecteurs d'écran. Le repli se fait depuis un bouton en bas de la barre, avec une icône de panneau latéral ; le ☰ de la barre haute ne sert plus qu'en mobile, pour ouvrir le tiroir. Icônes, bouton de repli et logo sont centrés sur un même axe. Le nom du module (« INTRANET ») est retiré de la barre haute de l'étudiant. La barre latérale est partagée : elle change aussi pour le personnel | nous |
@@ -302,7 +304,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 5. Les modules d'un étudiant sont codés en dur (`intranet`, `documents`, `SecurityController`) :
    doivent-ils suivre ceux de son département, pour lui ouvrir Stages et Assistance ?
 
-Quatre failles à leur signaler, car elles sont dans leur code de production :
+Cinq failles à leur signaler, car elles sont dans leur code de production :
 
 - la déconnexion qui ne déconnectait pas, corrigée chez nous ;
 - le lien d'abonnement iCal de l'intranet V3 : son identifiant est `MD5(prenom.nom)`, donc
@@ -310,7 +312,9 @@ Quatre failles à leur signaler, car elles sont dans leur code de production :
   tester sur le vrai site ;
 - les questionnaires, ouverts en modification à tout utilisateur connecté, corrigé chez nous (#36).
 - les fiches étudiantes, lisibles sans connexion, et le PATCH d'une fiche, qui laissait un
-  étudiant se donner `ROLE_SUPER_ADMIN`, corrigés chez nous (E22).
+  étudiant se donner `ROLE_SUPER_ADMIN`, corrigés chez nous (E22) ;
+- les stages des étudiants, lisibles, modifiables et supprimables sans connexion, corrigés chez
+  nous (E24).
 
 ---
 
