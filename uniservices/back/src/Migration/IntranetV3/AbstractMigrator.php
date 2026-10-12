@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Migration\IntranetV3;
 
 use App\Migration\IntranetV3\Contract\MigratorInterface;
+use App\Utils\LooseValue;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -32,6 +33,18 @@ abstract class AbstractMigrator implements MigratorInterface
     public function getDependencies(): array
     {
         return [];
+    }
+
+    /**
+     * Identifiant V3 du semestre conservé dans le contexte d'origine d'une donnée sans PN V4.
+     *
+     * @param array<string, mixed>|null $legacyContext
+     */
+    protected static function legacySemesterOldId(?array $legacyContext): int
+    {
+        $semester = $legacyContext['semestre'] ?? null;
+
+        return is_array($semester) ? LooseValue::castInt($semester['oldId'] ?? 0) : 0;
     }
 
     protected function flush(MigrationContext $context): void

@@ -445,7 +445,7 @@ class ScolEvaluation
         return $this->typeGroupe;
     }
 
-    public function setTypeGroupe(?TypeGroupeEnum $type): ?self
+    public function setTypeGroupe(?TypeGroupeEnum $type): static
     {
         $this->typeGroupe = $type;
 
