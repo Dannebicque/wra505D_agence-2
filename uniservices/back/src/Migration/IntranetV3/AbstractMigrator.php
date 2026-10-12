@@ -16,6 +16,12 @@ abstract class AbstractMigrator implements MigratorInterface
 {
     protected const BATCH_SIZE = 200;
 
+    /**
+     * Première année universitaire dont la V4 tient l'historique structurel (PN, années,
+     * semestres) : les années antérieures ne sont reprises qu'en contexte V3. Choix du client.
+     */
+    protected const FIRST_V4_ACADEMIC_YEAR = 2026;
+
     public function __construct(
         #[Autowire(service: 'doctrine.dbal.copy_connection')]
         protected readonly Connection $source,
