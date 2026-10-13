@@ -7,6 +7,13 @@ on:
   pull_request:
     branches:
       - develop
+    paths:
+      - 'uniservices/**'
+      - '.github/workflows/CI-cypress.yml'
+
+concurrency:
+  group: ci-cypress-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   cypress:

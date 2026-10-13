@@ -187,8 +187,9 @@ Le connecteur Celcat, en bref :
 ### État de la CI
 
 Les trois workflows sont au vert sur `develop` depuis #76 (détail dans `03-backlog.md`).
-CI-Cypress ne tourne que sur les PR : c'est sur la PR qu'on vérifie qu'il passe, et **une PR
-rouge ne se merge pas**. Pour lire un échec : `gh run view <id> --log-failed`.
+CI-Cypress ne tourne que sur les PR qui touchent `uniservices/` : une PR de documentation ne le
+lance plus, et un nouveau push annule l'exécution en cours. C'est sur la PR qu'on vérifie qu'il
+passe, et **une PR rouge ne se merge pas**. Pour lire un échec : `gh run view <id> --log-failed`.
 
 La recherche (D1, D2) cherche étudiants, personnels, documents, matières et actualités du
 département de l'utilisateur, en respectant la visibilité des documents et le public des
