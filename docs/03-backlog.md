@@ -12,7 +12,8 @@ prenez une colonne chacun plutôt qu'une fiche au hasard.
 Chaque fiche indique les constats d'audit qu'elle couvre. Les identifiants renvoient à
 `01-audit-existant.md` (intranet V3) jusqu'à TB-7, DOC-6, RECH-9, MOB-5 et A11Y-6, et à
 `05-audit-actuel.md` (uniServices, 24/09/2026) au-delà, ainsi que pour CNX, POR, EDT, SCO,
-TROMBI, NAV et DA. Les fiches marquées **[back]** touchent le Symfony, celles marquées
+TROMBI, NAV et DA ; EDT-7 et au-delà, MOB-11 et au-delà renvoient à `06-audit-edt.md`
+(emploi du temps, 13/10/2026). Les fiches marquées **[back]** touchent le Symfony, celles marquées
 **[back + front]** les deux.
 
 Une fiche **Obsolète** n'a plus d'objet : elle reste pour mémoire, avec sa raison.
@@ -853,6 +854,29 @@ donc la recherche ne les trouve pas. C'est la réserve de C9.
 
 ---
 **Fait** (JEREMY, #80), mergé sur `develop`.
+
+### C17 · [back + front] Emploi du temps de référence · L, 8 lots
+**Pourquoi** C'est la fonctionnalité numéro un. L'audit `06-audit-edt.md` relève 20 constats, dont
+deux critiques : un cours de 1 h ou moins perd son horaire et son enseignant (EDT-8), et
+`/api/edt_events` répond sans connexion (EDT-19). La grille est fixe de 8 h à 21 h, les couleurs
+en dur, le mobile une grille d'une colonne.
+**Terminé quand** les huit principes de la section 4 de l'audit sont tenus et vérifiés par
+Cypress, en bureau et en mobile, en clair et en sombre, sur une base neuve.
+**Lots** dans l'ordre, détail et attribution dans l'audit, section 5 :
+
+| Lot | Contenu |
+|---|---|
+| C17.0 | fausse base Celcat aux durées variées (45 min à 3 h), chevauchement, samedi, semaine vide |
+| C17.1 | [back] `/api/me/emploi-du-temps`, heures avec fuseau, `/api/edt_events` fermée aux anonymes |
+| C17.2 | jetons de type de séance dans le preset, fonctions pures de placement, Vitest |
+| C17.3 | semaine en bureau : carte adaptée à la durée, plage automatique, chevauchements, mode sombre |
+| C17.4 | mobile : bandeau des jours, journée en liste avec ses pauses, balayage |
+| C17.5 | date et vue dans l'URL, cache, chargement, état vide, erreur avec « Réessayer » |
+| C17.6 | détail d'un cours modal, feuille du bas en mobile, liens vers la matière |
+| C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte |
+
+**Avant de commencer** prévenir JEREMY, titulaire de la colonne C et auteur de C3, C14 et C15
+sur `EdtEtudiant.vue`.
 
 ## Colonne D — Recherche
 

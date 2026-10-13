@@ -254,6 +254,8 @@ l'URL de comparaison.
 
 ## Ce qu'il reste à faire, dans l'ordre
 
+- **C17, emploi du temps de référence**, priorité de l'équipe depuis le 13/10/2026 : audit et plan
+  en huit lots dans `docs/06-audit-edt.md`. Commence par C17.0 à C17.2, en parallèle.
 0. **Fausse base V3** pour exécuter les migrateurs de la reprise E21 : les 13 lots sont mergés,
    mais aucun migrateur n'a encore tourné sur des données V3.
 1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture
