@@ -22,4 +22,15 @@ const getEdtEventsService = async (params, scope ='', showToast = false) => {
     }
 }
 
-export { getEdtEventsService };
+// semaine : un jour de la semaine voulue, au format AAAA-MM-JJ.
+const getMonEmploiDuTempsService = async (semaine) => {
+    return await apiCall(
+        api.get,
+        ['/api/me/emploi-du-temps', { params: { semaine } }],
+        'Emploi du temps récupéré avec succès',
+        'Erreur lors de la récupération de l\'emploi du temps',
+        false
+    );
+}
+
+export { getEdtEventsService, getMonEmploiDuTempsService };
