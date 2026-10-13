@@ -410,7 +410,7 @@ ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au
 quand le niveau visé est à 0 ; les exclusions sont retirées entre le 8 et le 9 ; les
 `phpstan-strict-rules` en dernier. Un type PHP s'aligne sur le mapping Doctrine, jamais l'inverse,
 sauf migration décidée et notée.
-### E21 · [back + front] Reprise de la migration V3 du client, à nos normes · L, 12 lots, en cours
+### E21 · [back + front] Reprise de la migration V3 du client, à nos normes · L, 12 lots, faits (E21.12 en PR #142)
 **Pourquoi** Examiné le 12/10/2026 : de `9cda32da8` à `63374484f` (releases 0.1.12 à 0.1.16),
 le client a refondu son modèle pour migrer les données de l'intranet V3. On ne peut pas
 l'appliquer tel quel : 977 erreurs PHPStan niveau 10 sur le seul code de migration, des routes
@@ -433,17 +433,31 @@ déjà dessus, et chaque reprise future en dépend.
 |---|---|---|
 | E21.0 · fait (#122) | petit lot sûr : objet `Adresse`, `LoginFormAuthenticator::start()`, expéditeur des mails par défaut, contraste de `QuickActionCard` | LCS |
 | E21.1 · fait (#123) | horodatage : `TimestampableInterface`, `TimestampableTrait`, écouteurs Doctrine, 23 entités de `created`/`updated` à `createdAt`/`updatedAt` ; nos sources de notifications et les écrans qui lisent `created` adaptés | OpenCode (remplacements), LCS (revue, Cypress) |
-| E21.2 | colonnes d'origine V3 (`oldId`) et métadonnées reprises | OpenCode |
-| E21.3 | modèle : `StructurePn` annuel, date d'`EdtEvent` en `DATE` (synchro Celcat adaptée), rattrapages en heures, totaux d'absences ; entités uniEdt inutiles retirées, avec leurs références restées chez le client (`EdtCalendrierContraintesController`, `PersonnelsContraintes`) | LCS |
-| E21.4 · PR ouverte | socle du migrateur : contrat, registre, contexte, résultat, exécution, commande `app:` du client, initialisation de l'établissement | LCS |
-| E21.5 | migrateurs Structure et Maquette (≈ 210 erreurs, 4 sous-lots) | OpenCode (`LooseValue`, PHPDoc), LCS |
-| E21.6 | migrateurs APC (≈ 150 erreurs, 3 sous-lots) | OpenCode, LCS |
-| E21.7 | migrateurs Utilisateurs, Scolarité, Emploi du temps (≈ 410 erreurs, 8 sous-lots) ; `CopyBdd` retiré, la proposition de poursuite d'E19 et son test reportés dans le migrateur | OpenCode, LCS |
-| E21.8 | stage : entités renommées par le client, contexte et type de stage, contrôleurs et voter dans le bundle, migrateurs, écrans refondus ; leur `forms.css` aux contrastes RGAA ; parcours étudiant « Demande de convention » en E2E | LCS, Antigravity (relecture) |
-| E21.9 | documents : migrateurs, `oldId` ; notre lien matière (B6) et les favoris (B7) préservés | OpenCode, LCS |
-| E21.10 | écrans du client : super admin, refonte du questionnaire, avec le même `forms.css` corrigé | OpenCode (reprise), LCS |
-| E21.11 | intégrations de l'établissement (#247, #248) et pointage (#252), corrigés : clés d'API en écriture seule, routes du pointage réservées au personnel | LCS |
-| E21.12 | uniServices #260 : plans de cours, compétences, filtres API Platform à jour | LCS, OpenCode |
+| E21.2 · fait (#131) | colonnes d'origine V3 (`oldId`) et métadonnées reprises | OpenCode |
+| E21.3 · fait (#131) | modèle : `StructurePn` annuel, date d'`EdtEvent` en `DATE` (synchro Celcat adaptée), rattrapages en heures, totaux d'absences ; entités uniEdt inutiles retirées, avec leurs références restées chez le client (`EdtCalendrierContraintesController`, `PersonnelsContraintes`) | LCS |
+| E21.4 · fait (#132) | socle du migrateur : contrat, registre, contexte, résultat, exécution, commande `app:` du client, initialisation de l'établissement | LCS |
+| E21.5 · fait (#133) | migrateurs Structure et Maquette (≈ 210 erreurs, 4 sous-lots) | OpenCode (`LooseValue`, PHPDoc), LCS |
+| E21.6 · fait (#133) | migrateurs APC (≈ 150 erreurs, 3 sous-lots) | OpenCode, LCS |
+| E21.7 · fait (#135) | migrateurs Utilisateurs, Scolarité, Emploi du temps (≈ 410 erreurs, 8 sous-lots) ; `CopyBdd` retiré, la proposition de poursuite d'E19 et son test reportés dans le migrateur | OpenCode, LCS |
+| E21.8 · fait (#136) | stage : entités renommées par le client, contexte et type de stage, contrôleurs et voter dans le bundle, migrateurs, écrans refondus ; leur `forms.css` aux contrastes RGAA ; parcours étudiant « Demande de convention » en E2E | LCS, Antigravity (relecture) |
+| E21.9 · fait (#137) | documents : migrateurs, `oldId` ; notre lien matière (B6) et les favoris (B7) préservés | OpenCode, LCS |
+| E21.10 · fait (#139) | écrans du client : super admin, refonte du questionnaire, avec le même `forms.css` corrigé | OpenCode (reprise), LCS |
+| E21.11 · fait (#140) | intégrations de l'établissement (#247, #248) et pointage (#252), corrigés : clés d'API en écriture seule, routes du pointage réservées au personnel | LCS |
+| E21.12 · PR #142 | uniServices #260 : plans de cours, compétences, filtres API Platform à jour | LCS, OpenCode |
+
+**Bilan au 12/10** : E21.0 à E21.11 mergés, PHPStan niveau 10 sans baseline à chaque lot (≈ 1 300
+erreurs du code client corrigées). Défauts du client corrigés en route : `getDecision()` qui
+rendait le nombre d'absences, contrôleurs du stage déplacés sans route (plus de PDF de convention
+ni de soutenances), appels incompatibles avec DBAL 4 dans les remises à zéro, `updatedAt` déclaré
+deux fois, moyennes à l'ancien format qui auraient fait planter le migrateur, clés d'API publiques
+et pointage ouvert à tous. E21.5 et E21.6 ont fait une seule PR : la chaîne Structure dépend des
+migrateurs APC. Aucune base V3 n'est disponible en local : les migrateurs sont vérifiés par
+PHPStan et l'ordre de la commande, pas encore par une exécution réelle (une fausse base V3, comme
+celle de Celcat, reste à faire).
+**E21.12** (#142) : plans de cours, refonte des compétences et corrections de #260 ; les plans de cours
+n'avaient aucun contrôle d'accès, ils sont réservés au personnel. Bundle finance et ses fixtures écartés.
+Le passage de `#[ApiFilter]` aux `QueryParameter` n'est pas repris : `ApiFilter` n'est pas déprécié
+dans API Platform 4.3, et la vraie dépréciation (`PropertyInfo\Type`) est déjà corrigée chez nous.
 
 **Noms anglais des migrateurs** (fixés en E21.4). Les noms de ligne de commande (`getName()` :
 `annees`, `notes`…) et la commande `app:migrate-intranet-v3` restent ceux du client.
