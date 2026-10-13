@@ -36,11 +36,6 @@ const props = defineProps({
     resizable: {
         type: Boolean,
         default: true
-    },
-    // L'accueil de l'étudiant règle ses blocs depuis un panneau unique : pas de réglage par carte.
-    configurable: {
-        type: Boolean,
-        default: true
     }
 });
 
@@ -124,7 +119,7 @@ const toggleWidget = () => {
                 </span>
             </div>
         </div>
-        <Button v-if="configurable && !isEditing" icon="pi pi-cog" size="small" text rounded title="Configurer le widget" aria-label="Configurer le widget" @click="isEditing = !isEditing"/>
+        <Button v-if="!isEditing" icon="pi pi-cog" size="small" text rounded title="Configurer le widget" aria-label="Configurer le widget" @click="isEditing = !isEditing"/>
     </div>
     <component :is="resolvedComponent" :data="data" :widget="widget" />
 </article>

@@ -18,15 +18,6 @@ const HAUTEUR_HEURE_MIN = 40;
 const HAUTEUR_HEURE_MAX = 80;
 const MARGE_BAS = 28;
 
-const props = defineProps({
-  // L'accueil n'a que la journée en cours : ni navigation, ni grille réglée sur l'écran, seulement
-  // les heures qui portent un cours.
-  aujourdhui: {type: Boolean, default: false},
-});
-// L'accueil tire « Maintenant » des mêmes cours que la grille : deux lectures pourraient se
-// contredire (TB-9).
-const emit = defineEmits(['cours-du-jour', 'erreur']);
-
 const cadre = ref(null);
 const vuecalRef = ref(null)
 const hasError = ref(false);
@@ -59,7 +50,7 @@ const vues = [
 // Tenu en long, il n'a pas la place d'une bascule : la vue suit l'orientation seule.
 const telephoneEnLong = window.matchMedia('(max-width: 767px) and (orientation: portrait)');
 const enLong = ref(telephoneEnLong.matches);
-const vueAffichee = ref(props.aujourdhui || enLong.value ? 'day' : 'week');
+const vueAffichee = ref(enLong.value ? 'day' : 'week');
 const suivreOrientation = (evenement) => {
   enLong.value = evenement.matches;
   vueAffichee.value = evenement.matches ? 'day' : 'week';
@@ -80,33 +71,13 @@ const estAujourdhui = (date) => isoDate(new Date(date)) === isoDate(maintenant.v
 // Sur un téléphone tenu en long, « Aujourd'hui » flotte en bas de l'écran, hors de la barre.
 const boutonFlottant = computed(() => {
   const view = vuecalRef.value?.view;
-  return !props.aujourdhui && enLong.value && Boolean(view?.firstCellDate) && !aujourdhuiAffiche(view);
+  return enLong.value && Boolean(view?.firstCellDate) && !aujourdhuiAffiche(view);
 });
 
 const aujourdhuiAffiche = (view) => {
   const jour = isoDate(maintenant.value);
   return isoDate(view.firstCellDate) <= jour && jour <= isoDate(view.lastCellDate);
 };
-
-const coursDuJour = computed(() => events.value.filter(cours => estAujourdhui(cours.start)));
-
-watch(coursDuJour, (cours) => {
-  if (semaineChargee.value) {
-    emit('cours-du-jour', cours);
-  }
-});
-
-const heureRonde = (date, arrondi) => `${String(arrondi(date.getHours() + date.getMinutes() / 60)).padStart(2, '0')}:00`;
-
-const plageAffichee = computed(() => {
-  if (!props.aujourdhui || coursDuJour.value.length === 0) {
-    return plage.value;
-  }
-  return {
-    debut: heureRonde(new Date(Math.min(...coursDuJour.value.map(cours => cours.start))), Math.floor),
-    fin: heureRonde(new Date(Math.max(...coursDuJour.value.map(cours => cours.end))), Math.ceil),
-  };
-});
 
 // Samedi et dimanche ne s'affichent que la semaine où ils portent un cours.
 const joursMasques = computed(() => {
@@ -170,9 +141,6 @@ const choisirSemaine = (lundi) => {
 };
 
 onMounted(() => {
-  if (props.aujourdhui) {
-    return;
-  }
   chargerSemaines();
   window.addEventListener('resize', surRedimensionnement);
   telephoneEnLong.addEventListener('change', suivreOrientation);
@@ -201,13 +169,10 @@ const chargerSemaine = async (lundi) => {
     }));
     semaineChargee.value = semaine;
     hasError.value = false;
-    if (!props.aujourdhui) {
-      await nextTick();
-      ajusterHauteur();
-    }
+    await nextTick();
+    ajusterHauteur();
   } catch (error) {
     hasError.value = true;
-    emit('erreur');
   }
 };
 
@@ -327,29 +292,26 @@ const detail = computed(() => {
   </Transition>
 
   <ErrorView v-if="hasError" message="Une erreur est survenue lors du chargement de l'emploi du temps. Veuillez réessayer plus tard." />
-  <div v-else ref="cadre" :class="['edt-cadre', { 'edt-cadre--jour': aujourdhui }]">
-    <p v-if="aujourdhui && semaineChargee && coursDuJour.length === 0" class="edt-vide">Aucun cours aujourd'hui.</p>
-    <!-- Masquée, pas retirée : c'est vue-cal qui déclenche le chargement de la semaine. -->
+  <div v-else ref="cadre" class="edt-cadre">
     <vue-cal
-        v-show="!aujourdhui || coursDuJour.length > 0"
         ref="vuecalRef"
         locale="fr"
-        :hide-weekdays="aujourdhui ? [] : joursMasques"
+        :hide-weekdays="joursMasques"
         time
-        :time-from="minutes(plageAffichee.debut)"
-        :time-to="minutes(plageAffichee.fin)"
+        :time-from="minutes(plage.debut)"
+        :time-to="minutes(plage.fin)"
         :time-step="60"
         :time-cell-height="hauteurHeure"
-        :views="aujourdhui ? ['day'] : ['day', 'week']"
+        :views="['day', 'week']"
         v-model:view="vueAffichee"
         :theme="false"
         diy
         :events="events"
-        :style="{ '--hauteur-heure': `${hauteurHeure}px`, '--libelle-fin': `'${plageAffichee.fin}'` }"
+        :style="{ '--hauteur-heure': `${hauteurHeure}px`, '--libelle-fin': `'${plage.fin}'` }"
         @event-click="openDialog">
 
       <template #header="{ view }">
-        <div v-if="!aujourdhui" class="edt-barre">
+        <div class="edt-barre">
           <div class="edt-barre__periode">
             <div class="edt-barre__fleches">
               <Button
@@ -456,15 +418,6 @@ const detail = computed(() => {
 /* Le cadre .card de la page n'a pas de marge intérieure : l'agenda prend la sienne. */
 .edt-cadre {
   @apply relative px-3 pt-3 pb-1 md:px-6 md:pt-5;
-}
-
-/* La carte du widget a déjà sa marge intérieure. */
-.edt-cadre--jour {
-  @apply p-0;
-}
-
-.edt-vide {
-  @apply py-6 text-center text-muted-color;
 }
 
 /* vue-cal réserve une barre « toute la journée » qu'un emploi du temps n'a pas. */

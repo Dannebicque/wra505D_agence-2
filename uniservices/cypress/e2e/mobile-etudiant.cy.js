@@ -3,7 +3,7 @@
  * l'écran, rien n'oblige à défiler de côté.
  */
 const pages = [
-    { adresse: '/app/intranet/', pret: '.accueil-blocs > article' },
+    { adresse: '/app/intranet/', pret: '.bloc-accueil' },
     { adresse: '/app/intranet/agenda', pret: '.vuecal' },
     { adresse: '/app/intranet/scolarite', pret: '#contenu-principal h1' },
     { adresse: '/app/documents', pret: '#contenu-principal .card' },

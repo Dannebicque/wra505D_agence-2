@@ -1,138 +1,101 @@
 <script setup>
-import {computed, onMounted, ref} from 'vue';
-import {useUsersStore} from '@stores';
-import {getWidgetsAvailableService, getWidgetDataByCodeService, updateDashboardWidgetLayoutService} from '@requests';
-import {WidgetCard} from '@components';
-import { formatDateLong } from "@helpers/date";
-import { showDanger } from '@helpers/toast.js';
-import EdtEtudiant from '@/components/Edt/EdtEtudiant.vue';
-import MaintenantWidget from "@/components/Etudiant/dashboard/MaintenantWidget.vue";
+import {onMounted, ref} from 'vue';
+import {getMaScolariteService, getMonCahierDeTexteService, getWidgetDataByCodeService} from '@requests';
+import BlocAccueil from '@/components/Etudiant/dashboard/BlocAccueil.vue';
+import CarteJournee from '@/components/Etudiant/dashboard/CarteJournee.vue';
+import AFaire from '@/components/Etudiant/dashboard/AFaire.vue';
+import NotesWidget from '@/components/Etudiant/dashboard/NotesWidget.vue';
+import NouveauxDocuments from '@/components/Etudiant/dashboard/NouveauxDocuments.vue';
+import Actualites from '@/components/Etudiant/dashboard/Actualites.vue';
+import ContactsWidget from '@/components/Etudiant/dashboard/ContactsWidget.vue';
 
-// Les blocs que l'étudiant peut masquer, par ordre d'importance. Sa journée n'en fait pas partie :
-// elle est fixe, en tête de page.
-const BLOCS = ['intranet.notes', 'intranet.actualites', 'intranet.actualites_iut', 'intranet.contacts'];
+// Le relevé sert à « À faire » et aux notes : une seule lecture pour les deux.
+const releve = ref(null);
+const erreurReleve = ref(false);
+const echeances = ref(null);
+const erreurEcheances = ref(false);
+const contacts = ref(null);
 
-const userStore = useUsersStore();
-const widgets = ref([]);
-const widgetData = ref({});
-const isLoadingWidgets = ref(true);
-const erreurBlocs = ref(false);
-const enregistrement = ref({});
-const panneau = ref(false);
-const boutonPersonnaliser = ref(null);
-const coursDuJour = ref(null);
-const erreurEdt = ref(false);
-const date = new Date();
-
-const blocs = computed(() => widgets.value
-    .filter(widget => BLOCS.includes(widget.code))
-    .sort((a, b) => BLOCS.indexOf(a.code) - BLOCS.indexOf(b.code)));
-const blocsAffiches = computed(() => blocs.value.filter(widget => widget.enabled));
-
-onMounted(async () => {
-  try {
-    const response = await getWidgetsAvailableService('intranet');
-    widgets.value = response.widgets || [];
-    await Promise.all(blocsAffiches.value.map(({ code }) => loadWidgetData(code)));
-  } catch {
-    erreurBlocs.value = true;
-  } finally {
-    isLoadingWidgets.value = false;
-  }
+onMounted(() => {
+  getMaScolariteService()
+      .then(reponse => {
+        releve.value = reponse;
+      })
+      .catch(() => {
+        erreurReleve.value = true;
+      });
+  getMonCahierDeTexteService()
+      .then(reponse => {
+        echeances.value = reponse.echeances ?? [];
+      })
+      .catch(() => {
+        erreurEcheances.value = true;
+      });
+  getWidgetDataByCodeService('intranet.contacts')
+      .then(reponse => {
+        contacts.value = reponse;
+      })
+      .catch(() => {
+        contacts.value = {items: []};
+      });
 });
-
-const loadWidgetData = async (code) => {
-  try {
-    widgetData.value[code] = await getWidgetDataByCodeService(code);
-  } catch {
-    widgetData.value[code] = {message: 'Aucune donnée disponible'};
-  }
-};
-
-// Le bloc n'apparaît qu'une fois enregistré et chargé : l'interrupteur ne ment pas si l'API refuse.
-const afficherBloc = async (widget, affiche) => {
-  enregistrement.value[widget.code] = true;
-  try {
-    await updateDashboardWidgetLayoutService(widget.code, { enabled: affiche }, { dashboardCode: 'intranet' });
-    if (affiche && !widgetData.value[widget.code]) {
-      await loadWidgetData(widget.code);
-    }
-    widget.enabled = affiche;
-  } catch {
-    showDanger(`« ${widget.label} » n'a pas pu être ${affiche ? 'affiché' : 'masqué'}. Réessayez dans un instant.`);
-  } finally {
-    enregistrement.value[widget.code] = false;
-  }
-};
 </script>
 
 <template>
   <section class="col-span-12 lg:col-span-10 pb-14">
-    <div class="flex items-center justify-between gap-4 mb-3">
-      <h1 class="text-2xl! font-bold m-0!">Accueil</h1>
-      <Button
-          ref="boutonPersonnaliser"
-          label="Personnaliser"
-          icon="pi pi-sliders-h"
-          text
-          aria-haspopup="dialog"
-          class="min-h-[44px]!"
-          @click="panneau = true"
-      />
+    <h1 class="text-2xl! font-bold mt-0! mb-3!">Accueil</h1>
+
+    <div class="accueil">
+      <CarteJournee class="accueil__journee"/>
+
+      <BlocAccueil titre="À faire" icone="pi pi-flag" teinte="evaluation" class="accueil__a-faire">
+        <AFaire :releve="releve" :echeances="echeances" :erreur="erreurReleve || erreurEcheances"/>
+      </BlocAccueil>
+
+      <BlocAccueil class="accueil__notes" titre="Dernières notes" icone="pi pi-chart-bar" teinte="tp" lien="/intranet/scolarite" texte-lien="Toutes mes notes">
+        <NotesWidget :releve="releve" :erreur="erreurReleve"/>
+      </BlocAccueil>
+
+      <BlocAccueil class="accueil__documents" titre="Nouveaux documents" icone="pi pi-folder-open" teinte="cm" lien="/documents" texte-lien="Tous les documents">
+        <NouveauxDocuments/>
+      </BlocAccueil>
+
+      <BlocAccueil class="accueil__actualites" titre="Actualités" icone="pi pi-megaphone" teinte="td">
+        <Actualites/>
+      </BlocAccueil>
+
+      <BlocAccueil class="accueil__contacts" titre="Contacts" icone="pi pi-phone" teinte="sae">
+        <ContactsWidget v-if="contacts" :data="contacts"/>
+        <Skeleton v-else height="5rem" border-radius="14px" aria-hidden="true"/>
+      </BlocAccueil>
     </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-      <section aria-labelledby="accueil-bonjour" class="card m-0! p-4! lg:p-6! lg:col-span-2 flex flex-col gap-4">
-        <div>
-          <h2 id="accueil-bonjour" class="text-xl! font-bold m-0!">
-            <span class="font-light">Bonjour,</span> {{ userStore.user?.prenom }}
-          </h2>
-          <p class="m-0! text-muted-color">{{ formatDateLong(date) }}</p>
-        </div>
-        <MaintenantWidget v-if="!erreurEdt" :cours="coursDuJour"/>
-        <EdtEtudiant aujourdhui @cours-du-jour="cours => coursDuJour = cours" @erreur="erreurEdt = true"/>
-        <Button as="router-link" to="/intranet/agenda" label="Voir l'emploi du temps" severity="secondary" size="small" class="w-full min-h-[44px]!"/>
-      </section>
-
-      <div class="accueil-blocs flex flex-col gap-4">
-        <p v-if="erreurBlocs" class="card m-0! p-4! text-muted-color">Les autres blocs de l'accueil sont indisponibles pour le moment.</p>
-        <template v-else-if="isLoadingWidgets">
-          <Skeleton height="12rem" border-radius="1rem"/>
-          <Skeleton height="8rem" border-radius="1rem"/>
-        </template>
-        <WidgetCard
-            v-for="widget in blocsAffiches"
-            v-else
-            :key="widget.code"
-            :widget="widget"
-            :data="widgetData[widget.code] ?? {}"
-            :configurable="false"
-        />
-      </div>
-    </div>
-
-    <Drawer
-        v-model:visible="panneau"
-        position="right"
-        header="Personnaliser l'accueil"
-        class="w-full! sm:w-[24rem]!"
-        @after-hide="boutonPersonnaliser.$el.focus()"
-    >
-      <p class="mt-0! text-muted-color">Votre journée reste en tête de page. Choisissez les autres blocs à afficher.</p>
-      <ul class="list-none p-0 m-0">
-        <li v-for="widget in blocs" :key="widget.code" class="flex items-center justify-between gap-4 py-3 border-b border-surface last:border-b-0">
-          <label :for="`bloc-${widget.code}`" class="flex items-center gap-2 cursor-pointer">
-            <i :class="`${widget.icon} text-primary-500`" aria-hidden="true"/>
-            {{ widget.label }}
-          </label>
-          <ToggleSwitch
-              :input-id="`bloc-${widget.code}`"
-              :model-value="widget.enabled"
-              :disabled="enregistrement[widget.code]"
-              @update:model-value="affiche => afficherBloc(widget, affiche)"
-          />
-        </li>
-      </ul>
-    </Drawer>
   </section>
 </template>
+
+<style scoped>
+/* Le code suit l'ordre d'importance, que lisent le clavier, les lecteurs d'écran et le téléphone :
+   la journée, ce qui attend une action, les notes, puis ce qu'on consulte. En bureau, les zones
+   rangent les blocs de même hauteur sur une même rangée. */
+.accueil {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .accueil {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "journee journee a-faire"
+      "documents actualites notes"
+      "contacts contacts contacts";
+  }
+
+  .accueil__journee { grid-area: journee; }
+  .accueil__a-faire { grid-area: a-faire; }
+  .accueil__notes { grid-area: notes; }
+  .accueil__documents { grid-area: documents; }
+  .accueil__actualites { grid-area: actualites; }
+  .accueil__contacts { grid-area: contacts; }
+}
+</style>

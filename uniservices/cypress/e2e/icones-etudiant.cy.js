@@ -3,7 +3,7 @@
  * Un lecteur d'écran ne doit en rencontrer aucune, sur aucune page de l'étudiant.
  */
 const pages = [
-    { adresse: '/app/intranet/', pret: '.accueil-blocs > article' },
+    { adresse: '/app/intranet/', pret: '.bloc-accueil' },
     { adresse: '/app/intranet/agenda', pret: '.vuecal' },
     { adresse: '/app/intranet/scolarite', pret: '#contenu-principal h1' },
     { adresse: '/app/documents', pret: '#contenu-principal .card' },
