@@ -4,6 +4,7 @@ import {useUsersStore} from '@stores';
 import {getWidgetsAvailableService, getWidgetDataByCodeService, updateDashboardWidgetLayoutService} from '@requests';
 import {WidgetCard} from '@components';
 import { formatDateLong } from "@helpers/date";
+import { showDanger } from '@helpers/toast.js';
 import EdtEtudiant from '@/components/Edt/EdtEtudiant.vue';
 import MaintenantWidget from "@/components/Etudiant/dashboard/MaintenantWidget.vue";
 
@@ -15,14 +16,13 @@ const userStore = useUsersStore();
 const widgets = ref([]);
 const widgetData = ref({});
 const isLoadingWidgets = ref(true);
+const erreurBlocs = ref(false);
 const enregistrement = ref({});
 const panneau = ref(false);
 const boutonPersonnaliser = ref(null);
 const coursDuJour = ref(null);
 const erreurEdt = ref(false);
 const date = new Date();
-
-const structureDepartementPersonnelId = computed(() => userStore.departementDefaut?.departementPersonnel?.id || null);
 
 const blocs = computed(() => widgets.value
     .filter(widget => BLOCS.includes(widget.code))
@@ -31,11 +31,11 @@ const blocsAffiches = computed(() => blocs.value.filter(widget => widget.enabled
 
 onMounted(async () => {
   try {
-    const response = await getWidgetsAvailableService('intranet', {
-      structureDepartementPersonnelId: structureDepartementPersonnelId.value,
-    });
+    const response = await getWidgetsAvailableService('intranet');
     widgets.value = response.widgets || [];
     await Promise.all(blocsAffiches.value.map(({ code }) => loadWidgetData(code)));
+  } catch {
+    erreurBlocs.value = true;
   } finally {
     isLoadingWidgets.value = false;
   }
@@ -53,15 +53,13 @@ const loadWidgetData = async (code) => {
 const afficherBloc = async (widget, affiche) => {
   enregistrement.value[widget.code] = true;
   try {
-    await updateDashboardWidgetLayoutService(
-      widget.code,
-      { enabled: affiche },
-      { dashboardCode: 'intranet', structureDepartementPersonnelId: structureDepartementPersonnelId.value }
-    );
+    await updateDashboardWidgetLayoutService(widget.code, { enabled: affiche }, { dashboardCode: 'intranet' });
     if (affiche && !widgetData.value[widget.code]) {
       await loadWidgetData(widget.code);
     }
     widget.enabled = affiche;
+  } catch {
+    showDanger(`« ${widget.label} » n'a pas pu être ${affiche ? 'affiché' : 'masqué'}. Réessayez dans un instant.`);
   } finally {
     enregistrement.value[widget.code] = false;
   }
@@ -93,11 +91,12 @@ const afficherBloc = async (widget, affiche) => {
         </div>
         <MaintenantWidget v-if="!erreurEdt" :cours="coursDuJour"/>
         <EdtEtudiant aujourdhui @cours-du-jour="cours => coursDuJour = cours" @erreur="erreurEdt = true"/>
-        <Button as="router-link" to="/intranet/agenda" label="Voir l'emploi du temps" severity="secondary" size="small" class="w-full"/>
+        <Button as="router-link" to="/intranet/agenda" label="Voir l'emploi du temps" severity="secondary" size="small" class="w-full min-h-[44px]!"/>
       </section>
 
       <div class="accueil-blocs flex flex-col gap-4">
-        <template v-if="isLoadingWidgets">
+        <p v-if="erreurBlocs" class="card m-0! p-4! text-muted-color">Les autres blocs de l'accueil sont indisponibles pour le moment.</p>
+        <template v-else-if="isLoadingWidgets">
           <Skeleton height="12rem" border-radius="1rem"/>
           <Skeleton height="8rem" border-radius="1rem"/>
         </template>
