@@ -155,7 +155,7 @@ describe('Semaine de l\'étudiant en bureau', () => {
         cy.get('.vacances').should('not.exist');
         cy.get('.selecteur-semaine__declencheur').click();
         cy.contains('.selecteur-semaine__semaine', 'Vacances').click();
-        cy.contains('.vacances', 'Vacances !').should('be.visible');
+        cy.contains('.vacances', 'Vacances de la Toussaint').should('be.visible');
         cy.get('.cours-carte').should('not.exist');
     });
 

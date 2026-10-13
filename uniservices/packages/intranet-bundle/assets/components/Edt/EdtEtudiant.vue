@@ -384,7 +384,7 @@ const detail = computed(() => {
         <button type="button" class="edt-cours" :aria-label="libelleCours(event)"></button>
       </template>
     </vue-cal>
-    <VacancesConfettis v-if="vacances" :style="zoneGrille" />
+    <VacancesConfettis v-if="vacances" :lundi="semaineChargee" :style="zoneGrille" />
   </div>
 </template>
 

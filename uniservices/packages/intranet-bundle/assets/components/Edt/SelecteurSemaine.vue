@@ -129,7 +129,8 @@ const choisir = (lundi) => {
 @reference "../../assets/tailwind.css";
 
 /* La période se lit comme un titre : pas de fond, seulement un rond violet, comme les cercles du
-   logo, qui dit qu'elle s'ouvre. Le survol la teinte à peine. */
+   logo, qui dit qu'elle s'ouvre. Le survol la teinte à peine. Sur téléphone, le rond tasserait la
+   barre et doublerait le bouton flottant : il disparaît. */
 .selecteur-semaine__declencheur {
   @apply flex items-center gap-3 rounded-full bg-transparent border-0 cursor-pointer text-left;
   padding: 0.25rem 1rem 0.25rem 0.25rem;
@@ -148,7 +149,7 @@ const choisir = (lundi) => {
 }
 
 .selecteur-semaine__rond {
-  @apply flex items-center justify-center shrink-0 w-11 h-11 rounded-full bg-primary text-primary-contrast;
+  @apply hidden md:flex items-center justify-center shrink-0 w-11 h-11 rounded-full bg-primary text-primary-contrast;
   transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
