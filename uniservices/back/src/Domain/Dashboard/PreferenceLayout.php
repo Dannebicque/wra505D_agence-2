@@ -16,7 +16,7 @@ final class PreferenceLayout
      * Des requêtes simultanées sur un tableau de bord encore sans préférence en créaient chacune un
      * jeu complet : le même widget apparaissait plusieurs fois.
      *
-     * @param list<DashboardPreference> $preferences
+     * @param array<DashboardPreference> $preferences
      *
      * @return array{kept: list<DashboardPreference>, removed: list<DashboardPreference>}
      */
@@ -73,7 +73,8 @@ final class PreferenceLayout
 
         $result = [];
         foreach ($ordered as $preference) {
-            $result[] = $isVisible($preference) ? array_shift($others) : $preference;
+            // Autant de widgets visibles à remettre que de places visibles : le repli ne sert pas.
+            $result[] = $isVisible($preference) ? (array_shift($others) ?? $preference) : $preference;
         }
 
         return $result;

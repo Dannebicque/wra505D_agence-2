@@ -68,7 +68,7 @@ class DashboardPreferenceRepository extends ServiceEntityRepository
     /**
      * Supprime les préférences en double d'un même widget, et rend celles qui restent.
      *
-     * @param list<DashboardPreference> $preferences
+     * @param array<DashboardPreference> $preferences
      *
      * @return list<DashboardPreference>
      */
