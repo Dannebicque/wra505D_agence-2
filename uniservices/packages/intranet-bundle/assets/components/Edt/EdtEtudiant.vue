@@ -131,8 +131,8 @@ const annoncerPeriode = () => {
   });
 };
 
-// 6 px de gouttière, au-dessus et au-dessous de chaque carte.
-const hauteurCarte = (cours) => ((cours.end - cours.start) / 3600000) * hauteurHeure.value - 6;
+// 1 px de gouttière au-dessus et au-dessous : une carte commence et finit à son heure.
+const hauteurCarte = (cours) => ((cours.end - cours.start) / 3600000) * hauteurHeure.value - 2;
 
 const heure = (date) => date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
 
@@ -223,8 +223,8 @@ const detail = computed(() => {
         time
         :time-from="minutes(plage.debut)"
         :time-to="minutes(plage.fin)"
-        :time-step="60"
-        :time-cell-height="hauteurHeure"
+        :time-step="30"
+        :time-cell-height="hauteurHeure / 2"
         :views="['day', 'week']"
         v-model:view="vueAffichee"
         :theme="false"
@@ -246,6 +246,14 @@ const detail = computed(() => {
                   class="min-w-[44px]! min-h-[44px]!"
               />
               <Button
+                  v-if="!aujourdhuiAffiche(view)"
+                  label="Aujourd'hui"
+                  text
+                  rounded
+                  class="edt-barre__aujourdhui min-h-[44px]!"
+                  @click="view.goToToday()"
+              />
+              <Button
                   icon="pi pi-chevron-right"
                   text
                   rounded
@@ -261,7 +269,6 @@ const detail = computed(() => {
           </div>
 
           <div class="edt-barre__actions">
-            <Button v-if="!aujourdhuiAffiche(view)" label="Aujourd'hui" outlined class="min-h-[44px]" @click="view.goToToday()" />
             <SelectButton
                 v-model="vueAffichee"
                 :options="vues"
@@ -322,6 +329,20 @@ const detail = computed(() => {
   @apply flex items-center rounded-full bg-emphasis;
 }
 
+.edt-barre__aujourdhui {
+  @apply text-sm font-semibold px-2!;
+}
+
+/* Jour et Semaine en pilule, comme les flèches et les formes du logo. */
+.edt-barre__actions :deep(.p-selectbutton) {
+  @apply rounded-full bg-emphasis p-1 gap-1;
+}
+
+.edt-barre__actions :deep(.p-togglebutton),
+.edt-barre__actions :deep(.p-togglebutton-content) {
+  @apply rounded-full! border-0;
+}
+
 .edt-barre__titre {
   @apply m-0 text-xl font-bold leading-tight;
 }
@@ -372,25 +393,40 @@ const detail = computed(() => {
 
 :deep(.vuecal__time-cell) {
   @apply relative text-muted-color text-xs;
-  label {
-    @apply absolute right-3 top-0 -translate-y-1/2 leading-none;
-  }
 }
 
-/* vue-cal n'écrit que le début de chaque heure : la fin de la plage s'ajoute sous la grille. */
-:deep(.vuecal__time-column-inner)::after {
-  @apply absolute right-3 bottom-0 translate-y-1/2 text-xs text-muted-color leading-none;
+/* Chaque heure s'écrit sur sa ligne. vue-cal n'écrit que le début des cases : la fin de la plage
+   s'ajoute sous la dernière, au même endroit que les autres heures. */
+:deep(.vuecal__time-cell label),
+:deep(.vuecal__time-cell:last-child)::after {
+  @apply absolute right-3 -translate-y-1/2 leading-none;
+}
+
+/* vue-cal donne 8 px de marge à ses libellés, pas à celui de fin : les deux s'alignent sans. */
+:deep(.vuecal__time-cell label) {
+  @apply top-0 pr-0;
+}
+
+:deep(.vuecal__time-cell:last-child)::after {
+  top: 100%;
   content: var(--libelle-fin);
 }
 
-/* Un trait léger à chaque heure, rien d'autre : la grille s'efface derrière les cours. */
+/* La demi-heure s'écrit plus petit, sur sa propre ligne : on la lit sans la confondre avec l'heure. */
+:deep(.vuecal__time-cell:nth-child(even) label) {
+  font-size: 0.6875rem;
+}
+
+/* Un trait à chaque heure, un trait plus léger à chaque demi-heure. */
 :deep(.vuecal__cell) {
-  background-image: linear-gradient(to bottom, color-mix(in srgb, var(--p-content-border-color) 70%, transparent) 1px, transparent 1px);
-  background-size: 100% var(--hauteur-heure);
+  background-image:
+      linear-gradient(to bottom, var(--p-content-border-color) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--p-content-border-color) 45%, transparent) 1px, transparent 1px);
+  background-size: 100% var(--hauteur-heure), 100% calc(var(--hauteur-heure) / 2);
 }
 
 :deep(.vuecal__body) {
-  border-bottom: 1px solid color-mix(in srgb, var(--p-content-border-color) 70%, transparent);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 
 :deep(.vuecal__cell--today) {
@@ -401,7 +437,7 @@ const detail = computed(() => {
 /* Une gouttière autour de chaque cours : deux cours voisins ne se touchent jamais. */
 :deep(.vuecal__event) {
   @apply bg-transparent;
-  padding: 3px 5px;
+  padding: 1px 4px;
   &:hover .cours-carte {
     transform: translateY(-1px);
     box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.25);
@@ -414,8 +450,8 @@ const detail = computed(() => {
 
 .edt-cours {
   @apply absolute cursor-pointer;
-  inset: 3px 5px;
-  border-radius: 12px;
+  inset: 1px 4px;
+  border-radius: 18px;
   &:focus-visible {
     outline: 3px solid var(--p-primary-color);
     outline-offset: 1px;

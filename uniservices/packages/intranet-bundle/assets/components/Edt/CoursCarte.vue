@@ -94,11 +94,15 @@ const etat = computed(() => {
 .cours-carte {
   @apply h-full flex flex-col overflow-hidden text-left text-color;
   gap: 0.125rem;
-  padding: 0.375rem 0.5rem;
+  padding: 0.375rem 0.625rem;
   font-size: 0.8125rem;
   line-height: 1.3;
-  background: var(--seance-fond);
-  border-radius: 12px;
+  /* Un cercle dans l'angle, comme ceux du logo de l'IUT, dessiné dans le fond : il ne déborde pas
+     de la carte. Teinté à 14 % de la pastille : le texte qui passe dessus garde 4,91:1 au pire. */
+  background:
+      radial-gradient(circle 2.5rem at calc(100% - 0.75rem) calc(100% - 0.75rem), color-mix(in srgb, var(--seance-pastille) 14%, var(--seance-fond)) calc(100% - 0.5px), transparent 100%),
+      var(--seance-fond);
+  border-radius: 18px;
   transition: box-shadow 150ms ease, transform 150ms ease;
   /* La carte connaît sa taille : les lignes facultatives s'effacent quand elle rétrécit. */
   container-type: size;
@@ -111,6 +115,13 @@ const etat = computed(() => {
 .cours-carte--ligne {
   @apply justify-center;
   padding-block: 0;
+  border-radius: 999px;
+  background: var(--seance-fond);
+}
+
+.cours-carte--compacte {
+  @apply justify-center;
+  padding-block: 0.25rem;
 }
 
 .cours-carte__ligne {
@@ -143,6 +154,7 @@ const etat = computed(() => {
 }
 
 .cours-carte__titre {
+  @apply font-medium;
   font-size: 0.875rem;
 }
 

@@ -111,11 +111,11 @@ describe('Semaine de l\'étudiant en bureau', () => {
     it('garde la plage horaire de l\'année, de 8 h à 19 h, d\'une semaine à l\'autre', () => {
         const plage = () => cy.get('.vuecal__time-cell').should(($heures) => {
             expect($heures.first().text().trim()).to.eq('08:00');
-            expect($heures.last().text().trim()).to.eq('18:00');
+            expect($heures.last().text().trim()).to.eq('18:30');
         });
         plage();
-        cy.get('.vuecal__time-column-inner').then(($colonne) => {
-            const fin = $colonne[0].ownerDocument.defaultView.getComputedStyle($colonne[0], '::after').content;
+        cy.get('.vuecal__time-cell').last().then(($case) => {
+            const fin = $case[0].ownerDocument.defaultView.getComputedStyle($case[0], '::after').content;
             expect(fin).to.eq('"19:00"');
         });
         cy.get('button[aria-label="Semaine suivante"]').click();
