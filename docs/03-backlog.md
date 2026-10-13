@@ -905,25 +905,28 @@ sans défiler (MOB-10). La personnalisation existe deux fois : carte « Mon dash
 `/widgets` (jargon « Taille par défaut 2 × 1 (colonnes × lignes) ») et mode édition par carte
 (flèches, corbeille, glisser-déposer), pour cinq widgets. « Maintenant » et « Aujourd'hui » lisent
 deux sources différentes, d'où le risque de TB-9.
-**Décidé avec LCS (13/10/2026)**, le client n'ayant pas répondu (question 4, décision 3) :
-- ordre par importance : 1. où être maintenant, puis la journée, sur une même carte ; 2. notes et
-  absences ; 3. actualités du département, puis de l'IUT ; 4. contacts, seulement si l'étudiant
-  les ajoute ;
-- personnalisation légère : la carte du haut est fixe, l'étudiant affiche ou masque les blocs
-  secondaires depuis un bouton « Personnaliser » qui ouvre un panneau (Drawer). Plus de page
-  `/widgets`, de mode édition par carte ni de glisser-déposer pour lui. Le personnel et le portail
-  gardent leur fonctionnement : `WidgetCard`, `DashboardWidgetsConfiguration`, `DashboardController`
-  et `DashboardPreference` sont partagés.
+**Décidé avec LCS (13/10/2026)**, le client n'ayant pas répondu (question 4, décision 3), puis
+revu le même jour sur maquette :
+- page fixe, sans personnalisation : plus de bouton « Personnaliser », de page `/widgets`, de mode
+  édition par carte ni de glisser-déposer pour l'étudiant. Le personnel et le portail gardent leur
+  fonctionnement : `WidgetCard`, `DashboardWidgetsConfiguration`, `DashboardController` et
+  `DashboardPreference` sont partagés ;
+- ordre par importance : 1. la journée ; 2. « À faire » (absences à régler, évaluations à venir) ;
+  3. dernières notes ; 4. nouveaux documents et actualités ; 5. contacts ;
+- DA de l'agenda, en plus osé : bandeau violet IUT aux cercles du logo pour la journée, cartes
+  arrondies aux teintes des types de séance, notes colorées par seuil (sous 10, de 10 à 14, à
+  partir de 14). Pas de pastille rouge sur fond violet, cours en cours marqué d'un liseré fin.
 **Terminé quand** le haut de l'accueil montre la situation du moment sans défiler, en bureau et en
-mobile, et que l'étudiant masque un bloc au clavier depuis le panneau. Cypress, clair et sombre.
+mobile, en clair et en sombre, chaque texte à 4,5:1 au moins. Cypress et Vitest.
 
 | Lot | Contenu | État |
 |---|---|---|
-| C18.1 | en-tête : `h1` « Accueil » sur une ligne avec « Personnaliser », plus de grand titre, d'avatar ni de carte « Mon dashboard » ; bonjour et date en tête de la carte du moment | fait |
-| C18.2 | carte du moment : « Maintenant » et la journée sur une même carte (C17.7), une seule source, `/api/me/emploi-du-temps` | fait : « Maintenant » reçoit les cours lus par l'agenda du jour |
-| C18.3 | disposition fixe : carte du moment en colonne large, notes puis actualités à droite, une colonne en mobile | fait |
-| C18.4 | « Personnaliser » : Drawer, un interrupteur par bloc secondaire, `PATCH` de mise en page existant (`enabled`) | fait : clavier, focus rendu au bouton à la fermeture |
-| C18.5 | nettoyages : `initiales` jamais déclaré (rond vide sans photo), `intranet.documents_recents` au catalogue sans définition, fil d'Ariane « Dashboard » (P5) | fait : l'avatar part avec C18.1 ; catalogue et fil d'Ariane délégués à OpenCode |
+| C18.1 | en-tête : `h1` « Accueil », plus de grand titre, d'avatar ni de carte « Mon dashboard » | fait |
+| C18.2 | journée : bandeau (en cours, prochain cours, ou premier cours du jour suivant une fois la journée finie) et liste compacte du jour, une seule lecture de `/api/me/emploi-du-temps` (C17.7) | fait |
+| C18.3 | disposition fixe en zones : journée et « À faire », puis documents, actualités et notes, puis contacts ; une colonne en mobile, même ordre que le code | fait |
+| C18.4 | blocs : « À faire » (`/api/me/scolarite`, `/api/me/cahier-de-texte`), « Nouveaux documents » (`document.recents`), un seul fil d'actualités département et IUT, notes par seuil, contacts restylés | fait |
+| C18.5 | nettoyages : `initiales` jamais déclaré, `intranet.documents_recents` au catalogue sans définition, fil d'Ariane « Dashboard » (P5) | fait |
+| C18.6 | back : le système de widgets n'a plus d'usage étudiant (définitions `intranet.notes`, `intranet.contacts`, `intranet.actualites*` réservées à l'étudiant, route `/widgets`) | à décider |
 
 **JEREMY** est titulaire de la colonne C : à prévenir avant d'attaquer.
 
@@ -1096,8 +1099,7 @@ non plus. Les constats sont solides sur le code et les mesures, plus fragiles su
    icônes de catégories de documents. Préciser si la règle vaut pour le code que nous écrivons ou
    pour tout le dépôt.
 3. **Personnalisation du tableau de bord.** Ouverte aux étudiants, ou réservée au personnel ?
-   **Tranché le 13/10/2026** : légère pour l'étudiant, afficher ou masquer les blocs secondaires
-   seulement (C18).
+   **Tranché le 13/10/2026** : aucune pour l'étudiant, son accueil est fixe (C18).
 
 ## Questions au client toujours sans réponse
 
