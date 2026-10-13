@@ -23,6 +23,9 @@ const props = defineProps({
   // les heures qui portent un cours.
   aujourdhui: {type: Boolean, default: false},
 });
+// L'accueil tire « Maintenant » des mêmes cours que la grille : deux lectures pourraient se
+// contredire (TB-9).
+const emit = defineEmits(['cours-du-jour', 'erreur']);
 
 const cadre = ref(null);
 const vuecalRef = ref(null)
@@ -86,6 +89,12 @@ const aujourdhuiAffiche = (view) => {
 };
 
 const coursDuJour = computed(() => events.value.filter(cours => estAujourdhui(cours.start)));
+
+watch(coursDuJour, (cours) => {
+  if (semaineChargee.value) {
+    emit('cours-du-jour', cours);
+  }
+});
 
 const heureRonde = (date, arrondi) => `${String(arrondi(date.getHours() + date.getMinutes() / 60)).padStart(2, '0')}:00`;
 
@@ -198,6 +207,7 @@ const chargerSemaine = async (lundi) => {
     }
   } catch (error) {
     hasError.value = true;
+    emit('erreur');
   }
 };
 

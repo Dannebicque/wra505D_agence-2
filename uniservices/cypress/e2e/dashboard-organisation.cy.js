@@ -1,6 +1,7 @@
-describe('Organisation du tableau de bord de l\'étudiant', () => {
-    const widgets = () => cy.get('.dashboard-grid > article', { timeout: 15000 });
-    const titres = ($widgets) => [...$widgets].map((widget) => widget.querySelector('.font-semibold span').textContent.trim());
+describe('Organisation de l\'accueil de l\'étudiant', () => {
+    const blocs = () => cy.get('.accueil-blocs > article', { timeout: 15000 });
+    const titres = ($blocs) => [...$blocs].map((bloc) => bloc.querySelector('.font-semibold span').textContent.trim());
+    const personnaliser = () => cy.contains('button', 'Personnaliser', { timeout: 15000 });
 
     beforeEach(() => {
         // Une base neuve n'a aucune préférence : c'est le cas qui en créait un jeu par requête.
@@ -10,58 +11,38 @@ describe('Organisation du tableau de bord de l\'étudiant', () => {
         cy.visit('/app/intranet/');
     });
 
-    it('déplace un widget sans le dupliquer, et garde l\'ordre au rechargement', () => {
-        widgets().should('have.length.greaterThan', 1).then(($avant) => {
-            const avant = titres($avant);
-
-            cy.wrap($avant[0]).find('button[aria-label="Configurer le widget"]').click();
-            cy.wrap($avant[0]).find('button[aria-label="Déplacer sur la droite"]').click();
-
-            widgets().should(($apres) => {
-                expect(titres($apres)).to.deep.eq([avant[1], avant[0], ...avant.slice(2)]);
-            });
-
-            cy.reload();
-            widgets().should(($apres) => {
-                expect(titres($apres)).to.deep.eq([avant[1], avant[0], ...avant.slice(2)]);
-            });
+    it('ouvre sur sa journée, puis ses notes et les actualités, dans cet ordre', () => {
+        cy.contains('h1', 'Accueil');
+        cy.get('#accueil-bonjour').should('contain', 'Bonjour').closest('section').find('.vuecal').should('exist');
+        blocs().should(($blocs) => {
+            expect(titres($blocs)).to.deep.eq(['Notes', 'Actualités du département', 'Actualités de l\'IUT']);
         });
     });
 
-    it('descend un widget d\'un cran à chaque clic, jusqu\'au dernier', () => {
-        widgets().should('have.length.greaterThan', 2).then(($avant) => {
-            const avant = titres($avant);
-            const dernier = avant.length - 1;
-
-            widgets().first().find('button[aria-label="Configurer le widget"]').click();
-            for (let rang = 0; rang < dernier; rang++) {
-                // Le panneau de réglage suit le widget déplacé : il reste ouvert d'un clic au suivant.
-                widgets().eq(rang).find('button[aria-label="Déplacer sur la droite"]').click();
-                widgets().eq(rang + 1).should('contain', avant[0]);
-            }
-
-            cy.reload();
-            widgets().should(($apres) => {
-                expect(titres($apres)).to.deep.eq([...avant.slice(1), avant[0]]);
-            });
-        });
+    it('ne règle plus chaque bloc séparément', () => {
+        blocs().should('have.length.greaterThan', 0);
+        cy.get('button[aria-label="Configurer le widget"]').should('not.exist');
+        cy.contains('Mon dashboard').should('not.exist');
     });
 
-    it('ne propose plus de changer la taille, et met la poignée de glisser dans le panneau de réglage', () => {
-        widgets().each(($widget) => cy.wrap($widget).find('.poignee-widget').should('not.exist'));
+    it('affiche et masque un bloc au clavier, garde le choix au rechargement et rend le focus', () => {
+        personnaliser().focus().type('{enter}');
+        cy.get('.p-drawer').should('be.visible').within(() => {
+            cy.contains('label', 'Contacts').invoke('attr', 'for').then((id) => {
+                cy.get(`#${CSS.escape(id)}`).should('not.be.checked').focus().type(' ');
+            });
+        });
+        blocs().last().should('contain', 'Contacts');
+        cy.get('body').type('{esc}');
+        cy.focused().should('contain', 'Personnaliser');
 
-        widgets().first().find('button[aria-label="Configurer le widget"]').click();
-        widgets().first().find('.poignee-widget').should('have.attr', 'aria-hidden', 'true').and(($poignee) => {
-            expect($poignee[0].getBoundingClientRect().width).to.be.at.least(44);
-        });
-        ['Retirer le widget', 'Fermer le panneau de configuration'].forEach((nom) => {
-            widgets().first().find(`button[aria-label="${nom}"]`).should('exist');
-        });
-        ['Augmenter largeur', 'Diminuer largeur', 'Augmenter hauteur', 'Diminuer hauteur'].forEach((nom) => {
-            widgets().first().find(`button[aria-label="${nom}"]`).should('not.exist');
-        });
+        cy.reload();
+        blocs().should(($blocs) => expect(titres($blocs)).to.include('Contacts'));
 
-        widgets().first().find('button[aria-label="Fermer le panneau de configuration"]').click();
-        widgets().first().find('.poignee-widget').should('not.exist');
+        personnaliser().click();
+        cy.get('.p-drawer').within(() => {
+            cy.contains('label', 'Contacts').click();
+        });
+        blocs().should(($blocs) => expect(titres($blocs)).not.to.include('Contacts'));
     });
 });

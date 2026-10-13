@@ -2,7 +2,6 @@
 import { useRouter } from 'vue-router';
 import { EdtEventRow } from '@components';
 import { useUsersStore } from '@stores';
-import EdtEtudiant from '@/components/Edt/EdtEtudiant.vue';
 
 const router = useRouter();
 const userStore = useUsersStore();
@@ -17,8 +16,7 @@ defineProps({
 
 <template>
   <div class="flex flex-col gap-3">
-    <EdtEtudiant v-if="userStore.isEtudiant" aujourdhui />
-    <template v-else-if="data.items && data.items.length > 0">
+    <template v-if="data.items && data.items.length > 0">
       <EdtEventRow
           v-for="item in data.items || []"
           :key="`${item.heure}-${item.cours}`"

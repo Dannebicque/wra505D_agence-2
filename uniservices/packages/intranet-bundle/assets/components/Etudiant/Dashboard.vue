@@ -1,43 +1,45 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue';
-import {VueDraggableNext as draggable} from 'vue-draggable-next';
-import {useRouter} from 'vue-router';
-import {useUsersStore, useAnneeUnivStore} from '@stores';
-import {getWidgetsCatalogService, getWidgetDataByCodeService, updateDashboardWidgetLayoutService} from '@requests';
-import {WidgetCard, GlobalLoader} from '@components';
+import {useUsersStore} from '@stores';
+import {getWidgetsAvailableService, getWidgetDataByCodeService, updateDashboardWidgetLayoutService} from '@requests';
+import {WidgetCard} from '@components';
 import { formatDateLong } from "@helpers/date";
+import EdtEtudiant from '@/components/Edt/EdtEtudiant.vue';
 import MaintenantWidget from "@/components/Etudiant/dashboard/MaintenantWidget.vue";
 
-const router = useRouter();
+// Les blocs que l'étudiant peut masquer, par ordre d'importance. Sa journée n'en fait pas partie :
+// elle est fixe, en tête de page.
+const BLOCS = ['intranet.notes', 'intranet.actualites', 'intranet.actualites_iut', 'intranet.contacts'];
+
 const userStore = useUsersStore();
-const anneeUnivStore = useAnneeUnivStore();
-const selectedAnneeUniversitaireId = computed(() => anneeUnivStore.selectedAnneeUniv?.id ?? null);
 const widgets = ref([]);
-const isLoadingWidgets = ref(false);
 const widgetData = ref({});
+const isLoadingWidgets = ref(true);
+const enregistrement = ref({});
+const panneau = ref(false);
+const boutonPersonnaliser = ref(null);
+const coursDuJour = ref(null);
+const erreurEdt = ref(false);
 const date = new Date();
 
 const structureDepartementPersonnelId = computed(() => userStore.departementDefaut?.departementPersonnel?.id || null);
 
-onMounted(() => {
-  getDashboardWidgets();
-});
+const blocs = computed(() => widgets.value
+    .filter(widget => BLOCS.includes(widget.code))
+    .sort((a, b) => BLOCS.indexOf(a.code) - BLOCS.indexOf(b.code)));
+const blocsAffiches = computed(() => blocs.value.filter(widget => widget.enabled));
 
-const getDashboardWidgets = async () => {
-  isLoadingWidgets.value = true;
-  const params = {
-    dashboardCode: 'intranet',
-    structureDepartementPersonnelId: structureDepartementPersonnelId.value,
-  };
-  const response = await getWidgetsCatalogService(params);
-  widgets.value = [...(response.widgets || [])].sort((a, b) => a.position - b.position);
-  await Promise.all(
-  widgets.value.map(({ code }) =>
-  loadWidgetData(code)
-  )
-  );
-  isLoadingWidgets.value = false;
-}
+onMounted(async () => {
+  try {
+    const response = await getWidgetsAvailableService('intranet', {
+      structureDepartementPersonnelId: structureDepartementPersonnelId.value,
+    });
+    widgets.value = response.widgets || [];
+    await Promise.all(blocsAffiches.value.map(({ code }) => loadWidgetData(code)));
+  } finally {
+    isLoadingWidgets.value = false;
+  }
+});
 
 const loadWidgetData = async (code) => {
   try {
@@ -47,132 +49,91 @@ const loadWidgetData = async (code) => {
   }
 };
 
-const toggleWidget = async (widget) => {
-  widget.enabled = !widget.enabled;
-  await updateDashboardWidgetLayoutService(
-    widget.code,
-    { enabled: widget.enabled },
-    paramsLayout()
-  );
-  await getDashboardWidgets();
-};
-
-const paramsLayout = () => ({
-  dashboardCode: 'intranet',
-  structureDepartementPersonnelId: structureDepartementPersonnelId.value,
-});
-
-// Une seule requête par déplacement : le serveur renumérote les autres. En envoyer une par widget,
-// en parallèle, créait un jeu de préférences par requête et dupliquait les widgets.
-const enregistrerPosition = async (widget, position) => {
-  widgets.value.forEach((item, index) => {
-    item.position = index;
-  });
+// Le bloc n'apparaît qu'une fois enregistré et chargé : l'interrupteur ne ment pas si l'API refuse.
+const afficherBloc = async (widget, affiche) => {
+  enregistrement.value[widget.code] = true;
   try {
-    await updateDashboardWidgetLayoutService(widget.code, { position }, paramsLayout());
-  } catch {
-    await getDashboardWidgets();
+    await updateDashboardWidgetLayoutService(
+      widget.code,
+      { enabled: affiche },
+      { dashboardCode: 'intranet', structureDepartementPersonnelId: structureDepartementPersonnelId.value }
+    );
+    if (affiche && !widgetData.value[widget.code]) {
+      await loadWidgetData(widget.code);
+    }
+    widget.enabled = affiche;
+  } finally {
+    enregistrement.value[widget.code] = false;
   }
-};
-
-// Flèches : la même opération que le glisser-déposer, pour qui n'utilise pas la souris.
-const moveWidget = async (widget, direction) => {
-  const index = widgets.value.findIndex((item) => item.code === widget.code);
-  const targetIndex = index + direction;
-  if (index === -1 || targetIndex < 0 || targetIndex >= widgets.value.length) {
-    return;
-  }
-
-  widgets.value.splice(targetIndex, 0, widgets.value.splice(index, 1)[0]);
-  await enregistrerPosition(widget, targetIndex);
-};
-
-// Le composant a déjà réordonné la liste quand le glisser se termine.
-const finGlisser = async ({ newIndex, oldIndex }) => {
-  if (newIndex === oldIndex) {
-    return;
-  }
-  await enregistrerPosition(widgets.value[newIndex], newIndex);
 };
 </script>
 
 <template>
   <section class="col-span-12 lg:col-span-10 pb-14">
-    <div>
-      <div v-if="!userStore.isLoading" class="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <div class="flex items-center">
-          <div class="w-20 h-20 bg-primary-400 rounded-full flex items-center justify-center shrink-0">
-            <template v-if="userStore.userPhoto">
-              <img :src="userStore.userPhoto" alt="photo de profil" class="rounded-full" />
-            </template>
-            <template v-else>
-              <span class="text-gray-700 text-xl">{{ initiales }}</span>
-            </template>
-          </div>
-          <div class="ml-4">
-            <h2 class="text-2xl! mb-0! font-bold flex items-center gap-2">
-              <span class="font-light">Bonjour,</span> {{ userStore.user.prenom }}
-            </h2>
-            <small class="text-muted-color">{{ formatDateLong(date) }}</small>
-          </div>
-        </div>
-        <div class="card flex justify-between items-center gap-6 m-0! p-4! max-md:w-full">
-          <div>
-            <div class="text-xl font-semibold">Mon dashboard</div>
-            <div class="text-sm text-color-secondary">Personnalisez vos widgets.</div>
-          </div>
-          <Button @click="router.push({name: 'IntranetDashboardWidgetsConfig'})" icon="pi pi-cog" label="Configurer" size="small"/>
-        </div>
-      </div>
-      <MaintenantWidget/>
-      <GlobalLoader v-if="isLoadingWidgets" text="Chargement des widgets..."/>
-      <draggable
-          v-else
-          v-model="widgets"
-          tag="div"
-          class="dashboard-grid"
-          handle=".poignee-widget"
-          ghost-class="widget-fantome"
-          :animation="150"
-          @end="finGlisser"
-      >
-        <WidgetCard
-        v-for="(widget, index) in widgets"
-        :key="widget.code"
-        :widget="widget"
-        :data="widgetData[widget.code]"
-        :first="index === 0"
-        :last="index === widgets.length - 1"
-        reorderable
-        :resizable="false"
-        @move="moveWidget"
-        @toggle="toggleWidget"
-        />
-      </draggable>
+    <div class="flex items-center justify-between gap-4 mb-3">
+      <h1 class="text-2xl! font-bold m-0!">Accueil</h1>
+      <Button
+          ref="boutonPersonnaliser"
+          label="Personnaliser"
+          icon="pi pi-sliders-h"
+          text
+          aria-haspopup="dialog"
+          class="min-h-[44px]!"
+          @click="panneau = true"
+      />
     </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+      <section aria-labelledby="accueil-bonjour" class="card m-0! p-4! lg:p-6! lg:col-span-2 flex flex-col gap-4">
+        <div>
+          <h2 id="accueil-bonjour" class="text-xl! font-bold m-0!">
+            <span class="font-light">Bonjour,</span> {{ userStore.user?.prenom }}
+          </h2>
+          <p class="m-0! text-muted-color">{{ formatDateLong(date) }}</p>
+        </div>
+        <MaintenantWidget v-if="!erreurEdt" :cours="coursDuJour"/>
+        <EdtEtudiant aujourdhui @cours-du-jour="cours => coursDuJour = cours" @erreur="erreurEdt = true"/>
+        <Button as="router-link" to="/intranet/agenda" label="Voir l'emploi du temps" severity="secondary" size="small" class="w-full"/>
+      </section>
+
+      <div class="accueil-blocs flex flex-col gap-4">
+        <template v-if="isLoadingWidgets">
+          <Skeleton height="12rem" border-radius="1rem"/>
+          <Skeleton height="8rem" border-radius="1rem"/>
+        </template>
+        <WidgetCard
+            v-for="widget in blocsAffiches"
+            v-else
+            :key="widget.code"
+            :widget="widget"
+            :data="widgetData[widget.code] ?? {}"
+            :configurable="false"
+        />
+      </div>
+    </div>
+
+    <Drawer
+        v-model:visible="panneau"
+        position="right"
+        header="Personnaliser l'accueil"
+        class="w-full! sm:w-[24rem]!"
+        @after-hide="boutonPersonnaliser.$el.focus()"
+    >
+      <p class="mt-0! text-muted-color">Votre journée reste en tête de page. Choisissez les autres blocs à afficher.</p>
+      <ul class="list-none p-0 m-0">
+        <li v-for="widget in blocs" :key="widget.code" class="flex items-center justify-between gap-4 py-3 border-b border-surface last:border-b-0">
+          <label :for="`bloc-${widget.code}`" class="flex items-center gap-2 cursor-pointer">
+            <i :class="`${widget.icon} text-primary-500`" aria-hidden="true"/>
+            {{ widget.label }}
+          </label>
+          <ToggleSwitch
+              :input-id="`bloc-${widget.code}`"
+              :model-value="widget.enabled"
+              :disabled="enregistrement[widget.code]"
+              @update:model-value="affiche => afficherBloc(widget, affiche)"
+          />
+        </li>
+      </ul>
+    </Drawer>
   </section>
 </template>
-
-<style scoped>
-.widget-fantome {
-  opacity: 0.4;
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-/* Sur un téléphone, quatre colonnes écraseraient les widgets : un par ligne, à pleine largeur.
-   Chaque widget porte sa largeur en style en ligne, d'où le !important. */
-@media (max-width: 767px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-grid > :deep(*) {
-    grid-column: auto !important;
-  }
-}
-</style>

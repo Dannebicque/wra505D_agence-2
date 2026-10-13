@@ -11,7 +11,9 @@ const route = useRoute();
 
 <template>
   <div>
+    <!-- L'accueil de l'étudiant porte son propre titre, sur une ligne : le haut de page va à sa journée. -->
     <HeaderComponent
+        v-if="!userStore.isEtudiant"
         icon="pi pi-home"
         titre="Dashboard"
         description="Retrouvez vos informations clés et vos accès rapides"
