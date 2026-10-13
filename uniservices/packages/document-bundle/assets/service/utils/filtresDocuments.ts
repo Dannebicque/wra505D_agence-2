@@ -45,6 +45,15 @@ export function lireFiltres(query: LocationQuery): FiltresDocuments {
   };
 }
 
+/**
+ * Document que l'adresse demande d'ouvrir, par exemple depuis un résultat de la recherche. Ce
+ * n'est pas un filtre : il ne restreint pas la liste, et la page le retire de l'adresse une
+ * fois la fiche ouverte.
+ */
+export function lireDocumentOuvert(query: LocationQuery): string | null {
+  return texte(query.document) || null;
+}
+
 export function ecrireFiltres(filtres: FiltresDocuments): LocationQueryRaw {
   const query: LocationQueryRaw = {};
   const tri = Object.keys(TRIS).find(nom => TRIS[nom].field === filtres.tri.field && TRIS[nom].order === filtres.tri.order);

@@ -87,7 +87,7 @@ export const filtrerPages = (pages, requete) => pages.filter((page) =>
  * Où mène un résultat. Les personnes n'ont pas de page publique : on leur écrit.
  * Il n'existe encore ni fiche matière ni fiche document : on ouvre l'écran qui les montre.
  *
- * @returns {{to?: string, href?: string} | null}
+ * @returns {{to?: string | {path: string, query: Record<string, string>}, href?: string} | null}
  */
 export const destinationResultat = (resultat) => {
     switch (resultat.type) {
@@ -99,7 +99,8 @@ export const destinationResultat = (resultat) => {
         case 'enseignement':
             return {to: '/intranet/agenda'};
         case 'document':
-            return {to: '/documents'};
+            // La page des documents ouvre la fiche de celui que l'adresse désigne.
+            return {to: {path: '/documents', query: {document: String(resultat.id)}}};
         case 'actualite':
             return {to: '/auth/portail'};
         default:

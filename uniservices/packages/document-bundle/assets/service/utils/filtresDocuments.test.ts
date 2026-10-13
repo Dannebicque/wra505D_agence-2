@@ -4,6 +4,7 @@ import {
   aDesFiltres,
   ecrireFiltres,
   filtrerDocuments,
+  lireDocumentOuvert,
   lireFiltres,
   texteDuDocument,
   trierDocuments,
@@ -57,6 +58,25 @@ describe('lireFiltres et ecrireFiltres', () => {
     expect(lireFiltres({ tri: 'nimporte' }).tri).toEqual(sansFiltre.tri);
     expect(lireFiltres({ categorie: ['3', '4'] }).categorie).toBeNull();
     expect(ecrireFiltres(avec({ recherche: '   ' }))).toEqual({});
+  });
+});
+
+describe('lireDocumentOuvert', () => {
+  it('lit le document demandé par l\'adresse', () => {
+    expect(lireDocumentOuvert({ document: '42' })).toBe('42');
+  });
+
+  it('ne demande rien sans paramètre, ou avec un paramètre vide ou répété', () => {
+    expect(lireDocumentOuvert({})).toBeNull();
+    expect(lireDocumentOuvert({ document: '' })).toBeNull();
+    expect(lireDocumentOuvert({ document: ['1', '2'] })).toBeNull();
+  });
+
+  it('n\'en fait pas un filtre : la liste n\'en est ni restreinte ni marquée', () => {
+    const filtres = lireFiltres({ document: '42' });
+
+    expect(aDesFiltres(filtres)).toBe(false);
+    expect(ecrireFiltres(filtres)).toEqual({});
   });
 });
 

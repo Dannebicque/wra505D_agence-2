@@ -50,10 +50,10 @@ describe('destinationResultat', () => {
         expect(destinationResultat({type: 'etudiant', mail: null})).toBeNull();
     });
 
-    it('ouvre une page, une matière dans l\'agenda, un document dans la liste des documents', () => {
+    it('ouvre une page, une matière dans l\'agenda, un document sur sa fiche dans la liste des documents', () => {
         expect(destinationResultat({type: 'page', to: '/intranet/agenda'})).toEqual({to: '/intranet/agenda'});
         expect(destinationResultat({type: 'enseignement'})).toEqual({to: '/intranet/agenda'});
-        expect(destinationResultat({type: 'document'})).toEqual({to: '/documents'});
+        expect(destinationResultat({type: 'document', id: 42})).toEqual({to: {path: '/documents', query: {document: '42'}}});
     });
 });
 
