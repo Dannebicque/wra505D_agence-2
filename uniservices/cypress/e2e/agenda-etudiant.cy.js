@@ -39,7 +39,7 @@ describe('Agenda de l\'étudiant', () => {
         cy.get('button.edt-cours', { timeout: 15000 }).should('have.length.greaterThan', 0);
 
         // Le dernier contrôle de la barre : « Aujourd'hui » n'y est pas, le jour est affiché.
-        cy.contains('button', 'Semaine').focus();
+        cy.contains('.p-togglebutton', 'Semaine').focus();
         cy.press(Cypress.Keyboard.Keys.TAB);
         cy.focused().should('have.class', 'edt-cours').invoke('attr', 'aria-label').then((libelle) => {
             // Espace plutôt qu'Entrée : dans Electron, cy.press n'active pas un bouton avec Entrée.
@@ -226,7 +226,7 @@ describe('Agenda de l\'étudiant sur téléphone', () => {
     it('passe à la semaine quand on tourne le téléphone en large', () => {
         cy.get('.vuecal--day-view', { timeout: 15000 }).should('exist');
         cy.viewport(812, 375);
-        cy.contains('button', 'Semaine').should('have.attr', 'aria-pressed', 'true');
+        cy.contains('.p-togglebutton', 'Semaine').should('have.attr', 'aria-pressed', 'true');
         cy.viewport(375, 812);
         cy.get('.vuecal--day-view').should('exist');
         cy.get('[aria-label="Affichage"]').should('not.exist');
