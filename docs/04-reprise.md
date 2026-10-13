@@ -171,7 +171,7 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #147 | recherche sur téléphone : un bouton ouvre le champ sous la barre haute (D6, JEREMY) |
 | #150 | trombinoscope réservé au personnel ; un accès refusé mène à « Accès refusé », plus à la page 404 (F5, JEREMY) |
 | #152 | fiches du trombinoscope sans JSON brut (F4, JEREMY) |
-| #154 | cahier de texte : évaluations à venir et plans de cours complets, `GET /api/me/cahier-de-texte` (F2, JEREMY, en revue) |
+| #154 | cahier de texte : évaluations à venir et plans de cours complets, `GET /api/me/cahier-de-texte` (F2, JEREMY) |
 
 Le connecteur Celcat, en bref :
 
@@ -284,7 +284,7 @@ donner l'URL de comparaison.
    Dernière étape du plan de navigation, les données existent déjà (`TranscriptBuilder`,
    `Document.enseignement`, `EdtEvent`).
 3. **B11** : mode sombre de Documents.
-4. **C6** (modalités de contrôle). **F2** (cahier de texte) est en revue : #154.
+4. **C6** (modalités de contrôle).
 5. **P5, reste** : le fil d'Ariane dit « Dashboard » quand le menu dit « Accueil ».
 6. **Symfony 8.2**, à sa sortie en novembre 2026 et avant fin janvier 2027 (fin de maintenance de
    la 8.1).
