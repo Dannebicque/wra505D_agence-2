@@ -878,16 +878,21 @@ en dur, le mobile une grille d'une colonne.
 Cypress, en bureau et en mobile, en clair et en sombre, sur une base neuve.
 **Lots** dans l'ordre, détail et attribution dans l'audit, section 5 :
 
-| Lot | Contenu |
-|---|---|
-| C17.0 | fausse base Celcat aux durées variées (45 min à 3 h), chevauchement, samedi |
-| C17.1 | [back] `/api/me/emploi-du-temps?semaine=…`, heures avec fuseau, plage horaire de l'année, `/api/edt_events` fermée aux anonymes |
-| C17.2 | jetons de type de séance dans le preset, fonctions pures de placement, Vitest |
-| C17.3 | semaine en bureau : carte adaptée à la durée, plage horaire fixe pour l'étudiant, samedi s'il a cours, mode sombre |
-| C17.4 | mobile : bandeau des jours, journée en liste avec ses pauses, balayage |
-| C17.5 | date et vue dans l'URL, cache, chargement, état vide, erreur avec « Réessayer » |
-| C17.6 | détail d'un cours modal, feuille du bas en mobile, liens vers la matière |
-| C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte |
+| Lot | Contenu | État |
+|---|---|---|
+| C17.0 | fausse base Celcat aux durées variées (45 min à 3 h), chevauchement, samedi | fait (#155) |
+| C17.1 | [back] `/api/me/emploi-du-temps?semaine=…`, heures avec fuseau, plage horaire de l'année, `/api/edt_events` fermée aux anonymes ; `/api/me/emploi-du-temps/semaines`, charge de chaque semaine | fait (#160, rattrapage) |
+| C17.2 | jetons de type de séance dans le preset, fonctions pures de placement, Vitest | fait (#161) |
+| C17.3 | semaine en bureau : carte adaptée à la durée, plage horaire fixe pour l'étudiant, samedi s'il a cours, mode sombre | fait (#162, rattrapage) |
+| C17.4 | mobile : bandeau des jours, journée en liste avec ses pauses, balayage | en partie : jour tenu en long, semaine en large, « Aujourd'hui » flottant ; reste le bandeau, la liste, le balayage |
+| C17.5 | date et vue dans l'URL, cache, chargement, état vide, erreur avec « Réessayer » | en partie : sélecteur de semaine avec la charge de chacune, semaines de vacances illustrées ; reste l'URL, le cache, « Réessayer » |
+| C17.6 | détail d'un cours modal, feuille du bas en mobile, liens vers la matière | en partie : modal, fermé d'un clic à côté, aux couleurs du type ; reste la feuille du bas et les liens |
+| C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte | à faire |
+
+**Fait aussi, au fil des retours de LCS et LOU** : couleurs de séance dans la DA (pastilles
+foncées à texte blanc, 6,52:1 au moins), cartes arrondies à la manière du logo, demi-heures
+marquées d'un trait léger, grille ajustée à l'écran, fil d'Ariane et grand titre retirés pour
+l'étudiant, menu d'options où l'abonnement iCal a sa place, désactivé et marqué « Bientôt ».
 
 **JEREMY**, titulaire de la colonne C et auteur de C3, C14 et C15 sur `EdtEtudiant.vue`, est
 d'accord (13/10/2026).
