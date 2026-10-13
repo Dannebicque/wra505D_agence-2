@@ -887,7 +887,7 @@ Cypress, en bureau et en mobile, en clair et en sombre, sur une base neuve.
 | C17.4 | mobile : bandeau des jours, journée en liste avec ses pauses, balayage | en partie : jour tenu en long, semaine en large, « Aujourd'hui » flottant ; reste le bandeau, la liste, le balayage |
 | C17.5 | date et vue dans l'URL, cache, chargement, état vide, erreur avec « Réessayer » | en partie : sélecteur de semaine avec la charge de chacune, semaines de vacances illustrées ; reste l'URL, le cache, « Réessayer » |
 | C17.6 | détail d'un cours modal, feuille du bas en mobile, liens vers la matière | en partie : modal, fermé d'un clic à côté, aux couleurs du type ; reste la feuille du bas et les liens |
-| C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte | à faire |
+| C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte | en partie : « Aujourd'hui » est la journée de l'agenda, réduite aux heures de ses cours ; reste la carte commune |
 
 **Fait aussi, au fil des retours de LCS et LOU** : couleurs de séance dans la DA (pastilles
 foncées à texte blanc, 6,52:1 au moins), cartes arrondies à la manière du logo, demi-heures
