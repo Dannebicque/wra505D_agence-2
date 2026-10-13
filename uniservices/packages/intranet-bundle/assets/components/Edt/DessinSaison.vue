@@ -1,4 +1,9 @@
 <script setup>
+import {useId} from 'vue';
+
+// Plusieurs dessins peuvent cohabiter dans la page : chaque découpe a son propre identifiant.
+const id = useId();
+
 defineProps({
   // toussaint, noel, hiver, printemps ou ete
   saison: {
@@ -12,32 +17,48 @@ defineProps({
   <!-- Les couleurs viennent des jetons du thème : les dessins suivent le mode clair et le sombre. -->
   <svg class="dessin-saison" viewBox="0 0 80 80" aria-hidden="true">
     <g v-if="saison === 'toussaint'">
-      <path d="M41 17 q4 -9 12 -8" fill="none" stroke="var(--p-seance-tp-pill-background)" stroke-width="3" stroke-linecap="round" />
-      <path d="M44 15 q10 -6 15 2 q-9 4 -15 -2z" fill="var(--p-seance-tp-pill-background)" />
-      <rect x="37" y="13" width="6" height="11" rx="3" fill="var(--p-seance-td-pill-background)" />
+      <defs>
+        <clipPath :id="`${id}-citrouille`">
+          <ellipse cx="25" cy="48" rx="15" ry="22" />
+          <ellipse cx="55" cy="48" rx="15" ry="22" />
+          <ellipse cx="40" cy="48" rx="17" ry="25" />
+        </clipPath>
+      </defs>
+      <path d="M40 18 q3 -10 13 -9" fill="none" stroke="var(--p-seance-tp-pill-background)" stroke-width="3" stroke-linecap="round" />
+      <path d="M53 9 q9 -3 13 4 q-9 3 -13 -4z" fill="var(--p-seance-tp-pill-background)" />
+      <rect x="37" y="14" width="6" height="11" rx="3" fill="var(--p-seance-td-pill-background)" />
       <ellipse cx="25" cy="48" rx="15" ry="22" fill="var(--p-accent-color)" />
       <ellipse cx="55" cy="48" rx="15" ry="22" fill="var(--p-accent-color)" />
       <ellipse cx="40" cy="48" rx="17" ry="25" fill="var(--p-accent-color)" />
-      <g fill="none" stroke="var(--p-seance-td-pill-background)" stroke-width="1.5" opacity="0.45">
-        <path d="M31 26 q-6 22 0 44" />
-        <path d="M49 26 q6 22 0 44" />
+      <g :clip-path="`url(#${id}-citrouille)`" fill="none" stroke="var(--p-seance-td-pill-background)" stroke-width="1.5" opacity="0.35">
+        <path d="M31 20 q-7 28 0 56" />
+        <path d="M49 20 q7 28 0 56" />
       </g>
-      <path d="M27 42 l7 -9 7 9z M39 42 l7 -9 7 9z" fill="var(--p-primary-color)" />
-      <path d="M37 47 l3 -4 3 4z" fill="var(--p-primary-color)" />
-      <path d="M24 53 q16 14 32 0 l-4 1 -2 4 -4 -3 -4 4 -4 -4 -4 3 -2 -4z" fill="var(--p-primary-color)" />
+      <path d="M28 41 l6 -8 6 8z M40 41 l6 -8 6 8z" fill="var(--p-primary-color)" />
+      <path d="M37.5 48 l2.5 -3.5 2.5 3.5z" fill="var(--p-primary-color)" />
+      <path d="M27 53 Q40 68 53 53 Q40 59 27 53z" fill="var(--p-primary-color)" />
+      <rect x="34" y="55" width="3.5" height="3.5" fill="var(--p-accent-color)" />
+      <rect x="43" y="55" width="3.5" height="3.5" fill="var(--p-accent-color)" />
     </g>
 
     <g v-else-if="saison === 'noel'">
-      <rect x="35" y="62" width="10" height="11" rx="2" fill="var(--p-seance-td-pill-background)" />
-      <path d="M40 16 L56 36 H24z" fill="var(--p-seance-tp-pill-background)" />
-      <path d="M40 26 L61 50 H19z" fill="var(--p-seance-tp-pill-background)" />
-      <path d="M40 38 L66 65 H14z" fill="var(--p-seance-tp-pill-background)" />
-      <path d="M25 47 q15 8 30 -4 M20 61 q20 8 40 -6" fill="none" stroke="var(--p-accent-color)" stroke-width="2.5" stroke-linecap="round" />
-      <circle cx="33" cy="41" r="3" fill="var(--p-seance-evaluation-pill-background)" />
-      <circle cx="47" cy="52" r="3" fill="var(--p-seance-sae-pill-background)" />
-      <circle cx="30" cy="57" r="3" fill="var(--p-primary-color)" />
-      <circle cx="52" cy="62" r="3" fill="var(--p-seance-evaluation-pill-background)" />
-      <path d="M40 4 l3 6.5 7 0.8 -5.2 4.8 1.5 7 -6.3 -3.6 -6.3 3.6 1.5 -7 -5.2 -4.8 7 -0.8z" fill="var(--p-accent-color)" />
+      <defs>
+        <clipPath :id="`${id}-sapin`">
+          <path d="M40 12 L55 32 H48 L61 48 H53 L67 66 H13 L27 48 H19 L32 32 H25z" />
+        </clipPath>
+      </defs>
+      <rect x="35" y="64" width="10" height="10" rx="2" fill="var(--p-seance-td-pill-background)" />
+      <path d="M40 12 L55 32 H48 L61 48 H53 L67 66 H13 L27 48 H19 L32 32 H25z" fill="var(--p-seance-tp-pill-background)" stroke="var(--p-seance-tp-pill-background)" stroke-width="2" stroke-linejoin="round" />
+      <g :clip-path="`url(#${id}-sapin)`" fill="none" stroke="var(--p-accent-color)" stroke-width="2.5" stroke-linecap="round">
+        <path d="M18 37 Q40 50 62 33" />
+        <path d="M10 54 Q40 70 70 50" />
+      </g>
+      <circle cx="35" cy="30" r="2.8" fill="var(--p-seance-evaluation-pill-background)" />
+      <circle cx="46" cy="43" r="2.8" fill="var(--p-seance-sae-pill-background)" />
+      <circle cx="31" cy="50" r="2.8" fill="var(--p-primary-color)" />
+      <circle cx="51" cy="60" r="2.8" fill="var(--p-seance-evaluation-pill-background)" />
+      <circle cx="28" cy="62" r="2.8" fill="var(--p-accent-color)" />
+      <path d="M40 2 l2.6 5.4 5.9 0.7 -4.4 4 1.2 5.9 -5.3 -3 -5.3 3 1.2 -5.9 -4.4 -4 5.9 -0.7z" fill="var(--p-accent-color)" />
     </g>
 
     <g v-else-if="saison === 'hiver'">

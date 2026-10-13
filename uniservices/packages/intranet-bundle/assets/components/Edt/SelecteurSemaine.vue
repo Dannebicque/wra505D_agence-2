@@ -97,6 +97,7 @@ const choisir = (lundi) => {
   </button>
 
   <Popover ref="fenetre" class="selecteur-semaine" aria-label="Choisir une semaine" @show="auDebut" @hide="ouverte = false">
+    <p class="selecteur-semaine__entete">Charge de cours par semaine</p>
     <div ref="liste" class="selecteur-semaine__liste">
       <section v-for="groupe in mois" :key="groupe.libelle">
         <h3 class="selecteur-semaine__mois">{{ groupe.libelle }}</h3>
@@ -184,10 +185,7 @@ const choisir = (lundi) => {
   border: 0;
   border-radius: 28px;
   overflow: hidden;
-  background:
-      radial-gradient(circle 6rem at calc(100% + 1rem) -1rem, color-mix(in srgb, var(--p-accent-color) 22%, var(--p-content-background)) calc(100% - 0.5px), transparent 100%),
-      radial-gradient(circle 5rem at -1rem calc(100% + 1rem), color-mix(in srgb, var(--p-primary-color) 12%, var(--p-content-background)) calc(100% - 0.5px), transparent 100%),
-      var(--p-content-background);
+  background: var(--p-content-background);
   box-shadow: 0 20px 48px -16px rgb(0 0 0 / 0.35);
 }
 
@@ -198,7 +196,21 @@ const choisir = (lundi) => {
 }
 
 .selecteur-semaine .p-popover-content {
-  padding: 0.5rem;
+  padding: 0 0.5rem 0.5rem;
+}
+
+/* Les cercles des cartes vivent dans cet en-tête, qui ne défile pas : ils ne passent jamais sous
+   une semaine. */
+.selecteur-semaine__entete {
+  margin: 0 -0.5rem;
+  padding: 1rem 1.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--p-primary-color);
+  background:
+      radial-gradient(circle 1.125rem at calc(100% - 1.75rem) 50%, var(--p-accent-color) calc(100% - 0.5px), transparent 100%),
+      radial-gradient(circle 0.625rem at calc(100% - 3.625rem) 35%, color-mix(in srgb, var(--p-primary-color) 35%, var(--p-content-background)) calc(100% - 0.5px), transparent 100%),
+      color-mix(in srgb, var(--p-primary-color) 8%, var(--p-content-background));
 }
 
 .selecteur-semaine__liste {
