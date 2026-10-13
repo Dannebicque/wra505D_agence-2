@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue';
+import {VueDraggableNext as draggable} from 'vue-draggable-next';
 import {useRouter} from 'vue-router';
 import {useUsersStore, useAnneeUnivStore} from '@stores';
 import {getWidgetsCatalogService, getWidgetDataByCodeService, updateDashboardWidgetLayoutService} from '@requests';
@@ -29,7 +30,7 @@ const getDashboardWidgets = async () => {
     structureDepartementPersonnelId: structureDepartementPersonnelId.value,
   };
   const response = await getWidgetsCatalogService(params);
-  widgets.value = response.widgets || [];
+  widgets.value = [...(response.widgets || [])].sort((a, b) => a.position - b.position);
   await Promise.all(
   widgets.value.map(({ code }) =>
   loadWidgetData(code)
@@ -46,91 +47,52 @@ const loadWidgetData = async (code) => {
   }
 };
 
-const updateWidgetSpan = async (widget, spanType, newValue) => {
-  // Limiter colSpan à max 4 (largeur de la grille)
-  if (spanType === 'colSpan') {
-    newValue = Math.min(4, Math.max(1, newValue));
-  }
-  // rowSpan n'a pas de limite
-  if (spanType === 'rowSpan') {
-    newValue = Math.max(1, newValue);
-  }
-
-  const updateData = { [spanType]: newValue };
-
-  if (spanType === 'colSpan') {
-    widget.colSpan = newValue;
-  } else if (spanType === 'rowSpan') {
-    widget.rowSpan = newValue;
-  }
-
-  await updateDashboardWidgetLayoutService(
-    widget.code,
-    updateData,
-    {
-      dashboardCode: 'intranet',
-      structureDepartementPersonnelId: structureDepartementPersonnelId.value,
-    }
-  );
-};
-
 const toggleWidget = async (widget) => {
   widget.enabled = !widget.enabled;
   await updateDashboardWidgetLayoutService(
     widget.code,
     { enabled: widget.enabled },
-    {
-      dashboardCode: 'intranet',
-      structureDepartementPersonnelId: structureDepartementPersonnelId.value,
-    }
+    paramsLayout()
   );
   await getDashboardWidgets();
 };
 
+const paramsLayout = () => ({
+  dashboardCode: 'intranet',
+  structureDepartementPersonnelId: structureDepartementPersonnelId.value,
+});
+
+// Une seule requête par déplacement : le serveur renumérote les autres. En envoyer une par widget,
+// en parallèle, créait un jeu de préférences par requête et dupliquait les widgets.
+const enregistrerPosition = async (widget, position) => {
+  widgets.value.forEach((item, index) => {
+    item.position = index;
+  });
+  try {
+    await updateDashboardWidgetLayoutService(widget.code, { position }, paramsLayout());
+  } catch {
+    await getDashboardWidgets();
+  }
+};
+
+// Flèches : la même opération que le glisser-déposer, pour qui n'utilise pas la souris.
 const moveWidget = async (widget, direction) => {
-  // tableau trier par position
-  const sorted = [...widgets.value].sort((a, b) => a.position - b.position);
-  // trouver l'index du widget dans le tableau
-  const index = sorted.findIndex((item) => item.code === widget.code);
-
-  // si le widget n'est pas trouvé, on arrête
-  if (index === -1) {
-    return;
-  }
-
-  // index cible
+  const index = widgets.value.findIndex((item) => item.code === widget.code);
   const targetIndex = index + direction;
-
-  // si l'index cible est en dehors du tableau, on arrête
-  if (targetIndex < 0 || targetIndex >= sorted.length) {
+  if (index === -1 || targetIndex < 0 || targetIndex >= widgets.value.length) {
     return;
   }
 
-  // on retire le widget de son index et on l'insère à l'index cible
-  const movedWidget = sorted.splice(index, 1)[0];
-  sorted.splice(targetIndex, 0, movedWidget);
+  widgets.value.splice(targetIndex, 0, widgets.value.splice(index, 1)[0]);
+  await enregistrerPosition(widget, targetIndex);
+};
 
-  // on met à jour les positions des widgets
-  sorted.forEach((item, position) => {
-    item.position = position;
-  });
-
-  // on met à jour le tableau des widgets
-  widgets.value = sorted;
-
-  // Sauvegarder les nouvelles positions de tous les widgets
-  const promises = sorted.map((item) => {
-    return updateDashboardWidgetLayoutService(
-      item.code,
-      { position: item.position },
-      {
-        dashboardCode: 'intranet',
-        structureDepartementPersonnelId: structureDepartementPersonnelId.value,
-      }
-    );
-  });
-
-  await Promise.all(promises);
+// Le composant a déjà réordonné la liste quand le glisser se termine.
+const finGlisser = async ({ newIndex, oldIndex }) => {
+  if (newIndex === oldIndex) {
+    return;
+  }
+  await enregistrerPosition(widgets.value[newIndex], newIndex);
 };
 </script>
 
@@ -164,24 +126,38 @@ const moveWidget = async (widget, direction) => {
       </div>
       <MaintenantWidget/>
       <GlobalLoader v-if="isLoadingWidgets" text="Chargement des widgets..."/>
-      <div v-else class="dashboard-grid">
+      <draggable
+          v-else
+          v-model="widgets"
+          tag="div"
+          class="dashboard-grid"
+          handle=".poignee-widget"
+          ghost-class="widget-fantome"
+          :animation="150"
+          @end="finGlisser"
+      >
         <WidgetCard
-        v-for="widget in widgets"
+        v-for="(widget, index) in widgets"
         :key="widget.code"
         :widget="widget"
         :data="widgetData[widget.code]"
-        :first="widget.position == 0 ? true : false"
-        :last="widget.position == widgets.length - 1 ? true : false"
+        :first="index === 0"
+        :last="index === widgets.length - 1"
+        reorderable
+        :resizable="false"
         @move="moveWidget"
-        @updateSpan="updateWidgetSpan"
         @toggle="toggleWidget"
         />
-      </div>
+      </draggable>
     </div>
   </section>
 </template>
 
 <style scoped>
+.widget-fantome {
+  opacity: 0.4;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

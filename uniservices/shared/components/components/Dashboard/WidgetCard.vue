@@ -24,6 +24,18 @@ const props = defineProps({
     isPortail: {
         type: Boolean,
         default: false
+    },
+    // Affiche, dans le panneau de réglage, la poignée de glisser-déposer. Le conteneur qui l'active
+    // fournit le glisser lui-même (handle=".poignee-widget") ; les boutons fléchés restent
+    // l'alternative au clavier.
+    reorderable: {
+        type: Boolean,
+        default: false
+    },
+    // Propose de changer la largeur et la hauteur du widget.
+    resizable: {
+        type: Boolean,
+        default: true
     }
 });
 
@@ -73,15 +85,25 @@ const toggleWidget = () => {
     <div v-if="isEditing">
         <div class="flex justify-between">
             <div class="flex items-center gap-1">
-                <Button icon="pi pi-plus" size="small" text rounded title="Augmenter largeur" @click="increaseColSpan"/>
-                <Button icon="pi pi-minus" size="small" text rounded title="Diminuer largeur" @click="decreaseColSpan"/>
-                <Button icon="pi pi-chevron-down" size="small" text rounded title="Augmenter hauteur" @click="increaseRowSpan"/>
-                <Button icon="pi pi-chevron-up" size="small" text rounded title="Diminuer hauteur" @click="decreaseRowSpan"/>
-                <Button v-if="!first" icon="pi pi-arrow-left" size="small" title="Déplacer sur la gauche" text rounded severity="secondary" @click="moveWidget(-1)"/>
-                <Button v-if="!last" icon="pi pi-arrow-right" size="small" title="Déplacer sur la droite" text rounded severity="secondary" @click="moveWidget(1)"/>
-                <Button icon="pi pi-trash" size="small" title="Retirer le widget" text rounded severity="danger" @click="toggleWidget()"/>
+                <template v-if="resizable">
+                    <Button icon="pi pi-plus" size="small" text rounded title="Augmenter largeur" aria-label="Augmenter largeur" @click="increaseColSpan"/>
+                    <Button icon="pi pi-minus" size="small" text rounded title="Diminuer largeur" aria-label="Diminuer largeur" @click="decreaseColSpan"/>
+                    <Button icon="pi pi-chevron-down" size="small" text rounded title="Augmenter hauteur" aria-label="Augmenter hauteur" @click="increaseRowSpan"/>
+                    <Button icon="pi pi-chevron-up" size="small" text rounded title="Diminuer hauteur" aria-label="Diminuer hauteur" @click="decreaseRowSpan"/>
+                </template>
+                <span
+                    v-if="reorderable"
+                    class="poignee-widget flex h-[44px] w-[44px] cursor-grab items-center justify-center rounded-full text-muted-color hover:bg-surface-100 active:cursor-grabbing dark:hover:bg-surface-800"
+                    title="Glisser pour déplacer le widget"
+                    aria-hidden="true"
+                >
+                    <i class="pi pi-arrows-alt"></i>
+                </span>
+                <Button v-if="!first" icon="pi pi-arrow-left" size="small" title="Déplacer sur la gauche" aria-label="Déplacer sur la gauche" text rounded severity="secondary" @click="moveWidget(-1)"/>
+                <Button v-if="!last" icon="pi pi-arrow-right" size="small" title="Déplacer sur la droite" aria-label="Déplacer sur la droite" text rounded severity="secondary" @click="moveWidget(1)"/>
+                <Button icon="pi pi-trash" size="small" title="Retirer le widget" aria-label="Retirer le widget" text rounded severity="danger" @click="toggleWidget()"/>
             </div>
-            <Button icon="pi pi-times" size="small" text rounded title="Fermer le panneau de configuration" @click="isEditing = !isEditing"/>
+            <Button icon="pi pi-times" size="small" text rounded title="Fermer le panneau de configuration" aria-label="Fermer le panneau de configuration" @click="isEditing = !isEditing"/>
         </div>
         <Divider/>
     </div>
@@ -97,8 +119,15 @@ const toggleWidget = () => {
                 </span>
             </div>
         </div>
-        <Button v-if="!isEditing" icon="pi pi-cog" size="small" text rounded title="Configurer le widget" @click="isEditing = !isEditing"/>
+        <Button v-if="!isEditing" icon="pi pi-cog" size="small" text rounded title="Configurer le widget" aria-label="Configurer le widget" @click="isEditing = !isEditing"/>
     </div>
     <component :is="resolvedComponent" :data="data" :widget="widget" />
 </article>
 </template>
+
+<style scoped>
+/* Sans cela, le navigateur prend le geste du doigt pour un défilement et le glisser n'a jamais lieu. */
+.poignee-widget {
+    touch-action: none;
+}
+</style>
