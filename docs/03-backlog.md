@@ -36,7 +36,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 | CI-Back : PHPStan | niveau 10 (max) et `phpstan-strict-rules`, 0 erreur ; 12 `@phpstan-ignore` justifiés (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
-| CI-Cypress : 17 fichiers, 80 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
+| CI-Cypress : 22 fichiers, 95 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
@@ -942,6 +942,11 @@ action. RECH-8, trois blocs « pas de résultat » s'affichent simultanément.
 ferme sur un message, pas sur un commit.
 
 ### D6 · Recherche en mobile · S
+**Fait** (JEREMY, #147), mergé sur `develop`. Un bouton « Rechercher » de 44 px dans la barre
+haute ouvre le champ sous la barre et y place le focus ; Échap referme la liste puis le champ. C'est
+le même `AppSearch` qu'en bureau. Test : `recherche-mobile.cy.js`.
+**Reste** la bordure du champ PrimeVue mesure 2,91:1 en clair et 2,29:1 en sombre, sous le seuil
+de 3:1, en mobile comme en bureau : à brancher sur `--ui-border-color` avec LOU.
 **Pourquoi** RECH-11 : sous 1 024 px, les deux champs de recherche sont masqués.
 
 ---
@@ -956,16 +961,40 @@ l'audit 05 : ces écrans existent mais sont vides ou cassés.
 aucune note, absence ni moyenne. Reprend C4.
 **Fait** #49 (`GET /api/me/scolarite`, moyennes calculées à la volée) et #50 (page). Test : `scolarite.cy.js`.
 
-### F2 · Cahier de texte · M
+### F2 · [back + front] Cahier de texte · M
+**En revue** (JEREMY, #154). Ni l'intranet V3 ni uniServices ne modélisent de cahier de texte :
+la page lit ce que les enseignants saisissent déjà, sans nouvelle table. `GET /api/me/cahier-de-texte`
+renvoie les évaluations datées d'aujourd'hui ou plus tard, sauf annulées, et les plans de cours à
+l'état « Complet » des matières du semestre (objectifs, évaluation, travaux à rendre, programme,
+séances réalisées), sans les champs de suivi de l'équipe pédagogique. Tests :
+`CourseLogAssemblerTest`, `cahierDeTexte.test.js`, `cahier-de-texte.cy.js`.
+**À confirmer avec le client** le contenu attendu de la page (question 4 de l'audit 05).
 **Pourquoi** SCO-2 : même gabarit inachevé.
 
 ### F3 · Profil étudiant rempli · S
+**Fait** (JEREMY, #145), mergé sur `develop`. La page appelait le composant sans l'identifiant de
+l'étudiant, donc `/api/etudiants/undefined`. Champs sans valeur : « Non renseigné ». La date de
+naissance ne dit plus « Âge inconnu ans », l'adresse à copier est un bouton utilisable au clavier.
+Tests : `naissance.test.js`, `profil-etudiant.cy.js`.
 **Pourquoi** SCO-3 : prénom, nom, login et adresse restent vides alors que l'API les renvoie.
 
 ### F4 · Trombinoscope : plus de JSON brut · S
+**Fait** (JEREMY, #152), mergé sur `develop`. La carte affichait l'objet `EtudiantScolarite` tel quel ; l'API ne
+porte aucun libellé de semestre à mettre à la place, l'étiquette est donc retirée, et l'adresse se
+coupe dans la carte. Test : `trombinoscope-fiches.cy.js`.
+L'écran est réservé au personnel depuis F5, hors de notre périmètre : la correction se limite à
+`PersonCard.vue`.
+**Reste** afficher le semestre demandera de l'exposer dans `/api/etudiants`, côté back.
 **Pourquoi** TROMBI-1, **Critique** : chaque fiche affiche un objet JSON de l'API.
 
 ### F5 · Trombinoscope : accès étudiant et export · S
+**Fait** (JEREMY, #150), mergé sur `develop`. Faute de réponse du client (question 3 de l'audit 05), le
+trombinoscope est réservé au personnel : la route porte `permission: 'isPersonnel'`, l'étudiant qui
+en saisit l'adresse arrive sur « Accès refusé », et l'export ne lui est plus proposé. Le garde du
+routeur envoyait tout refus sur la page 404 (`/app/app/access`) : corrigé, pour toutes les routes
+à permission. Test : `trombinoscope-acces.cy.js`.
+**À confirmer avec le client** l'ouvrir aux étudiants demanderait une route back limitée à leur
+promotion, sans export.
 **Pourquoi** TROMBI-2 : un bouton « Exporter les données » est proposé à un étudiant.
 
 ---
