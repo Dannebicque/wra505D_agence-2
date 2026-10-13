@@ -105,11 +105,16 @@
         display: flex;
         gap: 1rem;
         align-items: center;
+    }
 
-        .layout-topbar-search {
-            flex-grow: 1;
-            max-width: 300px;
-        }
+    .layout-topbar-search-mobile {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background-color: var(--surface-card);
+        border-bottom: 1px solid var(--surface-border);
     }
 
     .layout-topbar-menu-content {
@@ -173,10 +178,6 @@
         .layout-topbar-actions {
             margin-left: 0;
             display: flex;
-
-            .layout-topbar-search {
-                display: none;
-            }
         }
 
         .layout-topbar-menu {

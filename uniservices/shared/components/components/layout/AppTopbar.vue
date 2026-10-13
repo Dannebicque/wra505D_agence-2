@@ -1,6 +1,6 @@
 <script setup>
 import { useLayout } from './composables/layout.js';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { AVAILABLE_ROLES } from "@utils/permissions";
 import Logo from '@components/components/Logo.vue';
 import AppSearch from './AppSearch.vue';
@@ -183,18 +183,60 @@ const fermerActions = (event) => {
   }
 };
 
+// Sous 1 024 px, le champ de la barre n'a plus la place : un bouton l'ouvre sous la barre.
+const ID_RECHERCHE_MOBILE = 'recherche-globale-mobile';
+const rechercheOuverte = ref(false);
+const boutonRecherche = ref(null);
+const panneauRecherche = ref(null);
+
+const basculerRecherche = async () => {
+  rechercheOuverte.value = !rechercheOuverte.value;
+  if (rechercheOuverte.value) {
+    await nextTick();
+    document.getElementById(ID_RECHERCHE_MOBILE)?.focus();
+  }
+};
+
+const fermerRecherche = (event) => {
+  if (!rechercheOuverte.value) {
+    return;
+  }
+  if (event.type === 'keydown') {
+    // Le premier Échap referme la liste des propositions, le suivant le panneau.
+    if (event.key !== 'Escape' || event.target.getAttribute?.('aria-expanded') === 'true') {
+      return;
+    }
+    rechercheOuverte.value = false;
+    boutonRecherche.value?.focus();
+    return;
+  }
+  // La liste des propositions est rendue hors du panneau, dans le corps de la page.
+  const dansLaRecherche = panneauRecherche.value?.contains(event.target)
+    || boutonRecherche.value?.contains(event.target)
+    || event.target.closest?.('.app-search-overlay');
+  if (!dansLaRecherche) {
+    rechercheOuverte.value = false;
+  }
+};
+
 watch(() => route.fullPath, () => {
   actionsOuvertes.value = false;
+  rechercheOuverte.value = false;
 });
 
 onMounted(() => {
   document.addEventListener('click', fermerActions);
   document.addEventListener('keydown', fermerActions);
+  document.addEventListener('click', fermerRecherche);
+  // En capture : la liste des propositions est encore ouverte quand son Échap arrive.
+  document.addEventListener('keydown', fermerRecherche, true);
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', fermerActions);
   document.removeEventListener('keydown', fermerActions);
+  document.removeEventListener('click', fermerRecherche);
+  document.removeEventListener('keydown', fermerRecherche, true);
 });
 
 const anneeMenu = ref();
@@ -336,9 +378,18 @@ const selectAnneeUniversitaire = (annee) => {
     </div>
 
     <div class="layout-topbar-actions">
-      <div v-if="route.name !== 'portail'" class="layout-topbar-search lg:hidden">
-        <AppSearch input-id="recherche-globale-mobile" />
-      </div>
+      <button
+          v-if="route.name !== 'portail'"
+          ref="boutonRecherche"
+          type="button"
+          class="layout-topbar-action w-11! h-11! lg:hidden!"
+          aria-label="Rechercher"
+          :aria-expanded="rechercheOuverte ? 'true' : 'false'"
+          aria-controls="recherche-mobile"
+          @click="basculerRecherche"
+      >
+        <i class="pi pi-search" aria-hidden="true"></i>
+      </button>
 
       <button
           ref="boutonActions"
@@ -429,6 +480,15 @@ const selectAnneeUniversitaire = (annee) => {
         </div>
       </div>
 
+    </div>
+
+    <div
+        v-if="rechercheOuverte"
+        id="recherche-mobile"
+        ref="panneauRecherche"
+        class="layout-topbar-search-mobile lg:hidden"
+    >
+      <AppSearch :input-id="ID_RECHERCHE_MOBILE" />
     </div>
   </header>
 </template>
