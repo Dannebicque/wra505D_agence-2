@@ -897,6 +897,36 @@ l'étudiant, menu d'options où l'abonnement iCal a sa place, désactivé et mar
 **JEREMY**, titulaire de la colonne C et auteur de C3, C14 et C15 sur `EdtEtudiant.vue`, est
 d'accord (13/10/2026).
 
+### C18 · [front] Accueil de l'étudiant recentré sur l'instant · M, 5 lots
+**Pourquoi** audit du 13/10/2026 (code et capture). En 1 440 x 900, le premier widget commence à
+400 px, et environ 190 px ne disent que le prénom et la date : titre « Dashboard », phrase,
+« Bonjour » et avatar, déjà présent dans la barre du haut. En mobile, aucun widget n'est visible
+sans défiler (MOB-10). La personnalisation existe deux fois : carte « Mon dashboard » vers
+`/widgets` (jargon « Taille par défaut 2 × 1 (colonnes × lignes) ») et mode édition par carte
+(flèches, corbeille, glisser-déposer), pour cinq widgets. « Maintenant » et « Aujourd'hui » lisent
+deux sources différentes, d'où le risque de TB-9.
+**Décidé avec LCS (13/10/2026)**, le client n'ayant pas répondu (question 4, décision 3) :
+- ordre par importance : 1. où être maintenant, puis la journée, sur une même carte ; 2. notes et
+  absences ; 3. actualités du département, puis de l'IUT ; 4. contacts, seulement si l'étudiant
+  les ajoute ;
+- personnalisation légère : la carte du haut est fixe, l'étudiant affiche ou masque les blocs
+  secondaires depuis un bouton « Personnaliser » qui ouvre un panneau (Drawer). Plus de page
+  `/widgets`, de mode édition par carte ni de glisser-déposer pour lui. Le personnel et le portail
+  gardent leur fonctionnement : `WidgetCard`, `DashboardWidgetsConfiguration`, `DashboardController`
+  et `DashboardPreference` sont partagés.
+**Terminé quand** le haut de l'accueil montre la situation du moment sans défiler, en bureau et en
+mobile, et que l'étudiant masque un bloc au clavier depuis le panneau. Cypress, clair et sombre.
+
+| Lot | Contenu | État |
+|---|---|---|
+| C18.1 | en-tête : `h1` « Accueil » réservé aux lecteurs d'écran, plus de grand titre, d'avatar ni de carte « Mon dashboard » ; bonjour et date en tête de la carte du moment | à faire |
+| C18.2 | carte du moment : « Maintenant » et la journée sur une même carte (C17.7), une seule source, `/api/me/emploi-du-temps` | à faire |
+| C18.3 | disposition fixe : carte du moment en colonne large, notes puis actualités à droite, une colonne en mobile | à faire |
+| C18.4 | « Personnaliser » : Drawer, un interrupteur par bloc secondaire, `PATCH` de mise en page existant (`enabled`) | à faire |
+| C18.5 | nettoyages : `initiales` jamais déclaré (rond vide sans photo), `intranet.documents_recents` au catalogue sans définition, fil d'Ariane « Dashboard » (P5) | à faire |
+
+**JEREMY** est titulaire de la colonne C : à prévenir avant d'attaquer.
+
 ## Colonne D — Recherche
 
 **Priorité 1 du projet**, et la colonne la plus lourde. RECH-1 est, selon l'audit, le défaut le
@@ -1066,7 +1096,8 @@ non plus. Les constats sont solides sur le code et les mesures, plus fragiles su
    icônes de catégories de documents. Préciser si la règle vaut pour le code que nous écrivons ou
    pour tout le dépôt.
 3. **Personnalisation du tableau de bord.** Ouverte aux étudiants, ou réservée au personnel ?
-   L'API tranche aujourd'hui par un 403, l'interface prétend le contraire.
+   **Tranché le 13/10/2026** : légère pour l'étudiant, afficher ou masquer les blocs secondaires
+   seulement (C18).
 
 ## Questions au client toujours sans réponse
 
