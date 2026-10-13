@@ -378,6 +378,7 @@ contrôle d'accès : un anonyme peut créer des étudiants. La page Profil de l'
   ouvrir un, l'ajouter au groupe `etudiant:write` et le justifier.
 - Un test Cypress qui appelle ces routes doit se connecter (`personnel` pour la liste), et vider
   ses cookies si `before()` s'est connecté (voir `fiches-etudiants.cy.js`).
+
 ### E14 · [back] Notre code back en anglais · M par module
 **Pourquoi** le code ajouté depuis la reprise mêle anglais et français : `MoteurRecherche`,
 `CentreNotifications`, `marquerLues()`, `synchroniserCalendrier()`.
