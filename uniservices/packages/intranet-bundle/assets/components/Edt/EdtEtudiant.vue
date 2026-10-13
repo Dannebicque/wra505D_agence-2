@@ -452,6 +452,13 @@ const detail = computed(() => {
   background-clip: content-box !important;
 }
 
+/* Le menu n'a encore que des entrées « Bientôt » : sur téléphone, il ferait déborder la barre. */
+@media (max-width: 767px) {
+  .edt-barre__options {
+    display: none !important;
+  }
+}
+
 .edt-barre__options:focus-visible {
   outline-offset: -6px;
 }
