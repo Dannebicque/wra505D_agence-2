@@ -379,7 +379,7 @@ const detail = computed(() => {
                 aria-label="Plus d'options"
                 aria-haspopup="true"
                 aria-controls="edt-options"
-                class="min-w-[44px]! min-h-[44px]!"
+                class="edt-barre__options min-w-[44px]! min-h-[44px]!"
                 @click="options.toggle($event)"
             />
             <Menu id="edt-options" ref="options" :model="menuOptions" popup class="edt-options">
@@ -442,6 +442,12 @@ const detail = computed(() => {
 
 .edt-barre__fleches {
   @apply flex items-center rounded-full bg-emphasis;
+}
+
+/* La cible reste de 44 px, mais le fond du survol ne couvre que les 32 px du centre. */
+.edt-barre__options {
+  padding: 6px !important;
+  background-clip: content-box !important;
 }
 
 .edt-barre__aujourdhui {
