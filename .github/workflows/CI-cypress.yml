@@ -70,15 +70,13 @@ jobs:
           php bin/console app:celcat:sync
 
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: '22'
-          cache: pnpm
-          cache-dependency-path: uniservices/pnpm-lock.yaml
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install front-end dependencies
         run: pnpm install --frozen-lockfile
