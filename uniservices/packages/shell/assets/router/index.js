@@ -101,13 +101,13 @@ router.beforeEach(async (to, from) => {
     // Check package access
     const requiredPackage = to.meta.package || to.matched.find(record => record.meta.package)?.meta.package;
     if (requiredPackage && !security.hasPackage(requiredPackage)) {
-      return '/app/access';
+      return { name: 'access' };
     }
 
     // Permission checks
     const requiredPermission = to.meta.permission || to.matched.find(record => record.meta.permission)?.meta.permission;
     if (requiredPermission && !hasPermission(requiredPermission)) {
-      return '/app/access';
+      return { name: 'access' };
     }
 
     // L'étudiant n'a qu'une application : le portail ne lui propose rien, il arrive sur son accueil.
