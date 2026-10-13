@@ -51,3 +51,12 @@ export function parseApiDate(dateStr) {
     const day = parseInt(parts[2], 10);
     return new Date(year, month, day);
 };
+
+export function formatNaissance(dateNaissance, aujourdHui = new Date()) {
+    const naissance = parseApiDate(typeof dateNaissance === 'string' ? dateNaissance.slice(0, 10) : dateNaissance);
+    if (!naissance || isNaN(naissance.getTime())) return null;
+    const anniversairePasse = aujourdHui.getMonth() > naissance.getMonth()
+        || (aujourdHui.getMonth() === naissance.getMonth() && aujourdHui.getDate() >= naissance.getDate());
+    const age = aujourdHui.getFullYear() - naissance.getFullYear() - (anniversairePasse ? 0 : 1);
+    return `${naissance.toLocaleDateString('fr-FR')} (${age} ans)`;
+}

@@ -23,7 +23,7 @@ onMounted(async () => {
   />
   <div class="card">
     <ProfilPersonnel v-if="isPersonnel" />
-    <ProfilEtudiant v-if="isEtudiant" :etudiant-sco="store.scolariteActif" :etudiant-photo="store.userPhoto" />
+    <ProfilEtudiant v-if="isEtudiant && store.user?.id" :etudiant-id="store.user.id" />
   </div>
 </template>
 

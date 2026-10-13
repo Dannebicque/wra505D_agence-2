@@ -1,9 +1,8 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useToast } from "primevue/usetoast";
-import { fr } from "date-fns/locale";
-import { format, parseISO, differenceInYears } from "date-fns";
 import { formatAdresse } from "@helpers/adresse.js";
+import { formatNaissance } from "@helpers/date.js";
 import { updateEtudiantService, getEtudiantService, getGroupesService } from "@requests";
 import { ValidatedInput, validationRules, ErrorView, PermissionGuard } from "@components";
 import { PhotoUser } from "@components";
@@ -42,7 +41,7 @@ const getEtudiantDetails = async (etudiantId) => {
     originalEtudiant.value = JSON.parse(JSON.stringify(etudiant.value));
   } catch (error) {
     console.error("Erreur lors de la récupération des détails de l'étudiant :", error);
-    throw error;
+    hasError.value = true;
   } finally {
     isLoadingEtudiant.value = false;
   }
@@ -67,17 +66,7 @@ const copyToClipboard = (email) => {
   }).catch(() => alert("Échec de la copie."));
 };
 
-// Formater la date de naissance
-const formattedDateNaissance = computed(() => {
-  if (!etudiant.value.date_naissance) return "Non spécifiée";
-  return format(parseISO(etudiant.value.date_naissance), "dd/MM/yyyy", { locale: fr });
-});
-
-// Calculer l'âge
-const age = computed(() => {
-  if (!etudiant.value.date_naissance) return "Âge inconnu";
-  return differenceInYears(new Date(), parseISO(etudiant.value.date_naissance));
-});
+const naissance = computed(() => formatNaissance(etudiant.value.date_naissance));
 
 const initializeAddressObjects = () => {
   formErrors.value = {};
@@ -206,9 +195,14 @@ const updateEtudiantData = async () => {
             <div class="first-letter:uppercase lowercase">{{ etudiant.prenom }}</div>
             <div class="uppercase">{{ etudiant.nom }}</div>
           </div>
-          <div class="text-center underline hover:cursor-pointer" @click="copyToClipboard(etudiant.mailUniv)">
+          <button
+              type="button"
+              class="min-h-11 rounded text-center underline break-all hover:cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 dark:focus-visible:outline-primary-400"
+              :aria-label="`Copier l'adresse ${etudiant.mailUniv}`"
+              @click="copyToClipboard(etudiant.mailUniv)"
+          >
             {{ etudiant.mailUniv }} <i class="pi pi-copy" aria-hidden="true"></i>
-          </div>
+          </button>
           <hr>
         </div>
       </div>
@@ -222,20 +216,20 @@ const updateEtudiantData = async () => {
             <ul class="md:w-1/3 flex flex-col gap-2">
               <li><span class="font-bold">Prénom :</span> {{etudiant.prenom}}</li>
               <li><span class="font-bold">Nom :</span> {{etudiant.nom}}</li>
-              <li><span class="font-bold">Date de naissance :</span> {{ formattedDateNaissance }} ({{ age }} ans)</li>
-              <li><span class="font-bold">Bac :</span> {{ etudiant.bac?.libelle }}</li>
+              <li><span class="font-bold">Date de naissance :</span> {{ naissance || 'Non renseignée' }}</li>
+              <li><span class="font-bold">Bac :</span> {{ etudiant.bac?.libelle || 'Non renseigné' }}</li>
             </ul>
 
             <ul class="md:w-1/3 flex flex-col gap-2">
-              <li><span class="font-bold">Promotion :</span> {{ etudiant.promotion }}</li>
-              <li><span class="font-bold">Numéro étudiant :</span> {{ etudiant.num_etudiant }}</li>
-              <li><span class="font-bold">Numéro INE :</span> {{ etudiant.num_ine }}</li>
+              <li><span class="font-bold">Promotion :</span> {{ etudiant.promotion || 'Non renseignée' }}</li>
+              <li><span class="font-bold">Numéro étudiant :</span> {{ etudiant.num_etudiant || 'Non renseigné' }}</li>
+              <li><span class="font-bold">Numéro INE :</span> {{ etudiant.num_ine || 'Non renseigné' }}</li>
               <li><span class="font-bold">Login URCA :</span> {{ etudiant.username }}</li>
             </ul>
 
             <ul class="md:w-1/3 flex flex-col gap-2">
               <li><span class="font-bold">Mail univ :</span> {{ etudiant.mailUniv }}</li>
-              <li><span class="font-bold">Portfolio univ :</span> {{ etudiant.siteUniv || 'Non renseigné' }}</li>
+              <li><span class="font-bold">Portfolio univ :</span> {{ etudiant.site_univ || 'Non renseigné' }}</li>
             </ul>
           </div>
         </div>
