@@ -887,7 +887,7 @@ Cypress, en bureau et en mobile, en clair et en sombre, sur une base neuve.
 | C17.4 | mobile : bandeau des jours, journée en liste avec ses pauses, balayage | en partie : jour tenu en long, semaine en large, « Aujourd'hui » flottant ; reste le bandeau, la liste, le balayage |
 | C17.5 | date et vue dans l'URL, cache, chargement, état vide, erreur avec « Réessayer » | en partie : sélecteur de semaine avec la charge de chacune, semaines de vacances illustrées ; reste l'URL, le cache, « Réessayer » |
 | C17.6 | détail d'un cours modal, feuille du bas en mobile, liens vers la matière | en partie : modal, fermé d'un clic à côté, aux couleurs du type ; reste la feuille du bas et les liens |
-| C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte | en partie : « Aujourd'hui » est la journée de l'agenda, réduite aux heures de ses cours ; reste la carte commune |
+| C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte | fait (C18.2) |
 
 **Fait aussi, au fil des retours de LCS et LOU** : couleurs de séance dans la DA (pastilles
 foncées à texte blanc, 6,52:1 au moins), cartes arrondies à la manière du logo, demi-heures
@@ -919,11 +919,11 @@ mobile, et que l'étudiant masque un bloc au clavier depuis le panneau. Cypress,
 
 | Lot | Contenu | État |
 |---|---|---|
-| C18.1 | en-tête : `h1` « Accueil » réservé aux lecteurs d'écran, plus de grand titre, d'avatar ni de carte « Mon dashboard » ; bonjour et date en tête de la carte du moment | à faire |
-| C18.2 | carte du moment : « Maintenant » et la journée sur une même carte (C17.7), une seule source, `/api/me/emploi-du-temps` | à faire |
-| C18.3 | disposition fixe : carte du moment en colonne large, notes puis actualités à droite, une colonne en mobile | à faire |
-| C18.4 | « Personnaliser » : Drawer, un interrupteur par bloc secondaire, `PATCH` de mise en page existant (`enabled`) | à faire |
-| C18.5 | nettoyages : `initiales` jamais déclaré (rond vide sans photo), `intranet.documents_recents` au catalogue sans définition, fil d'Ariane « Dashboard » (P5) | à faire |
+| C18.1 | en-tête : `h1` « Accueil » sur une ligne avec « Personnaliser », plus de grand titre, d'avatar ni de carte « Mon dashboard » ; bonjour et date en tête de la carte du moment | fait |
+| C18.2 | carte du moment : « Maintenant » et la journée sur une même carte (C17.7), une seule source, `/api/me/emploi-du-temps` | fait : « Maintenant » reçoit les cours lus par l'agenda du jour |
+| C18.3 | disposition fixe : carte du moment en colonne large, notes puis actualités à droite, une colonne en mobile | fait |
+| C18.4 | « Personnaliser » : Drawer, un interrupteur par bloc secondaire, `PATCH` de mise en page existant (`enabled`) | fait : clavier, focus rendu au bouton à la fermeture |
+| C18.5 | nettoyages : `initiales` jamais déclaré (rond vide sans photo), `intranet.documents_recents` au catalogue sans définition, fil d'Ariane « Dashboard » (P5) | fait : l'avatar part avec C18.1 ; catalogue et fil d'Ariane délégués à OpenCode |
 
 **JEREMY** est titulaire de la colonne C : à prévenir avant d'attaquer.
 
