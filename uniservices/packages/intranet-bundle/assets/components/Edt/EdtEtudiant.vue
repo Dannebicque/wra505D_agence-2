@@ -444,8 +444,8 @@ const detail = computed(() => {
   @apply flex items-center rounded-full bg-emphasis;
 }
 
-/* La cible reste de 44 px, mais le survol, le clic et le focus ne dessinent que le rond de 32 px
-   du centre, aligné sur le bord droit de la grille. */
+/* La cible reste de 44 px, mais le survol et le focus ne dessinent que le rond de 32 px du centre,
+   aligné sur le bord droit de la grille. */
 .edt-barre__options {
   margin-right: -6px;
   padding: 6px !important;
@@ -456,8 +456,14 @@ const detail = computed(() => {
   outline-offset: -6px;
 }
 
+/* Pas d'effet au clic : l'appui garde le rond du survol. */
 .edt-barre__options :deep(.p-ink) {
-  clip-path: circle(16px at 50% 50%);
+  display: none;
+}
+
+.edt-barre__options:active {
+  background: var(--p-button-text-primary-hover-background) !important;
+  background-clip: content-box !important;
 }
 
 .edt-barre__aujourdhui {
