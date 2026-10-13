@@ -20,6 +20,7 @@ onMounted(() => {
         }));
       })
       .catch(() => {
+        departement.value = [];
         hasError.value = true;
       });
   getWidgetDataByCodeService('intranet.actualites_iut')
