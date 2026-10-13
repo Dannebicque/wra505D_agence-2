@@ -5,6 +5,7 @@ import 'vue-cal/style'
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
 import CoursCarte from './CoursCarte.vue'
 import SelecteurSemaine from './SelecteurSemaine.vue'
+import VacancesConfettis from './VacancesConfettis.vue'
 import {getMesSemainesService, getMonEmploiDuTempsService} from "@requests";
 import {getISOWeekNumber} from "@helpers/date";
 import {annonceAgenda, joursDeLaSemaine, libelleCours, libelleSemaine, titrePeriode, typeSeance} from '@/utils/agenda.js';
@@ -29,6 +30,9 @@ const plage = ref({debut: '08:00', fin: '20:00'});
 const events = ref([]);
 const semaines = ref([]);
 const hauteurHeure = ref(56);
+// Position de la grille dans le cadre : vue-cal remplace son corps à chaque semaine, la carte des
+// vacances se pose donc sur le cadre, à l'emplacement mesuré de la grille.
+const zoneGrille = ref({});
 const maintenant = ref(new Date());
 const horloge = setInterval(() => { maintenant.value = new Date(); }, 60000);
 
@@ -89,6 +93,22 @@ const ajusterHauteur = () => {
   const disponible = window.innerHeight - (corps.getBoundingClientRect().top + defilement) - MARGE_BAS;
   const heures = Math.max(1, (minutes(plage.value.fin) - minutes(plage.value.debut)) / 60);
   hauteurHeure.value = Math.min(HAUTEUR_HEURE_MAX, Math.max(HAUTEUR_HEURE_MIN, Math.floor(disponible / heures)));
+  nextTick(mesurerGrille);
+};
+
+const mesurerGrille = () => {
+  const corps = cadre.value?.querySelector('.vuecal__body');
+  if (!corps) {
+    return;
+  }
+  const origine = cadre.value.getBoundingClientRect();
+  const grille = corps.getBoundingClientRect();
+  zoneGrille.value = {
+    top: `${grille.top - origine.top}px`,
+    left: `${grille.left - origine.left}px`,
+    width: `${grille.width}px`,
+    height: `${grille.height}px`,
+  };
 };
 
 let redimensionnement = null;
@@ -105,6 +125,10 @@ const chargerSemaines = async () => {
     semaines.value = [];
   }
 };
+
+// Une semaine sans cours, entre deux semaines de cours de l'année : ce sont les vacances.
+const vacances = computed(() => events.value.length === 0
+  && semaines.value.some(semaine => semaine.lundi === semaineChargee.value && semaine.minutes === 0));
 
 const choisirSemaine = (lundi) => {
   const [annee, mois, jour] = lundi.split('-').map(Number);
@@ -360,6 +384,7 @@ const detail = computed(() => {
         <button type="button" class="edt-cours" :aria-label="libelleCours(event)"></button>
       </template>
     </vue-cal>
+    <VacancesConfettis v-if="vacances" :style="zoneGrille" />
   </div>
 </template>
 
@@ -368,7 +393,7 @@ const detail = computed(() => {
 
 /* Le cadre .card de la page n'a pas de marge intérieure : l'agenda prend la sienne. */
 .edt-cadre {
-  @apply px-3 pt-3 pb-1 md:px-6 md:pt-5;
+  @apply relative px-3 pt-3 pb-1 md:px-6 md:pt-5;
 }
 
 /* vue-cal réserve une barre « toute la journée » qu'un emploi du temps n'a pas. */
@@ -557,6 +582,7 @@ const detail = computed(() => {
 }
 
 :deep(.vuecal__body) {
+  @apply relative;
   border-bottom: 1px solid var(--p-content-border-color);
 }
 

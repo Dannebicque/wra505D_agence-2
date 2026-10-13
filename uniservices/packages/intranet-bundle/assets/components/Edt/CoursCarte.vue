@@ -134,11 +134,11 @@ const etat = computed(() => {
 
 .cours-carte__pastille {
   @apply inline-block font-bold uppercase whitespace-nowrap align-middle mr-1.5;
-  padding: 0 0.4375rem;
+  padding: 0 0.5rem;
   border-radius: 999px;
-  font-size: 0.6875rem;
-  line-height: 1.125rem;
-  letter-spacing: 0.02em;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.03em;
   color: var(--seance-pastille-texte);
   background: var(--seance-pastille);
 }

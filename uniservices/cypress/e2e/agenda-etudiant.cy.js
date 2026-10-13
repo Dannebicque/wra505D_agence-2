@@ -151,6 +151,14 @@ describe('Semaine de l\'étudiant en bureau', () => {
         cy.get('.selecteur-semaine').should('not.exist');
     });
 
+    it('fête une semaine de vacances au lieu d\'une grille vide', () => {
+        cy.get('.vacances').should('not.exist');
+        cy.get('.selecteur-semaine__declencheur').click();
+        cy.contains('.selecteur-semaine__semaine', 'Vacances').click();
+        cy.contains('.vacances', 'Vacances !').should('be.visible');
+        cy.get('.cours-carte').should('not.exist');
+    });
+
     it('ferme le détail d\'un cours d\'un clic à côté', () => {
         cy.get('button.edt-cours').first().click({ force: true });
         cy.get('[role="dialog"]').should('be.visible').and('contain', ' – ');

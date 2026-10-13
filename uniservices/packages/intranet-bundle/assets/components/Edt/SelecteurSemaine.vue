@@ -87,8 +87,11 @@ const choisir = (lundi) => {
       :aria-expanded="ouverte"
       @click="basculer"
   >
-    <span class="selecteur-semaine__titre">{{ titre }}</span>
-    <span class="selecteur-semaine__sous-titre">{{ sousTitre }}</span>
+    <span class="selecteur-semaine__rond" aria-hidden="true"><i class="pi pi-calendar"></i></span>
+    <span class="selecteur-semaine__textes">
+      <span class="selecteur-semaine__titre">{{ titre }}</span>
+      <span class="selecteur-semaine__sous-titre">{{ sousTitre }}</span>
+    </span>
   </button>
 
   <Popover ref="fenetre" class="selecteur-semaine" aria-label="Choisir une semaine" @show="auDebut" @hide="ouverte = false">
@@ -125,23 +128,37 @@ const choisir = (lundi) => {
 <style scoped>
 @reference "../../assets/tailwind.css";
 
-/* La période est une pastille, comme les flèches à côté d'elle : le survol suffit à dire qu'elle
-   s'ouvre. */
+/* La période se lit comme un titre : pas de fond, seulement un rond violet, comme les cercles du
+   logo, qui dit qu'elle s'ouvre. Le survol la teinte à peine. */
 .selecteur-semaine__declencheur {
-  @apply flex flex-col items-start gap-0.5 rounded-3xl bg-emphasis border-0 cursor-pointer text-left;
-  padding: 0.375rem 1.125rem;
+  @apply flex items-center gap-3 rounded-full bg-transparent border-0 cursor-pointer text-left;
+  padding: 0.25rem 1rem 0.25rem 0.25rem;
   min-height: 44px;
   font: inherit;
   color: inherit;
   transition: background-color 150ms ease;
   &:hover,
   &[aria-expanded="true"] {
-    background: color-mix(in srgb, var(--p-primary-color) 10%, var(--p-content-hover-background));
+    background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
   }
   &:focus-visible {
     outline: 3px solid var(--p-primary-color);
     outline-offset: 2px;
   }
+}
+
+.selecteur-semaine__rond {
+  @apply flex items-center justify-center shrink-0 w-11 h-11 rounded-full bg-primary text-primary-contrast;
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.selecteur-semaine__declencheur:hover .selecteur-semaine__rond,
+.selecteur-semaine__declencheur[aria-expanded="true"] .selecteur-semaine__rond {
+  transform: scale(1.08);
+}
+
+.selecteur-semaine__textes {
+  @apply flex flex-col gap-0.5 min-w-0;
 }
 
 .selecteur-semaine__titre {
