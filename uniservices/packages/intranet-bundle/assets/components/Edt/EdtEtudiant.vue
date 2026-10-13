@@ -4,7 +4,8 @@ import 'vue-cal/style'
 
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
 import CoursCarte from './CoursCarte.vue'
-import {getMonEmploiDuTempsService} from "@requests";
+import SelecteurSemaine from './SelecteurSemaine.vue'
+import {getMesSemainesService, getMonEmploiDuTempsService} from "@requests";
 import {getISOWeekNumber} from "@helpers/date";
 import {annonceAgenda, joursDeLaSemaine, libelleCours, libelleSemaine, titrePeriode, typeSeance} from '@/utils/agenda.js';
 import {formatDelai, minutesEntre, parseEdtDate} from '@/utils/prochainCours.js';
@@ -26,6 +27,7 @@ const semaineFormation = ref(null);
 // pas de hauteur d'une semaine à l'autre.
 const plage = ref({debut: '08:00', fin: '20:00'});
 const events = ref([]);
+const semaines = ref([]);
 const hauteurHeure = ref(56);
 const maintenant = ref(new Date());
 const horloge = setInterval(() => { maintenant.value = new Date(); }, 60000);
@@ -94,7 +96,23 @@ const surRedimensionnement = () => {
   cancelAnimationFrame(redimensionnement);
   redimensionnement = requestAnimationFrame(ajusterHauteur);
 };
+// La charge de chaque semaine de l'année, pour le sélecteur : une seule lecture. Sans elle, le
+// titre reste un simple titre.
+const chargerSemaines = async () => {
+  try {
+    semaines.value = (await getMesSemainesService()).semaines;
+  } catch (error) {
+    semaines.value = [];
+  }
+};
+
+const choisirSemaine = (lundi) => {
+  const [annee, mois, jour] = lundi.split('-').map(Number);
+  vuecalRef.value?.view.updateViewDate(new Date(annee, mois - 1, jour));
+};
+
 onMounted(() => {
+  chargerSemaines();
   window.addEventListener('resize', surRedimensionnement);
   telephoneEnLong.addEventListener('change', suivreOrientation);
 });
@@ -285,7 +303,16 @@ const detail = computed(() => {
               />
             </div>
             <div class="min-w-0">
-              <h2 class="edt-barre__titre">{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</h2>
+              <h2 class="edt-barre__titre">
+                <SelecteurSemaine
+                    v-if="semaines.length"
+                    :semaines="semaines"
+                    :lundi-affiche="semaineChargee"
+                    :lundi-courant="isoDate(lundiDe(maintenant))"
+                    @choisir="choisirSemaine"
+                >{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</SelecteurSemaine>
+                <template v-else>{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</template>
+              </h2>
               <p class="edt-barre__semaine">{{ libelleSemaine(getISOWeekNumber(view.firstCellDate), semaineFormation) }}</p>
             </div>
           </div>

@@ -138,6 +138,19 @@ describe('Semaine de l\'étudiant en bureau', () => {
         cy.get('button[aria-label="Aujourd\'hui"]').should('not.exist');
     });
 
+    it('choisit une semaine dans la liste de l\'année, chacune avec sa charge', () => {
+        cy.get('.selecteur-semaine__declencheur').click();
+        cy.get('.selecteur-semaine__semaine[aria-current="true"]').should('be.focused').and('contain', ' h ');
+        cy.contains('.selecteur-semaine__semaine', 'Pas de cours').should('exist');
+        cy.get('.selecteur-semaine__semaine[aria-current="true"]').parent().next().find('button').click();
+        cy.get('.selecteur-semaine').should('not.exist');
+        cy.contains('[role="status"]', 'Semaine du');
+        cy.get('.selecteur-semaine__declencheur').click();
+        cy.get('.selecteur-semaine__semaine[aria-current="true"]').should('be.focused');
+        cy.press(Cypress.Keyboard.Keys.ESC);
+        cy.get('.selecteur-semaine').should('not.exist');
+    });
+
     it('ferme le détail d\'un cours d\'un clic à côté', () => {
         cy.get('button.edt-cours').first().click({ force: true });
         cy.get('[role="dialog"]').should('be.visible').and('contain', ' – ');
