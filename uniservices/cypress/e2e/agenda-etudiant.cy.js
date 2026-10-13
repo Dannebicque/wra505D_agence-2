@@ -111,7 +111,7 @@ describe('Semaine de l\'étudiant en bureau', () => {
     it('garde la plage horaire de l\'année, de 8 h à 19 h, d\'une semaine à l\'autre', () => {
         const plage = () => cy.get('.vuecal__time-cell').should(($heures) => {
             expect($heures.first().text().trim()).to.eq('08:00');
-            expect($heures.last().text().trim()).to.eq('18:30');
+            expect($heures.last().text().trim()).to.eq('18:00');
         });
         plage();
         cy.get('.vuecal__time-cell').last().then(($case) => {
@@ -124,6 +124,7 @@ describe('Semaine de l\'étudiant en bureau', () => {
     });
 
     it('tient entière à l\'écran, de 8 h à 19 h, sans défiler', () => {
+        cy.get('[aria-label="Fil d\'Ariane"]').should('not.exist');
         cy.get('.vuecal__body').should(($grille) => {
             const win = $grille[0].ownerDocument.defaultView;
             expect($grille[0].getBoundingClientRect().bottom).to.be.at.most(win.innerHeight);
@@ -131,10 +132,10 @@ describe('Semaine de l\'étudiant en bureau', () => {
     });
 
     it('ne propose « Aujourd\'hui » que si aujourd\'hui n\'est pas affiché', () => {
-        cy.contains('button', 'Aujourd\'hui').should('not.exist');
+        cy.get('button[aria-label="Aujourd\'hui"]').should('not.exist');
         cy.get('button[aria-label="Semaine suivante"]').click();
-        cy.contains('button', 'Aujourd\'hui').click();
-        cy.contains('button', 'Aujourd\'hui').should('not.exist');
+        cy.get('button[aria-label="Aujourd\'hui"]').click();
+        cy.get('button[aria-label="Aujourd\'hui"]').should('not.exist');
     });
 
     it('ferme le détail d\'un cours d\'un clic à côté', () => {
@@ -200,11 +201,19 @@ describe('Agenda de l\'étudiant sur téléphone', () => {
         cy.contains('Semaine de formation :').should('not.exist');
 
         cy.get('button[aria-label="Jour suivant"]').click();
-        cy.contains('button', 'Aujourd\'hui').should(($bouton) => {
+        cy.get('button[aria-label="Aujourd\'hui"]').should(($bouton) => {
             expect($bouton[0].scrollWidth).to.be.at.most($bouton[0].clientWidth);
         });
         cy.get('#contenu-principal').should(($contenu) => {
             expect($contenu[0].scrollWidth).to.be.at.most($contenu[0].clientWidth);
         });
+    });
+
+    it('passe à la semaine quand on tourne le téléphone en large', () => {
+        cy.contains('button', 'Jour', { timeout: 15000 }).should('have.attr', 'aria-pressed', 'true');
+        cy.viewport(812, 375);
+        cy.contains('button', 'Semaine').should('have.attr', 'aria-pressed', 'true');
+        cy.viewport(375, 812);
+        cy.contains('button', 'Jour').should('have.attr', 'aria-pressed', 'true');
     });
 });

@@ -34,8 +34,11 @@ const vues = [
   { id: 'day', libelle: 'Jour' },
   { id: 'week', libelle: 'Semaine' },
 ];
-// Cinq colonnes ne tiennent pas sur un téléphone : il ouvre la journée.
-const vueAffichee = ref(window.matchMedia('(max-width: 767px)').matches ? 'day' : 'week');
+// Cinq colonnes ne tiennent pas sur un téléphone tenu en long : il ouvre la journée. Tourné en
+// large, il retrouve la semaine.
+const telephoneEnLong = window.matchMedia('(max-width: 767px) and (orientation: portrait)');
+const vueAffichee = ref(telephoneEnLong.matches ? 'day' : 'week');
+const suivreOrientation = (evenement) => { vueAffichee.value = evenement.matches ? 'day' : 'week'; };
 
 const minutes = (heure) => {
   const [h, m] = heure.split(':').map(Number);
@@ -80,10 +83,14 @@ const surRedimensionnement = () => {
   cancelAnimationFrame(redimensionnement);
   redimensionnement = requestAnimationFrame(ajusterHauteur);
 };
-onMounted(() => window.addEventListener('resize', surRedimensionnement));
+onMounted(() => {
+  window.addEventListener('resize', surRedimensionnement);
+  telephoneEnLong.addEventListener('change', suivreOrientation);
+});
 onBeforeUnmount(() => {
   clearInterval(horloge);
   window.removeEventListener('resize', surRedimensionnement);
+  telephoneEnLong.removeEventListener('change', suivreOrientation);
 });
 
 const chargerSemaine = async (lundi) => {
@@ -131,8 +138,9 @@ const annoncerPeriode = () => {
   });
 };
 
-// 1 px de gouttière au-dessus et au-dessous : une carte commence et finit à son heure.
-const hauteurCarte = (cours) => ((cours.end - cours.start) / 3600000) * hauteurHeure.value - 2;
+// Le trait d'une heure occupe le premier pixel de sa case : 4 px au-dessus d'une carte et 3 px
+// au-dessous laissent le même vide entre la carte et les deux traits.
+const hauteurCarte = (cours) => ((cours.end - cours.start) / 3600000) * hauteurHeure.value - 7;
 
 const heure = (date) => date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
 
@@ -199,7 +207,7 @@ const detail = computed(() => {
       </div>
       <div>
         <dt><i class="pi pi-clock" aria-hidden="true"></i><span class="sr-only">Horaire</span></dt>
-        <dd>{{ detail.horaire }} <span class="text-muted-color">· {{ detail.duree }}</span></dd>
+        <dd>{{ detail.horaire }} · {{ detail.duree }}</dd>
       </div>
       <div v-if="selectedEvent.location">
         <dt><i class="pi pi-map-marker" aria-hidden="true"></i><span class="sr-only">Salle</span></dt>
@@ -223,8 +231,8 @@ const detail = computed(() => {
         time
         :time-from="minutes(plage.debut)"
         :time-to="minutes(plage.fin)"
-        :time-step="30"
-        :time-cell-height="hauteurHeure / 2"
+        :time-step="60"
+        :time-cell-height="hauteurHeure"
         :views="['day', 'week']"
         v-model:view="vueAffichee"
         :theme="false"
@@ -235,7 +243,26 @@ const detail = computed(() => {
 
       <template #header="{ view }">
         <div class="edt-barre">
-          <div class="edt-barre__periode">
+          <div class="min-w-0">
+            <h2 class="edt-barre__titre">{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</h2>
+            <p class="edt-barre__semaine">{{ libelleSemaine(getISOWeekNumber(view.firstCellDate), semaineFormation) }}</p>
+          </div>
+
+          <!-- Les commandes sont alignées à droite : la bulle « Aujourd'hui » naît à gauche des
+               flèches sans en déplacer aucune. -->
+          <div class="edt-barre__actions">
+            <Transition name="edt-bulle">
+              <Button
+                  v-if="!aujourdhuiAffiche(view)"
+                  rounded
+                  aria-label="Aujourd'hui"
+                  class="edt-barre__aujourdhui min-w-[44px]! min-h-[44px]!"
+                  @click="view.goToToday()"
+              >
+                <i class="pi pi-calendar md:hidden" aria-hidden="true"></i>
+                <span class="hidden md:inline" aria-hidden="true">Aujourd'hui</span>
+              </Button>
+            </Transition>
             <div class="edt-barre__fleches">
               <Button
                   icon="pi pi-chevron-left"
@@ -246,14 +273,6 @@ const detail = computed(() => {
                   class="min-w-[44px]! min-h-[44px]!"
               />
               <Button
-                  v-if="!aujourdhuiAffiche(view)"
-                  label="Aujourd'hui"
-                  text
-                  rounded
-                  class="edt-barre__aujourdhui min-h-[44px]!"
-                  @click="view.goToToday()"
-              />
-              <Button
                   icon="pi pi-chevron-right"
                   text
                   rounded
@@ -262,13 +281,6 @@ const detail = computed(() => {
                   class="min-w-[44px]! min-h-[44px]!"
               />
             </div>
-            <div class="min-w-0">
-              <h2 class="edt-barre__titre">{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</h2>
-              <p class="edt-barre__semaine">{{ libelleSemaine(getISOWeekNumber(view.firstCellDate), semaineFormation) }}</p>
-            </div>
-          </div>
-
-          <div class="edt-barre__actions">
             <SelectButton
                 v-model="vueAffichee"
                 :options="vues"
@@ -321,16 +333,43 @@ const detail = computed(() => {
   @apply flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-2 pb-5;
 }
 
-.edt-barre__periode {
-  @apply flex items-center gap-3 min-w-0;
-}
-
 .edt-barre__fleches {
   @apply flex items-center rounded-full bg-emphasis;
 }
 
 .edt-barre__aujourdhui {
-  @apply text-sm font-semibold px-2!;
+  @apply text-sm font-semibold md:px-4! bg-emphasis! text-primary! border-0!;
+}
+
+/* La bulle sort de la pilule des flèches en rebondissant, et y rentre. */
+.edt-bulle-enter-active {
+  transition: opacity 200ms ease, transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.edt-bulle-leave-active {
+  transition: opacity 150ms ease, transform 200ms ease-in;
+}
+
+.edt-bulle-enter-from,
+.edt-bulle-leave-to {
+  opacity: 0;
+  transform: translateX(1.5rem) scale(0.4);
+}
+
+.edt-barre__aujourdhui {
+  transform-origin: right center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edt-bulle-enter-active,
+  .edt-bulle-leave-active {
+    transition: opacity 150ms ease;
+  }
+
+  .edt-bulle-enter-from,
+  .edt-bulle-leave-to {
+    transform: none;
+  }
 }
 
 /* Jour et Semaine en pilule, comme les flèches et les formes du logo. */
@@ -351,8 +390,25 @@ const detail = computed(() => {
   @apply m-0 mt-0.5 text-sm text-muted-color;
 }
 
+/* En bureau, les commandes s'alignent à droite et la bulle naît à gauche des flèches. Sur un
+   téléphone, Jour / Semaine et les flèches tiennent les deux bouts de la ligne, la bulle se pose
+   entre eux : ni l'un ni l'autre ne bouge quand elle apparaît. */
 .edt-barre__actions {
-  @apply flex items-center gap-2;
+  @apply flex items-center justify-end gap-2 ml-auto;
+}
+
+@media (max-width: 767px) {
+  .edt-barre__actions {
+    @apply w-full justify-between gap-1;
+  }
+
+  .edt-barre__actions :deep(.p-selectbutton) {
+    order: -1;
+  }
+
+  .edt-barre__actions :deep(.p-togglebutton-content) {
+    @apply px-3;
+  }
 }
 
 .edt-jour__nom {
@@ -412,17 +468,17 @@ const detail = computed(() => {
   content: var(--libelle-fin);
 }
 
-/* La demi-heure s'écrit plus petit, sur sa propre ligne : on la lit sans la confondre avec l'heure. */
-:deep(.vuecal__time-cell:nth-child(even) label) {
-  font-size: 0.6875rem;
-}
-
-/* Un trait à chaque heure, un trait plus léger à chaque demi-heure. */
+/* Un trait à chaque heure, un trait bien plus léger à la demi-heure, sans libellé. Un trait fin
+   sépare les jours, pour suivre une colonne de haut en bas. */
 :deep(.vuecal__cell) {
   background-image:
       linear-gradient(to bottom, var(--p-content-border-color) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in srgb, var(--p-content-border-color) 45%, transparent) 1px, transparent 1px);
-  background-size: 100% var(--hauteur-heure), 100% calc(var(--hauteur-heure) / 2);
+      linear-gradient(to bottom, transparent calc(50% - 0.5px), color-mix(in srgb, var(--p-content-border-color) 35%, transparent) calc(50% - 0.5px), color-mix(in srgb, var(--p-content-border-color) 35%, transparent) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  background-size: 100% var(--hauteur-heure);
+}
+
+:deep(.vuecal__cell + .vuecal__cell) {
+  border-left: 1px solid color-mix(in srgb, var(--p-content-border-color) 55%, transparent);
 }
 
 :deep(.vuecal__body) {
@@ -437,7 +493,7 @@ const detail = computed(() => {
 /* Une gouttière autour de chaque cours : deux cours voisins ne se touchent jamais. */
 :deep(.vuecal__event) {
   @apply bg-transparent;
-  padding: 1px 4px;
+  padding: 4px 4px 3px;
   &:hover .cours-carte {
     transform: translateY(-1px);
     box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.25);
@@ -450,7 +506,7 @@ const detail = computed(() => {
 
 .edt-cours {
   @apply absolute cursor-pointer;
-  inset: 1px 4px;
+  inset: 4px 4px 3px;
   border-radius: 18px;
   &:focus-visible {
     outline: 3px solid var(--p-primary-color);
@@ -478,17 +534,25 @@ const detail = computed(() => {
 </style>
 
 <style>
-/* Le détail d'un cours est téléporté hors du composant : ses styles ne peuvent pas être scopés. */
+/* Le détail d'un cours est téléporté hors du composant : ses styles ne peuvent pas être scopés.
+   Il reprend la carte : fond de la couleur du type, cercle dans l'angle, pastille. */
 .edt-detail.p-dialog {
   border: 0;
-  border-radius: 20px;
+  border-radius: 28px;
   overflow: hidden;
+  background:
+      radial-gradient(circle 7rem at calc(100% - 1.5rem) calc(100% - 1.5rem), color-mix(in srgb, var(--seance-pastille) 14%, var(--seance-fond)) calc(100% - 0.5px), transparent 100%),
+      var(--seance-fond);
+}
+
+.edt-detail .p-dialog-header,
+.edt-detail .p-dialog-content {
+  background: transparent;
 }
 
 .edt-detail .p-dialog-header {
   align-items: flex-start;
-  padding: 1.25rem 1.25rem 1.25rem 1.5rem;
-  background: var(--seance-fond);
+  padding: 1.5rem 1.25rem 0.5rem 1.75rem;
 }
 
 .edt-detail .p-dialog-close-button:focus:not(:focus-visible) {
@@ -507,10 +571,10 @@ const detail = computed(() => {
 }
 
 .edt-detail__pastille {
-  padding: 0 0.5rem;
+  padding: 0 0.625rem;
   border-radius: 999px;
   font-size: 0.75rem;
-  line-height: 1.375rem;
+  line-height: 1.5rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   color: var(--seance-pastille-texte);
@@ -518,20 +582,20 @@ const detail = computed(() => {
 }
 
 .edt-detail__titre {
-  margin: 0.625rem 0 0;
+  margin: 0.75rem 0 0;
   font-size: 1.25rem;
   font-weight: 500;
   line-height: 1.3;
 }
 
 .edt-detail .p-dialog-content {
-  padding: 1.25rem 1.5rem 1.5rem;
+  padding: 0.75rem 1.75rem 1.75rem;
 }
 
 .edt-detail__liste {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 0.75rem;
   margin: 0;
   outline: none;
 }
@@ -549,9 +613,9 @@ const detail = computed(() => {
   flex-shrink: 0;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: 10px;
+  border-radius: 999px;
   color: var(--seance-couleur);
-  background: var(--seance-fond);
+  background: var(--p-content-background);
 }
 
 .edt-detail__liste dd {
