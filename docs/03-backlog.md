@@ -880,7 +880,7 @@ Cypress, en bureau et en mobile, en clair et en sombre, sur une base neuve.
 
 | Lot | Contenu |
 |---|---|
-| C17.0 | fausse base Celcat aux durées variées (45 min à 3 h), chevauchement, samedi, semaine vide |
+| C17.0 | fausse base Celcat aux durées variées (45 min à 3 h), chevauchement, samedi |
 | C17.1 | [back] `/api/me/emploi-du-temps`, heures avec fuseau, plage horaire de l'année, `/api/edt_events` fermée aux anonymes |
 | C17.2 | jetons de type de séance dans le preset, fonctions pures de placement, Vitest |
 | C17.3 | semaine en bureau : carte adaptée à la durée, plage horaire fixe pour l'étudiant, samedi s'il a cours, mode sombre |
