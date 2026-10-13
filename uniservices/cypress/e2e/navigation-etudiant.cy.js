@@ -66,6 +66,27 @@ describe('Navigation de l\'étudiant', () => {
         });
     });
 
+    it('aligne la recherche sur le contenu, que le menu soit ouvert ou replié', () => {
+        cy.visit('/app/intranet/');
+        // Les transitions s'arrêtent à leur valeur finale : on mesure après leur fin.
+        const ecart = () => cy.get('.layout-topbar-search').first().then(($recherche) => {
+            const recherche = $recherche[0].getBoundingClientRect().left;
+            const contenu = Cypress.$('.layout-main')[0].getBoundingClientRect().left;
+            return Math.abs(recherche - contenu);
+        });
+
+        ecart().should('be.at.most', 2);
+
+        cy.contains('button', 'Réduire le menu').click();
+        cy.contains('button', 'Déplier le menu');
+        cy.get('.layout-topbar-logo-container').should(($zone) => {
+            expect(Math.round($zone[0].getBoundingClientRect().width)).to.eq(
+                Math.round(Cypress.$('.layout-sidebar')[0].getBoundingClientRect().width),
+            );
+        });
+        ecart().should('be.at.most', 2);
+    });
+
     it('range le département et retire « Paramètres » dans le menu du profil', () => {
         cy.visit('/app/intranet/');
         cy.get('[aria-controls="profile_menu"]', { timeout: 15000 }).click();
