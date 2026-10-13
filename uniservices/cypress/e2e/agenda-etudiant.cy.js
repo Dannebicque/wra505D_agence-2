@@ -195,25 +195,27 @@ describe('Agenda de l\'étudiant sur téléphone', () => {
 
     it('s\'ouvre sur la journée, lisible sans rien couper', () => {
         cy.get('.vuecal__event', { timeout: 15000 }).should('have.length.greaterThan', 0);
-        cy.contains('button', 'Jour').should('have.attr', 'aria-pressed', 'true');
+        cy.get('[aria-label="Affichage"]').should('not.exist');
         cy.get('.vuecal h2').invoke('text').should('match', /^Mercredi \d/);
         cy.contains(/^Semaine \d+ · \d+e semaine de formation$/);
         cy.contains('Semaine de formation :').should('not.exist');
 
+        cy.get('button[aria-label="Aujourd\'hui"]').should('not.exist');
         cy.get('button[aria-label="Jour suivant"]').click();
-        cy.get('button[aria-label="Aujourd\'hui"]').should(($bouton) => {
-            expect($bouton[0].scrollWidth).to.be.at.most($bouton[0].clientWidth);
-        });
+        cy.get('button[aria-label="Aujourd\'hui"]').should('be.visible').click();
+        cy.get('.vuecal h2').invoke('text').should('match', /^Mercredi \d/);
+        cy.get('button[aria-label="Aujourd\'hui"]').should('not.exist');
         cy.get('#contenu-principal').should(($contenu) => {
             expect($contenu[0].scrollWidth).to.be.at.most($contenu[0].clientWidth);
         });
     });
 
     it('passe à la semaine quand on tourne le téléphone en large', () => {
-        cy.contains('button', 'Jour', { timeout: 15000 }).should('have.attr', 'aria-pressed', 'true');
+        cy.get('.vuecal--day-view', { timeout: 15000 }).should('exist');
         cy.viewport(812, 375);
         cy.contains('button', 'Semaine').should('have.attr', 'aria-pressed', 'true');
         cy.viewport(375, 812);
-        cy.contains('button', 'Jour').should('have.attr', 'aria-pressed', 'true');
+        cy.get('.vuecal--day-view').should('exist');
+        cy.get('[aria-label="Affichage"]').should('not.exist');
     });
 });

@@ -36,9 +36,14 @@ const vues = [
 ];
 // Cinq colonnes ne tiennent pas sur un téléphone tenu en long : il ouvre la journée. Tourné en
 // large, il retrouve la semaine.
+// Tenu en long, il n'a pas la place d'une bascule : la vue suit l'orientation seule.
 const telephoneEnLong = window.matchMedia('(max-width: 767px) and (orientation: portrait)');
-const vueAffichee = ref(telephoneEnLong.matches ? 'day' : 'week');
-const suivreOrientation = (evenement) => { vueAffichee.value = evenement.matches ? 'day' : 'week'; };
+const enLong = ref(telephoneEnLong.matches);
+const vueAffichee = ref(enLong.value ? 'day' : 'week');
+const suivreOrientation = (evenement) => {
+  enLong.value = evenement.matches;
+  vueAffichee.value = evenement.matches ? 'day' : 'week';
+};
 
 const minutes = (heure) => {
   const [h, m] = heure.split(':').map(Number);
@@ -52,6 +57,12 @@ const lundiDe = (date) => new Date(date.getFullYear(), date.getMonth(), date.get
 const estAujourdhui = (date) => isoDate(new Date(date)) === isoDate(maintenant.value);
 
 // Le bouton « Aujourd'hui » ne sert que si aujourd'hui n'est pas déjà à l'écran.
+// Sur un téléphone tenu en long, « Aujourd'hui » flotte en bas de l'écran, hors de la barre.
+const boutonFlottant = computed(() => {
+  const view = vuecalRef.value?.view;
+  return enLong.value && Boolean(view?.firstCellDate) && !aujourdhuiAffiche(view);
+});
+
 const aujourdhuiAffiche = (view) => {
   const jour = isoDate(maintenant.value);
   return isoDate(view.firstCellDate) <= jour && jour <= isoDate(view.lastCellDate);
@@ -222,6 +233,17 @@ const detail = computed(() => {
 
   <p role="status" class="sr-only">{{ annonce }}</p>
 
+  <Transition name="edt-flottant">
+    <Button
+        v-if="boutonFlottant"
+        icon="pi pi-calendar"
+        rounded
+        aria-label="Aujourd'hui"
+        class="edt-flottant"
+        @click="vuecalRef.view.goToToday()"
+    />
+  </Transition>
+
   <ErrorView v-if="hasError" message="Une erreur est survenue lors du chargement de l'emploi du temps. Veuillez réessayer plus tard." />
   <div v-else ref="cadre" class="edt-cadre">
     <vue-cal
@@ -273,7 +295,7 @@ const detail = computed(() => {
           <div class="edt-barre__actions">
             <Transition name="edt-bulle">
               <Button
-                  v-if="!aujourdhuiAffiche(view)"
+                  v-if="!enLong && !aujourdhuiAffiche(view)"
                   rounded
                   aria-label="Aujourd'hui"
                   class="edt-barre__aujourdhui min-w-[44px]! min-h-[44px]!"
@@ -284,6 +306,7 @@ const detail = computed(() => {
               </Button>
             </Transition>
             <SelectButton
+                v-if="!enLong"
                 v-model="vueAffichee"
                 :options="vues"
                 option-label="libelle"
@@ -366,12 +389,38 @@ const detail = computed(() => {
   transform-origin: right center;
 }
 
+/* Le bouton flottant du téléphone, rond comme les cercles du logo, sort du bas de l'écran. En
+   violet : le jaune seul ne fait que 1,9:1 sur le fond de la page, l'icône blanche 9,95:1. */
+.edt-flottant {
+  @apply fixed! z-20 w-14! h-14! shadow-lg;
+  right: 1.25rem;
+  bottom: 1.25rem;
+}
+
+.edt-flottant-enter-active {
+  transition: opacity 200ms ease, transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.edt-flottant-leave-active {
+  transition: opacity 300ms ease, transform 400ms ease-in;
+}
+
+.edt-flottant-enter-from,
+.edt-flottant-leave-to {
+  opacity: 0;
+  transform: translateY(1.5rem) scale(0.4);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .edt-flottant-enter-active,
+  .edt-flottant-leave-active,
   .edt-bulle-enter-active,
   .edt-bulle-leave-active {
     transition: opacity 150ms ease;
   }
 
+  .edt-flottant-enter-from,
+  .edt-flottant-leave-to,
   .edt-bulle-enter-from,
   .edt-bulle-leave-to {
     transform: none;
@@ -389,7 +438,7 @@ const detail = computed(() => {
 }
 
 .edt-barre__titre {
-  @apply m-0 text-xl font-bold leading-tight;
+  @apply m-0 text-lg md:text-xl font-bold leading-tight;
 }
 
 .edt-barre__semaine {
