@@ -1,14 +1,8 @@
 <script setup>
-import { computed } from 'vue';
 import { ErrorView } from '@components';
+import { lastServerErrorDebugMessage } from '@helpers/serverError.js';
 
-const debugMessage = computed(() => {
-  try {
-    return window.sessionStorage.getItem('lastServerErrorDebugMessage') || '';
-  } catch (_) {
-    return '';
-  }
-});
+const debugMessage = lastServerErrorDebugMessage(window.sessionStorage);
 </script>
 
 <template>
