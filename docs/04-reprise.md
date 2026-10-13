@@ -3,7 +3,7 @@
 État du projet et suite à donner, pour qu'une nouvelle session reparte sans rien redécouvrir.
 À lire après `CLAUDE.md`. À mettre à jour à chaque étape importante.
 
-Dernière mise à jour : 12/10/2026.
+Dernière mise à jour : 13/10/2026.
 
 ---
 
@@ -154,6 +154,7 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #138 | **E24** : stages, soutenances, avenants et périodes soumis au `StageVoter` du client, corrigé ; l'étudiant ne lit et ne dépose que son propre stage |
 | #139 | **E21.10** : écrans du client, super admin et questionnaire, `forms.css` aux contrastes RGAA |
 | #140 | **E21.11** : intégrations de l'établissement à clés d'API en écriture seule, pointage réservé au personnel |
+| #142 | **E21.12** : plans de cours réservés au personnel, refonte des compétences, corrections de uniServices #260 ; reprise E21 terminée |
 
 Le connecteur Celcat, en bref :
 
@@ -193,9 +194,9 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
   `php bin/console cache:pool:clear cache.global_clearer`. Le cache de métadonnées d'API Platform
   survit à `cache:clear` et garde des groupes de sérialisation périmés.
 - Dernier commit examiné : `2ecfb42fb` (release 0.1.17, 12/10/2026). Dernière base reprise :
-  `ef38ca880`. Les commits examinés le 12/10 sont repris par la fiche E21 du backlog, lot par
-  lot, aux normes du dépôt : ils refondent le modèle pour migrer l'intranet V3. E21.0 et E21.1
-  sont faits.
+  `2ecfb42fb`. Les commits examinés le 12/10 sont repris par la fiche E21 du backlog, lot par
+  lot, aux normes du dépôt : ils refondent le modèle pour migrer l'intranet V3. Les 13 lots,
+  E21.0 à E21.12, sont faits ; seul le bundle finance (#249, « WIP ») est écarté.
 - **Plus de migrations Doctrine** : le client a supprimé les 22 siennes (#260, 12/10/2026), le
   schéma se construit depuis le mapping. Nous aussi (#128).
 - Écartés le 26/09/2026, à rouvrir ensemble si le client corrige le premier point :
@@ -253,7 +254,8 @@ l'URL de comparaison.
 
 ## Ce qu'il reste à faire, dans l'ordre
 
-0. **Fausse base V3** pour exécuter les migrateurs de la reprise E21 (dernier lot en PR #142).
+0. **Fausse base V3** pour exécuter les migrateurs de la reprise E21 : les 13 lots sont mergés,
+   mais aucun migrateur n'a encore tourné sur des données V3.
 1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture
    impossible à quiconque (`ROLE_PERSONNEL` jamais attribué).
 2. **P1, fiche matière** : prochains cours, documents, notes et absences d'une matière, réunis.

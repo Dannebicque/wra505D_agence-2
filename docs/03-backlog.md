@@ -410,7 +410,7 @@ ignorés en bloc. Mesuré le 25/09 : 229 erreurs au niveau 7, 329 au 8, 1 126 au
 quand le niveau visé est à 0 ; les exclusions sont retirées entre le 8 et le 9 ; les
 `phpstan-strict-rules` en dernier. Un type PHP s'aligne sur le mapping Doctrine, jamais l'inverse,
 sauf migration décidée et notée.
-### E21 · [back + front] Reprise de la migration V3 du client, à nos normes · L, 12 lots, faits (E21.12 en PR #142)
+### E21 · [back + front] Reprise de la migration V3 du client, à nos normes · L, 13 lots, faits
 **Pourquoi** Examiné le 12/10/2026 : de `9cda32da8` à `63374484f` (releases 0.1.12 à 0.1.16),
 le client a refondu son modèle pour migrer les données de l'intranet V3. On ne peut pas
 l'appliquer tel quel : 977 erreurs PHPStan niveau 10 sur le seul code de migration, des routes
@@ -443,9 +443,9 @@ déjà dessus, et chaque reprise future en dépend.
 | E21.9 · fait (#137) | documents : migrateurs, `oldId` ; notre lien matière (B6) et les favoris (B7) préservés | OpenCode, LCS |
 | E21.10 · fait (#139) | écrans du client : super admin, refonte du questionnaire, avec le même `forms.css` corrigé | OpenCode (reprise), LCS |
 | E21.11 · fait (#140) | intégrations de l'établissement (#247, #248) et pointage (#252), corrigés : clés d'API en écriture seule, routes du pointage réservées au personnel | LCS |
-| E21.12 · PR #142 | uniServices #260 : plans de cours, compétences, filtres API Platform à jour | LCS, OpenCode |
+| E21.12 · fait (#142) | uniServices #260 : plans de cours, compétences, filtres API Platform à jour | LCS, OpenCode |
 
-**Bilan au 12/10** : E21.0 à E21.11 mergés, PHPStan niveau 10 sans baseline à chaque lot (≈ 1 300
+**Bilan au 13/10** : les 13 lots, E21.0 à E21.12, mergés, PHPStan niveau 10 sans baseline à chaque lot (≈ 1 300
 erreurs du code client corrigées). Défauts du client corrigés en route : `getDecision()` qui
 rendait le nombre d'absences, contrôleurs du stage déplacés sans route (plus de PDF de convention
 ni de soutenances), appels incompatibles avec DBAL 4 dans les remises à zéro, `updatedAt` déclaré
