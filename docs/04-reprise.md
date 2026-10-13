@@ -172,6 +172,15 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #150 | trombinoscope réservé au personnel ; un accès refusé mène à « Accès refusé », plus à la page 404 (F5, JEREMY) |
 | #152 | fiches du trombinoscope sans JSON brut (F4, JEREMY) |
 | #154 | cahier de texte : évaluations à venir et plans de cours complets, `GET /api/me/cahier-de-texte` (F2, JEREMY) |
+| #144 | notes « Pour l'équipe » de E22 et E23 dans le backlog |
+| #146 | la page d'erreur 500 renvoie, au rechargement, sur la page où l'erreur est survenue |
+| #153 | audit de l'emploi du temps (`docs/06-audit-edt.md`) et plan C17 en huit lots |
+| #155 | **C17.0** : fausse base Celcat aux durées variées, chevauchement, samedi |
+| #160 | **C17.1** : `/api/me/emploi-du-temps`, heures avec fuseau, plage horaire de l'année ; **faille** : `/api/edt_events` lisible sans connexion, fermée |
+| #161 | **C17.2** : jetons de type de séance, fonctions de placement de l'agenda |
+| #162 | **C17.3** : semaine de l'étudiant refondue (route, plage, cartes, couleurs, samedi) |
+| #164 | pied de page compact, crédits de la refonte |
+| rattrapage | **C17** : tout ce qui a suivi le merge de #162 (DA, cartes du logo, demi-heures, sélecteur de semaine et sa charge, vacances illustrées, téléphone, menu d'options) |
 
 Le connecteur Celcat, en bref :
 
@@ -275,8 +284,11 @@ donner l'URL de comparaison.
 
 ## Ce qu'il reste à faire, dans l'ordre
 
-- **C17, emploi du temps de référence**, priorité de l'équipe depuis le 13/10/2026 : audit et plan
-  en huit lots dans `docs/06-audit-edt.md`. Commence par C17.0 à C17.2, en parallèle.
+- **C17, emploi du temps de référence**, priorité de l'équipe depuis le 13/10/2026 : C17.0 à C17.3
+  faits, C17.4 à C17.6 en partie (détail dans la fiche C17 du backlog). Reste : la journée en liste
+  sur téléphone avec bandeau des jours et balayage, la date dans l'URL, « Réessayer » sur erreur,
+  la feuille du bas et les liens vers la matière, les widgets de l'accueil (C17.7), puis
+  l'abonnement iCal, dont le menu d'options garde la place.
 0. **Fausse base V3** pour exécuter les migrateurs de la reprise E21 : les 13 lots sont mergés,
    mais aucun migrateur n'a encore tourné sur des données V3.
 1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture

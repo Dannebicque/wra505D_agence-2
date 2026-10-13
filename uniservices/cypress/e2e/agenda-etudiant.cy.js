@@ -38,7 +38,8 @@ describe('Agenda de l\'étudiant', () => {
     it('atteint un cours au clavier, ouvre son détail et rend le focus en le fermant', () => {
         cy.get('button.edt-cours', { timeout: 15000 }).should('have.length.greaterThan', 0);
 
-        cy.contains('button', 'Aujourd\'hui').focus();
+        // Le dernier contrôle de la barre : ses options, après Jour / Semaine.
+        cy.get('button[aria-label="Plus d\'options"]').focus();
         cy.press(Cypress.Keyboard.Keys.TAB);
         cy.focused().should('have.class', 'edt-cours').invoke('attr', 'aria-label').then((libelle) => {
             // Espace plutôt qu'Entrée : dans Electron, cy.press n'active pas un bouton avec Entrée.
@@ -82,13 +83,21 @@ const rapport = (doc, avant, fond) => {
     return (a + 0.05) / (b + 0.05);
 };
 
-/** Contraste le plus faible entre un texte d'une carte de cours et le fond de sa carte. */
+/** Contraste le plus faible d'un texte de carte de cours sur son fond, celui de sa pastille s'il en a une. */
 const pireContrasteDesCartes = ($cartes) => Math.min(...$cartes.toArray().flatMap((carte) => {
     const win = carte.ownerDocument.defaultView;
-    const fond = win.getComputedStyle(carte).backgroundColor;
+    const fondDe = (element) => {
+        for (let e = element; e !== carte; e = e.parentElement) {
+            const couleur = win.getComputedStyle(e).backgroundColor;
+            if (couleur !== 'rgba(0, 0, 0, 0)' && couleur !== 'transparent') {
+                return couleur;
+            }
+        }
+        return win.getComputedStyle(carte).backgroundColor;
+    };
     return [...carte.querySelectorAll('p, span, strong')]
         .filter((texte) => texte.innerText.trim())
-        .map((texte) => rapport(carte.ownerDocument, win.getComputedStyle(texte).color, fond));
+        .map((texte) => rapport(carte.ownerDocument, win.getComputedStyle(texte).color, fondDe(texte)));
 }));
 
 describe('Semaine de l\'étudiant en bureau', () => {
@@ -105,9 +114,62 @@ describe('Semaine de l\'étudiant en bureau', () => {
             expect($heures.last().text().trim()).to.eq('18:00');
         });
         plage();
+        cy.get('.vuecal__time-cell').last().then(($case) => {
+            const fin = $case[0].ownerDocument.defaultView.getComputedStyle($case[0], '::after').content;
+            expect(fin).to.eq('"19:00"');
+        });
         cy.get('button[aria-label="Semaine suivante"]').click();
         cy.contains('[role="status"]', 'Semaine du');
         plage();
+    });
+
+    it('tient entière à l\'écran, de 8 h à 19 h, sans défiler', () => {
+        cy.get('[aria-label="Fil d\'Ariane"]').should('not.exist');
+        cy.get('.vuecal__body').should(($grille) => {
+            const win = $grille[0].ownerDocument.defaultView;
+            expect($grille[0].getBoundingClientRect().bottom).to.be.at.most(win.innerHeight);
+        });
+    });
+
+    it('ne propose « Aujourd\'hui » que si aujourd\'hui n\'est pas affiché', () => {
+        cy.get('button[aria-label="Aujourd\'hui"]').should('not.exist');
+        cy.get('button[aria-label="Semaine suivante"]').click();
+        cy.get('button[aria-label="Aujourd\'hui"]').click();
+        cy.get('button[aria-label="Aujourd\'hui"]').should('not.exist');
+    });
+
+    it('choisit une semaine dans la liste de l\'année, chacune avec sa charge', () => {
+        cy.get('.selecteur-semaine__declencheur').click();
+        cy.get('.selecteur-semaine__semaine[aria-current="true"]').should('be.focused').and('contain', ' h ');
+        cy.contains('.selecteur-semaine__semaine', 'Vacances').should('exist');
+        cy.get('.selecteur-semaine__semaine[aria-current="true"]').parent().next().find('button').click();
+        cy.get('.selecteur-semaine').should('not.exist');
+        cy.contains('[role="status"]', 'Semaine du');
+        cy.get('.selecteur-semaine__declencheur').click();
+        cy.get('.selecteur-semaine__semaine[aria-current="true"]').should('be.focused');
+        cy.press(Cypress.Keyboard.Keys.ESC);
+        cy.get('.selecteur-semaine').should('not.exist');
+    });
+
+    it('fête une semaine de vacances au lieu d\'une grille vide', () => {
+        cy.get('.vacances').should('not.exist');
+        cy.get('.selecteur-semaine__declencheur').click();
+        cy.contains('.selecteur-semaine__semaine', 'Vacances').click();
+        cy.contains('.vacances', 'Vacances de la Toussaint').should('be.visible');
+        cy.get('.cours-carte').should('not.exist');
+    });
+
+    it('réserve dans ses options la place de la synchronisation iCal, pas encore active', () => {
+        cy.get('button[aria-label="Plus d\'options"]').click();
+        cy.contains('#edt-options [role="menuitem"]', 'Synchroniser avec mon agenda').should('have.attr', 'aria-disabled', 'true')
+            .and('contain', 'Bientôt');
+    });
+
+    it('ferme le détail d\'un cours d\'un clic à côté', () => {
+        cy.get('button.edt-cours').first().click({ force: true });
+        cy.get('[role="dialog"]').should('be.visible').and('contain', ' – ');
+        cy.get('.p-dialog-mask').click(5, 5);
+        cy.get('[role="dialog"]').should('not.exist');
     });
 
     it('montre chaque cours en entier, de 45 min à 4 h 15', () => {
@@ -124,15 +186,15 @@ describe('Semaine de l\'étudiant en bureau', () => {
     });
 
     it('n\'ajoute le samedi que la semaine où il porte un cours', () => {
-        cy.contains('.vuecal__weekday', /samedi/i).should('exist');
+        cy.contains('.vuecal__weekday', /^sam\./i).should('exist');
         cy.get('button[aria-label="Semaine suivante"]').click();
         cy.contains('[role="status"]', 'Semaine du');
-        cy.contains('.vuecal__weekday', /vendredi/i).should('exist');
-        cy.contains('.vuecal__weekday', /samedi/i).should('not.exist');
+        cy.contains('.vuecal__weekday', /^ven\./i).should('exist');
+        cy.contains('.vuecal__weekday', /^sam\./i).should('not.exist');
     });
 
     it('colore chaque cours par son type de séance, avec les jetons du thème', () => {
-        cy.contains('.cours-carte__type', /^CM$/).closest('.cours-carte').then(($carte) => {
+        cy.contains('.cours-carte__pastille', /^CM$/).closest('.cours-carte').then(($carte) => {
             const win = $carte[0].ownerDocument.defaultView;
             const jeton = win.getComputedStyle($carte[0].ownerDocument.documentElement).getPropertyValue('--p-seance-cm-background').trim();
             expect(rapport($carte[0].ownerDocument, win.getComputedStyle($carte[0]).backgroundColor, jeton)).to.be.closeTo(1, 0.01);
@@ -160,16 +222,27 @@ describe('Agenda de l\'étudiant sur téléphone', () => {
 
     it('s\'ouvre sur la journée, lisible sans rien couper', () => {
         cy.get('.vuecal__event', { timeout: 15000 }).should('have.length.greaterThan', 0);
-        cy.contains('button', 'Jour').should('have.attr', 'aria-pressed', 'true');
+        cy.get('[aria-label="Affichage"]').should('not.exist');
         cy.get('.vuecal h2').invoke('text').should('match', /^Mercredi \d/);
         cy.contains(/^Semaine \d+ · \d+e semaine de formation$/);
         cy.contains('Semaine de formation :').should('not.exist');
 
-        cy.contains('button', 'Aujourd\'hui').should(($bouton) => {
-            expect($bouton[0].scrollWidth).to.be.at.most($bouton[0].clientWidth);
-        });
+        cy.get('button[aria-label="Aujourd\'hui"]').should('not.exist');
+        cy.get('button[aria-label="Jour suivant"]').click();
+        cy.get('button[aria-label="Aujourd\'hui"]').should('be.visible').click();
+        cy.get('.vuecal h2').invoke('text').should('match', /^Mercredi \d/);
+        cy.get('button[aria-label="Aujourd\'hui"]').should('not.exist');
         cy.get('#contenu-principal').should(($contenu) => {
             expect($contenu[0].scrollWidth).to.be.at.most($contenu[0].clientWidth);
         });
+    });
+
+    it('passe à la semaine quand on tourne le téléphone en large', () => {
+        cy.get('.vuecal--day-view', { timeout: 15000 }).should('exist');
+        cy.viewport(812, 375);
+        cy.contains('.p-togglebutton', 'Semaine').should('have.attr', 'aria-pressed', 'true');
+        cy.viewport(375, 812);
+        cy.get('.vuecal--day-view').should('exist');
+        cy.get('[aria-label="Affichage"]').should('not.exist');
     });
 });

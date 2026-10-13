@@ -49,6 +49,36 @@ class StudentTimetableBuilder
     }
 
     /**
+     * Toutes les semaines de l'année de l'étudiant, avec leurs minutes de cours : de quoi choisir
+     * une semaine en voyant sa charge.
+     *
+     * @return list<array{lundi: string, semaineFormation: int|null, minutes: int}>
+     */
+    public function weeks(Etudiant $student): array
+    {
+        $load = WeeklyLoad::byMonday($this->edtEvents->findTimesByGroupes($this->groupIds($student)));
+        if ([] === $load) {
+            return [];
+        }
+
+        $trainingWeeks = [];
+        $mondays = array_map(static fn (string $monday) => new \DateTime($monday), array_keys($load));
+        foreach ($this->calendar->findBy(['dateLundi' => $mondays]) as $week) {
+            $monday = $week->getDateLundi();
+            if (null !== $monday) {
+                $trainingWeeks[$monday->format('Y-m-d')] = $week->getSemaineFormation();
+            }
+        }
+
+        $weeks = [];
+        foreach ($load as $monday => $minutes) {
+            $weeks[] = ['lundi' => $monday, 'semaineFormation' => $trainingWeeks[$monday] ?? null, 'minutes' => $minutes];
+        }
+
+        return $weeks;
+    }
+
+    /**
      * @return list<int>
      */
     private function groupIds(Etudiant $student): array

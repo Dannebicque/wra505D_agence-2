@@ -64,11 +64,13 @@ export function typeSeance(cours) {
     return 'autre';
 }
 
+// Hauteurs mesurées des cartes de CoursCarte.vue : quatre lignes et leurs marges tiennent en
+// 86 px, deux lignes en 50 px.
 export function densiteCarte(hauteur) {
-    if (hauteur >= 96) {
+    if (hauteur >= 86) {
         return 'complete';
     }
-    if (hauteur >= 52) {
+    if (hauteur >= 50) {
         return 'compacte';
     }
     return 'ligne';
@@ -146,4 +148,17 @@ export function etatCours(cours, maintenant) {
         return {etat: 'en-cours', dans: null};
     }
     return {etat: 'a-venir', dans: Math.ceil((cours.start - maintenant) / 60000)};
+}
+
+// Les vacances scolaires d'un IUT, reconnues au mois de leur lundi.
+const SAISONS_DE_VACANCES = [
+    {saison: 'toussaint', mois: [9, 10]},
+    {saison: 'noel', mois: [11]},
+    {saison: 'hiver', mois: [0, 1, 2]},
+    {saison: 'printemps', mois: [3, 4]},
+];
+
+export function saisonDeVacances(lundi) {
+    const mois = Number(lundi.split('-')[1]) - 1;
+    return SAISONS_DE_VACANCES.find(({mois: liste}) => liste.includes(mois))?.saison ?? 'ete';
 }

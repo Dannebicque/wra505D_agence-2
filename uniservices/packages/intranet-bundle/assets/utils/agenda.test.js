@@ -1,5 +1,17 @@
 import {describe, expect, it} from 'vitest';
-import {annonceAgenda, libelleCours, libelleSemaine, titrePeriode} from './agenda.js';
+import {
+    annonceAgenda,
+    coursParJour,
+    densiteCarte,
+    etatCours,
+    joursDeLaSemaine,
+    libelleCours,
+    libelleSemaine,
+    pausesDuJour,
+    saisonDeVacances,
+    titrePeriode,
+    typeSeance,
+} from './agenda.js';
 
 const cours = (jour, debut, fin, champs = {}) => {
     const [hd, md] = debut.split(':').map(Number);
@@ -94,8 +106,6 @@ describe('libelleSemaine', () => {
     });
 });
 
-import {coursParJour, densiteCarte, etatCours, joursDeLaSemaine, pausesDuJour, typeSeance} from './agenda.js';
-
 describe('typeSeance', () => {
     it('priorise l\'évaluation sur tout le reste', () => {
         expect(typeSeance(cours(14, '08:00', '10:00', {evaluation: true, type: 'CM', enseignement: {type: 'sae'}})))
@@ -123,18 +133,18 @@ describe('typeSeance', () => {
 });
 
 describe('densiteCarte', () => {
-    it('affiche une carte complète à partir de 96 pixels', () => {
-        expect(densiteCarte(96)).toBe('complete');
+    it('affiche une carte complète à partir de 86 pixels', () => {
+        expect(densiteCarte(86)).toBe('complete');
         expect(densiteCarte(140)).toBe('complete');
     });
 
-    it('passe en carte compacte entre 52 et 95 pixels', () => {
-        expect(densiteCarte(95)).toBe('compacte');
-        expect(densiteCarte(52)).toBe('compacte');
+    it('passe en carte compacte entre 50 et 85 pixels', () => {
+        expect(densiteCarte(85)).toBe('compacte');
+        expect(densiteCarte(50)).toBe('compacte');
     });
 
-    it('se réduit à une ligne sous 52 pixels', () => {
-        expect(densiteCarte(51)).toBe('ligne');
+    it('se réduit à une ligne sous 50 pixels', () => {
+        expect(densiteCarte(49)).toBe('ligne');
         expect(densiteCarte(0)).toBe('ligne');
     });
 });
@@ -246,5 +256,16 @@ describe('etatCours', () => {
 
     it('arrondit au supérieur les minutes avant le début', () => {
         expect(etatCours(seance, new Date(2026, 8, 14, 7, 40, 30))).toEqual({etat: 'a-venir', dans: 20});
+    });
+});
+
+describe('saisonDeVacances', () => {
+    it('reconnaît chaque période de vacances au mois de son lundi', () => {
+        expect(saisonDeVacances('2026-10-26')).toBe('toussaint');
+        expect(saisonDeVacances('2026-11-02')).toBe('toussaint');
+        expect(saisonDeVacances('2026-12-21')).toBe('noel');
+        expect(saisonDeVacances('2027-02-15')).toBe('hiver');
+        expect(saisonDeVacances('2027-04-19')).toBe('printemps');
+        expect(saisonDeVacances('2027-07-12')).toBe('ete');
     });
 });

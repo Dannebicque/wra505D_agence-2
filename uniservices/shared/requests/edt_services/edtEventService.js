@@ -33,4 +33,14 @@ const getMonEmploiDuTempsService = async (semaine) => {
     );
 }
 
-export { getEdtEventsService, getMonEmploiDuTempsService };
+const getMesSemainesService = async () => {
+    return await apiCall(
+        api.get,
+        ['/api/me/emploi-du-temps/semaines'],
+        'Semaines récupérées avec succès',
+        'Erreur lors de la récupération des semaines',
+        false
+    );
+}
+
+export { getEdtEventsService, getMonEmploiDuTempsService, getMesSemainesService };
