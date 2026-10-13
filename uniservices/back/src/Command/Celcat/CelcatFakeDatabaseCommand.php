@@ -89,6 +89,28 @@ final class CelcatFakeDatabaseCommand extends Command
         [3, '13:30', '15:30', '[TD]', 'R1.01', '10002', 'B205', ['MMITDCD']],
         [4, '09:00', '11:00', '[TP]', 'R1.06', '10003', 'C110', ['MMITPA']],
         [4, '09:00', '11:00', '[TP]', 'R1.06', '10005', 'C112', ['MMITPC']],
+        // Durées que l'agenda doit afficher sans rien couper (C17) : de 45 min à 3 h, un cours
+        // qui finit à 19 h, et un cours qui chevauche la SAÉ du jeudi pour le même étudiant.
+        [0, '17:00', '19:00', '[CM]', 'R1.05', '10001', 'AMPHI', ['MMICM']],
+        [1, '15:45', '16:30', '[TD]', 'R1.03', '10002', 'B205', ['MMITDAB']],
+        [2, '13:30', '14:30', '[CM]', 'R1.02', '10001', 'AMPHI', ['MMICM']],
+        [2, '14:45', '16:00', '[TD]', 'R1.03', '10002', 'B205', ['MMITDAB']],
+        [3, '11:00', '12:00', '[CM]', 'R1.02', '10001', 'AMPHI', ['MMICM']],
+        [3, '13:30', '15:00', '[TP]', 'R1.10', '10004', 'C110', ['MMITPA']],
+        [4, '14:00', '17:00', '[TD]', 'SAE1.01', '10003', 'B204', ['MMITDAB']],
+        // Le seul cours avant 8 h, dans un groupe que l'étudiant de test ne suit pas : sa plage
+        // horaire doit rester à 8 h.
+        [4, '07:45', '08:45', '[TP]', 'R1.10', '10005', 'C112', ['MMITPB']],
+    ];
+
+    /**
+     * Cours d'une seule semaine, comptée depuis la rentrée : semaine, puis les mêmes champs que
+     * WEEK_TEMPLATE. Un samedi, que l'agenda n'ajoute que la semaine où il porte un cours.
+     *
+     * @var list<array{int, int, string, string, string, string, string, string, list<string>}>
+     */
+    private const ONE_OFF_EVENTS = [
+        [2, 5, '09:00', '12:00', '[TD]', 'SAE1.01', '10003', 'B204', ['MMITDAB']],
     ];
 
     public function __construct(
@@ -173,15 +195,12 @@ final class CelcatFakeDatabaseCommand extends Command
 
         foreach (self::WEEK_TEMPLATE as [$day, $start, $end, $category, $subject, $teacher, $room, $groups]) {
             ++$event;
-            $this->insertEvent($database, $event, $categoryIds[$category], $day, $start, $end, $mask, $changed, null);
-            $this->resource($database, 'MODULE', $event, $subject, self::SUBJECTS[$subject]);
-            ['nom' => $name, 'prenom' => $firstName] = StructureEnseignantFixtures::ENSEIGNANTS[$teacher];
-            $this->resource($database, 'STAFF', $event, $teacher, $name.' '.$firstName);
-            $database->prepare('INSERT INTO CT_VIEW_EVENT_ROOM001 VALUES (?, ?, ?, NULL)')
-                ->execute([$event, $room, self::ROOMS[$room]]);
-            foreach ($groups as $group) {
-                $this->resource($database, 'GROUP', $event, $group, self::GROUPS[$group]);
-            }
+            $this->insertCourse($database, $event, $categoryIds[$category], $day, $start, $end, $mask, $changed, $subject, $teacher, $room, $groups);
+        }
+
+        foreach (self::ONE_OFF_EVENTS as [$week, $day, $start, $end, $category, $subject, $teacher, $room, $groups]) {
+            ++$event;
+            $this->insertCourse($database, $event, $categoryIds[$category], $day, $start, $end, str_repeat('N', $week).'Y', $changed, $subject, $teacher, $room, $groups);
         }
 
         // Un événement sans matière, pour exercer le cas « hors cours » de la conversion.
@@ -212,6 +231,24 @@ final class CelcatFakeDatabaseCommand extends Command
             '1899-12-30 '.$start.':00', '1899-12-30 '.$end.':00',
             $mask, $changed, $notes,
         ]);
+    }
+
+    /**
+     * Un cours, avec sa matière, son enseignant, sa salle et ses groupes.
+     *
+     * @param list<string> $groups
+     */
+    private function insertCourse(\PDO $database, int $event, int $category, int $day, string $start, string $end, string $mask, string $changed, string $subject, string $teacher, string $room, array $groups): void
+    {
+        $this->insertEvent($database, $event, $category, $day, $start, $end, $mask, $changed, null);
+        $this->resource($database, 'MODULE', $event, $subject, self::SUBJECTS[$subject]);
+        ['nom' => $name, 'prenom' => $firstName] = StructureEnseignantFixtures::ENSEIGNANTS[$teacher];
+        $this->resource($database, 'STAFF', $event, $teacher, $name.' '.$firstName);
+        $database->prepare('INSERT INTO CT_VIEW_EVENT_ROOM001 VALUES (?, ?, ?, NULL)')
+            ->execute([$event, $room, self::ROOMS[$room]]);
+        foreach ($groups as $group) {
+            $this->resource($database, 'GROUP', $event, $group, self::GROUPS[$group]);
+        }
     }
 
     private function resource(\PDO $database, string $view, int $event, string $code, string $name): void
