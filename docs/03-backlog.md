@@ -36,7 +36,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 | CI-Back : PHPStan | niveau 10 (max) et `phpstan-strict-rules`, 0 erreur ; 12 `@phpstan-ignore` justifiés (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
-| CI-Cypress : 20 fichiers, 90 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
+| CI-Cypress : 22 fichiers, 95 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
@@ -979,16 +979,16 @@ Tests : `naissance.test.js`, `profil-etudiant.cy.js`.
 **Pourquoi** SCO-3 : prénom, nom, login et adresse restent vides alors que l'API les renvoie.
 
 ### F4 · Trombinoscope : plus de JSON brut · S
-**En revue** (JEREMY, #152). La carte affichait l'objet `EtudiantScolarite` tel quel ; l'API ne
+**Fait** (JEREMY, #152), mergé sur `develop`. La carte affichait l'objet `EtudiantScolarite` tel quel ; l'API ne
 porte aucun libellé de semestre à mettre à la place, l'étiquette est donc retirée, et l'adresse se
 coupe dans la carte. Test : `trombinoscope-fiches.cy.js`.
-**À valider par le PO** l'écran est réservé au personnel depuis F5, hors de notre périmètre : la
-correction se limite à `PersonCard.vue`.
+L'écran est réservé au personnel depuis F5, hors de notre périmètre : la correction se limite à
+`PersonCard.vue`.
 **Reste** afficher le semestre demandera de l'exposer dans `/api/etudiants`, côté back.
 **Pourquoi** TROMBI-1, **Critique** : chaque fiche affiche un objet JSON de l'API.
 
 ### F5 · Trombinoscope : accès étudiant et export · S
-**En revue** (JEREMY, #150). Faute de réponse du client (question 3 de l'audit 05), le
+**Fait** (JEREMY, #150), mergé sur `develop`. Faute de réponse du client (question 3 de l'audit 05), le
 trombinoscope est réservé au personnel : la route porte `permission: 'isPersonnel'`, l'étudiant qui
 en saisit l'adresse arrive sur « Accès refusé », et l'export ne lui est plus proposé. Le garde du
 routeur envoyait tout refus sur la page 404 (`/app/app/access`) : corrigé, pour toutes les routes
