@@ -167,6 +167,11 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #134 | aperçu des documents sans téléchargement (PDF, images, tableurs xlsx) ; route `/api/me/documents/{id}/fichier` ; fichiers d'exemple dans les fixtures ; panneau de détail élargi et redimensionnable |
 | #148 | barre du haut : la zone du logo suit la largeur du menu, la recherche s'aligne sur le contenu (en revue) |
 | #149 | un résultat de recherche de type document ouvre sa fiche, par `/documents?document=<id>` (en revue) |
+| #145 | profil de l'étudiant rempli : identifiant transmis au composant, champs vides nommés, copie de l'adresse au clavier (F3, JEREMY) |
+| #147 | recherche sur téléphone : un bouton ouvre le champ sous la barre haute (D6, JEREMY) |
+| #150 | trombinoscope réservé au personnel ; un accès refusé mène à « Accès refusé », plus à la page 404 (F5, JEREMY, en revue) |
+| #152 | fiches du trombinoscope sans JSON brut (F4, JEREMY, en revue) |
+| #154 | cahier de texte : évaluations à venir et plans de cours complets, `GET /api/me/cahier-de-texte` (F2, JEREMY, en revue) |
 
 Le connecteur Celcat, en bref :
 
@@ -256,14 +261,14 @@ Suivie dans le tableau de tâches de l'équipe, hors de ce dépôt.
 |---|---|
 | LCS | E, back et CI |
 | LOU | A, accessibilité transverse |
-| JEREMY | C, tableau de bord et emploi du temps |
+| JEREMY | C, tableau de bord et emploi du temps ; F, scolarité, profil et trombinoscope |
 
 La colonne B (documents) n'a pas eu de titulaire : LCS y a fait B6, B7 et B10, JEREMY B1, B2,
-B4, B5, B8 et B9 ; il reste B11. La colonne D (recherche) est terminée, sauf D6. La colonne E
+B4, B5, B8 et B9 ; il reste B11. La colonne D (recherche) est terminée. La colonne E
 (back et CI) est terminée, sauf E8.
 
-`gh` n'est installé et connecté que sur le poste de LCS. Sans lui, pousser la branche et donner
-l'URL de comparaison.
+`gh` est installé et connecté sur les postes de LCS et de JEREMY. Sans lui, pousser la branche et
+donner l'URL de comparaison.
 
 ---
 
@@ -279,8 +284,8 @@ l'URL de comparaison.
    Dernière étape du plan de navigation, les données existent déjà (`TranscriptBuilder`,
    `Document.enseignement`, `EdtEvent`).
 3. **B11** : mode sombre de Documents.
-4. **C6** (modalités de contrôle), **D6** (recherche en mobile), puis **F2 à F5** (cahier de
-   texte, profil, trombinoscope).
+4. **C6** (modalités de contrôle). **F2, F4 et F5** (cahier de texte, trombinoscope) sont en
+   revue : #154, #152 et #150.
 5. **P5, reste** : le fil d'Ariane dit « Dashboard » quand le menu dit « Accueil ».
 6. **Symfony 8.2**, à sa sortie en novembre 2026 et avant fin janvier 2027 (fin de maintenance de
    la 8.1).
