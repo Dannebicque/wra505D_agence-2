@@ -141,6 +141,7 @@ import {
   aDesFiltres,
   ecrireFiltres,
   filtrerDocuments,
+  lireDocumentOuvert,
   lireFiltres,
   texteDuDocument,
   trierDocuments,
@@ -428,6 +429,23 @@ const getEmptyMessage = () => (aDesFiltres(filtres.value)
   : 'Aucun document pour le moment.');
 
 // Lifecycle
+// Un résultat de la recherche arrive ici avec ?document=<id> : on ouvre sa fiche, puis on retire
+// le paramètre pour qu'un rechargement ne la rouvre pas. Attendre la fin du chargement évite de
+// chercher le document dans une liste encore vide.
+const documentDemande = computed(() => lireDocumentOuvert(route.query));
+
+watch([documentDemande, loading], () => {
+  if (loading.value || documentDemande.value === null) return;
+
+  const demande = documentsList.value.find(doc => doc.id === documentDemande.value);
+  if (demande) {
+    openDetailDrawer(demande);
+  } else {
+    toast.add({ severity: 'warn', summary: 'Document introuvable', detail: 'Ce document n\'existe plus ou n\'est pas accessible.', life: 4000 });
+  }
+  router.replace({ query: ecrireFiltres(filtres.value) });
+}, { immediate: true });
+
 onMounted(() => {
   loadData();
 });

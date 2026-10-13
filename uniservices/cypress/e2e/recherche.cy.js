@@ -21,6 +21,21 @@ describe('Recherche de la barre du haut', () => {
         cy.location('pathname').should('eq', '/app/intranet/agenda');
     });
 
+    it('ouvre la fiche du document trouvé, et ne la rouvre pas au rechargement', () => {
+        cy.get('#recherche-globale').type('sujet et attendus');
+        cy.get('[role="listbox"]').should('contain', 'Documents');
+
+        cy.get('#recherche-globale').type('{downArrow}{enter}');
+
+        cy.location('pathname').should('eq', '/app/documents');
+        cy.get('.p-drawer', { timeout: 15000 }).should('be.visible').and('contain', 'SAÉ 1.01 : sujet et attendus');
+        cy.location('search').should('eq', '');
+
+        cy.reload();
+        cy.contains('h2', 'Matières', { timeout: 15000 });
+        cy.get('.p-drawer').should('not.exist');
+    });
+
     it('referme les propositions avec Échap', () => {
         cy.get('#recherche-globale').type('agneda');
         cy.get('[role="listbox"]').should('be.visible');
