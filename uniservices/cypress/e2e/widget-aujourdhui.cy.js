@@ -14,15 +14,16 @@ describe('Widget « Aujourd\'hui » de l\'étudiant', () => {
 
         cy.get('@maintenant').then(($maintenant) => {
             if (/Aucun cours aujourd'hui/.test($maintenant.text())) {
-                cy.get('@aujourdhui').should('contain', 'Aucun événement aujourd\'hui');
+                cy.get('@aujourdhui').should('contain', 'Aucun cours aujourd\'hui');
                 return;
             }
 
-            cy.get('@aujourdhui').should('not.contain', 'Aucun événement aujourd\'hui');
+            cy.get('@aujourdhui').should('not.contain', 'Aucun cours aujourd\'hui');
+            // Un cours court n'a sur sa carte que son code : on compare les codes.
             $maintenant.find('h3').each((_, titre) => {
-                const cours = titre.nextElementSibling?.textContent.trim();
-                if (cours) {
-                    cy.get('@aujourdhui').should('contain', cours);
+                const code = titre.nextElementSibling?.textContent.trim().split(' - ')[0];
+                if (code) {
+                    cy.get('@aujourdhui').should('contain', code);
                 }
             });
         });
