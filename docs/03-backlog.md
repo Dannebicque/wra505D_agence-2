@@ -36,7 +36,7 @@ Les trois workflows tournent sur chaque PR vers `develop` et sont **au vert** de
 | CI-Back : PHPStan | niveau 10 (max) et `phpstan-strict-rules`, 0 erreur ; 12 `@phpstan-ignore` justifiés (E15) |
 | CI-Back : PHPUnit | vert |
 | CI-Back : style PSR-12 de tout le code PHP (`make cs`, dans `make check`) | vert, depuis E9 |
-| CI-Cypress : 22 fichiers, 95 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
+| CI-Cypress : 23 fichiers, 100 tests, délai d'attente de 10 s, sur une base de fixtures neuve et un Vite froid | vert |
 
 ---
 
@@ -962,7 +962,7 @@ aucune note, absence ni moyenne. Reprend C4.
 **Fait** #49 (`GET /api/me/scolarite`, moyennes calculées à la volée) et #50 (page). Test : `scolarite.cy.js`.
 
 ### F2 · [back + front] Cahier de texte · M
-**En revue** (JEREMY, #154). Ni l'intranet V3 ni uniServices ne modélisent de cahier de texte :
+**Fait** (JEREMY, #154), mergé sur `develop`. Ni l'intranet V3 ni uniServices ne modélisent de cahier de texte :
 la page lit ce que les enseignants saisissent déjà, sans nouvelle table. `GET /api/me/cahier-de-texte`
 renvoie les évaluations datées d'aujourd'hui ou plus tard, sauf annulées, et les plans de cours à
 l'état « Complet » des matières du semestre (objectifs, évaluation, travaux à rendre, programme,
