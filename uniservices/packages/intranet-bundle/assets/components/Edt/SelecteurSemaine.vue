@@ -3,6 +3,14 @@ import {computed, nextTick, ref} from 'vue';
 import {formatDelai} from '@/utils/prochainCours.js';
 
 const props = defineProps({
+  titre: {
+    type: String,
+    required: true
+  },
+  sousTitre: {
+    type: String,
+    required: true
+  },
   // [{lundi: 'AAAA-MM-JJ', semaineFormation, minutes}]
   semaines: {
     type: Array,
@@ -47,7 +55,7 @@ const mois = computed(() => {
     groupes.at(-1).semaines.push({
       ...semaine,
       dates: `${court(lundi)} – ${court(date(semaine.lundi, 4))}`,
-      charge: semaine.minutes === 0 ? 'Pas de cours' : formatDelai(semaine.minutes),
+      charge: formatDelai(semaine.minutes),
       part: `${Math.round((semaine.minutes / maximum.value) * 100)}%`,
     });
   }
@@ -79,8 +87,8 @@ const choisir = (lundi) => {
       :aria-expanded="ouverte"
       @click="basculer"
   >
-    <slot />
-    <i class="pi pi-chevron-down" aria-hidden="true"></i>
+    <span class="selecteur-semaine__titre">{{ titre }}</span>
+    <span class="selecteur-semaine__sous-titre">{{ sousTitre }}</span>
   </button>
 
   <Popover ref="fenetre" class="selecteur-semaine" aria-label="Choisir une semaine" @show="auDebut" @hide="ouverte = false">
@@ -91,10 +99,7 @@ const choisir = (lundi) => {
           <li v-for="semaine in groupe.semaines" :key="semaine.lundi">
             <button
                 type="button"
-                :class="['selecteur-semaine__semaine', {
-                  'selecteur-semaine__semaine--affichee': semaine.lundi === lundiAffiche,
-                  'selecteur-semaine__semaine--vide': semaine.minutes === 0,
-                }]"
+                :class="['selecteur-semaine__semaine', { 'selecteur-semaine__semaine--affichee': semaine.lundi === lundiAffiche }]"
                 :aria-current="semaine.lundi === lundiAffiche ? 'true' : undefined"
                 @click="choisir(semaine.lundi)"
             >
@@ -102,10 +107,13 @@ const choisir = (lundi) => {
                 <span>{{ semaine.dates }}</span>
                 <span v-if="semaine.lundi === lundiCourant" class="selecteur-semaine__courante">cette semaine</span>
               </span>
-              <span class="selecteur-semaine__jauge" aria-hidden="true">
-                <span :style="{ width: semaine.part }"></span>
-              </span>
-              <span class="selecteur-semaine__charge">{{ semaine.charge }}</span>
+              <span v-if="semaine.minutes === 0" class="selecteur-semaine__vacances">Vacances</span>
+              <template v-else>
+                <span class="selecteur-semaine__jauge" aria-hidden="true">
+                  <span :style="{ width: semaine.part }"></span>
+                </span>
+                <span class="selecteur-semaine__charge">{{ semaine.charge }}</span>
+              </template>
             </button>
           </li>
         </ul>
@@ -117,32 +125,47 @@ const choisir = (lundi) => {
 <style scoped>
 @reference "../../assets/tailwind.css";
 
+/* La période est une pastille, comme les flèches à côté d'elle : le survol suffit à dire qu'elle
+   s'ouvre. */
 .selecteur-semaine__declencheur {
-  @apply inline-flex items-center gap-2 -mx-2 px-2 rounded-full cursor-pointer text-inherit bg-transparent border-0;
-  font: inherit;
+  @apply flex flex-col items-start gap-0.5 rounded-3xl bg-emphasis border-0 cursor-pointer text-left;
+  padding: 0.375rem 1.125rem;
   min-height: 44px;
-  i {
-    @apply text-sm text-primary transition-transform;
-  }
-  &:hover {
-    @apply bg-emphasis;
-  }
-  &[aria-expanded="true"] i {
-    @apply rotate-180;
+  font: inherit;
+  color: inherit;
+  transition: background-color 150ms ease;
+  &:hover,
+  &[aria-expanded="true"] {
+    background: color-mix(in srgb, var(--p-primary-color) 10%, var(--p-content-hover-background));
   }
   &:focus-visible {
     outline: 3px solid var(--p-primary-color);
     outline-offset: 2px;
   }
 }
+
+.selecteur-semaine__titre {
+  @apply text-lg md:text-xl font-bold leading-tight;
+}
+
+.selecteur-semaine__sous-titre {
+  @apply text-sm font-normal text-muted-color;
+}
 </style>
 
 <style>
 /* La fenêtre est téléportée hors du composant : ses styles ne peuvent pas être scopés. */
 .selecteur-semaine.p-popover {
+  margin-top: 0.5rem;
   border: 0;
   border-radius: 24px;
   box-shadow: 0 16px 40px -12px rgb(0 0 0 / 0.3);
+}
+
+/* La flèche de PrimeVue se posait sur le sous-titre de la période. */
+.selecteur-semaine.p-popover::before,
+.selecteur-semaine.p-popover::after {
+  display: none;
 }
 
 .selecteur-semaine .p-popover-content {
@@ -234,8 +257,10 @@ const choisir = (lundi) => {
   font-variant-numeric: tabular-nums;
 }
 
-.selecteur-semaine__semaine--vide .selecteur-semaine__charge {
+.selecteur-semaine__vacances {
+  grid-column: 2 / 4;
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--p-text-muted-color);
-  font-size: 0.75rem;
 }
 </style>

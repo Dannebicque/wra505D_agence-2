@@ -302,19 +302,21 @@ const detail = computed(() => {
                   class="min-w-[44px]! min-h-[44px]!"
               />
             </div>
-            <div class="min-w-0">
-              <h2 class="edt-barre__titre">
-                <SelecteurSemaine
-                    v-if="semaines.length"
-                    :semaines="semaines"
-                    :lundi-affiche="semaineChargee"
-                    :lundi-courant="isoDate(lundiDe(maintenant))"
-                    @choisir="choisirSemaine"
-                >{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</SelecteurSemaine>
-                <template v-else>{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</template>
-              </h2>
-              <p class="edt-barre__semaine">{{ libelleSemaine(getISOWeekNumber(view.firstCellDate), semaineFormation) }}</p>
-            </div>
+            <h2 class="edt-barre__titre">
+              <SelecteurSemaine
+                  v-if="semaines.length"
+                  :titre="titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate })"
+                  :sous-titre="libelleSemaine(getISOWeekNumber(view.firstCellDate), semaineFormation)"
+                  :semaines="semaines"
+                  :lundi-affiche="semaineChargee"
+                  :lundi-courant="isoDate(lundiDe(maintenant))"
+                  @choisir="choisirSemaine"
+              />
+              <span v-else class="edt-barre__periode-fixe">
+                <span class="edt-barre__titre-texte">{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</span>
+                <span class="edt-barre__semaine">{{ libelleSemaine(getISOWeekNumber(view.firstCellDate), semaineFormation) }}</span>
+              </span>
+            </h2>
           </div>
 
           <!-- Alignées à droite : la bulle « Aujourd'hui » naît à gauche de Jour / Semaine sans
@@ -465,11 +467,19 @@ const detail = computed(() => {
 }
 
 .edt-barre__titre {
-  @apply m-0 text-lg md:text-xl font-bold leading-tight;
+  @apply m-0 min-w-0;
+}
+
+.edt-barre__periode-fixe {
+  @apply flex flex-col;
+}
+
+.edt-barre__titre-texte {
+  @apply text-lg md:text-xl font-bold leading-tight;
 }
 
 .edt-barre__semaine {
-  @apply m-0 mt-0.5 text-sm text-muted-color;
+  @apply mt-0.5 text-sm font-normal text-muted-color;
 }
 
 .edt-barre__actions {

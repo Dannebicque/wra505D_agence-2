@@ -141,7 +141,7 @@ describe('Semaine de l\'étudiant en bureau', () => {
     it('choisit une semaine dans la liste de l\'année, chacune avec sa charge', () => {
         cy.get('.selecteur-semaine__declencheur').click();
         cy.get('.selecteur-semaine__semaine[aria-current="true"]').should('be.focused').and('contain', ' h ');
-        cy.contains('.selecteur-semaine__semaine', 'Pas de cours').should('exist');
+        cy.contains('.selecteur-semaine__semaine', 'Vacances').should('exist');
         cy.get('.selecteur-semaine__semaine[aria-current="true"]').parent().next().find('button').click();
         cy.get('.selecteur-semaine').should('not.exist');
         cy.contains('[role="status"]', 'Semaine du');
