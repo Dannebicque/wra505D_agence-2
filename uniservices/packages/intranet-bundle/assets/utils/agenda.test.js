@@ -93,3 +93,158 @@ describe('libelleSemaine', () => {
         expect(libelleSemaine(52, 0)).toBe('Semaine 52');
     });
 });
+
+import {coursParJour, densiteCarte, etatCours, joursDeLaSemaine, pausesDuJour, typeSeance} from './agenda.js';
+
+describe('typeSeance', () => {
+    it('priorise l\'évaluation sur tout le reste', () => {
+        expect(typeSeance(cours(14, '08:00', '10:00', {evaluation: true, type: 'CM', enseignement: {type: 'sae'}})))
+            .toBe('evaluation');
+    });
+
+    it('reconnaît une SAE', () => {
+        expect(typeSeance(cours(14, '08:00', '10:00', {type: 'TD', enseignement: {type: 'sae'}}))).toBe('sae');
+    });
+
+    it('reconnaît les trois types de séance, sans tenir compte de la casse', () => {
+        expect(typeSeance(cours(14, '08:00', '10:00', {type: 'CM'}))).toBe('cm');
+        expect(typeSeance(cours(14, '08:00', '10:00', {type: 'td'}))).toBe('td');
+        expect(typeSeance(cours(14, '08:00', '10:00', {type: 'TP'}))).toBe('tp');
+    });
+
+    it('range le reste et l\'absence de type dans « autre »', () => {
+        expect(typeSeance(cours(14, '08:00', '10:00', {type: 'examen'}))).toBe('autre');
+        expect(typeSeance(cours(14, '08:00', '10:00', {type: undefined}))).toBe('autre');
+    });
+
+    it('laisse une ressource non SAE suivre le type de séance', () => {
+        expect(typeSeance(cours(14, '08:00', '10:00', {type: 'CM', enseignement: {type: 'ressource'}}))).toBe('cm');
+    });
+});
+
+describe('densiteCarte', () => {
+    it('affiche une carte complète à partir de 96 pixels', () => {
+        expect(densiteCarte(96)).toBe('complete');
+        expect(densiteCarte(140)).toBe('complete');
+    });
+
+    it('passe en carte compacte entre 52 et 95 pixels', () => {
+        expect(densiteCarte(95)).toBe('compacte');
+        expect(densiteCarte(52)).toBe('compacte');
+    });
+
+    it('se réduit à une ligne sous 52 pixels', () => {
+        expect(densiteCarte(51)).toBe('ligne');
+        expect(densiteCarte(0)).toBe('ligne');
+    });
+});
+
+describe('pausesDuJour', () => {
+    it('remet les cours dans l\'ordre pour calculer la pause', () => {
+        const journee = [cours(14, '10:30', '12:00'), cours(14, '08:00', '10:00')];
+        expect(pausesDuJour(journee)).toEqual([
+            {start: new Date(2026, 8, 14, 10, 0), end: new Date(2026, 8, 14, 10, 30), minutes: 30},
+        ]);
+    });
+
+    it('fusionne les cours qui se chevauchent', () => {
+        const journee = [cours(14, '08:00', '10:00'), cours(14, '09:30', '11:00'), cours(14, '11:30', '12:30')];
+        expect(pausesDuJour(journee)).toEqual([
+            {start: new Date(2026, 8, 14, 11, 0), end: new Date(2026, 8, 14, 11, 30), minutes: 30},
+        ]);
+    });
+
+    it('fusionne deux cours qui se touchent', () => {
+        const journee = [cours(14, '08:00', '10:00'), cours(14, '10:00', '11:00'), cours(14, '11:30', '12:00')];
+        expect(pausesDuJour(journee)).toEqual([
+            {start: new Date(2026, 8, 14, 11, 0), end: new Date(2026, 8, 14, 11, 30), minutes: 30},
+        ]);
+    });
+
+    it('écarte un trou de moins de 15 minutes', () => {
+        expect(pausesDuJour([cours(14, '08:00', '10:00'), cours(14, '10:10', '12:00')])).toEqual([]);
+    });
+
+    it('garde un trou d\'1 h 15 avec ses minutes', () => {
+        expect(pausesDuJour([cours(14, '08:00', '10:00'), cours(14, '11:15', '12:00')])).toEqual([
+            {start: new Date(2026, 8, 14, 10, 0), end: new Date(2026, 8, 14, 11, 15), minutes: 75},
+        ]);
+    });
+
+    it('ne calcule rien avec moins de deux cours', () => {
+        expect(pausesDuJour([])).toEqual([]);
+        expect(pausesDuJour([cours(14, '08:00', '10:00')])).toEqual([]);
+    });
+});
+
+describe('coursParJour', () => {
+    it('regroupe les cours par jour et les trie', () => {
+        const semaine = [
+            cours(15, '14:00', '16:00'),
+            cours(14, '14:00', '16:00'),
+            cours(14, '08:00', '10:00'),
+            cours(21, '09:00', '11:00'),
+        ];
+        const jours = coursParJour(semaine);
+        expect(jours.map(({date}) => date.getDate())).toEqual([14, 15, 21]);
+        expect(jours[0].cours.map(({start}) => start.getHours())).toEqual([8, 14]);
+        expect(jours[0].date.getHours()).toBe(0);
+        expect(jours[0].date.getMinutes()).toBe(0);
+    });
+
+    it('ne modifie pas le tableau reçu', () => {
+        const semaine = [cours(15, '14:00', '16:00'), cours(14, '08:00', '10:00')];
+        const ordre = semaine.map(({start}) => start.getDate());
+        coursParJour(semaine);
+        expect(semaine.map(({start}) => start.getDate())).toEqual(ordre);
+    });
+});
+
+describe('joursDeLaSemaine', () => {
+    const lundi = new Date(2026, 8, 14, 8, 30);
+
+    it('rend du lundi au vendredi sans cours le week-end', () => {
+        const jours = joursDeLaSemaine(lundi, [cours(14, '08:00', '10:00'), cours(16, '14:00', '16:00')]);
+        expect(jours.map((date) => date.getDate())).toEqual([14, 15, 16, 17, 18]);
+        expect(jours[0].getHours()).toBe(0);
+    });
+
+    it('ajoute le samedi quand un cours y a lieu', () => {
+        const jours = joursDeLaSemaine(lundi, [cours(16, '14:00', '16:00'), cours(19, '08:00', '10:00')]);
+        expect(jours).toHaveLength(6);
+        expect(jours.at(-1).getDay()).toBe(6);
+        expect(jours.at(-1).getDate()).toBe(19);
+    });
+
+    it('ajoute le week-end complet quand des cours y ont lieu', () => {
+        const jours = joursDeLaSemaine(lundi, [cours(19, '08:00', '10:00'), cours(20, '08:00', '10:00')]);
+        expect(jours.map((date) => date.getDate())).toEqual([14, 15, 16, 17, 18, 19, 20]);
+    });
+
+    it('ignore les cours des autres semaines', () => {
+        const jours = joursDeLaSemaine(lundi, [cours(21, '08:00', '10:00'), cours(26, '08:00', '10:00')]);
+        expect(jours.map((date) => date.getDate())).toEqual([14, 15, 16, 17, 18]);
+    });
+});
+
+describe('etatCours', () => {
+    const seance = cours(14, '08:00', '10:00');
+
+    it('marque un cours passé, fin comprise', () => {
+        expect(etatCours(seance, new Date(2026, 8, 14, 10, 0))).toEqual({etat: 'passe', dans: null});
+        expect(etatCours(seance, new Date(2026, 8, 14, 12, 0))).toEqual({etat: 'passe', dans: null});
+    });
+
+    it('marque un cours en cours, début compris', () => {
+        expect(etatCours(seance, new Date(2026, 8, 14, 8, 0))).toEqual({etat: 'en-cours', dans: null});
+        expect(etatCours(seance, new Date(2026, 8, 14, 9, 30))).toEqual({etat: 'en-cours', dans: null});
+    });
+
+    it('annonce les minutes restantes avant le début', () => {
+        expect(etatCours(seance, new Date(2026, 8, 14, 7, 40))).toEqual({etat: 'a-venir', dans: 20});
+    });
+
+    it('arrondit au supérieur les minutes avant le début', () => {
+        expect(etatCours(seance, new Date(2026, 8, 14, 7, 40, 30))).toEqual({etat: 'a-venir', dans: 20});
+    });
+});
