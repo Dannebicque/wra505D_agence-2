@@ -103,6 +103,8 @@ const etat = computed(() => {
       radial-gradient(circle 2.5rem at calc(100% - 0.75rem) calc(100% - 0.75rem), color-mix(in srgb, var(--seance-pastille) 14%, var(--seance-fond)) calc(100% - 0.5px), transparent 100%),
       var(--seance-fond);
   border-radius: 18px;
+  /* Une ombre à peine visible : la carte se détache du fond, même quand sa teinte en est proche. */
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 2px 6px -2px rgb(0 0 0 / 0.06);
   transition: box-shadow 150ms ease, transform 150ms ease;
   /* La carte connaît sa taille : les lignes facultatives s'effacent quand elle rétrécit. */
   container-type: size;
@@ -181,8 +183,8 @@ const etat = computed(() => {
   border-radius: 999px;
   font-size: 0.6875rem;
   line-height: 1.125rem;
-  color: var(--p-accent-contrast-color);
-  background: var(--p-accent-color);
+  color: var(--p-primary-contrast-color);
+  background: var(--p-primary-color);
 }
 
 .cours-carte__detail .cours-carte__etat {
@@ -191,7 +193,7 @@ const etat = computed(() => {
 
 /* Le cours en cours se repère au jaune de la DA, l'accent de l'application. */
 .cours-carte--en-cours {
-  box-shadow: inset 0 0 0 2px var(--p-accent-color);
+  box-shadow: inset 0 0 0 2px var(--p-accent-color), 0 1px 2px rgb(0 0 0 / 0.06), 0 2px 6px -2px rgb(0 0 0 / 0.06);
 }
 
 /* Une carte complète garde le titre et l'horaire, puis la salle, puis l'enseignant, selon la place.

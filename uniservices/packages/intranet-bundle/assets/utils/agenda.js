@@ -149,3 +149,16 @@ export function etatCours(cours, maintenant) {
     }
     return {etat: 'a-venir', dans: Math.ceil((cours.start - maintenant) / 60000)};
 }
+
+// Les vacances scolaires d'un IUT, reconnues au mois de leur lundi.
+const SAISONS_DE_VACANCES = [
+    {saison: 'toussaint', mois: [9, 10]},
+    {saison: 'noel', mois: [11]},
+    {saison: 'hiver', mois: [0, 1, 2]},
+    {saison: 'printemps', mois: [3, 4]},
+];
+
+export function saisonDeVacances(lundi) {
+    const mois = Number(lundi.split('-')[1]) - 1;
+    return SAISONS_DE_VACANCES.find(({mois: liste}) => liste.includes(mois))?.saison ?? 'ete';
+}

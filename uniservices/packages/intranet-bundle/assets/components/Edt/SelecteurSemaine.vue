@@ -1,6 +1,8 @@
 <script setup>
 import {computed, nextTick, ref} from 'vue';
 import {formatDelai} from '@/utils/prochainCours.js';
+import {saisonDeVacances} from '@/utils/agenda.js';
+import DessinSaison from './DessinSaison.vue';
 
 const props = defineProps({
   titre: {
@@ -110,7 +112,10 @@ const choisir = (lundi) => {
                 <span>{{ semaine.dates }}</span>
                 <span v-if="semaine.lundi === lundiCourant" class="selecteur-semaine__courante">cette semaine</span>
               </span>
-              <span v-if="semaine.minutes === 0" class="selecteur-semaine__vacances">Vacances</span>
+              <span v-if="semaine.minutes === 0" class="selecteur-semaine__vacances">
+                <DessinSaison :saison="saisonDeVacances(semaine.lundi)" class="selecteur-semaine__mini-dessin" />
+                Vacances
+              </span>
               <template v-else>
                 <span class="selecteur-semaine__jauge" aria-hidden="true">
                   <span :style="{ width: semaine.part }"></span>
@@ -172,12 +177,18 @@ const choisir = (lundi) => {
 </style>
 
 <style>
-/* La fenêtre est téléportée hors du composant : ses styles ne peuvent pas être scopés. */
+/* La fenêtre est téléportée hors du composant : ses styles ne peuvent pas être scopés. Elle reprend
+   les cartes de l'agenda : deux cercles de couleur dans les angles, pastilles et barres en dégradé. */
 .selecteur-semaine.p-popover {
   margin-top: 0.5rem;
   border: 0;
-  border-radius: 24px;
-  box-shadow: 0 16px 40px -12px rgb(0 0 0 / 0.3);
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+      radial-gradient(circle 6rem at calc(100% + 1rem) -1rem, color-mix(in srgb, var(--p-accent-color) 22%, var(--p-content-background)) calc(100% - 0.5px), transparent 100%),
+      radial-gradient(circle 5rem at -1rem calc(100% + 1rem), color-mix(in srgb, var(--p-primary-color) 12%, var(--p-content-background)) calc(100% - 0.5px), transparent 100%),
+      var(--p-content-background);
+  box-shadow: 0 20px 48px -16px rgb(0 0 0 / 0.35);
 }
 
 /* La flèche de PrimeVue se posait sur le sous-titre de la période. */
@@ -204,12 +215,15 @@ const choisir = (lundi) => {
 }
 
 .selecteur-semaine__mois {
-  margin: 0.75rem 0.75rem 0.25rem;
+  display: inline-block;
+  margin: 0.75rem 0.5rem 0.25rem;
+  padding: 0.125rem 0.75rem;
+  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--p-text-muted-color);
+  text-transform: capitalize;
+  color: var(--p-primary-contrast-color);
+  background: var(--p-primary-color);
 }
 
 .selecteur-semaine__semaine {
@@ -228,10 +242,11 @@ const choisir = (lundi) => {
   font-size: 0.875rem;
   text-align: left;
   cursor: pointer;
+  transition: background-color 150ms ease;
 }
 
 .selecteur-semaine__semaine:hover {
-  background: var(--p-content-hover-background);
+  background: color-mix(in srgb, var(--p-primary-color) 8%, transparent);
 }
 
 .selecteur-semaine__semaine:focus-visible {
@@ -239,35 +254,48 @@ const choisir = (lundi) => {
   outline-offset: -3px;
 }
 
-.selecteur-semaine__semaine--affichee {
-  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
-  font-weight: 600;
+/* La semaine affichée prend le jaune de la DA, avec son texte violet (5,29:1). */
+.selecteur-semaine__semaine--affichee,
+.selecteur-semaine__semaine--affichee:hover {
+  font-weight: 700;
+  color: var(--p-accent-contrast-color);
+  background: var(--p-accent-color);
 }
 
 .selecteur-semaine__dates {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   line-height: 1.2;
 }
 
 .selecteur-semaine__courante {
+  margin-top: 0.125rem;
+  padding: 0 0.375rem;
+  border-radius: 999px;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: var(--p-primary-color);
+  color: var(--p-primary-contrast-color);
+  background: var(--p-primary-color);
 }
 
 .selecteur-semaine__jauge {
   height: 0.5rem;
   border-radius: 999px;
-  background: var(--p-content-hover-background);
+  background: color-mix(in srgb, var(--p-primary-color) 10%, var(--p-content-background));
   overflow: hidden;
 }
 
+/* Le dégradé du violet au rose : une semaine chargée se voit de loin. */
 .selecteur-semaine__jauge span {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--p-primary-color);
+  background: linear-gradient(90deg, var(--p-primary-color), var(--p-seance-sae-pill-background));
+}
+
+.selecteur-semaine__semaine--affichee .selecteur-semaine__jauge {
+  background: color-mix(in srgb, var(--p-content-background) 55%, transparent);
 }
 
 .selecteur-semaine__charge {
@@ -277,8 +305,20 @@ const choisir = (lundi) => {
 
 .selecteur-semaine__vacances {
   grid-column: 2 / 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-self: start;
+  padding: 0.125rem 0.75rem 0.125rem 0.25rem;
+  border-radius: 999px;
   font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--p-text-muted-color);
+  font-weight: 700;
+  color: var(--p-accent-contrast-color);
+  background: color-mix(in srgb, var(--p-accent-color) 35%, var(--p-content-background));
+}
+
+.selecteur-semaine__mini-dessin {
+  width: 1.75rem;
+  height: 1.75rem;
 }
 </style>

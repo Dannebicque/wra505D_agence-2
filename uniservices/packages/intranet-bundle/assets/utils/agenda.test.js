@@ -8,6 +8,7 @@ import {
     libelleCours,
     libelleSemaine,
     pausesDuJour,
+    saisonDeVacances,
     titrePeriode,
     typeSeance,
 } from './agenda.js';
@@ -255,5 +256,16 @@ describe('etatCours', () => {
 
     it('arrondit au supérieur les minutes avant le début', () => {
         expect(etatCours(seance, new Date(2026, 8, 14, 7, 40, 30))).toEqual({etat: 'a-venir', dans: 20});
+    });
+});
+
+describe('saisonDeVacances', () => {
+    it('reconnaît chaque période de vacances au mois de son lundi', () => {
+        expect(saisonDeVacances('2026-10-26')).toBe('toussaint');
+        expect(saisonDeVacances('2026-11-02')).toBe('toussaint');
+        expect(saisonDeVacances('2026-12-21')).toBe('noel');
+        expect(saisonDeVacances('2027-02-15')).toBe('hiver');
+        expect(saisonDeVacances('2027-04-19')).toBe('printemps');
+        expect(saisonDeVacances('2027-07-12')).toBe('ete');
     });
 });
