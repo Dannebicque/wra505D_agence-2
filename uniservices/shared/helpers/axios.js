@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { rememberServerError } from './serverError.js';
 
 const baseURL = import.meta.env.VITE_BASE_URL || '';
 
@@ -72,12 +73,9 @@ const redirectToServerErrorPage = (error) => {
     const currentPath = window.location.pathname;
     if (currentPath === '/app/500' || currentPath === '/app/500/') return;
 
-    const debugMessage = getErrorDebugMessage(error);
-    try {
-        window.sessionStorage.setItem('lastServerErrorDebugMessage', debugMessage);
-    } catch (_) {
-        // Ne pas bloquer la redirection si le stockage est indisponible
-    }
+    const { search, hash } = window.location;
+    const returnPath = currentPath.replace(/^\/app(?=\/|$)/, '') || '/';
+    rememberServerError(window.sessionStorage, returnPath + search + hash, getErrorDebugMessage(error));
 
     window.location.href = window.location.origin + '/app/500';
 };

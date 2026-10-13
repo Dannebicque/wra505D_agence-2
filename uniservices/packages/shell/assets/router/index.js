@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { bundles } from '../bundles-registry';
 import { useUsersStore, useSecurity } from '@stores';
 import { hasPermission } from '@utils';
+import { resolveServerErrorRoute } from '@helpers/serverError.js';
 
 // Gather routes from all registered bundles
 const bundleRoutes = [];
@@ -50,7 +51,8 @@ const router = createRouter({
     {
       path: '/500',
       component: () => import('@components/pages/ServerError.vue'),
-      meta: { title: 'Erreur Serveur', public: true }
+      meta: { title: 'Erreur Serveur', public: true },
+      beforeEnter: () => resolveServerErrorRoute(window.sessionStorage)
     },
     // Catch-all route for 404
     {
