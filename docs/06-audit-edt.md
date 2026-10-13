@@ -89,8 +89,10 @@ Huit principes, qui servent de critères d'acceptation aux lots de la section 5.
 
 1. **Proportionnel et exact.** Une minute vaut toujours la même hauteur : toute durée tombe juste,
    au quart d'heure près. Graduation à l'heure, trait léger à la demi-heure. La plage horaire
-   suit la semaine affichée (de l'heure pleine avant le premier cours à celle après le dernier),
-   bornée de 7 h à 21 h.
+   est propre à l'étudiant et **ne bouge jamais d'une semaine à l'autre** : de l'heure pleine
+   avant son cours le plus matinal de l'année à l'heure pleine après son cours le plus tardif.
+   Un étudiant qui ne commence jamais avant 8 h et ne finit jamais après 19 h voit 8 h – 19 h.
+   Sans cours connu, 8 h – 20 h, comme l'intranet en ligne.
 2. **La carte s'adapte à sa hauteur.** Trois densités : complète (intitulé, type, groupe, salle,
    enseignant, horaire), compacte (code, salle, horaire), une ligne (« R1.06 · C110 · 13 h 30 »).
    Jamais de défilement dans une carte ; le détail complet reste à un clic et dans le nom
@@ -121,9 +123,9 @@ jetables ; LCS conçoit, relit chaque diff et ouvre les PR.
 | Lot | Contenu | Corrige | Taille | Qui |
 |---|---|---|---|---|
 | C17.0 | **Données de test** : fausse base Celcat enrichie (45 min, 1 h, 1 h 15, 1 h 30, 3 h, deux cours qui se chevauchent dans un groupe de l'étudiant, un cours à 7 h 45 et un jusqu'à 19 h, un samedi, une semaine sans cours). Les tests existants restent verts. | EDT-23 | S | OpenCode (lignes ajoutées sur le modèle existant), LCS |
-| C17.1 | **[back] API de l'étudiant** : `/api/me/emploi-du-temps?du=…&au=…` (ses groupes, semaine de formation, heures avec fuseau) ; `/api/edt_events` fermée aux anonymes, inchangée pour le personnel. PHPUnit. | EDT-19, EDT-20, EDT-21 | M | LCS, Antigravity en relecture |
+| C17.1 | **[back] API de l'étudiant** : `/api/me/emploi-du-temps?du=…&au=…` (ses groupes, semaine de formation, heures avec fuseau, plage horaire de son année) ; `/api/edt_events` fermée aux anonymes, inchangée pour le personnel. PHPUnit. | EDT-19, EDT-20, EDT-21 | M | LCS, Antigravity en relecture |
 | C17.2 | **Fondations** : jetons de type de séance dans le preset (clair et sombre, mesurés) ; fonctions pures dans `utils/agenda.js` : plage horaire, densité d'une carte, pauses, regroupement par jour. Vitest. | EDT-10, EDT-14 | M | LCS ; OpenCode écrit la série de tests |
-| C17.3 | **Semaine en bureau** : carte de cours propre à l'étudiant (sans toucher `EdtEvent.vue`, partagé avec le personnel), plage horaire automatique, échelle au quart d'heure, chevauchements côte à côte, mode sombre, plus aucun style posé dans le DOM, samedi affiché s'il a des cours. | EDT-7 à EDT-9, EDT-11 à EDT-17 | M | LCS |
+| C17.3 | **Semaine en bureau** : carte de cours propre à l'étudiant (sans toucher `EdtEvent.vue`, partagé avec le personnel), plage horaire de l'étudiant, échelle au quart d'heure, chevauchements côte à côte, mode sombre, plus aucun style posé dans le DOM, samedi ajouté la semaine où il a un cours. | EDT-7 à EDT-9, EDT-11 à EDT-17 | M | LCS |
 | C17.4 | **Mobile** : bandeau des jours, journée en liste avec ses pauses, balayage, en-tête compact, semaine en liste. | MOB-11 à MOB-13 | L | LCS ; Antigravity relit clavier et RGAA |
 | C17.5 | **Navigation et états** : date et vue dans l'URL, vue retenue, cache et préchargement, squelette, état vide, erreur avec « Réessayer ». | EDT-15, EDT-21 | M | LCS ; OpenCode pour les tests |
 | C17.6 | **Détail d'un cours** : modal accessible, feuille du bas en mobile, noms cohérents, liens vers la matière (après P1) et ses documents. | EDT-13, EDT-18 | S | LCS |
@@ -135,16 +137,22 @@ et C17.7. Chaque lot finit par un parcours Cypress en bureau et en mobile, sur u
 Plus tard, hors de C17 : abonnement iCal par jeton aléatoire (celui de la V3, `MD5(prenom.nom)`,
 est une faille) ; cours modifiés et annulés, si Celcat fournit l'information (EDT-22).
 
-## 6. Décisions à prendre
+## 6. Décisions
 
-1. **Couleur par type de séance ou par matière.** Recommandé : par type. Six couleurs au plus,
-   stables d'une semaine à l'autre, chacune mesurable en clair et en sombre ; c'est l'usage de
-   Celcat. La matière reste lisible par son code, en gras.
-2. **Garder vue-cal.** Recommandé : le garder pour la grille de la semaine en bureau (C17.3) et
-   écrire nous-mêmes la vue mobile, que vue-cal n'offre pas. Le remplacer par notre propre grille
-   reste possible après C17.4, si son absence d'accessibilité nous coûte trop.
-3. **Samedi.** Recommandé : affiché seulement quand il porte un cours.
-4. **Plage horaire.** Recommandé : calculée sur la semaine, bornée de 7 h à 21 h, plutôt que fixe.
-5. **Coordination.** La colonne C est celle de JEREMY, auteur de C3, C14 et C15 sur
-   `EdtEtudiant.vue`. Le prévenir avant C17.3 ; ses fiches en cours (D6, F2 à F5) ne touchent pas
-   ces fichiers.
+Prises par LCS le 13/10/2026 :
+
+- **Plage horaire** : propre à chaque étudiant, calculée sur toute son année, jamais d'une semaine
+  à l'autre : une grille qui change de hauteur chaque lundi perturbe. 8 h – 20 h par défaut, comme
+  l'intranet en ligne (principe 1).
+- **Samedi** : masqué, ajouté la semaine où l'étudiant y a un cours.
+- **Coordination** : JEREMY, titulaire de la colonne C et auteur de C3, C14 et C15 sur
+  `EdtEtudiant.vue`, est d'accord.
+
+Retenues par défaut, à revoir si l'équipe s'y oppose :
+
+1. **Couleur par type de séance**, pas par matière. Six couleurs au plus, stables d'une semaine à
+   l'autre, chacune mesurable en clair et en sombre ; c'est l'usage de Celcat. La matière reste
+   lisible par son code, en gras.
+2. **vue-cal gardé** pour la grille de la semaine en bureau (C17.3) ; la vue mobile, que vue-cal
+   n'offre pas, est écrite par nous. Le remplacer par notre propre grille reste possible après
+   C17.4, si son absence d'accessibilité nous coûte trop.

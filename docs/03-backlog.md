@@ -867,16 +867,16 @@ Cypress, en bureau et en mobile, en clair et en sombre, sur une base neuve.
 | Lot | Contenu |
 |---|---|
 | C17.0 | fausse base Celcat aux durées variées (45 min à 3 h), chevauchement, samedi, semaine vide |
-| C17.1 | [back] `/api/me/emploi-du-temps`, heures avec fuseau, `/api/edt_events` fermée aux anonymes |
+| C17.1 | [back] `/api/me/emploi-du-temps`, heures avec fuseau, plage horaire de l'année, `/api/edt_events` fermée aux anonymes |
 | C17.2 | jetons de type de séance dans le preset, fonctions pures de placement, Vitest |
-| C17.3 | semaine en bureau : carte adaptée à la durée, plage automatique, chevauchements, mode sombre |
+| C17.3 | semaine en bureau : carte adaptée à la durée, plage horaire fixe pour l'étudiant, samedi s'il a cours, mode sombre |
 | C17.4 | mobile : bandeau des jours, journée en liste avec ses pauses, balayage |
 | C17.5 | date et vue dans l'URL, cache, chargement, état vide, erreur avec « Réessayer » |
 | C17.6 | détail d'un cours modal, feuille du bas en mobile, liens vers la matière |
 | C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte |
 
-**Avant de commencer** prévenir JEREMY, titulaire de la colonne C et auteur de C3, C14 et C15
-sur `EdtEtudiant.vue`.
+**JEREMY**, titulaire de la colonne C et auteur de C3, C14 et C15 sur `EdtEtudiant.vue`, est
+d'accord (13/10/2026).
 
 ## Colonne D — Recherche
 
