@@ -53,9 +53,24 @@
                 display: none;
             }
 
-            // Le logo (4rem de large, marge intérieure comprise) se centre sur l'axe des icônes du menu.
+            // La zone du logo prend la largeur du menu et la suit quand il se replie : le logo
+            // (4rem de large, marge intérieure comprise) reste centré sur l'axe des icônes, et la
+            // recherche qui la suit s'aligne sur le bord du contenu, 2rem après le menu.
             .layout-topbar {
-                padding-left: calc(var(--layout-sidebar-rail-width) / 2 - 2rem);
+                padding-left: 0;
+                gap: 0;
+
+                .layout-topbar-logo-container {
+                    box-sizing: border-box;
+                    flex: none;
+                    width: var(--layout-sidebar-width);
+                    padding-left: calc(var(--layout-sidebar-rail-width) / 2 - 2rem);
+                    transition: width var(--layout-section-transition-duration);
+                }
+
+                .layout-topbar-logo-container + .layout-topbar-search {
+                    margin-left: 2rem;
+                }
             }
 
             .layout-main-container {
@@ -70,6 +85,10 @@
             // Replié, le menu reste une colonne d'icônes : les libellés sont masqués à l'écran
             // mais restent lus, et une infobulle les affiche au survol et au focus.
             &.layout-static-inactive {
+                .layout-topbar .layout-topbar-logo-container {
+                    width: var(--layout-sidebar-rail-width);
+                }
+
                 .layout-sidebar {
                     width: var(--layout-sidebar-rail-width);
 
