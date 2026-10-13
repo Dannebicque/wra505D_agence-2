@@ -7,6 +7,7 @@ import cahierDeTexteRoutes from './router/modules/cahierDeTexteRoutes.js';
 import profilRoutes from './router/modules/profilRoutes.js';
 import administrationRoutes from './router/modules/administrationRoutes.js';
 import superAdministrationRoutes from './router/modules/superAdministrationRoutes.js';
+import planCoursRoutes from './router/modules/planCoursRoutes.js';
 import Logo from "@images/logo/logo_intranet_iut_troyes.svg";
 import LayoutComponent from '@components/components/layout/AppLayout.vue';
 import { registerWidgets } from './components/Personnel/dashboard/registerWidgets';
@@ -20,6 +21,12 @@ const intranetMenu = {
     { label: 'Trombinoscope',
       icon: 'pi pi-fw pi-users',
       to: '/intranet/trombinoscope',
+      permission: 'isPersonnel'
+    },
+    {
+      label: 'Plans de cours',
+      icon: 'pi pi-fw pi-book',
+      to: '/intranet/plan-de-cours',
       permission: 'isPersonnel'
     },
     {
@@ -81,6 +88,7 @@ export default {
         ...notificationsRoutes,
         ...cahierDeTexteRoutes,
         ...profilRoutes,
+        ...planCoursRoutes,
         ...administrationRoutes,
         ...superAdministrationRoutes,
       ]
