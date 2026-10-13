@@ -1,5 +1,5 @@
 <script setup>
-import {ref, markRaw, onMounted, computed} from 'vue';
+import {ref, markRaw, onMounted} from 'vue';
 import EdtPersonnel from "@/components/Edt/EdtPersonnel.vue";
 import EdtDepartement from "@/components/Edt/EdtDepartement.vue";
 import EdtEtudiant from "../components/Edt/EdtEtudiant.vue";
@@ -11,10 +11,7 @@ const store = useUsersStore();
 
 const tabs = ref([]);
 
-// L'étudiant n'a que son propre agenda : ni onglet seul, ni promesse de vues qu'il n'a pas.
-const description = computed(() => (store.isEtudiant
-  ? 'Vos cours, à la journée ou à la semaine'
-  : 'Consultez votre emploi du temps, celui du département et les statistiques'));
+const description = 'Consultez votre emploi du temps, celui du département et les statistiques';
 
 onMounted( () => {
   if (store.isPersonnel) {
@@ -34,7 +31,11 @@ onMounted( () => {
 </script>
 
 <template>
+  <!-- L'étudiant n'a que son agenda, qui doit tenir entier à l'écran : son titre reste pour les
+       lecteurs d'écran, la barre de l'agenda dit déjà la période. -->
+  <h1 v-if="store.isEtudiant" class="sr-only">Emploi du temps</h1>
   <HeaderComponent
+      v-else
       icon="pi pi-calendar"
       titre="Emploi du temps"
       :description="description"

@@ -64,11 +64,13 @@ export function typeSeance(cours) {
     return 'autre';
 }
 
+// Hauteurs mesurées des cartes de CoursCarte.vue : quatre lignes et leurs marges tiennent en
+// 86 px, deux lignes en 50 px.
 export function densiteCarte(hauteur) {
-    if (hauteur >= 96) {
+    if (hauteur >= 86) {
         return 'complete';
     }
-    if (hauteur >= 52) {
+    if (hauteur >= 50) {
         return 'compacte';
     }
     return 'ligne';

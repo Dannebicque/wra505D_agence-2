@@ -19,7 +19,7 @@ const props = defineProps({
   }
 });
 
-const LIBELLES_TYPE = {cm: 'CM', td: 'TD', tp: 'TP', sae: 'SAÉ', evaluation: 'Évaluation'};
+const LIBELLES_TYPE = {cm: 'CM', td: 'TD', tp: 'TP', sae: 'SAÉ', evaluation: 'Éval.'};
 
 const type = computed(() => typeSeance(props.cours));
 const libelleType = computed(() => LIBELLES_TYPE[type.value] ?? props.cours.type ?? 'Cours');
@@ -28,7 +28,7 @@ const densite = computed(() => densiteCarte(props.hauteur));
 const heure = (date) => date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
 const horaire = computed(() => `${heure(props.cours.start)} – ${heure(props.cours.end)}`);
 
-// « CM CM » : le groupe de CM porte le même nom que le type, on ne l'écrit qu'une fois.
+// « CM CM » : le groupe de CM porte le nom du type, on ne l'écrit qu'une fois.
 const groupe = computed(() => (props.cours.groupe && props.cours.groupe !== props.cours.type ? props.cours.groupe : null));
 
 const etat = computed(() => {
@@ -44,38 +44,45 @@ const etat = computed(() => {
 <template>
   <div
       :class="['cours-carte', `cours-carte--${densite}`, {'cours-carte--en-cours': etat === 'En cours'}]"
-      :style="{'--seance-fond': `var(--p-seance-${type}-background)`, '--seance-couleur': `var(--p-seance-${type}-color)`}"
+      :style="{
+        '--seance-fond': `var(--p-seance-${type}-background)`,
+        '--seance-couleur': `var(--p-seance-${type}-color)`,
+        '--seance-pastille': `var(--p-seance-${type}-pill-background)`,
+        '--seance-pastille-texte': `var(--p-seance-${type}-pill-color)`,
+      }"
   >
-    <template v-if="densite === 'ligne'">
-      <p class="cours-carte__ligne">
-        <strong>{{ cours.codeModule || libelleType }}</strong>
-        <span v-if="cours.salle"> · {{ cours.salle }}</span>
-        <span> · {{ heure(cours.start) }}</span>
-      </p>
-    </template>
+    <p v-if="densite === 'ligne'" class="cours-carte__ligne">
+      <span class="cours-carte__pastille">{{ libelleType }}</span>
+      <strong>{{ cours.codeModule }}</strong>
+      <span class="cours-carte__detail"> · {{ heure(cours.start) }}<template v-if="cours.salle"> · {{ cours.salle }}</template></span>
+    </p>
 
     <template v-else-if="densite === 'compacte'">
-      <p class="cours-carte__titre cours-carte__tronque">
-        <span class="cours-carte__type">{{ libelleType }}</span>
+      <p class="cours-carte__ligne">
+        <span class="cours-carte__pastille">{{ libelleType }}</span>
         <strong>{{ cours.codeModule }}</strong> {{ cours.libModule }}
       </p>
-      <p class="cours-carte__tronque">{{ [cours.salle, horaire].filter(Boolean).join(' · ') }}</p>
-      <span v-if="etat" class="cours-carte__etat">{{ etat }}</span>
+      <p class="cours-carte__ligne cours-carte__detail">
+        <span v-if="etat" class="cours-carte__etat">{{ etat }}</span>
+        {{ [horaire, cours.salle].filter(Boolean).join(' · ') }}
+      </p>
     </template>
 
     <template v-else>
-      <p class="cours-carte__titre cours-carte__deux-lignes">
+      <div class="cours-carte__haut">
+        <span class="cours-carte__pastille">{{ libelleType }}</span>
+        <span v-if="groupe" class="cours-carte__groupe">{{ groupe }}</span>
+        <span v-if="etat" class="cours-carte__etat">{{ etat }}</span>
+      </div>
+      <p class="cours-carte__ligne cours-carte__titre">
         <strong>{{ cours.codeModule }}</strong> {{ cours.libModule }}
       </p>
-      <p class="cours-carte__tronque">
-        <span class="cours-carte__type">{{ libelleType }}</span>
-        <span v-if="groupe">{{ groupe }}</span>
+      <p class="cours-carte__ligne cours-carte__horaire">{{ horaire }}</p>
+      <p v-if="cours.salle" class="cours-carte__ligne cours-carte__info cours-carte__salle">
+        <i class="pi pi-map-marker" aria-hidden="true"></i>{{ cours.salle }}
       </p>
-      <p v-if="cours.salle" class="cours-carte__tronque">{{ cours.salle }}</p>
-      <p v-if="cours.enseignant" class="cours-carte__tronque">{{ cours.enseignant }}</p>
-      <p class="cours-carte__horaire">
-        <span>{{ horaire }}</span>
-        <span v-if="etat" class="cours-carte__etat">{{ etat }}</span>
+      <p v-if="cours.enseignant" class="cours-carte__ligne cours-carte__info cours-carte__enseignant">
+        <i class="pi pi-user" aria-hidden="true"></i>{{ cours.enseignant }}
       </p>
     </template>
   </div>
@@ -85,14 +92,16 @@ const etat = computed(() => {
 @reference "../../assets/tailwind.css";
 
 .cours-carte {
-  @apply h-full flex flex-col gap-0.5 overflow-hidden text-left text-color;
-  padding: 0.25rem 0.5rem 0.25rem 0.625rem;
+  @apply h-full flex flex-col overflow-hidden text-left text-color;
+  gap: 0.125rem;
+  padding: 0.375rem 0.5rem;
   font-size: 0.8125rem;
-  line-height: 1.25;
+  line-height: 1.3;
   background: var(--seance-fond);
-  border: 1px solid var(--seance-couleur);
-  border-left-width: 4px;
-  border-radius: 6px;
+  border-radius: 12px;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+  /* La carte connaît sa taille : les lignes facultatives s'effacent quand elle rétrécit. */
+  container-type: size;
 }
 
 .cours-carte p {
@@ -104,39 +113,93 @@ const etat = computed(() => {
   padding-block: 0;
 }
 
-.cours-carte__ligne,
-.cours-carte__tronque {
+.cours-carte__ligne {
   @apply whitespace-nowrap overflow-hidden text-ellipsis;
 }
 
-.cours-carte__deux-lignes {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.cours-carte__haut {
+  @apply flex items-center gap-1.5 min-w-0;
+}
+
+.cours-carte__pastille {
+  @apply inline-block font-bold uppercase whitespace-nowrap align-middle mr-1.5;
+  padding: 0 0.4375rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  line-height: 1.125rem;
+  letter-spacing: 0.02em;
+  color: var(--seance-pastille-texte);
+  background: var(--seance-pastille);
+}
+
+.cours-carte__haut .cours-carte__pastille {
+  @apply mr-0;
+}
+
+.cours-carte__groupe {
+  @apply font-bold truncate;
+  font-size: 0.75rem;
+  color: var(--seance-couleur);
 }
 
 .cours-carte__titre {
   font-size: 0.875rem;
 }
 
-.cours-carte__type {
-  @apply font-bold uppercase mr-1;
-  color: var(--seance-couleur);
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
+.cours-carte__horaire {
+  @apply font-semibold;
 }
 
-.cours-carte__horaire {
-  @apply mt-auto flex items-center justify-between gap-2 font-medium;
+.cours-carte__detail {
+  font-variant-numeric: tabular-nums;
+}
+
+.cours-carte__info {
+  @apply flex items-center gap-1.5;
+}
+
+.cours-carte__info i {
+  font-size: 0.75rem;
+  color: var(--seance-couleur);
 }
 
 .cours-carte__etat {
-  @apply font-bold whitespace-nowrap;
-  color: var(--seance-couleur);
+  @apply ml-auto shrink-0 font-bold whitespace-nowrap;
+  padding: 0 0.4375rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  line-height: 1.125rem;
+  color: var(--p-accent-contrast-color);
+  background: var(--p-accent-color);
 }
 
+.cours-carte__detail .cours-carte__etat {
+  @apply inline-block ml-0 mr-1.5 align-middle;
+}
+
+/* Le cours en cours se repère au jaune de la DA, l'accent de l'application. */
 .cours-carte--en-cours {
-  box-shadow: 0 0 0 2px var(--seance-couleur);
+  box-shadow: inset 0 0 0 2px var(--p-accent-color);
+}
+
+/* Une carte complète garde le titre et l'horaire, puis la salle, puis l'enseignant, selon la place.
+   Hauteurs de la zone de contenu, sans les 12 px de marge intérieure. */
+@container (max-height: 94px) {
+  .cours-carte__enseignant {
+    @apply hidden;
+  }
+}
+
+@container (max-height: 76px) {
+  .cours-carte__salle {
+    @apply hidden;
+  }
+}
+
+/* Dans une colonne partagée par deux cours, le titre passe avant le groupe. */
+@container (max-width: 9rem) {
+  .cours-carte__groupe {
+    @apply hidden;
+  }
 }
 </style>
