@@ -60,9 +60,33 @@ const MyPreset = definePreset(Aura, {
         },
         // Bordure d'un élément d'interface (champ, case, carte de choix) : 3,49:1 en clair et
         // 3,15:1 en sombre, au-dessus du seuil RGAA de 3:1, là où les gris d'Aura n'y arrivent pas.
+        // Type de séance de l'emploi du temps : un fond pâle, et une couleur pour le liseré et le
+        // libellé du type. Texte courant sur le fond : 6,59:1 au moins en clair, 10,04:1 en sombre ;
+        // couleur sur la surface : 5,14:1 et 6,14:1 ; couleur sur son propre fond : 4,53:1 et 5,65:1.
+        // Bleu, jaune et vert pour CM, TD et TP, comme dans Celcat.
         colorScheme: {
-            light: { uiBorder: { color: '#7E848D' } },
-            dark: { uiBorder: { color: '#666B73' } }
+            light: {
+                uiBorder: { color: '#7E848D' },
+                seance: {
+                    cm: { background: '#E7F0FA', color: '#2F6DAE' },
+                    td: { background: '#FCF1D2', color: '#94640A' },
+                    tp: { background: '#E2F3E8', color: '#2B7A4B' },
+                    sae: { background: '#F9E7F0', color: '#A8336D' },
+                    evaluation: { background: '#FBE6E6', color: '#B42424' },
+                    autre: { background: '#EDEFF2', color: '#676D75' }
+                }
+            },
+            dark: {
+                uiBorder: { color: '#666B73' },
+                seance: {
+                    cm: { background: '#1F2F42', color: '#7FB0E6' },
+                    td: { background: '#3A3020', color: '#E2B44E' },
+                    tp: { background: '#1E3528', color: '#6CC796' },
+                    sae: { background: '#3B2230', color: '#E58BB8' },
+                    evaluation: { background: '#402124', color: '#F28B8B' },
+                    autre: { background: '#2E3237', color: '#A7ACB4' }
+                }
+            }
         }
     },
     components: {
