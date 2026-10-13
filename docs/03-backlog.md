@@ -733,6 +733,20 @@ blanc sur blanc, les descriptions de cartes à 1,93:1.
 deux thèmes, vérifié par un test Cypress en mode sombre. Mesurer après conversion par un
 `canvas` : Tailwind 4 renvoie ses couleurs en `oklch`, PrimeVue ses fonds en `color-mix`.
 
+### B12 · [front] Brancher « Télécharger » sur le fichier du document · S
+**Pourquoi** Le bouton « Télécharger » (carte, liste et panneau de détail) n'affiche qu'un message
+« Préparation du téléchargement » et ne télécharge rien (`handleDownloadDocument` dans
+`DocumentsView.vue`). La route `GET /api/me/documents/{id}/fichier` existe depuis #134 : elle sert
+déjà le contenu, avec les règles de visibilité de la recherche.
+**Terminé quand** le bouton enregistre le fichier sous son nom d'origine, y compris pour les
+types sans aperçu (archives, Word, audio) que la route sert en pièce jointe, et qu'un document
+sans fichier affiche une erreur lisible au lieu d'un faux succès. Un test E2E télécharge un
+document d'exemple et vérifie le fichier reçu. Passer par `apiService.js` : un lien direct
+perdrait le cookie d'authentification.
+**Attention** Les fixtures n'ont de fichier que pour les types pdf, image et excel ; les autres
+documents d'exemple répondent 404. Soit on leur en ajoute dans `DataFixtures/files/`, soit le
+test ne vise que ceux qui en ont.
+
 ---
 
 ## Colonne C — Tableau de bord, emploi du temps, notes

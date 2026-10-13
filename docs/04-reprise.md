@@ -49,6 +49,15 @@ La procédure complète est dans le `README.md`. En résumé, depuis `uniservice
 Comptes de fixtures, mot de passe `test` : `etudiant`, `personnel`, `superadmin`. À saisir dans
 le bloc « Compte invité ».
 
+Base vide ou schéma en retard, depuis `uniservices/back` : les migrations Doctrine ne tournent pas
+sur une base vide (`Version20260918170000` échoue sur `document_category`), la CI et le local
+partent du schéma des entités.
+
+```bash
+php bin/console doctrine:database:drop --force && php bin/console doctrine:database:create
+php bin/console doctrine:schema:update --force -n && php bin/console doctrine:fixtures:load -n
+```
+
 Emploi du temps simulé, depuis `uniservices/back` :
 
 ```bash
@@ -155,6 +164,9 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #139 | **E21.10** : écrans du client, super admin et questionnaire, `forms.css` aux contrastes RGAA |
 | #140 | **E21.11** : intégrations de l'établissement à clés d'API en écriture seule, pointage réservé au personnel |
 | #142 | **E21.12** : plans de cours réservés au personnel, refonte des compétences, corrections de uniServices #260 ; reprise E21 terminée |
+| #134 | aperçu des documents sans téléchargement (PDF, images, tableurs xlsx) ; route `/api/me/documents/{id}/fichier` ; fichiers d'exemple dans les fixtures ; panneau de détail élargi et redimensionnable |
+| #148 | barre du haut : la zone du logo suit la largeur du menu, la recherche s'aligne sur le contenu (en revue) |
+| #149 | un résultat de recherche de type document ouvre sa fiche, par `/documents?document=<id>` (en revue) |
 
 Le connecteur Celcat, en bref :
 
@@ -228,6 +240,9 @@ Ce que la refonte a mis en place côté étudiant, et où ajouter la suite sans 
 | un type de notification | une source `NotificationSourceInterface` ; les e-mails envoyés sont copiés d'office par `SentMessageListener` | `back/src/Service/Notification/` |
 | un type de résultat de recherche | une source `SearchSourceInterface` | `back/src/Service/Search/Source/` |
 | un widget réservé à l'étudiant | `allowedProfiles: [PROFILE_ETUDIANT]`, et la disposition par défaut si tous doivent le voir | `packages/intranet-bundle/src/Services/Dashboard/` |
+| le contenu d'un document | `DocumentFiles` range et retrouve le fichier dans `back/var/documents` (hors de `public/`) ; `DocumentReadAccess` applique la visibilité et le département de la recherche ; seuls PDF, images courantes et xlsx sont servis en ligne, le reste en pièce jointe | `packages/document-bundle/src/Services/DocumentFiles.php`, `back/src/Security/DocumentReadAccess.php`, `back/src/Controller/DocumentFileController.php` |
+| un nouvel aperçu de document | un type dans `typeApercu` et son rendu dans la fenêtre d'aperçu ; la liste des types servis en ligne côté back doit suivre | `packages/document-bundle/assets/service/utils/apercuUtils.ts`, `DocumentPreviewDialog.vue` |
+| ouvrir la fiche d'un document depuis une autre page | un lien vers `/documents?document=<id>` ; la page ouvre la fiche puis retire le paramètre | `shared/helpers/recherche.js`, `DocumentsView.vue` |
 | une couleur | les jetons du preset : palette `VIOLET_IUT`, `--accent-color`, `text-muted-color` ; jamais de couleur en dur, jamais de couleur par module | `packages/shell/assets/main.js` |
 | l'état partagé des notifications | `useNotificationStore` (cloche et page) | `shared/stores/notificationStore.js` |
 
@@ -355,6 +370,14 @@ Cinq failles à leur signaler, car elles sont dans leur code de production :
   (`uniservices/.gitignore`) ni surveillé par Vite : il ne bloque plus les changements de branche
   et ne recharge plus la page. Le dépôt du client, lui, le suit : exclure ses modifications lors
   d'une reprise (`--exclude='*components.d.ts'`).
+- **Après un changement de branche, un pull ou une reprise : `composer install`, `cache:clear`,
+  puis le schéma.** Un `vendor/` ou un cache Symfony périmé donne des 500 trompeurs
+  (`Unrecognized option "hash_tokens"`, matières absentes de `/api/documents`). Une colonne
+  absente (`Unknown column 't0.opt'`) veut dire un schéma en retard : `schema:update --force`, ou
+  recréer la base si une clé étrangère bloque, puis recharger les fixtures.
+- **Les fichiers d'exemple des documents** sont dans `DataFixtures/files/` et copiés dans
+  `back/var/documents/` à chaque chargement des fixtures. Les anciens y restent, sans effet.
+  Ils suffisent à l'aperçu, pas au bouton « Télécharger », qui n'affiche encore qu'un message.
 - **Deux `AuthController`**, dans `back/src` et dans `auth-bundle`, au code identique. Une
   correction faite dans l'un doit l'être dans l'autre.
 - **`failOnDeprecation`** est activé dans PHPUnit : une dépréciation dans leur code fait échouer
