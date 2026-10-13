@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Domain\Dashboard\PreferenceLayout;
 use App\Entity\Dashboard\DashboardPreference;
 use App\Domain\Dashboard\WidgetDefinition;
 use App\Entity\Structure\StructureDepartementPersonnel;
@@ -58,7 +59,9 @@ class DashboardController extends AbstractController
         }
 
         // on recupere les preferences de l'utilisateur si elles existent
-        $preferences = $this->preferenceRepository->findByUser($user, $structureDepartementPersonnel, $dashboardCode);
+        $preferences = $this->preferenceRepository->withoutDuplicates(
+            $this->preferenceRepository->findByUser($user, $structureDepartementPersonnel, $dashboardCode),
+        );
 
         $widgets = [];
         $dashboard = $this->getDashboard($dashboardCode);
@@ -348,7 +351,10 @@ class DashboardController extends AbstractController
 
         // Recalculer les positions de tous les widgets de ce dashboard
         // pour garantir un enchaînement contigu (0, 1, 2, ...) uniquement sur les widgets enabled
-        $allPreferences = $this->preferenceRepository->findByUser($user, $structureDepartementPersonnel, $dashboardCode);
+        $allPreferences = $this->preferenceRepository->withoutDuplicates(
+            $this->preferenceRepository->findByUser($user, $structureDepartementPersonnel, $dashboardCode),
+            true,
+        );
 
         // Séparer enabled et disabled
         $enabledPrefs = [];
@@ -361,31 +367,14 @@ class DashboardController extends AbstractController
             }
         }
 
-        // Trier les widgets enabled en respectant l'ordre du layout par défaut,
-        // puis par leur position actuelle pour ceux qui ne sont pas dans le layout par défaut
-        usort($enabledPrefs, function (DashboardPreference $a, DashboardPreference $b) use ($defaultOrder, $widgetKey, $requestedPosition) {
+        // Trier les widgets enabled par position, puis en respectant l'ordre du layout par défaut
+        // pour ceux qui n'en ont pas encore.
+        usort($enabledPrefs, function (DashboardPreference $a, DashboardPreference $b) use ($defaultOrder) {
             $positionA = $a->getPosition();
             $positionB = $b->getPosition();
 
             if (null !== $positionA && null !== $positionB && $positionA !== $positionB) {
                 return $positionA <=> $positionB;
-            }
-
-            // En cas d'égalité de position, garder le widget déplacé devant
-            // pour éviter un décalage de +1 quand deux widgets partagent la même cible.
-            if (null !== $requestedPosition
-                && null !== $positionA
-                && null !== $positionB
-                && $positionA === $positionB
-                && ($positionA === $requestedPosition || $positionB === $requestedPosition)
-            ) {
-                if ($a->getWidgetKey() === $widgetKey && $b->getWidgetKey() !== $widgetKey) {
-                    return -1;
-                }
-
-                if ($b->getWidgetKey() === $widgetKey && $a->getWidgetKey() !== $widgetKey) {
-                    return 1;
-                }
             }
 
             // Un widget positionné passe devant un widget qui ne l'est pas.
@@ -396,13 +385,17 @@ class DashboardController extends AbstractController
             $orderA = $defaultOrder[$a->getWidgetKey()] ?? PHP_INT_MAX;
             $orderB = $defaultOrder[$b->getWidgetKey()] ?? PHP_INT_MAX;
 
-            if ($orderA !== $orderB) {
-                return $orderA <=> $orderB;
-            }
-
-            // Pour les widgets hors du layout par défaut, conserver l'ordre de position existant
-            return ($a->getPosition() ?? PHP_INT_MAX) <=> ($b->getPosition() ?? PHP_INT_MAX);
+            return $orderA <=> $orderB;
         });
+
+        if (null !== $requestedPosition) {
+            $enabledPrefs = PreferenceLayout::move(
+                $enabledPrefs,
+                $widgetKey,
+                $requestedPosition,
+                fn (DashboardPreference $p) => $this->coreWidgetRegistry->get($p->getWidgetKey())?->isAllowedForUser($user) ?? false,
+            );
+        }
 
         // Attribuer les positions contiguës aux widgets enabled
         $position = 0;

@@ -2,6 +2,7 @@
 
 namespace App\Repository\Dashboard;
 
+use App\Domain\Dashboard\PreferenceLayout;
 use App\Entity\Dashboard\DashboardPreference;
 use App\Entity\Structure\StructureDepartementPersonnel;
 use App\Entity\Users\Etudiant;
@@ -62,6 +63,26 @@ class DashboardPreferenceRepository extends ServiceEntityRepository
         }
 
         return $this->findOneBy($criteria);
+    }
+
+    /**
+     * Supprime les préférences en double d'un même widget, et rend celles qui restent.
+     *
+     * @param list<DashboardPreference> $preferences
+     *
+     * @return list<DashboardPreference>
+     */
+    public function withoutDuplicates(array $preferences, bool $flush = false): array
+    {
+        ['kept' => $kept, 'removed' => $removed] = PreferenceLayout::splitDuplicates($preferences);
+        foreach ($removed as $preference) {
+            $this->getEntityManager()->remove($preference);
+        }
+        if ($flush && [] !== $removed) {
+            $this->getEntityManager()->flush();
+        }
+
+        return $kept;
     }
 
     public function save(DashboardPreference $entity, bool $flush = false): void
