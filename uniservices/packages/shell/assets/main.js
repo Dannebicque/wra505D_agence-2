@@ -60,31 +60,32 @@ const MyPreset = definePreset(Aura, {
         },
         // Bordure d'un élément d'interface (champ, case, carte de choix) : 3,49:1 en clair et
         // 3,15:1 en sombre, au-dessus du seuil RGAA de 3:1, là où les gris d'Aura n'y arrivent pas.
-        // Type de séance de l'emploi du temps : un fond pâle, et une couleur pour le liseré et le
-        // libellé du type. Texte courant sur le fond : 6,59:1 au moins en clair, 10,04:1 en sombre ;
-        // couleur sur la surface : 5,14:1 et 6,14:1 ; couleur sur son propre fond : 4,53:1 et 5,65:1.
-        // Bleu, jaune et vert pour CM, TD et TP, comme dans Celcat.
+        // Type de séance de l'emploi du temps, dans les couleurs de la DA : violet pour les CM, jaune
+        // pour les TD, vert pour les TP, rouge pour les évaluations. Pour chacun, un fond pâle, une
+        // couleur de texte sur ce fond, et une pastille pleine avec son texte. Mesures : texte
+        // courant sur le fond 6,78:1 au moins en clair et 9,72:1 en sombre, couleur sur le fond
+        // 5,65:1 et 6,91:1, texte de pastille 5,22:1 et 5,25:1.
         colorScheme: {
             light: {
                 uiBorder: { color: '#7E848D' },
                 seance: {
-                    cm: { background: '#E7F0FA', color: '#2F6DAE' },
-                    td: { background: '#FCF1D2', color: '#94640A' },
-                    tp: { background: '#E2F3E8', color: '#2B7A4B' },
-                    sae: { background: '#F9E7F0', color: '#A8336D' },
-                    evaluation: { background: '#FBE6E6', color: '#B42424' },
-                    autre: { background: '#EDEFF2', color: '#676D75' }
+                    cm: { background: '#F1ECFC', color: '#4D3677', pill: { background: '#4D3677', color: '#FFFFFF' } },
+                    td: { background: '#FEF4D9', color: '#7A5200', pill: { background: '#F7B000', color: '#4D3677' } },
+                    tp: { background: '#E2F7EC', color: '#0B6B3F', pill: { background: '#15C377', color: '#0B3D26' } },
+                    sae: { background: '#FCE9F3', color: '#9E2A63', pill: { background: '#9E2A63', color: '#FFFFFF' } },
+                    evaluation: { background: '#FEEAEA', color: '#B42424', pill: { background: '#F96868', color: '#4A1010' } },
+                    autre: { background: '#EEF0F3', color: '#565C64', pill: { background: '#676D75', color: '#FFFFFF' } }
                 }
             },
             dark: {
                 uiBorder: { color: '#666B73' },
                 seance: {
-                    cm: { background: '#1F2F42', color: '#7FB0E6' },
-                    td: { background: '#3A3020', color: '#E2B44E' },
-                    tp: { background: '#1E3528', color: '#6CC796' },
-                    sae: { background: '#3B2230', color: '#E58BB8' },
-                    evaluation: { background: '#402124', color: '#F28B8B' },
-                    autre: { background: '#2E3237', color: '#A7ACB4' }
+                    cm: { background: '#2B2240', color: '#C7B6F1', pill: { background: '#AC95E1', color: '#170331' } },
+                    td: { background: '#3A3020', color: '#F2C14E', pill: { background: '#F7B000', color: '#4D3677' } },
+                    tp: { background: '#193A2B', color: '#6CD9A2', pill: { background: '#15C377', color: '#0B3D26' } },
+                    sae: { background: '#3B2232', color: '#F09AC4', pill: { background: '#E58BB8', color: '#3B0F25' } },
+                    evaluation: { background: '#422124', color: '#F7A1A1', pill: { background: '#F96868', color: '#4A1010' } },
+                    autre: { background: '#2E3237', color: '#B9BEC6', pill: { background: '#A7ACB4', color: '#1B1D21' } }
                 }
             }
         }
