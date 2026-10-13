@@ -7,6 +7,13 @@ on:
   pull_request:
     branches:
       - develop
+    paths:
+      - 'uniservices/**'
+      - '.github/workflows/CI-cypress.yml'
+
+concurrency:
+  group: ci-cypress-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   cypress:
@@ -63,13 +70,15 @@ jobs:
           php bin/console app:celcat:sync
 
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: '22'
-
-      - name: Enable Corepack
-        run: corepack enable
+          cache: pnpm
+          cache-dependency-path: uniservices/pnpm-lock.yaml
 
       - name: Install front-end dependencies
         run: pnpm install --frozen-lockfile
