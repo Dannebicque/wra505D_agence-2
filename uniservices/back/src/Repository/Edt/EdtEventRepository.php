@@ -100,6 +100,32 @@ class EdtEventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Début et fin de chaque créneau de ces groupes, sans hydrater les créneaux : de quoi
+     * calculer une plage horaire sur toute une année.
+     *
+     * @param list<int> $groupeIds
+     *
+     * @return list<array{debut: \DateTimeInterface, fin: \DateTimeInterface}>
+     */
+    public function findTimesByGroupes(array $groupeIds): array
+    {
+        if ([] === $groupeIds) {
+            return [];
+        }
+
+        /** @var list<array{debut: \DateTimeInterface, fin: \DateTimeInterface}> */
+        return $this->createQueryBuilder('e')
+            ->select('e.debut', 'e.fin')
+            ->join('e.groupe', 'g')
+            ->andWhere('g.id IN (:groupes)')
+            ->andWhere('e.debut IS NOT NULL')
+            ->andWhere('e.fin IS NOT NULL')
+            ->setParameter('groupes', $groupeIds)
+            ->getQuery()
+            ->getArrayResult();
+    }
+
     /** @return list<EdtEvent> */
     public function findByPersonnelAndRange(int $personnelId, \DateTimeInterface $startDate, \DateTimeInterface $endDate): array
     {
