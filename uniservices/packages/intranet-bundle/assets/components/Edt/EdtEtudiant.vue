@@ -29,6 +29,11 @@ const semaineFormation = ref(null);
 const plage = ref({debut: '08:00', fin: '20:00'});
 const events = ref([]);
 const semaines = ref([]);
+const options = ref(null);
+// L'abonnement iCal viendra ici : l'entrée annonce sa place sans rien promettre de cliquable.
+const menuOptions = [
+  {label: 'Synchroniser avec mon agenda (iCal)', icon: 'pi pi-link', disabled: true, bientot: true},
+];
 const hauteurHeure = ref(56);
 // Position de la grille dans le cadre : vue-cal remplace son corps à chaque semaine, la carte des
 // vacances se pose donc sur le cadre, à l'emplacement mesuré de la grille.
@@ -367,6 +372,25 @@ const detail = computed(() => {
                 :allow-empty="false"
                 aria-label="Affichage"
             />
+            <Button
+                icon="pi pi-ellipsis-v"
+                text
+                rounded
+                aria-label="Plus d'options"
+                aria-haspopup="true"
+                aria-controls="edt-options"
+                class="min-w-[44px]! min-h-[44px]!"
+                @click="options.toggle($event)"
+            />
+            <Menu id="edt-options" ref="options" :model="menuOptions" popup class="edt-options">
+              <template #item="{ item }">
+                <span class="edt-options__entree">
+                  <i :class="item.icon" aria-hidden="true"></i>
+                  <span>{{ item.label }}</span>
+                  <span v-if="item.bientot" class="edt-options__bientot">Bientôt</span>
+                </span>
+              </template>
+            </Menu>
           </div>
         </div>
       </template>
@@ -634,6 +658,37 @@ const detail = computed(() => {
 </style>
 
 <style>
+/* Le menu des options est téléporté : mêmes formes arrondies que le reste de l'agenda. */
+.edt-options.p-menu {
+  border: 0;
+  border-radius: 20px;
+  padding: 0.375rem;
+  box-shadow: 0 16px 40px -16px rgb(0 0 0 / 0.35);
+}
+
+.edt-options .p-menu-item-content {
+  border-radius: 999px;
+}
+
+.edt-options__entree {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 44px;
+  padding: 0 0.875rem;
+  font-size: 0.875rem;
+}
+
+.edt-options__bientot {
+  margin-left: 0.5rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--p-primary-contrast-color);
+  background: var(--p-primary-color);
+}
+
 /* Le détail d'un cours est téléporté hors du composant : ses styles ne peuvent pas être scopés.
    Il reprend la carte : fond de la couleur du type, cercle dans l'angle, pastille. */
 .edt-detail.p-dialog {

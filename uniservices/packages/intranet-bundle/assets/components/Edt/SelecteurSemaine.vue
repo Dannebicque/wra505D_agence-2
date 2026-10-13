@@ -208,7 +208,7 @@ const choisir = (lundi) => {
   font-weight: 700;
   color: var(--p-primary-color);
   background:
-      radial-gradient(circle 1.125rem at calc(100% - 1.75rem) 50%, var(--p-accent-color) calc(100% - 0.5px), transparent 100%),
+      radial-gradient(circle 1.125rem at calc(100% - 1.75rem) 50%, color-mix(in srgb, var(--p-accent-color) 55%, var(--p-content-background)) calc(100% - 0.5px), transparent 100%),
       radial-gradient(circle 0.625rem at calc(100% - 3.625rem) 35%, color-mix(in srgb, var(--p-primary-color) 35%, var(--p-content-background)) calc(100% - 0.5px), transparent 100%),
       color-mix(in srgb, var(--p-primary-color) 8%, var(--p-content-background));
 }
@@ -266,12 +266,11 @@ const choisir = (lundi) => {
   outline-offset: -3px;
 }
 
-/* La semaine affichée prend le jaune de la DA, avec son texte violet (5,29:1). */
+/* La semaine affichée se repère sans crier : une teinte violette et le texte en gras. */
 .selecteur-semaine__semaine--affichee,
 .selecteur-semaine__semaine--affichee:hover {
   font-weight: 700;
-  color: var(--p-accent-contrast-color);
-  background: var(--p-accent-color);
+  background: color-mix(in srgb, var(--p-primary-color) 12%, var(--p-content-background));
 }
 
 .selecteur-semaine__dates {
@@ -307,7 +306,7 @@ const choisir = (lundi) => {
 }
 
 .selecteur-semaine__semaine--affichee .selecteur-semaine__jauge {
-  background: color-mix(in srgb, var(--p-content-background) 55%, transparent);
+  background: var(--p-content-background);
 }
 
 .selecteur-semaine__charge {
@@ -326,7 +325,7 @@ const choisir = (lundi) => {
   font-size: 0.8125rem;
   font-weight: 700;
   color: var(--p-accent-contrast-color);
-  background: color-mix(in srgb, var(--p-accent-color) 35%, var(--p-content-background));
+  background: color-mix(in srgb, var(--p-accent-color) 18%, var(--p-content-background));
 }
 
 .selecteur-semaine__mini-dessin {

@@ -38,8 +38,8 @@ describe('Agenda de l\'étudiant', () => {
     it('atteint un cours au clavier, ouvre son détail et rend le focus en le fermant', () => {
         cy.get('button.edt-cours', { timeout: 15000 }).should('have.length.greaterThan', 0);
 
-        // Le dernier contrôle de la barre : « Aujourd'hui » n'y est pas, le jour est affiché.
-        cy.contains('.p-togglebutton', 'Semaine').focus();
+        // Le dernier contrôle de la barre : ses options, après Jour / Semaine.
+        cy.get('button[aria-label="Plus d\'options"]').focus();
         cy.press(Cypress.Keyboard.Keys.TAB);
         cy.focused().should('have.class', 'edt-cours').invoke('attr', 'aria-label').then((libelle) => {
             // Espace plutôt qu'Entrée : dans Electron, cy.press n'active pas un bouton avec Entrée.
@@ -157,6 +157,12 @@ describe('Semaine de l\'étudiant en bureau', () => {
         cy.contains('.selecteur-semaine__semaine', 'Vacances').click();
         cy.contains('.vacances', 'Vacances de la Toussaint').should('be.visible');
         cy.get('.cours-carte').should('not.exist');
+    });
+
+    it('réserve dans ses options la place de la synchronisation iCal, pas encore active', () => {
+        cy.get('button[aria-label="Plus d\'options"]').click();
+        cy.contains('#edt-options [role="menuitem"]', 'Synchroniser avec mon agenda').should('have.attr', 'aria-disabled', 'true')
+            .and('contain', 'Bientôt');
     });
 
     it('ferme le détail d\'un cours d\'un clic à côté', () => {
