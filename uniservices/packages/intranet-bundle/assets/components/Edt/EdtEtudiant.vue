@@ -444,10 +444,20 @@ const detail = computed(() => {
   @apply flex items-center rounded-full bg-emphasis;
 }
 
-/* La cible reste de 44 px, mais le fond du survol ne couvre que les 32 px du centre. */
+/* La cible reste de 44 px, mais le survol, le clic et le focus ne dessinent que le rond de 32 px
+   du centre, aligné sur le bord droit de la grille. */
 .edt-barre__options {
+  margin-right: -6px;
   padding: 6px !important;
   background-clip: content-box !important;
+}
+
+.edt-barre__options:focus-visible {
+  outline-offset: -6px;
+}
+
+.edt-barre__options :deep(.p-ink) {
+  clip-path: circle(16px at 50% 50%);
 }
 
 .edt-barre__aujourdhui {
