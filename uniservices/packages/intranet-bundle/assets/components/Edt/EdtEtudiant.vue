@@ -243,26 +243,7 @@ const detail = computed(() => {
 
       <template #header="{ view }">
         <div class="edt-barre">
-          <div class="min-w-0">
-            <h2 class="edt-barre__titre">{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</h2>
-            <p class="edt-barre__semaine">{{ libelleSemaine(getISOWeekNumber(view.firstCellDate), semaineFormation) }}</p>
-          </div>
-
-          <!-- Les commandes sont alignées à droite : la bulle « Aujourd'hui » naît à gauche des
-               flèches sans en déplacer aucune. -->
-          <div class="edt-barre__actions">
-            <Transition name="edt-bulle">
-              <Button
-                  v-if="!aujourdhuiAffiche(view)"
-                  rounded
-                  aria-label="Aujourd'hui"
-                  class="edt-barre__aujourdhui min-w-[44px]! min-h-[44px]!"
-                  @click="view.goToToday()"
-              >
-                <i class="pi pi-calendar md:hidden" aria-hidden="true"></i>
-                <span class="hidden md:inline" aria-hidden="true">Aujourd'hui</span>
-              </Button>
-            </Transition>
+          <div class="edt-barre__periode">
             <div class="edt-barre__fleches">
               <Button
                   icon="pi pi-chevron-left"
@@ -281,6 +262,27 @@ const detail = computed(() => {
                   class="min-w-[44px]! min-h-[44px]!"
               />
             </div>
+            <div class="min-w-0">
+              <h2 class="edt-barre__titre">{{ titrePeriode({ vue: view.id, debut: view.firstCellDate, fin: view.lastCellDate }) }}</h2>
+              <p class="edt-barre__semaine">{{ libelleSemaine(getISOWeekNumber(view.firstCellDate), semaineFormation) }}</p>
+            </div>
+          </div>
+
+          <!-- Alignées à droite : la bulle « Aujourd'hui » naît à gauche de Jour / Semaine sans
+               déplacer ni les flèches ni la bascule. -->
+          <div class="edt-barre__actions">
+            <Transition name="edt-bulle">
+              <Button
+                  v-if="!aujourdhuiAffiche(view)"
+                  rounded
+                  aria-label="Aujourd'hui"
+                  class="edt-barre__aujourdhui min-w-[44px]! min-h-[44px]!"
+                  @click="view.goToToday()"
+              >
+                <i class="pi pi-calendar md:hidden" aria-hidden="true"></i>
+                <span class="hidden md:inline" aria-hidden="true">Aujourd'hui</span>
+              </Button>
+            </Transition>
             <SelectButton
                 v-model="vueAffichee"
                 :options="vues"
@@ -333,6 +335,10 @@ const detail = computed(() => {
   @apply flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pt-2 pb-5;
 }
 
+.edt-barre__periode {
+  @apply flex items-center gap-3 min-w-0;
+}
+
 .edt-barre__fleches {
   @apply flex items-center rounded-full bg-emphasis;
 }
@@ -347,7 +353,7 @@ const detail = computed(() => {
 }
 
 .edt-bulle-leave-active {
-  transition: opacity 150ms ease, transform 200ms ease-in;
+  transition: opacity 300ms ease, transform 400ms ease-in;
 }
 
 .edt-bulle-enter-from,
@@ -390,25 +396,8 @@ const detail = computed(() => {
   @apply m-0 mt-0.5 text-sm text-muted-color;
 }
 
-/* En bureau, les commandes s'alignent à droite et la bulle naît à gauche des flèches. Sur un
-   téléphone, Jour / Semaine et les flèches tiennent les deux bouts de la ligne, la bulle se pose
-   entre eux : ni l'un ni l'autre ne bouge quand elle apparaît. */
 .edt-barre__actions {
   @apply flex items-center justify-end gap-2 ml-auto;
-}
-
-@media (max-width: 767px) {
-  .edt-barre__actions {
-    @apply w-full justify-between gap-1;
-  }
-
-  .edt-barre__actions :deep(.p-selectbutton) {
-    order: -1;
-  }
-
-  .edt-barre__actions :deep(.p-togglebutton-content) {
-    @apply px-3;
-  }
 }
 
 .edt-jour__nom {
@@ -486,7 +475,6 @@ const detail = computed(() => {
 }
 
 :deep(.vuecal__cell--today) {
-  @apply rounded-xl;
   background-color: color-mix(in srgb, var(--p-primary-color) 5%, transparent);
 }
 
