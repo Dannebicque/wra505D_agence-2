@@ -1,9 +1,7 @@
-describe('Navigation de l\'étudiant', () => {
-    const entrees = ['Accueil', 'Emploi du temps', 'Notes et absences', 'Documents', 'Cahier de texte'];
-
+describe('Arrivée de l\'étudiant après sa connexion', () => {
     beforeEach(() => {
         cy.viewport(1280, 800);
-        cy.connexionInvite('etudiant');
+        cy.connexionInviteParFormulaire('etudiant');
     });
 
     it('arrive sur l\'accueil, sans passer par le portail', () => {
@@ -15,6 +13,15 @@ describe('Navigation de l\'étudiant', () => {
     it('retrouve sur l\'accueil les actualités que portait le portail', () => {
         cy.contains('Actualités du département', { timeout: 15000 });
         cy.contains('Réunion de rentrée des MMI 1');
+    });
+});
+
+describe('Navigation de l\'étudiant', () => {
+    const entrees = ['Accueil', 'Emploi du temps', 'Notes et absences', 'Documents', 'Cahier de texte'];
+
+    beforeEach(() => {
+        cy.viewport(1280, 800);
+        cy.connexionInvite('etudiant');
     });
 
     it('garde le même menu sur chaque module', () => {
