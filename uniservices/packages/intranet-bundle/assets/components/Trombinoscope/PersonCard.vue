@@ -44,20 +44,13 @@ const isStudent = (person: Etudiant | Personnel): person is Etudiant => {
         <h3 :class="viewMode === 'grid' ? 'text-lg font-semibold text-gray-900' : 'text-base font-semibold text-gray-900'">
           {{ person.prenom }} {{ person.nom }}
         </h3>
-        <p :class="viewMode === 'grid' ? 'text-sm text-gray-600' : 'text-xs text-gray-600 truncate'">
+        <p :class="viewMode === 'grid' ? 'text-sm text-gray-600 break-all' : 'text-xs text-gray-600 truncate'">
           {{ person.mailUniv }}
         </p>
       </div>
 
       <!-- Student Info -->
       <div v-if="isStudent(person)" :class="viewMode === 'grid' ? 'space-y-2' : 'space-y-1'">
-        <div class="flex items-center justify-center gap-2" v-if="viewMode === 'grid'">
-          <span class="badge badge-primary">{{ person.scolarite }}</span><!-- todo: semestre -->
-        </div>
-        <div class="flex items-center gap-2" v-else>
-          <span class="badge badge-primary text-xs">{{ person.scolarite }}</span><!-- todo: semestre -->
-        </div>
-
         <!-- Groups -->
         <div :class="viewMode === 'grid' ? 'space-y-1' : 'mt-1'">
           <div class="flex gap-1">
