@@ -40,7 +40,11 @@ use Symfony\Component\Uid\UuidV4;
 #[ApiResource(
     paginationEnabled: false,
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['edt_event:read:agenda']]),
+        // Un créneau nomme son enseignant, sa salle et son groupe : rien pour un visiteur anonyme.
+        new GetCollection(
+            normalizationContext: ['groups' => ['edt_event:read:agenda']],
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
+        ),
         new GetCollection(
             uriTemplate: '/stats/edt_events',
             normalizationContext: ['groups' => ['edt_stats:read']],
@@ -54,7 +58,10 @@ use Symfony\Component\Uid\UuidV4;
             normalizationContext: ['groups' => ['edt_pointage:read']],
             security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
-        new Get(normalizationContext: ['groups' => ['edt_event:read:agenda']]),
+        new Get(
+            normalizationContext: ['groups' => ['edt_event:read:agenda']],
+            security: "is_granted('IS_AUTHENTICATED_FULLY')",
+        ),
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_EDT', object)"),
         new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_EDT', object)"),
         new Delete(security: "is_granted('CAN_DELETE_EDT', object)"),
