@@ -3,7 +3,7 @@ import { VueCal } from 'vue-cal'
 import 'vue-cal/style'
 
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
+import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router'
 import CoursCarte from './CoursCarte.vue'
 import SelecteurSemaine from './SelecteurSemaine.vue'
 import VacancesConfettis from './VacancesConfettis.vue'
@@ -239,9 +239,15 @@ watch(vueAffichee, () => nextTick(noterAdresse));
 // partagé rouvrent la même semaine. Aujourd'hui n'y est pas écrit, pour qu'un favori de l'agenda
 // ouvre toujours la semaine en cours. Remplacer plutôt qu'empiler : chaque clic sur une flèche
 // n'ajoute pas une page à l'historique.
+// Une fois la page quittée, réécrire son adresse annulerait la navigation en cours : un clic dans
+// le menu pendant le chargement de la semaine laisserait l'étudiant sur l'agenda.
+let quittee = false;
+onBeforeRouteLeave(() => {
+  quittee = true;
+});
 const noterAdresse = () => {
   const view = vuecalRef.value?.view;
-  if (!view?.firstCellDate) {
+  if (quittee || !view?.firstCellDate) {
     return;
   }
   router.replace({
