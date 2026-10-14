@@ -5,7 +5,6 @@ import {
   getEtudiantScolariteSemestresService,
   getEtudiantService,
   getGroupesService,
-  getUeService,
   updateEtudiantScolariteSemestreService,
 } from '@requests';
 import {useUsersStore} from '@stores';
@@ -22,7 +21,6 @@ const etudiant = ref(null);
 const erreurEtudiant = ref(false);
 const scolarites = ref(null);
 const erreurScolarites = ref(false);
-const ues = ref({});
 const editionCoordonnees = ref(false);
 
 // Une inscription avec ses semestres, et pour chacun les groupes disponibles : un semestre dont la
@@ -39,18 +37,11 @@ const chargerScolarite = async (scolarite) => {
   };
 };
 
-const chargerUes = async (liste) => {
-  const identifiants = new Set(liste.flatMap((sco) => sco.semestres.flatMap((sem) => Object.keys(sem.moyennesUe ?? {}))));
-  const numeros = await Promise.all([...identifiants].map((id) => getUeService(id).then((ue) => [id, ue.numero]).catch(() => [id, null])));
-  ues.value = Object.fromEntries(numeros);
-};
-
 const chargerScolarites = async (id) => {
   try {
     const liste = await getEtudiantScolaritesService({etudiant: id});
     liste.sort((a, b) => b.anneeUniversitaire.annee - a.anneeUniversitaire.annee);
     scolarites.value = await Promise.all(liste.map(chargerScolarite));
-    await chargerUes(scolarites.value);
   } catch {
     erreurScolarites.value = true;
   }
@@ -145,7 +136,6 @@ const changerGroupe = async (scoSemestre, groupeId, type) => {
         class="mon-profil__scolarite"
         :scolarites="scolarites"
         :erreur="erreurScolarites"
-        :ues="ues"
         @changer-groupe="changerGroupe"
     />
   </div>

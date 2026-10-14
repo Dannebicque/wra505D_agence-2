@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-    champsModifies, groupesApresChoix, initiales, iriGroupe, lignesAdresse, normaliserAdresse, scolariteEnCours,
+    champsModifies, decisionJury, groupesApresChoix, initiales, iriGroupe, lignesAdresse, moyenneSur20, normaliserAdresse,
+    scolariteEnCours,
 } from './profil.js';
 
 describe('normaliserAdresse', () => {
@@ -158,5 +159,25 @@ describe('iriGroupe', () => {
     it('reprend l\'IRI du groupe, ou la construit', () => {
         expect(iriGroupe(groupe(50, 'CM', 'CM'))).toBe('/api/structure_groupes/50');
         expect(iriGroupe({ id: 7, type: 'TD' })).toBe('/api/structure_groupes/7');
+    });
+});
+
+describe('decisionJury', () => {
+    it('distingue validé, non validé et en attente', () => {
+        expect(decisionJury(true)).toEqual({ texte: 'Validé', ton: 'valide' });
+        expect(decisionJury(false)).toEqual({ texte: 'Non validé', ton: 'non-valide' });
+        expect(decisionJury(null)).toEqual({ texte: 'En attente', ton: 'attente' });
+    });
+});
+
+describe('moyenneSur20', () => {
+    it('écrit la moyenne à la française, deux décimales', () => {
+        expect(moyenneSur20(13.4)).toBe('13,40 / 20');
+        expect(moyenneSur20('9.875')).toBe('9,88 / 20');
+    });
+
+    it('ne dit rien sans moyenne', () => {
+        expect(moyenneSur20(null)).toBeNull();
+        expect(moyenneSur20(undefined)).toBeNull();
     });
 });

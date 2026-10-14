@@ -1,5 +1,6 @@
 <script setup>
 import {computed, ref, watch} from 'vue';
+import {decisionJury, moyenneSur20} from '@helpers/profil.js';
 import {BlocAccueil, LigneAccueil} from '@components';
 
 // Les inscriptions chargées par la page, de la plus récente à la plus ancienne, chacune avec ses
@@ -7,8 +8,6 @@ import {BlocAccueil, LigneAccueil} from '@components';
 const props = defineProps({
   scolarites: {type: Array, default: null},
   erreur: {type: Boolean, default: false},
-  // Numéro de chaque UE du bilan, par identifiant.
-  ues: {type: Object, default: () => ({})},
 });
 
 const emit = defineEmits(['changer-groupe']);
@@ -28,13 +27,7 @@ const teinte = (type) => ({CM: 'cm', TD: 'td', TP: 'tp'})[type] ?? 'autre';
 const groupeChoisi = (scoSemestre, type) => scoSemestre.groupes?.find((groupe) => groupe.type === type)?.id ?? null;
 const groupesDuType = (scoSemestre, type) => (scoSemestre.disponibles ?? []).filter((groupe) => groupe.type === type);
 
-const decision = (code) => ({
-  V: {texte: 'Validée', ton: 'valide'},
-  NV: {texte: 'Non validée', ton: 'non-valide'},
-})[code] ?? {texte: 'En attente', ton: 'attente'};
-
-const decisionSemestre = (valeur) => decision(valeur === true ? 'V' : (valeur === false ? 'NV' : null));
-const aUnBilan = (scoSemestre) => Object.keys(scoSemestre.moyennesUe ?? {}).length > 0;
+const aUnBilan = (scoSemestre) => scoSemestre.moyenne != null || scoSemestre.decision != null;
 </script>
 
 <template>
@@ -87,21 +80,19 @@ const aUnBilan = (scoSemestre) => Object.keys(scoSemestre.moyennesUe ?? {}).leng
             <template v-if="aUnBilan(scoSemestre)">
               <h4 class="scolarite__sous-titre">Bilan du semestre</h4>
               <ul class="scolarite__bilan">
-                <LigneAccueil v-for="(moyenneUe, cle) in scoSemestre.moyennesUe" :key="cle">
-                  <template #titre>UE {{ ues[cle] ?? '' }}</template>
-                  <template #detail>{{ moyenneUe.moyenne ?? 'Moyenne non renseignée' }}</template>
+                <LigneAccueil icone="pi pi-chart-bar">
+                  <template #titre>Moyenne</template>
+                  <template v-if="scoSemestre.rang" #detail>{{ scoSemestre.rang }}<sup>{{ scoSemestre.rang === 1 ? 're' : 'e' }}</sup> de la promotion</template>
                   <template #valeur>
-                    <span :class="['scolarite__decision', `scolarite__decision--${decision(moyenneUe.decision).ton}`]">
-                      {{ decision(moyenneUe.decision).texte }}
-                    </span>
+                    <span :class="{ 'scolarite__decision--attente': scoSemestre.moyenne == null }">{{ moyenneSur20(scoSemestre.moyenne) ?? 'Non calculée' }}</span>
                   </template>
                 </LigneAccueil>
-                <LigneAccueil>
-                  <template #titre>Semestre</template>
-                  <template #detail>{{ scoSemestre.proposition?.libelle ?? 'Aucune proposition' }}</template>
+                <LigneAccueil icone="pi pi-check-circle">
+                  <template #titre>Décision du jury</template>
+                  <template v-if="scoSemestre.proposition" #detail>Poursuite en {{ scoSemestre.proposition.libelle }}</template>
                   <template #valeur>
-                    <span :class="['scolarite__decision', `scolarite__decision--${decisionSemestre(scoSemestre.decision).ton}`]">
-                      {{ decisionSemestre(scoSemestre.decision).texte }}
+                    <span :class="['scolarite__decision', `scolarite__decision--${decisionJury(scoSemestre.decision).ton}`]">
+                      {{ decisionJury(scoSemestre.decision).texte }}
                     </span>
                   </template>
                 </LigneAccueil>

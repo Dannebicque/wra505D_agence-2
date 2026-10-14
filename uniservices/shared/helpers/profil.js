@@ -119,3 +119,18 @@ export function groupesApresChoix(groupes, disponibles, groupeId, type) {
 export function iriGroupe(groupe) {
     return groupe['@id'] ?? `/api/structure_groupes/${groupe.id}`;
 }
+
+// Le jury tranche par un booléen ; tant qu'il ne l'a pas fait, la décision est en attente.
+export function decisionJury(valeur) {
+    if (valeur === true) {
+        return { texte: 'Validé', ton: 'valide' };
+    }
+    return valeur === false ? { texte: 'Non validé', ton: 'non-valide' } : { texte: 'En attente', ton: 'attente' };
+}
+
+export function moyenneSur20(valeur) {
+    if (valeur === null || valeur === undefined || Number.isNaN(Number(valeur))) {
+        return null;
+    }
+    return `${Number(valeur).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / 20`;
+}
