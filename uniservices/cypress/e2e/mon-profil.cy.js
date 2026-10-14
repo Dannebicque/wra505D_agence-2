@@ -14,6 +14,7 @@ describe('Profil de l\'étudiant', () => {
             cy.contains('a', 'Emploi du temps').should('have.attr', 'href', '/app/intranet/agenda');
         });
         cy.contains('h2', 'Coordonnées', { timeout: 15000 });
+        cy.get('[aria-label="Fil d\'Ariane"]').should('not.exist');
     });
 
     it('n\'a qu\'un titre de page', () => {
