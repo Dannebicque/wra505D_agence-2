@@ -70,7 +70,7 @@ const aUnBilan = (scoSemestre) => scoSemestre.moyenne != null || scoSemestre.dec
                     :options="groupesDuType(scoSemestre, type)"
                     option-label="libelle"
                     option-value="id"
-                    :placeholder="`Choisir un groupe ${type}`"
+                    placeholder="Choisir"
                     class="scolarite__select"
                     @update:model-value="groupeId => emit('changer-groupe', scoSemestre, groupeId, type)"
                 />
