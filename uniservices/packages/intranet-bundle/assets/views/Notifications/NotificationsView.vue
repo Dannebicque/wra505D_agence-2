@@ -7,7 +7,7 @@ import { TYPES_NOTIFICATION, couleursNotification, grouperParJour, heure, libell
 const store = useNotificationStore();
 
 const etat = ref('non_lues');
-const etats = [{ label: 'Toutes', value: 'toutes' }, { label: 'Non lues', value: 'non_lues' }];
+const etats = [{ label: 'Non lues', value: 'non_lues' }, { label: 'Toutes', value: 'toutes' }];
 const type = ref('tous');
 const types = [
   { label: 'Tous les types', value: 'tous' },
