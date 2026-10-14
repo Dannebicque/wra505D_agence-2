@@ -15,7 +15,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
 </script>
 
 <template>
-  <div v-if="departements.length > 0" class="@container">
+  <div v-if="departements.length > 0" class="contacts @container">
     <ul class="list-none m-0 p-0 grid grid-cols-1 @xl:grid-cols-2 gap-2">
       <li
           v-for="departement in departements"
@@ -60,9 +60,21 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
 </template>
 
 <style scoped>
+/* Les cartes des départements se partagent toute la hauteur du bloc, qui suit celle de sa rangée. */
+.contacts {
+  display: flex;
+  flex: 1;
+}
+
+.contacts > ul {
+  flex: 1;
+  grid-auto-rows: 1fr;
+}
+
 .contact {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 0.625rem;
   padding: 0.75rem;
   border-radius: 14px;
@@ -86,12 +98,10 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
   color: var(--p-text-muted-color);
 }
 
-/* Une pastille de 32 px, qui s'étire sur la largeur de la carte ; la zone de toucher garde 44 px et
-   plus, débordant de 7 px en haut et en bas. */
+/* Une pastille de 32 px ; la zone de toucher garde 44 px et plus, débordant de 7 px en haut et en bas. */
 .contact__action {
   position: relative;
   display: inline-flex;
-  flex: 1 1 8rem;
   align-items: center;
   gap: 0.375rem;
   min-height: 2.25rem;
