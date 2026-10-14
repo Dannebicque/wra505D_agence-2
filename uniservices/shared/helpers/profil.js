@@ -85,3 +85,37 @@ export function initiales(prenom, nom) {
         .join('')
         .toUpperCase();
 }
+
+// Ce que la carte dit de l'année en cours : l'inscription active (sinon la plus récente) et son
+// semestre actif (sinon le dernier), avec ses groupes dans l'ordre CM, TD, TP du semestre.
+export function scolariteEnCours(scolarites) {
+    if (!Array.isArray(scolarites) || scolarites.length === 0) {
+        return null;
+    }
+    const scolarite = scolarites.find((sco) => sco.actif) ?? scolarites[0];
+    const semestres = scolarite.semestres ?? [];
+    const enCours = semestres.find((sem) => sem.semestre?.actif) ?? semestres[semestres.length - 1] ?? null;
+    const types = enCours?.semestre?.typesGroupe ?? [];
+    const groupes = [...(enCours?.groupes ?? [])].sort((a, b) => types.indexOf(a.type) - types.indexOf(b.type));
+
+    return {
+        anneeUniversitaire: scolarite.anneeUniversitaire?.libelle ?? null,
+        formation: enCours?.semestre?.annee?.libelle ?? scolarite.annee?.[0]?.libelle ?? null,
+        semestre: enCours?.semestre?.libelle ?? null,
+        groupes: groupes.map(({ type, libelle }) => ({ type, libelle })),
+    };
+}
+
+// Un seul groupe par type : le choix remplace celui du même type, un choix vide le retire.
+export function groupesApresChoix(groupes, disponibles, groupeId, type) {
+    const autres = (groupes ?? []).filter((groupe) => groupe.type !== type);
+    if (groupeId === null || groupeId === undefined) {
+        return autres;
+    }
+    const choisi = (disponibles ?? []).find((groupe) => groupe.id === groupeId) ?? { id: groupeId, type };
+    return [...autres, choisi];
+}
+
+export function iriGroupe(groupe) {
+    return groupe['@id'] ?? `/api/structure_groupes/${groupe.id}`;
+}

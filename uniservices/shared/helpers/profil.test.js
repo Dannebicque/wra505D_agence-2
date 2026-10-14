@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { champsModifies, initiales, lignesAdresse, normaliserAdresse } from './profil.js';
+import {
+    champsModifies, groupesApresChoix, initiales, iriGroupe, lignesAdresse, normaliserAdresse, scolariteEnCours,
+} from './profil.js';
 
 describe('normaliserAdresse', () => {
     it('donne des chaînes vides à une adresse absente', () => {
@@ -79,5 +81,82 @@ describe('initiales', () => {
     it('se contente de ce qui est connu', () => {
         expect(initiales('Jane', null)).toBe('J');
         expect(initiales(undefined, undefined)).toBe('');
+    });
+});
+
+const groupe = (id, type, libelle) => ({ '@id': `/api/structure_groupes/${id}`, id, type, libelle });
+
+describe('scolariteEnCours', () => {
+    const semestre = (id, libelle, actif, groupes) => ({
+        semestre: { id, libelle, actif, annee: { libelle: 'MMI 1' }, typesGroupe: ['CM', 'TD', 'TP'] },
+        groupes,
+    });
+
+    it('ne dit rien sans inscription', () => {
+        expect(scolariteEnCours([])).toBeNull();
+        expect(scolariteEnCours(null)).toBeNull();
+    });
+
+    it('lit l\'inscription active et son semestre actif, groupes dans l\'ordre du semestre', () => {
+        const scolarites = [
+            { actif: false, anneeUniversitaire: { libelle: '2025/2026' }, semestres: [] },
+            {
+                actif: true,
+                anneeUniversitaire: { libelle: '2026/2027' },
+                semestres: [
+                    semestre(1, 'S1', false, []),
+                    semestre(2, 'S2', true, [groupe(52, 'TP', 'A'), groupe(50, 'CM', 'CM'), groupe(51, 'TD', 'AB')]),
+                ],
+            },
+        ];
+        expect(scolariteEnCours(scolarites)).toEqual({
+            anneeUniversitaire: '2026/2027',
+            formation: 'MMI 1',
+            semestre: 'S2',
+            groupes: [{ type: 'CM', libelle: 'CM' }, { type: 'TD', libelle: 'AB' }, { type: 'TP', libelle: 'A' }],
+        });
+    });
+
+    it('prend la première inscription et le dernier semestre faute d\'actif', () => {
+        const scolarites = [{
+            actif: false,
+            anneeUniversitaire: { libelle: '2026/2027' },
+            semestres: [semestre(1, 'S1', false, []), semestre(2, 'S2', false, [])],
+        }];
+        expect(scolariteEnCours(scolarites)).toMatchObject({ semestre: 'S2', groupes: [] });
+    });
+
+    it('se rabat sur l\'année de l\'inscription sans semestre', () => {
+        expect(scolariteEnCours([{ actif: true, anneeUniversitaire: { libelle: '2026/2027' }, annee: [{ libelle: 'MMI 2' }] }]))
+            .toEqual({ anneeUniversitaire: '2026/2027', formation: 'MMI 2', semestre: null, groupes: [] });
+    });
+});
+
+describe('groupesApresChoix', () => {
+    const actuels = [groupe(50, 'CM', 'CM'), groupe(51, 'TD', 'AB'), groupe(52, 'TP', 'A')];
+    const disponibles = [...actuels, groupe(53, 'TP', 'B')];
+
+    it('remplace le groupe du même type', () => {
+        expect(groupesApresChoix(actuels, disponibles, 53, 'TP').map((g) => g.id)).toEqual([50, 51, 53]);
+    });
+
+    it('retire le groupe quand le choix est vide', () => {
+        expect(groupesApresChoix(actuels, disponibles, null, 'TD').map((g) => g.id)).toEqual([50, 52]);
+    });
+
+    it('ajoute un type encore absent', () => {
+        expect(groupesApresChoix([groupe(50, 'CM', 'CM')], disponibles, 51, 'TD').map((g) => g.id)).toEqual([50, 51]);
+    });
+
+    it('ne modifie pas la liste reçue', () => {
+        groupesApresChoix(actuels, disponibles, 53, 'TP');
+        expect(actuels.map((g) => g.id)).toEqual([50, 51, 52]);
+    });
+});
+
+describe('iriGroupe', () => {
+    it('reprend l\'IRI du groupe, ou la construit', () => {
+        expect(iriGroupe(groupe(50, 'CM', 'CM'))).toBe('/api/structure_groupes/50');
+        expect(iriGroupe({ id: 7, type: 'TD' })).toBe('/api/structure_groupes/7');
     });
 });
