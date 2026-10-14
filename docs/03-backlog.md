@@ -1031,8 +1031,25 @@ séances réalisées), sans les champs de suivi de l'équipe pédagogique. Tests
 **Fait** (JEREMY, #145), mergé sur `develop`. La page appelait le composant sans l'identifiant de
 l'étudiant, donc `/api/etudiants/undefined`. Champs sans valeur : « Non renseigné ». La date de
 naissance ne dit plus « Âge inconnu ans », l'adresse à copier est un bouton utilisable au clavier.
-Tests : `naissance.test.js`, `profil-etudiant.cy.js`.
+Tests : `naissance.test.js`, `mon-profil.cy.js` (qui remplace `profil-etudiant.cy.js` depuis F6).
 **Pourquoi** SCO-3 : prénom, nom, login et adresse restent vides alors que l'API les renvoie.
+
+### F6 · [front] Profil dans l'identité de l'accueil · M
+**Fait** (JEREMY, #172 et #175), mergé sur `develop`. Le lien « Profil » du compte menait l'étudiant
+sur `/auth/profil`, hors du menu et en erreur (identifiant manquant, comme avant F3). Il le mène
+désormais sur `/intranet/profil`, sous la barre haute et le menu de l'étudiant, sans fil d'Ariane
+comme l'agenda ; le personnel garde `/auth/profil`. La page reprend la trame de l'accueil : carte
+étudiante violette aux cercles du logo (initiales, formation, groupes, adresse à copier),
+informations générales, coordonnées modifiables (seuls les champs changés partent, « Annuler »
+rend la fiche), scolarité par année avec le bilan du semestre (moyenne, rang, décision du jury,
+proposition). `BlocAccueil` et `LigneAccueil` passent dans `shared/components`. Les fixtures
+remplissent la fiche de Jane Doe et jugent son S1 de l'an dernier (#175). Tests : `profil.test.js`,
+`mon-profil.cy.js`.
+**En revue** (JEREMY, #178) : les groupes passent en lecture seule. Le composant du client laissait
+l'étudiant changer lui-même ses groupes CM, TD et TP, enregistrés en base ; ils sont attribués par
+la scolarité.
+**Pourquoi** la page était la seule de l'étudiant hors de son menu, en erreur, et sans rien de la
+direction artistique retenue pour l'accueil et l'emploi du temps.
 
 ### F4 · Trombinoscope : plus de JSON brut · S
 **Fait** (JEREMY, #152), mergé sur `develop`. La carte affichait l'objet `EtudiantScolarite` tel quel ; l'API ne

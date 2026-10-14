@@ -198,6 +198,8 @@ avec `CELCAT_DSN="sqlite:%kernel.project_dir%/var/celcat/fausse-base.sqlite"` da
 | #161 | **C17.2** : jetons de type de séance, fonctions de placement de l'agenda |
 | #162 | **C17.3** : semaine de l'étudiant refondue (route, plage, cartes, couleurs, samedi) |
 | #164 | pied de page compact, crédits de la refonte |
+| #172 | profil de l'étudiant refondu dans l'identité de l'accueil, sous son menu, `/auth/profil` le renvoie sur `/intranet/profil` (F6, JEREMY) |
+| #175 | fixtures : fiche complète de Jane Doe et S1 de l'an dernier jugé (F6, JEREMY) |
 | rattrapage | **C17** : tout ce qui a suivi le merge de #162 (DA, cartes du logo, demi-heures, sélecteur de semaine et sa charge, vacances illustrées, téléphone, menu d'options) |
 
 Le connecteur Celcat, en bref :
@@ -352,6 +354,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Couleur primaire (A6) | une seule primaire pour tous les modules : le violet de la DA `#4D3677`, avec une palette dérivée en OKLab (`VIOLET_IUT`, `packages/shell/assets/main.js`). Le jaune `#F7B000`, primaire d'origine de la DA, devient l'accent (`--accent-color`), toujours avec du texte `#4D3677`. La couleur par module (`primaryColor`) est supprimée | LCS |
 | Accès aux routes | `^/api` reste en `PUBLIC_ACCESS`, choix du client : chaque route porte son propre contrôle. Synchronisations ORéOF en POST avec droit d'édition ; statistiques d'emploi du temps réservées au personnel, comme les notes (E18) | nous |
 | Fiches étudiantes (E22) | liste `/api/etudiants` réservée au personnel ; fiche et `/scolarite/etudiant/{id}` soumises au voter du client `CAN_VIEW_ETUDIANT` : tout le personnel, et l'étudiant pour sa seule fiche, inoffensif et prévu par le client. Le PATCH n'écrit plus que le groupe `etudiant:write` : un étudiant pouvait se donner tous les rôles | nous |
+| Profil de l'étudiant (F6) | dans l'intranet, sous le menu de l'étudiant : le lien « Profil » du compte le mène à `/intranet/profil` (garde du routeur), le personnel garde `/auth/profil`. Ses groupes sont attribués par la scolarité : il les consulte, ne les choisit pas (#178) | JEREMY |
 | Trombinoscope (F5) | réservé au personnel, la question 3 de l'audit 05 restant sans réponse : la route porte `permission: 'isPersonnel'`, l'étudiant arrive sur « Accès refusé » et l'export ne lui est plus proposé. L'ouvrir aux étudiants demanderait une route back dédiée, limitée à sa promotion et sans export | JEREMY |
 | Proposition de poursuite V3 (E19) | l'année de formation proposée, cherchée par libellé d'année ou de semestre dans le diplôme du dernier semestre suivi ; une seule correspondance est retenue, sinon elle reste vide et la commande le signale | nous |
 | Composantes et situations (E19) | une seule forme, celle d'ORéOF (`{libelle, code, ordre}`) ; les libellés V3 déjà en base sont lus sous cette forme | nous |
