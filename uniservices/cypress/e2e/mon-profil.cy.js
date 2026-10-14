@@ -27,11 +27,24 @@ describe('Profil de l\'étudiant', () => {
         cy.get('.carte-etudiant [aria-label="Mes groupes"] li', { timeout: 15000 }).should('have.length.at.least', 1);
     });
 
-    it('dit « non renseigné » plutôt que de laisser un champ vide', () => {
+    it('affiche la fiche que l\'API renvoie', () => {
         cy.contains('h2', 'Informations générales').closest('section').within(() => {
-            ['Date de naissance', 'Bac', 'Numéro étudiant', 'Numéro INE'].forEach((champ) => {
-                cy.contains('li', champ).invoke('text').should('match', /Non renseignée?\s*$/);
-            });
+            cy.contains('li', 'Date de naissance').should('contain', '21/03/').and('contain', 'ans');
+            cy.contains('li', 'Bac').should('contain', 'Bac général');
+            cy.contains('li', 'Numéro étudiant').should('contain', '22501437');
+            cy.contains('li', 'Numéro INE').should('contain', '071234567HK');
+        });
+        cy.contains('h2', 'Coordonnées').closest('section').within(() => {
+            cy.contains('li', 'Mail personnel').should('contain', 'jane.doe@exemple.fr');
+            cy.contains('li', 'Adresse étudiante').should('contain', '10000 Troyes');
+        });
+    });
+
+    it('montre le bilan d\'un semestre jugé', () => {
+        cy.contains('h2', 'Scolarité').closest('section').within(() => {
+            cy.get('[role="tab"]', { timeout: 15000 }).last().click();
+            cy.contains('li', 'Moyenne').should('contain', '13,42 / 20');
+            cy.contains('li', 'Décision du jury').should('contain', 'Validé');
         });
     });
 
@@ -48,12 +61,12 @@ describe('Profil de l\'étudiant', () => {
     it('ouvre et referme la saisie des coordonnées sans perdre le focus', () => {
         cy.contains('button', 'Modifier').click();
         cy.focused().should('have.attr', 'id', 'mailPerso');
-        cy.get('#mailPerso').type('jane@exemple.fr');
+        cy.get('#mailPerso').clear().type('autre@exemple.fr');
 
         cy.contains('button', 'Annuler').click();
 
         cy.focused().should('contain', 'Modifier');
-        cy.contains('li', 'Mail personnel').should('contain', 'Non renseigné').and('not.contain', 'jane@exemple.fr');
+        cy.contains('li', 'Mail personnel').should('contain', 'jane.doe@exemple.fr').and('not.contain', 'autre@exemple.fr');
     });
 
     it('relie chaque choix de groupe à son libellé', () => {

@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Scolarite\ScolBac;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Enum\StatutEnum;
@@ -53,6 +54,16 @@ class StructureUserFixtures extends Fixture implements OrderedFixtureInterface
         $manager->persist($superadmin);
 
         // ----------- ETUDIANT
+        $bac = new ScolBac();
+        $bac->setLibelle('Bac général')
+            ->setLibelleLong('Baccalauréat général, spécialités NSI et mathématiques')
+            ->setTypeBac('G');
+        $manager->persist($bac);
+
+        // Entrée en première année l'an dernier, bac en poche la même année : les âges et les
+        // années suivent l'année universitaire en cours, comme les scolarités.
+        $entree = (int) substr(StructureAnneeUniversitaireFixtures::libelle(-1), 0, 4);
+
         $etudiant = new Etudiant();
         $password = $this->encoder->hashPassword($etudiant, 'test');
         $etudiant->setUsername('etudiant')
@@ -64,6 +75,28 @@ class StructureUserFixtures extends Fixture implements OrderedFixtureInterface
             ->setBoursier(false)
             ->setApplications(['UniTranet'])
             ->setPhotoName('noimage.png')
+            ->setDateNaissance(new \DateTimeImmutable(($entree - 18).'-03-21'))
+            ->setLieuNaissance('Reims')
+            ->setBac($bac)
+            ->setAnneeBac($entree)
+            ->setPromotion($entree)
+            ->setNumEtudiant('22501437')
+            ->setNumIne('071234567HK')
+            ->setSiteUniv('https://mmi25b12.mmi-troyes.fr')
+            ->setMailPerso('jane.doe@exemple.fr')
+            ->setSitePerso('https://janedoe.exemple.fr')
+            ->setTel1('06 12 34 56 78')
+            ->setAdresseEtudiante([
+                'adresse' => '12 rue de Québec',
+                'complement1' => 'Résidence Jules Verne, appartement 204',
+                'codePostal' => '10000',
+                'ville' => 'Troyes',
+            ])
+            ->setAdresseParentale([
+                'adresse' => '8 place Drouet d\'Erlon',
+                'codePostal' => '51100',
+                'ville' => 'Reims',
+            ])
         ;
         $manager->persist($etudiant);
 
