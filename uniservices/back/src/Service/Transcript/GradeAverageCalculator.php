@@ -15,7 +15,9 @@ use App\Entity\Etudiant\EtudiantNote;
  * - une absence injustifiée compte pour 0 ;
  * - une absence justifiée et une dispense sont neutralisées ;
  * - une note présente mais pas encore saisie est ignorée, qu'elle soit vide ou à -0,01, la valeur
- *   que le formulaire de saisie du client utilise pour « non saisie ».
+ *   que le formulaire de saisie du client utilise pour « non saisie » ;
+ * - chaque absence non justifiée retire à la moyenne de sa matière les points de pénalité du
+ *   semestre, sans la faire passer sous 0 : la règle de l'intranet V3 (MoyenneMatiere).
  */
 final readonly class GradeAverageCalculator
 {
@@ -37,6 +39,15 @@ final readonly class GradeAverageCalculator
         }
 
         return $this->weightedAverage($weightedValues);
+    }
+
+    public function penalizedAverage(?float $average, int $absences, float $points): ?float
+    {
+        if (null === $average) {
+            return null;
+        }
+
+        return round(max(0.0, $average - $absences * $points), 2);
     }
 
     /**

@@ -11,7 +11,7 @@ use App\State\Provider\Transcript\TranscriptProvider;
 use Symfony\Component\Serializer\Attribute\SerializedName;
 
 /**
- * Relevé de l'année en cours de l'étudiant connecté. L'adresse ne porte aucun identifiant : on ne
+ * Relevé de l'étudiant connecté, semestre par semestre depuis 2026. L'adresse ne porte aucun identifiant : on ne
  * peut demander que le sien.
  */
 #[ApiResource(
@@ -21,7 +21,7 @@ use Symfony\Component\Serializer\Attribute\SerializedName;
             uriTemplate: '/me/scolarite',
             uriVariables: [],
             openapi: new Operation(
-                summary: 'Notes publiées, moyennes provisoires et absences de l\'étudiant connecté, pour l\'année en cours',
+                summary: 'Notes publiées, moyennes provisoires, pénalités d\'absence et absences de l\'étudiant connecté, par semestre',
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             provider: TranscriptProvider::class,

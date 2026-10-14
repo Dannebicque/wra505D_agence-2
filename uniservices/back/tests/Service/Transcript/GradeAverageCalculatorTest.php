@@ -85,4 +85,16 @@ final class GradeAverageCalculatorTest extends TestCase
     {
         self::assertSame(13.33, $this->calculator->teachingAverage([$this->grade(10), $this->grade(15), $this->grade(15)]));
     }
+
+    public function testTakesPenaltyPointsPerUnjustifiedAbsence(): void
+    {
+        self::assertSame(12.5, $this->calculator->penalizedAverage(14.0, 3, 0.5));
+        self::assertSame(14.0, $this->calculator->penalizedAverage(14.0, 0, 0.5));
+    }
+
+    public function testNeverPenalizesBelowZeroNorWithoutAverage(): void
+    {
+        self::assertSame(0.0, $this->calculator->penalizedAverage(1.0, 4, 0.5));
+        self::assertNull($this->calculator->penalizedAverage(null, 2, 0.5));
+    }
 }
