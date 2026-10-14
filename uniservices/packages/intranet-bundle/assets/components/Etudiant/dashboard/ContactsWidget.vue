@@ -73,8 +73,8 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2rem;
+  height: 2rem;
   flex-shrink: 0;
   border-radius: 999px;
   background: var(--p-content-hover-background);
@@ -86,12 +86,14 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
   color: var(--p-text-muted-color);
 }
 
+/* Une pastille de 32 px ; la zone de toucher garde 44 px et plus, débordant de 7 px en haut et en bas. */
 .contact__action {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  min-height: 44px;
-  padding: 0 1rem 0 0.375rem;
+  gap: 0.375rem;
+  min-height: 2.25rem;
+  padding: 0 0.75rem 0 0.25rem;
   border-radius: 999px;
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
@@ -101,14 +103,20 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
 }
 
 /* L'icône dans sa pastille, centrée : elle s'aligne sur le texte quelle que soit la taille. */
+.contact__action::before {
+  content: '';
+  position: absolute;
+  inset: -7px 0;
+}
+
 .contact__action i {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.625rem;
+  height: 1.625rem;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   line-height: 1;
   background: var(--p-content-background);
   color: var(--p-primary-color);
