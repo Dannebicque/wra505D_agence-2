@@ -304,6 +304,8 @@ final readonly class TranscriptBuilder
                 'matiere' => $matiere !== '' && $matiere !== '0' ? $matiere : null,
                 'code' => $event?->getEnseignement()?->getCodeEnseignement(),
                 'justification' => $justification,
+                // Le personnel l'écrit pour l'étudiant : c'est ce qu'il doit corriger avant de redéposer.
+                'motifRefus' => 'refusee' === $justification ? $absence->getAbsenceJustificatif()?->getMotifRefus() : null,
             ];
         }
 
