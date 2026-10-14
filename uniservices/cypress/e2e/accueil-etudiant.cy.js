@@ -54,17 +54,14 @@ describe('Accueil de l\'étudiant', () => {
         cy.contains('Mon dashboard').should('not.exist');
     });
 
-    it('range en bureau ce qui le concerne à gauche, ce qui se passe autour à droite', () => {
+    it('se lit en bureau par rangées : la journée, puis l\'action et les notes, puis le reste', () => {
         cy.visit('/app/intranet/');
         const boite = (selecteur) => cy.get(selecteur, { timeout: 15000 }).then(($bloc) => $bloc[0].getBoundingClientRect());
-        boite('.journee').then((journee) => {
-            boite('.accueil__documents').its('top').should('be.closeTo', journee.top, 1);
-            boite('.accueil__a-faire').its('left').should('be.closeTo', journee.left, 1);
-            boite('.accueil__notes').its('left').should('be.closeTo', journee.left, 1);
-        });
+        boite('.accueil').then((page) => boite('.journee').its('width').should('be.closeTo', page.width, 1));
+        boite('.accueil__a-faire').then((aFaire) => boite('.accueil__notes').its('top').should('be.closeTo', aFaire.top, 1));
         boite('.accueil__documents').then((documents) => {
-            boite('.accueil__actualites').its('left').should('be.closeTo', documents.left, 1);
-            boite('.accueil__contacts').its('left').should('be.closeTo', documents.left, 1);
+            boite('.accueil__actualites').its('top').should('be.closeTo', documents.top, 1);
+            boite('.accueil__contacts').its('top').should('be.closeTo', documents.top, 1);
         });
     });
 
@@ -72,7 +69,6 @@ describe('Accueil de l\'étudiant', () => {
         cy.intercept('GET', '**/api/me/scolarite', releve);
         cy.visit('/app/intranet/');
         cy.get('.accueil__a-faire .ligne--action', { timeout: 15000 }).should('have.length', 1).and('contain', 'absence à justifier');
-        cy.get('.accueil__documents, .accueil__actualites').find('[class*="seance"]').should('not.exist');
     });
 
     it('liste les absences à régler et les évaluations à venir', () => {

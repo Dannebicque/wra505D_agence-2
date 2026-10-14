@@ -44,7 +44,7 @@ const pluriel = (nombre, mot) => `${nombre} ${mot}${nombre > 1 ? 's' : ''}`;
       <template #titre>{{ pluriel(absences.aJustifier.length, 'absence') }} à justifier</template>
       <template #detail>{{ absences.aJustifier[0].matiere }}, {{ jourCourt(absences.aJustifier[0].debut) }}</template>
     </LigneAccueil>
-    <LigneAccueil v-if="absences.enAttente.length" to="/intranet/scolarite" icone="pi pi-clock">
+    <LigneAccueil v-if="absences.enAttente.length" to="/intranet/scolarite" icone="pi pi-clock" teinte="td">
       <template #titre>{{ pluriel(absences.enAttente.length, 'justificatif') }} en attente</template>
       <template #detail>{{ absences.enAttente[0].matiere }}</template>
     </LigneAccueil>
@@ -53,6 +53,7 @@ const pluriel = (nombre, mot) => `${nombre} ${mot}${nombre > 1 ? 's' : ''}`;
         :key="`${echeance.date}-${echeance.code}-${echeance.libelle}`"
         to="/intranet/cahier-de-texte"
         icone="pi pi-calendar"
+        teinte="cm"
     >
       <template #titre>{{ echeance.code }} {{ echeance.matiere }}</template>
       <template #detail>{{ echeance.type || echeance.libelle }} · <time :datetime="echeance.date">{{ jourCourt(echeance.date) }}</time></template>

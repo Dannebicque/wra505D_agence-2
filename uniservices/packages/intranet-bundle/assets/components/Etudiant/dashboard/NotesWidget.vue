@@ -11,7 +11,7 @@ const props = defineProps({
   erreur: {type: Boolean, default: false},
 });
 
-const notes = computed(() => dernieresNotes(props.releve));
+const notes = computed(() => dernieresNotes(props.releve, 4));
 
 // La couleur reste discrète : la valeur seule se teinte, sous 10 ou à partir de 14 (décision du
 // 14/10). Un statut (absence, dispense) se lit en atténué, sauf l'absence qui compte 0.

@@ -12,11 +12,11 @@ describe('Journée de l\'étudiant sur l\'accueil', () => {
     it('signale dans la liste le cours dont parle le bandeau', () => {
         journee().find('.journee__etat', { timeout: 15000 }).invoke('text').then((etat) => {
             if (/^\s*En cours/.test(etat)) {
-                journee().find('.journee__cours--en-cours').should('contain', 'en cours');
+                journee().find('.cours--en-cours').should('contain', 'En cours');
             } else if (/^\s*Prochain cours/.test(etat)) {
-                journee().find('.journee__maintenant').should('contain', 'dans');
+                journee().find('.cours__etat').should('contain', 'Dans');
             } else {
-                journee().find('.journee__maintenant').should('not.exist');
+                journee().find('.cours__etat').should('not.exist');
             }
         });
     });
@@ -24,7 +24,7 @@ describe('Journée de l\'étudiant sur l\'accueil', () => {
     it('ne répète pas dans le bandeau l\'intitulé du cours en cours', () => {
         journee().find('.journee__etat', { timeout: 15000 }).invoke('text').then((etat) => {
             if (/^\s*(En cours|Prochain cours)/.test(etat)) {
-                journee().find('.journee__liste .journee__libelle').each(($libelle) => {
+                journee().find('.cours__libelle').each(($libelle) => {
                     expect(etat).not.to.contain($libelle.text().trim());
                 });
             }

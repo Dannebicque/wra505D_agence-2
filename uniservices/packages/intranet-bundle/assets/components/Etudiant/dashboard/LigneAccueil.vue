@@ -10,6 +10,8 @@ const props = defineProps({
   icone: {type: String, default: null},
   // « action » : ce que l'étudiant doit faire, seul usage du rouge sur l'accueil (TB-11).
   ton: {type: String, default: 'neutre'},
+  // Teinte propre à la ligne ; sinon l'icône prend celle de son bloc.
+  teinte: {type: String, default: null},
 });
 
 const balise = computed(() => {
@@ -29,7 +31,13 @@ const attributs = computed(() => {
 </script>
 
 <template>
-  <li :class="['ligne', `ligne--${ton}`]">
+  <li
+      :class="['ligne', `ligne--${ton}`]"
+      :style="teinte ? {
+        '--bloc-teinte-fond': `var(--p-seance-${teinte}-background)`,
+        '--bloc-teinte-couleur': `var(--p-seance-${teinte}-color)`,
+      } : null"
+  >
     <component
         :is="balise"
         v-bind="attributs"
@@ -84,8 +92,8 @@ const attributs = computed(() => {
   flex-shrink: 0;
   border-radius: 999px;
   font-size: 0.875rem;
-  background: var(--p-content-hover-background);
-  color: var(--p-text-muted-color);
+  background: var(--bloc-teinte-fond, var(--p-content-hover-background));
+  color: var(--bloc-teinte-couleur, var(--p-text-muted-color));
 }
 
 .ligne__texte {

@@ -4,6 +4,9 @@ import {useId} from 'vue';
 defineProps({
   titre: {type: String, required: true},
   icone: {type: String, required: true},
+  // La teinte du bloc, prise aux types de séance : elle marque la pastille de son titre et les
+  // icônes de ses lignes, pas ses fonds. Une touche de couleur, sans aplat (C19).
+  teinte: {type: String, default: null},
   lien: {type: String, default: null},
   texteLien: {type: String, default: null},
 });
@@ -12,7 +15,14 @@ const id = useId();
 </script>
 
 <template>
-  <section class="bloc-accueil" :aria-labelledby="id">
+  <section
+      class="bloc-accueil"
+      :aria-labelledby="id"
+      :style="teinte ? {
+        '--bloc-teinte-fond': `var(--p-seance-${teinte}-background)`,
+        '--bloc-teinte-couleur': `var(--p-seance-${teinte}-color)`,
+      } : null"
+  >
     <h2 :id="id" class="bloc-accueil__titre">
       <span class="bloc-accueil__icone" aria-hidden="true"><i :class="icone"></i></span>
       {{ titre }}
@@ -56,7 +66,8 @@ const id = useId();
   flex-shrink: 0;
   border-radius: 999px;
   font-size: 1rem;
-  color: var(--p-text-muted-color);
+  background: var(--bloc-teinte-fond, transparent);
+  color: var(--bloc-teinte-couleur, var(--p-text-muted-color));
 }
 
 .bloc-accueil__lien {
