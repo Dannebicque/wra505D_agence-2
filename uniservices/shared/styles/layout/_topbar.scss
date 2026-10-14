@@ -43,9 +43,12 @@
 
         // Le menu replié ne laisse la place qu'au logo : le nom n'apparaît que menu déplié.
         // L'image du logo garde une marge transparente à droite du dessin : le nom la recouvre.
+        // Le dessin est aussi placé un peu au-dessus du centre de l'image : le nom remonte
+        // d'autant pour que leurs hauts et leurs bas s'alignent.
         .layout-topbar-logo-nom {
             display: none;
             margin-left: -0.9rem;
+            translate: 0 -0.1rem;
             color: var(--primary-color);
         }
 
