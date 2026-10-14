@@ -500,7 +500,7 @@ final class IntranetV3FakeDatabaseCommand extends Command
         return [
             'id' => $id, 'annee_id' => $year, 'libelle' => $label, 'ordre_annee' => $yearOrder, 'ordre_lmd' => $lmdOrder, 'actif' => 1,
             'nb_groupes_cm' => 1, 'nb_groupes_td' => 1, 'nb_groupes_tp' => 2, 'code_element' => $code, 'mois_debut' => 1 === $yearOrder ? 9 : 1,
-            'opt_evaluation_visible' => 1, 'opt_evaluation_modifiable' => 1, 'opt_point_penalite_absence' => 0.5, 'opt_rattrapage' => 1,
+            'opt_evaluation_visible' => 1, 'opt_evaluation_modifiable' => 1, 'opt_penalite_absence' => 1, 'opt_point_penalite_absence' => 0.5, 'opt_rattrapage' => 1,
             'opt_dest_mail_releve_id' => 1,
         ];
     }
