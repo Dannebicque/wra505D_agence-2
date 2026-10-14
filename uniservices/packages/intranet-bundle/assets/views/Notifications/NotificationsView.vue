@@ -2,12 +2,12 @@
 import { computed, onMounted, ref } from 'vue';
 import { HeaderComponent, GlobalLoader } from '@components';
 import { useNotificationStore } from '@stores';
-import { TYPES_NOTIFICATION, grouperParJour, heure, libelleNonLues, typeNotification } from '@helpers/notifications.js';
+import { TYPES_NOTIFICATION, couleursNotification, grouperParJour, heure, libelleNonLues, typeNotification } from '@helpers/notifications.js';
 
 const store = useNotificationStore();
 
-const etat = ref('toutes');
-const etats = [{ label: 'Toutes', value: 'toutes' }, { label: 'Non lues', value: 'non_lues' }];
+const etat = ref('non_lues');
+const etats = [{ label: 'Non lues', value: 'non_lues' }, { label: 'Toutes', value: 'toutes' }];
 const type = ref('tous');
 const types = [
   { label: 'Tous les types', value: 'tous' },
@@ -18,6 +18,13 @@ const affichees = computed(() => store.notifications.filter(notification =>
   (etat.value === 'toutes' || !notification.lue) && (type.value === 'tous' || notification.type === type.value)));
 
 const jours = computed(() => grouperParJour(affichees.value));
+
+const messageVide = computed(() => {
+  if (store.notifications.length === 0) return 'Rien de nouveau pour l\'instant.';
+  if (etat.value === 'non_lues' && type.value === 'tous') return 'Toutes vos notifications sont lues.';
+
+  return 'Aucune notification ne correspond à ces filtres.';
+});
 
 // Un message se lit ici en entier : il n'a pas d'autre page où mener.
 const estIci = (notification) => notification.lien === '/intranet/notifications';
@@ -62,18 +69,18 @@ onMounted(() => store.charger());
     </div>
 
     <Message v-if="jours.length === 0" severity="info">
-      {{ store.notifications.length === 0 ? 'Rien de nouveau pour l\'instant.' : 'Aucune notification ne correspond à ces filtres.' }}
+      {{ messageVide }}
     </Message>
 
     <section v-for="(groupe, index) in jours" :key="groupe.jour" class="mb-8" :aria-labelledby="`jour-${index}`">
       <h2 :id="`jour-${index}`" class="text-lg font-semibold mb-3">{{ groupe.jour }}</h2>
       <ul class="list-none p-0 m-0 flex flex-col gap-3">
         <li v-for="notification in groupe.notifications" :key="notification.cle">
-          <article :class="['notification', { 'notification--non-lue': !notification.lue }]">
-            <i :class="[typeNotification(notification.type).icone, 'text-xl mt-1']" aria-hidden="true"></i>
+          <article :class="['notification', { 'notification--non-lue': !notification.lue }]" :style="couleursNotification(notification.type)">
+            <span class="notification-icone" aria-hidden="true"><i :class="typeNotification(notification.type).icone"></i></span>
             <div class="flex-1 min-w-0">
               <p class="m-0 text-sm notification-meta">
-                {{ typeNotification(notification.type).libelle }} · {{ heure(new Date(notification.date)) }}
+                <span class="notification-type">{{ typeNotification(notification.type).libelle }}</span> · {{ heure(new Date(notification.date)) }}
                 <strong v-if="!notification.lue"> · Non lue</strong>
               </p>
               <h3 class="notification-titre">{{ notification.titre }}</h3>
@@ -114,6 +121,25 @@ onMounted(() => store.charger());
 
 .notification-meta {
   color: var(--text-color-secondary, #676d75);
+}
+
+/* La couleur double le type, écrit juste à côté : elle ne porte jamais seule l'information. */
+.notification-icone {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--notification-fond);
+  color: var(--notification-couleur);
+  font-size: 1.125rem;
+}
+
+.notification-type {
+  font-weight: 600;
+  color: var(--notification-couleur);
 }
 
 /* Les titres du thème sont faits pour une page : ici, un titre par notification. */

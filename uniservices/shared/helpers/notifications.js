@@ -8,6 +8,18 @@ export const TYPES_NOTIFICATION = {
 
 export const typeNotification = (type) => TYPES_NOTIFICATION[type] ?? {libelle: 'Notification', icone: 'pi pi-bell'};
 
+/**
+ * Couleurs du type, jetons du preset : un type inconnu prend celles de « autre ».
+ */
+export const couleursNotification = (type) => {
+    const cle = TYPES_NOTIFICATION[type] ? type : 'autre';
+
+    return {
+        '--notification-fond': `var(--p-notification-${cle}-background)`,
+        '--notification-couleur': `var(--p-notification-${cle}-color)`,
+    };
+};
+
 const debutDuJour = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 /**

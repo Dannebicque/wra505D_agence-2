@@ -5,7 +5,6 @@ export default [
         name: 'Notifications',
         meta: {
             permission: 'isEtudiant',
-            breadcrumb: [{ label: 'Accueil', route: '/intranet/'}, { label: 'Notifications', route: null, icon: 'pi pi-bell'}],
         },
     },
 ];

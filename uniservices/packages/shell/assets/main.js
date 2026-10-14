@@ -58,6 +58,9 @@ const MyPreset = definePreset(Aura, {
             color: '#F7B000',
             contrastColor: '#4D3677'
         },
+        // Type de notification, repris des couleurs de séance déjà mesurées : violet pour les notes,
+        // rouge pour les absences, jaune pour les documents, vert pour les actualités, rose pour les
+        // messages. La couleur sur la carte : 6,52:1 au moins en clair, 7,13:1 en sombre.
         // Bordure d'un élément d'interface (champ, case, carte de choix) : 3,49:1 en clair et
         // 3,15:1 en sombre, au-dessus du seuil RGAA de 3:1, là où les gris d'Aura n'y arrivent pas.
         // Type de séance de l'emploi du temps, dans les couleurs de la DA : violet pour les CM, jaune
@@ -75,6 +78,14 @@ const MyPreset = definePreset(Aura, {
                     sae: { background: '#FCE9F3', color: '#9E2A63', pill: { background: '#9E2A63', color: '#FFFFFF' } },
                     evaluation: { background: '#FEEAEA', color: '#B42424', pill: { background: '#B42424', color: '#FFFFFF' } },
                     autre: { background: '#EEF0F3', color: '#565C64', pill: { background: '#565C64', color: '#FFFFFF' } }
+                },
+                notification: {
+                    note: { background: '#F1ECFC', color: '#4D3677' },
+                    absence: { background: '#FEEAEA', color: '#B42424' },
+                    document: { background: '#FEF4D9', color: '#7A5200' },
+                    actualite: { background: '#E2F7EC', color: '#0B6B3F' },
+                    message: { background: '#FCE9F3', color: '#9E2A63' },
+                    autre: { background: '#EEF0F3', color: '#565C64' }
                 }
             },
             dark: {
@@ -86,6 +97,14 @@ const MyPreset = definePreset(Aura, {
                     sae: { background: '#3B2232', color: '#F09AC4', pill: { background: '#9E2A63', color: '#FFFFFF' } },
                     evaluation: { background: '#422124', color: '#F7A1A1', pill: { background: '#B42424', color: '#FFFFFF' } },
                     autre: { background: '#2E3237', color: '#B9BEC6', pill: { background: '#565C64', color: '#FFFFFF' } }
+                },
+                notification: {
+                    note: { background: '#2B2240', color: '#C7B6F1' },
+                    absence: { background: '#422124', color: '#F7A1A1' },
+                    document: { background: '#3A3020', color: '#F2C14E' },
+                    actualite: { background: '#193A2B', color: '#6CD9A2' },
+                    message: { background: '#3B2232', color: '#F09AC4' },
+                    autre: { background: '#2E3237', color: '#B9BEC6' }
                 }
             }
         }

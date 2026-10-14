@@ -1,5 +1,3 @@
-@use "mixins";
-
 @media screen and (min-width: 1960px) {
     .layout-main,
     .landing-wrapper {
@@ -82,6 +80,64 @@
                 border-left: solid .5px var(--primary-color);
             }
 
+            // Les libellés glissent depuis la gauche quand le menu se déplie, et repartent vers
+            // la gauche quand il se replie, au rythme du menu. Pendant l'animation, la largeur
+            // grandit : les points de suspension n'arrivent qu'une fois le menu ouvert, sinon
+            // chaque libellé paraîtrait tronqué en cours de route.
+            .layout-sidebar .layout-menuitem-text {
+                transition:
+                    opacity var(--layout-section-transition-duration) ease-out,
+                    translate var(--layout-section-transition-duration) ease-out,
+                    text-overflow 0s var(--layout-section-transition-duration);
+                transition-behavior: allow-discrete;
+
+                @media (prefers-reduced-motion: reduce) {
+                    transition: none;
+                }
+            }
+
+            // Le nom se trace pendant que le menu se déplie et s'efface en sens inverse pendant
+            // qu'il se replie. Les traits se succèdent sur la durée exacte de l'animation du
+            // menu : chacun en occupe 30 %, les départs se répartissent sur le reste.
+            .layout-topbar-logo-nom {
+                display: inline-flex;
+
+                // Défini sur le SVG, qui porte le nombre de formes.
+                .logo-nom {
+                    --logo-nom-duree: calc(var(--layout-section-transition-duration) * 0.3);
+                    --logo-nom-pas: calc((var(--layout-section-transition-duration) - var(--logo-nom-duree)) / var(--formes));
+                }
+
+                .logo-nom-trait {
+                    stroke-dasharray: 1 2;
+                    transition: stroke-dashoffset var(--logo-nom-duree) ease-out calc(var(--rang) * var(--logo-nom-pas));
+                }
+
+                .logo-nom-point {
+                    transition: transform var(--logo-nom-duree) ease-out calc(var(--rang) * var(--logo-nom-pas));
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .logo-nom-trait,
+                    .logo-nom-point {
+                        transition: none;
+                    }
+                }
+            }
+
+            // Au-delà de 1, le tiret sort du tracé : aucun bout rond ne reste visible à son départ.
+            &.layout-static-inactive .layout-topbar-logo-nom {
+                .logo-nom-trait {
+                    stroke-dashoffset: 1.05;
+                    transition-delay: calc((var(--formes) - var(--rang)) * var(--logo-nom-pas));
+                }
+
+                .logo-nom-point {
+                    transform: scale(0);
+                    transition-delay: calc((var(--formes) - var(--rang)) * var(--logo-nom-pas));
+                }
+            }
+
             // Replié, le menu reste une colonne d'icônes : les libellés sont masqués à l'écran
             // mais restent lus, et une infobulle les affiche au survol et au focus.
             &.layout-static-inactive {
@@ -89,11 +145,16 @@
                     width: var(--layout-sidebar-rail-width);
                 }
 
+                // Rester dans le flux, transparent et sans largeur, garde le libellé lu et permet
+                // de l'animer ; le menu, qui ne déborde pas, le rogne.
                 .layout-sidebar {
                     width: var(--layout-sidebar-rail-width);
 
                     .layout-menuitem-text {
-                        @include mixins.visually-hidden();
+                        opacity: 0;
+                        translate: -1rem 0;
+                        text-overflow: clip;
+                        transition-delay: 0s;
                     }
                 }
 

@@ -3,6 +3,9 @@ import { useLayout } from './composables/layout.js';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { AVAILABLE_ROLES } from "@utils/permissions";
 import Logo from '@components/components/Logo.vue';
+import LogoIut from '@components/components/LogoIut.vue';
+import LogoNom from '@components/components/LogoNom.vue';
+import logoIutUrl from '@images/logo/logo_intranet_iut_troyes.svg';
 import AppSearch from './AppSearch.vue';
 import NotificationsCloche from './NotificationsCloche.vue';
 import { useAnneeUnivStore, useUsersStore } from "@stores";
@@ -368,8 +371,10 @@ const selectAnneeUniversitaire = (annee) => {
       </button>
 
       <!-- L'étudiant a un seul menu : le nom du module ne lui apprend rien, le logo mène à l'accueil. -->
-      <router-link to="/" class="layout-topbar-logo" :aria-label="estEtudiant ? 'Accueil' : undefined">
-        <Logo :logo-url="logoUrl" alt="logo" class="rounded-xl p-2" /> <span v-if="!estEtudiant" class="text-lg">{{ appName }}</span>
+      <router-link to="/" class="layout-topbar-logo" :aria-label="estEtudiant ? 'Intranet, accueil' : undefined">
+        <LogoIut v-if="logoUrl === logoIutUrl" class="rounded-xl p-2" />
+        <Logo v-else :logo-url="logoUrl" alt="logo" class="rounded-xl p-2" /> <span v-if="!estEtudiant" class="text-lg">{{ appName }}</span>
+        <span v-else class="layout-topbar-logo-nom"><LogoNom /></span>
       </router-link>
     </div>
 

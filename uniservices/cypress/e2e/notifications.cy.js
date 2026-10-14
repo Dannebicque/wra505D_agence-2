@@ -35,7 +35,9 @@ describe('Notifications de l\'étudiant', () => {
 
     it('lit un message en entier et le marque comme lu', () => {
         cy.visit('/app/intranet/notifications');
-        cy.contains('fieldset', 'Type', { timeout: 15000 }).contains('Messages').click();
+        // Les non lues s'affichent par défaut : un message lu en disparaîtrait.
+        cy.contains('fieldset', 'Afficher', { timeout: 15000 }).contains('Toutes').click();
+        cy.contains('fieldset', 'Type').contains('Messages').click();
 
         cy.contains('article', 'Changement de salle pour R1.11').as('message')
             .should('contain', 'Le TP de jeudi a lieu en salle B204')
@@ -44,15 +46,16 @@ describe('Notifications de l\'étudiant', () => {
         cy.get('@message').should('not.contain', 'Non lue');
     });
 
-    it('filtre les non lues et marque tout comme lu', () => {
+    it('affiche les non lues par défaut et marque tout comme lu', () => {
         cy.visit('/app/intranet/notifications');
-        cy.contains('fieldset', 'Afficher', { timeout: 15000 }).contains('Non lues').click();
+        cy.contains('fieldset', 'Afficher', { timeout: 15000 }).contains('.p-togglebutton', 'Non lues')
+            .should('have.attr', 'aria-pressed', 'true');
         cy.contains('h2', 'Aujourd\'hui');
 
         cy.contains('button', 'Tout marquer comme lu').click();
 
         cy.contains('Aucune notification non lue');
-        cy.contains('Aucune notification ne correspond à ces filtres.');
+        cy.contains('Toutes vos notifications sont lues.');
         cy.get(cloche).should('have.attr', 'aria-label', 'Notifications, Aucune notification non lue');
     });
 });
