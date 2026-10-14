@@ -45,13 +45,14 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
     public function load(ObjectManager $manager): void
     {
         $semestre1 = $this->semestreRepository->findOneBy(['libelle' => 'S1']);
+        $semestre2 = $this->semestreRepository->findOneBy(['libelle' => 'S2']);
 
         $etu1 = $this->etudiantRepository->findOneBy(['username' => 'etudiant']);
 
         $anneeUniversitaire1 = $this->anneeUniversitaireRepository->findOneBy(['libelle' => StructureAnneeUniversitaireFixtures::libelle(-1)]);
         $anneeUniversitaire2 = $this->anneeUniversitaireRepository->findOneBy(['libelle' => StructureAnneeUniversitaireFixtures::libelle()]);
 
-        if (null === $semestre1 || null === $etu1 || null === $anneeUniversitaire1 || null === $anneeUniversitaire2) {
+        if (null === $semestre1 || null === $semestre2 || null === $etu1 || null === $anneeUniversitaire1 || null === $anneeUniversitaire2) {
             throw new \LogicException('Les données nécessaires aux scolarités sont introuvables.');
         }
 
@@ -64,9 +65,14 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
             ->setUuid(Uuid::v4())
         ;
 
+        // L'an dernier, un semestre jugé : le profil montre ainsi un bilan complet.
         $scolariteSemestre1 = new EtudiantScolariteSemestre();
         $scolariteSemestre1->setSemestre($semestre1)
-            ->setScolarite($scolarite1);
+            ->setScolarite($scolarite1)
+            ->setRang(12)
+            ->setDecision(true);
+        $scolariteSemestre1->setMoyenne(13.42);
+        $scolariteSemestre1->setProposition($semestre2);
 
         $scolarite1->addScolariteSemestre($scolariteSemestre1);
         $manager->persist($scolarite1);
