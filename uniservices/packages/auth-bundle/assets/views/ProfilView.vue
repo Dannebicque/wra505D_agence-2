@@ -1,5 +1,5 @@
 <script setup>
-import { ProfilPersonnel, MonProfil, TopbarComponent } from '@components';
+import { ProfilPersonnel, ProfilEtudiant, TopbarComponent, HeaderComponent } from '@components';
 import {useUsersStore} from "@stores";
 import {computed} from "vue";
 
@@ -29,10 +29,12 @@ const isEtudiant = computed(() => store.userType === 'etudiants');
     <main id="contenu-principal" class="layout-main">
       <ProfilPersonnel v-if="isPersonnel" />
       <template v-if="isEtudiant">
-        <!-- La carte de l'étudiant ouvre la page, comme celle de l'accueil : le titre reste pour
-             les lecteurs d'écran. -->
-        <h1 class="sr-only">Profil</h1>
-        <MonProfil />
+        <HeaderComponent
+            icon="pi pi-id-card"
+            titre="Profil"
+            description="Consultez votre profil et les informations associées"
+        />
+        <ProfilEtudiant />
       </template>
     </main>
   </div>

@@ -117,6 +117,11 @@ router.beforeEach(async (to, from) => {
       return { name: 'IntranetDashboard' };
     }
 
+    // Son profil vit aussi dans l'intranet, sous son menu : le lien « Profil » du compte l'y mène.
+    if (to.name === 'profil' && hasPermission('isEtudiant')) {
+      return '/intranet/profil';
+    }
+
     return true;
   } catch (error) {
     console.error('Auth error in router guard:', error);

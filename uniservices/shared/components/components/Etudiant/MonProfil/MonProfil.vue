@@ -183,7 +183,10 @@ const changerGroupe = async (scoSemestre, groupeId, type) => {
   .mon-profil--edition .mon-profil__scolarite {
     grid-column: span 6;
   }
+}
 
+/* Deux colonnes seulement quand chaque ligne tient sur la sienne, menu latéral ouvert compris. */
+@media (min-width: 1536px) {
   .mon-profil__liste {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
