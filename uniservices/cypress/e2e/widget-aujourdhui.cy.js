@@ -1,35 +1,41 @@
-describe('Widget « Aujourd\'hui » de l\'étudiant', () => {
+describe('Journée de l\'étudiant sur l\'accueil', () => {
+    const bienvenue = () => cy.get('.bienvenue', { timeout: 15000 });
+    const cours = () => cy.get('.accueil__cours', { timeout: 15000 });
+
     beforeEach(() => {
         cy.viewport(1280, 800);
         cy.connexionInvite('etudiant');
         cy.visit('/app/intranet/');
     });
 
-    // Les deux widgets lisent le même emploi du temps : ils ne doivent jamais se contredire, quel
-    // que soit le jour où le test tourne.
-    it('annonce les mêmes cours que le widget « Maintenant »', () => {
-        cy.get('#maintenant-titre', { timeout: 15000 }).closest('section').as('maintenant')
-            .should(($section) => expect($section.text()).to.match(/Aucun cours aujourd'hui|En cours|Prochain cours|Plus de cours aujourd'hui/));
-        cy.contains('button', 'Voir l\'emploi du temps', { timeout: 15000 }).parent().as('aujourdhui');
-
-        cy.get('@maintenant').then(($maintenant) => {
-            if (/Aucun cours aujourd'hui/.test($maintenant.text())) {
-                cy.get('@aujourdhui').should('contain', 'Aucun événement aujourd\'hui');
-                return;
+    // La carte de bienvenue et la colonne des cours lisent la même journée : elles ne doivent jamais
+    // se contredire, quel que soit le jour où le test tourne.
+    it('dit dans la carte de bienvenue ce que montre la colonne des cours', () => {
+        bienvenue().find('dt', { timeout: 15000 }).first().invoke('text').then((etat) => {
+            if (/En ce moment/.test(etat)) {
+                cours().find('.cours-carte--en-cours').should('have.length', 1);
+            } else if (/Pas de cours/.test(etat)) {
+                cours().find('.jour').should('not.exist');
+            } else {
+                cours().find('.cours-carte--en-cours').should('not.exist');
             }
-
-            cy.get('@aujourdhui').should('not.contain', 'Aucun événement aujourd\'hui');
-            $maintenant.find('h3').each((_, titre) => {
-                const cours = titre.nextElementSibling?.textContent.trim();
-                if (cours) {
-                    cy.get('@aujourdhui').should('contain', cours);
-                }
-            });
         });
     });
 
-    it('ne propose pas à l\'étudiant de faire l\'appel', () => {
-        cy.contains('button', 'Voir l\'emploi du temps', { timeout: 15000 }).parent()
-            .find('button .pi-user').should('not.exist');
+    it('garde chaque cours lisible : aucune carte sous 40 px de haut', () => {
+        cours().find('.jour__creneau').then(($creneaux) => {
+            if (!$creneaux.length) {
+                return;
+            }
+            const hauteurs = [...$creneaux].map((creneau) => creneau.getBoundingClientRect().height);
+            expect(Math.min(...hauteurs)).to.be.at.least(40);
+        });
+    });
+
+    it('mène à la semaine par un lien de 44 px', () => {
+        cours().contains('a', 'Voir la semaine').should('have.attr', 'href').and('match', /\/intranet\/agenda$/);
+        cours().contains('a', 'Voir la semaine').then(($lien) => {
+            expect($lien[0].getBoundingClientRect().height).to.be.at.least(44);
+        });
     });
 });

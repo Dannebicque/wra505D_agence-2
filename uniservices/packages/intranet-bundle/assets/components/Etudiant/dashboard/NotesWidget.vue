@@ -1,62 +1,94 @@
 <script setup>
-import {computed, onMounted, ref} from 'vue';
-import {getMaScolariteService} from '@requests';
+import {computed} from 'vue';
 import {formatDate, resultatEvaluation} from '@/utils/scolarite.js';
 import {dernieresNotes} from '@/utils/dernieresNotes.js';
+import {tonNote} from '@/utils/accueil.js';
+import LigneAccueil from './LigneAccueil.vue';
 
-const releve = ref(null);
-const isLoading = ref(true);
-const hasError = ref(false);
-
-const notes = computed(() => dernieresNotes(releve.value));
-
-onMounted(async () => {
-  try {
-    releve.value = await getMaScolariteService();
-  } catch {
-    hasError.value = true;
-  } finally {
-    isLoading.value = false;
-  }
+// Le relevé de /api/me/scolarite, lu une fois par l'accueil pour ce bloc et pour « À faire ».
+const props = defineProps({
+  releve: {type: Object, default: null},
+  erreur: {type: Boolean, default: false},
 });
+
+const notes = computed(() => dernieresNotes(props.releve, 4));
+
+// La couleur reste discrète : la valeur seule se teinte, sous 10 ou à partir de 14 (décision du
+// 14/10). Un statut (absence, dispense) se lit en atténué, sauf l'absence qui compte 0.
+const tonValeur = (evaluation) => {
+  const resultat = resultatEvaluation(evaluation);
+  if (resultat.severite === 'danger') {
+    return 'faible';
+  }
+  return resultat.severite ? 'statut' : tonNote(evaluation.note);
+};
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
-    <div v-if="isLoading">
-      <Skeleton class="mb-2"/>
-      <Skeleton width="70%" class="mb-2"/>
-      <Skeleton width="85%"/>
-    </div>
-
-    <p v-else-if="hasError" class="m-0!">Vos notes n'ont pas pu être chargées.</p>
-
-    <p v-else-if="notes.length === 0" class="m-0!">Aucune note publiée pour l'instant.</p>
-
-    <ul v-else class="list-none m-0 p-0 flex flex-col divide-y divide-surface-200 dark:divide-surface-700">
-      <li
-          v-for="evaluation in notes"
-          :key="`${evaluation.matiere.code}-${evaluation.libelle}-${evaluation.date}`"
-          class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2"
-      >
-        <span class="flex flex-col">
-          <span class="font-semibold">{{ evaluation.libelle }}</span>
-          {{ ' ' }}
-          <span class="text-sm">
-            {{ evaluation.matiere.code }} {{ evaluation.matiere.libelle }},
-            <time :datetime="evaluation.date">{{ formatDate(evaluation.date) }}</time>
-          </span>
-        </span>
-        {{ ' ' }}
-        <Tag
-            v-if="resultatEvaluation(evaluation).severite"
-            :severity="resultatEvaluation(evaluation).severite"
-            :value="resultatEvaluation(evaluation).texte"
-        />
-        <strong v-else>{{ resultatEvaluation(evaluation).texte }}</strong>
-      </li>
-    </ul>
-
-    <Button as="router-link" to="/intranet/scolarite" label="Voir toutes mes notes" class="w-full touch-target" severity="secondary" size="small"/>
+  <div v-if="releve === null && !erreur" class="flex flex-col gap-2" aria-hidden="true">
+    <Skeleton height="2.75rem" border-radius="12px"/>
+    <Skeleton height="2.75rem" border-radius="12px"/>
   </div>
+
+  <p v-else-if="erreur" class="m-0!">Vos notes n'ont pas pu être chargées.</p>
+
+  <p v-else-if="notes.length === 0" class="m-0!">Aucune note publiée pour l'instant.</p>
+
+  <ul v-else class="notes">
+    <LigneAccueil
+        v-for="evaluation in notes"
+        :key="`${evaluation.matiere.code}-${evaluation.libelle}-${evaluation.date}`"
+    >
+      <template #titre>{{ evaluation.libelle }}</template>
+      <template #detail>
+        {{ evaluation.matiere.code }} {{ evaluation.matiere.libelle }},
+        <time :datetime="evaluation.date">{{ formatDate(evaluation.date) }}</time>
+      </template>
+      <template #valeur>
+        <span :class="['note', `note--${tonValeur(evaluation)}`]">{{ resultatEvaluation(evaluation).texte }}</span>
+      </template>
+    </LigneAccueil>
+  </ul>
 </template>
+
+<style scoped>
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+}
+
+.note {
+  display: inline-block;
+  padding: 0 0.625rem;
+  border-radius: 999px;
+  line-height: 1.625rem;
+  white-space: nowrap;
+}
+
+/* Une pastille douce, teinte pâle et texte foncé du même type : la couleur se voit sans crier. */
+.note--faible {
+  background: var(--p-seance-evaluation-background);
+  color: var(--p-seance-evaluation-color);
+}
+
+.note--moyenne {
+  background: var(--p-seance-cm-background);
+  color: var(--p-seance-cm-color);
+}
+
+.note--bonne {
+  background: var(--p-seance-tp-background);
+  color: var(--p-seance-tp-color);
+}
+
+.note--statut {
+  padding: 0;
+  white-space: normal;
+  font-weight: 400;
+  font-size: 0.9375rem;
+  color: var(--p-text-muted-color);
+}
+</style>

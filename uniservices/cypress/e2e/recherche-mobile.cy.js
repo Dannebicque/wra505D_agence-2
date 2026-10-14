@@ -3,7 +3,7 @@ describe('Recherche sur téléphone', () => {
         cy.viewport(375, 812);
         cy.connexionInvite('etudiant');
         cy.visit('/app/intranet/');
-        cy.get('.dashboard-grid > *', { timeout: 15000 }).should('exist');
+        cy.get('.bloc-accueil', { timeout: 15000 }).should('exist');
     });
 
     it('propose un bouton de 44 px qui ouvre le champ et lui donne le focus', () => {

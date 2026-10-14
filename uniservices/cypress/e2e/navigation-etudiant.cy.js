@@ -13,8 +13,7 @@ describe('Navigation de l\'étudiant', () => {
     });
 
     it('retrouve sur l\'accueil les actualités que portait le portail', () => {
-        cy.contains('Actualités du département', { timeout: 15000 });
-        cy.contains('Réunion de rentrée des MMI 1');
+        cy.contains('h2', 'Actualités', { timeout: 15000 }).closest('section').should('contain', 'Réunion de rentrée des MMI 1');
     });
 
     it('garde le même menu sur chaque module', () => {
@@ -43,10 +42,8 @@ describe('Navigation de l\'étudiant', () => {
             expect(doc.scrollingElement.scrollHeight).to.be.at.most(doc.defaultView.innerHeight);
         };
 
-        // Le widget Contacts n'est pas dans la disposition par défaut : sur une base neuve, comme en
-        // CI, seuls les widgets par défaut prouvent que l'accueil a fini de se charger.
         cy.visit('/app/intranet/');
-        cy.contains('Actualités du département', { timeout: 15000 });
+        cy.contains('Réunion de rentrée des MMI 1', { timeout: 15000 });
         cy.document().should(pageTientDansLaFenetre);
 
         cy.visit('/app/intranet/notifications');

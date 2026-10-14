@@ -887,7 +887,7 @@ Cypress, en bureau et en mobile, en clair et en sombre, sur une base neuve.
 | C17.4 | mobile : bandeau des jours, journée en liste avec ses pauses, balayage | en partie : jour tenu en long, semaine en large, « Aujourd'hui » flottant ; reste le bandeau, la liste, le balayage |
 | C17.5 | date et vue dans l'URL, cache, chargement, état vide, erreur avec « Réessayer » | en partie : sélecteur de semaine avec la charge de chacune, semaines de vacances illustrées ; reste l'URL, le cache, « Réessayer » |
 | C17.6 | détail d'un cours modal, feuille du bas en mobile, liens vers la matière | en partie : modal, fermé d'un clic à côté, aux couleurs du type ; reste la feuille du bas et les liens |
-| C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte | à faire |
+| C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte | fait (C18.2) |
 
 **Fait aussi, au fil des retours de LCS et LOU** : couleurs de séance dans la DA (pastilles
 foncées à texte blanc, 6,52:1 au moins), cartes arrondies à la manière du logo, demi-heures
@@ -896,6 +896,57 @@ l'étudiant, menu d'options où l'abonnement iCal a sa place, désactivé et mar
 
 **JEREMY**, titulaire de la colonne C et auteur de C3, C14 et C15 sur `EdtEtudiant.vue`, est
 d'accord (13/10/2026).
+
+### C18 · [front] Accueil de l'étudiant recentré sur l'instant · M, 5 lots
+**Pourquoi** audit du 13/10/2026 (code et capture). En 1 440 x 900, le premier widget commence à
+400 px, et environ 190 px ne disent que le prénom et la date : titre « Dashboard », phrase,
+« Bonjour » et avatar, déjà présent dans la barre du haut. En mobile, aucun widget n'est visible
+sans défiler (MOB-10). La personnalisation existe deux fois : carte « Mon dashboard » vers
+`/widgets` (jargon « Taille par défaut 2 × 1 (colonnes × lignes) ») et mode édition par carte
+(flèches, corbeille, glisser-déposer), pour cinq widgets. « Maintenant » et « Aujourd'hui » lisent
+deux sources différentes, d'où le risque de TB-9.
+**Décidé avec LCS (13/10/2026)**, le client n'ayant pas répondu (question 4, décision 3), puis
+revu le même jour sur maquette :
+- page fixe, sans personnalisation : plus de bouton « Personnaliser », de page `/widgets`, de mode
+  édition par carte ni de glisser-déposer pour l'étudiant. Le personnel et le portail gardent leur
+  fonctionnement : `WidgetCard`, `DashboardWidgetsConfiguration`, `DashboardController` et
+  `DashboardPreference` sont partagés ;
+- ordre par importance : 1. la journée ; 2. « À faire » (absences à régler, évaluations à venir) ;
+  3. dernières notes ; 4. nouveaux documents et actualités ; 5. contacts ;
+- DA de l'agenda, en plus osé : bandeau violet IUT aux cercles du logo pour la journée, cartes
+  arrondies aux teintes des types de séance, notes colorées par seuil (sous 10, de 10 à 14, à
+  partir de 14). Pas de pastille rouge sur fond violet, cours en cours marqué d'un liseré fin.
+**Terminé quand** le haut de l'accueil montre la situation du moment sans défiler, en bureau et en
+mobile, en clair et en sombre, chaque texte à 4,5:1 au moins. Cypress et Vitest.
+
+| Lot | Contenu | État |
+|---|---|---|
+| C18.1 | en-tête : `h1` « Accueil », plus de grand titre, d'avatar ni de carte « Mon dashboard » | fait |
+| C18.2 | journée : bandeau (en cours, prochain cours, ou premier cours du jour suivant une fois la journée finie) et liste compacte du jour, une seule lecture de `/api/me/emploi-du-temps` (C17.7) | fait |
+| C18.3 | disposition fixe en zones : journée et « À faire », puis documents, actualités et notes, puis contacts ; une colonne en mobile, même ordre que le code | fait |
+| C18.4 | blocs : « À faire » (`/api/me/scolarite`, `/api/me/cahier-de-texte`), « Nouveaux documents » (`document.recents`), un seul fil d'actualités département et IUT, notes par seuil, contacts restylés | fait |
+| C18.5 | nettoyages : `initiales` jamais déclaré, `intranet.documents_recents` au catalogue sans définition, fil d'Ariane « Dashboard » (P5) | fait |
+| C18.6 | back : le système de widgets n'a plus d'usage étudiant (définitions `intranet.notes`, `intranet.contacts`, `intranet.actualites*` réservées à l'étudiant, route `/widgets`) | à décider |
+
+**JEREMY** est titulaire de la colonne C : à prévenir avant d'attaquer.
+
+### C19 · [front] Accueil lisible d'un coup d'œil en bureau · M, 5 lots
+**Pourquoi** recette du 14/10/2026 (`docs/07-audit-accueil.md`), TB-11 à TB-18 : en bureau, quatre
+à cinq points focaux, une couleur pour sept sens, aucune hiérarchie typographique, neuf motifs.
+Le mobile, lu bloc après bloc, rend mieux ; l'emploi du temps, aussi dense, se lit d'un coup d'œil.
+**Décidé avec LCS (14/10/2026)** : notes colorées par seuil mais en discret, bandeau violet allégé,
+emploi du temps inchangé. Puis, la version sobre jugée trop neutre, une version en trois étages,
+décrite au §10 de l'audit : c'est elle qui est livrée.
+**Terminé quand** la mesure du §2 de l'audit, refaite sur le premier écran en bureau, donne une
+couleur par sens, un écart d'au moins x 1,4 entre l'état et le texte courant, au plus trois motifs.
+
+| Lot | Contenu | État |
+|---|---|---|
+| C19.1 | couleurs : teintes de séance réservées aux cours, rouge réservé à l'action, le reste neutre | fait |
+| C19.2 | échelle typographique à trois niveaux, gras limité | fait : x 1,5, 24 textes gras sur 79 au lieu de 45 sur 82 |
+| C19.3 | bandeau allégé, sans doublon avec la liste du jour | fait, puis remplacé : carte de bienvenue violette à gauche et journée de l'emploi du temps à droite (audit §10) |
+| C19.4 | un motif de ligne unique pour « À faire », notes, documents et actualités | fait (`LigneAccueil.vue`) |
+| C19.5 | deux colonnes dans l'ordre d'importance, aucun bloc étiré | fait, puis remplacé : trois étages de hiérarchie (audit §10) |
 
 ## Colonne D — Recherche
 
@@ -1066,7 +1117,7 @@ non plus. Les constats sont solides sur le code et les mesures, plus fragiles su
    icônes de catégories de documents. Préciser si la règle vaut pour le code que nous écrivons ou
    pour tout le dépôt.
 3. **Personnalisation du tableau de bord.** Ouverte aux étudiants, ou réservée au personnel ?
-   L'API tranche aujourd'hui par un 403, l'interface prétend le contraire.
+   **Tranché le 13/10/2026** : aucune pour l'étudiant, son accueil est fixe (C18).
 
 ## Questions au client toujours sans réponse
 

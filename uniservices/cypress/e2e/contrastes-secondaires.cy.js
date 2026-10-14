@@ -52,7 +52,7 @@ describe('Contrastes des textes secondaires', () => {
 
     it('lit la date du jour et les filtres non choisis', () => {
         cy.visit('/app/intranet/');
-        cy.contains('small', /\d{4}/, { timeout: 15000 }).then(($date) => {
+        cy.contains('.bienvenue__date', /\d/, { timeout: 15000 }).then(($date) => {
             expect(contraste($date[0])).to.be.at.least(4.5);
         });
 
