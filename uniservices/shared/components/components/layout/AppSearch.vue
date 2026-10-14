@@ -62,43 +62,46 @@ const ouvrir = ({ value }) => {
 
 <template>
   <label :for="props.inputId" class="sr-only">Rechercher une page, une personne, une matière ou un document</label>
-  <AutoComplete
-      v-model="selection"
-      :input-id="props.inputId"
-      :suggestions="suggestions"
-      option-label="libelle"
-      option-group-label="libelle"
-      option-group-children="items"
-      :min-length="2"
-      :delay="250"
-      placeholder="Rechercher une page, une personne, une matière…"
-      class="w-full"
-      input-class="w-full"
-      overlay-class="app-search-overlay"
-      @complete="rechercher"
-      @option-select="ouvrir"
-  >
-    <template #optiongroup="{ option }">
-      <span class="font-bold">{{ option.libelle }}</span>
-    </template>
-    <template #option="{ option }">
-      <div class="flex w-full items-center gap-3 whitespace-normal">
-        <div class="flex min-w-0 flex-col">
-          <span><span v-if="roles[option.type]" class="sr-only">{{ roles[option.type] }} : </span>{{ option.libelle }}</span>
-          <!-- Texte atténué de la DA : celui du thème tombe à 4,34:1 sur l'option survolée. -->
-          <small v-if="option.detail || option.mail" class="break-all text-[#676D75] dark:text-[#A7ACB4]">
-            {{ [option.detail, option.mail].filter(Boolean).join(' · ') }}
-          </small>
+  <IconField class="w-full">
+    <InputIcon class="app-search-icon pi pi-search" aria-hidden="true" />
+    <AutoComplete
+        v-model="selection"
+        :input-id="props.inputId"
+        :suggestions="suggestions"
+        option-label="libelle"
+        option-group-label="libelle"
+        option-group-children="items"
+        :min-length="2"
+        :delay="250"
+        placeholder="Rechercher une page, une personne, une matière…"
+        class="w-full"
+        input-class="w-full"
+        overlay-class="app-search-overlay"
+        @complete="rechercher"
+        @option-select="ouvrir"
+    >
+      <template #optiongroup="{ option }">
+        <span class="font-bold">{{ option.libelle }}</span>
+      </template>
+      <template #option="{ option }">
+        <div class="flex w-full items-center gap-3 whitespace-normal">
+          <div class="flex min-w-0 flex-col">
+            <span><span v-if="roles[option.type]" class="sr-only">{{ roles[option.type] }} : </span>{{ option.libelle }}</span>
+            <!-- Texte atténué de la DA : celui du thème tombe à 4,34:1 sur l'option survolée. -->
+            <small v-if="option.detail || option.mail" class="break-all text-[#676D75] dark:text-[#A7ACB4]">
+              {{ [option.detail, option.mail].filter(Boolean).join(' · ') }}
+            </small>
+          </div>
+          <span v-if="option.mail" class="ml-auto flex shrink-0 items-center gap-1 text-sm">
+            <i class="pi pi-envelope" aria-hidden="true"></i>Écrire
+          </span>
         </div>
-        <span v-if="option.mail" class="ml-auto flex shrink-0 items-center gap-1 text-sm">
-          <i class="pi pi-envelope" aria-hidden="true"></i>Écrire
-        </span>
-      </div>
-    </template>
-    <template #empty>
-      <span>Aucun résultat pour « {{ requete }} »</span>
-    </template>
-  </AutoComplete>
+      </template>
+      <template #empty>
+        <span>Aucun résultat pour « {{ requete }} »</span>
+      </template>
+    </AutoComplete>
+  </IconField>
 </template>
 
 <style>
@@ -113,5 +116,10 @@ const ouvrir = ({ value }) => {
 
 .app-dark .app-search-overlay .p-autocomplete-option.p-focus {
   box-shadow: inset 4px 0 0 #8A9099;
+}
+
+/* L'icône du thème n'atteint que 2,56:1 sur le champ : on prend le texte atténué de la DA. */
+.p-iconfield .app-search-icon {
+  color: var(--p-text-muted-color);
 }
 </style>
