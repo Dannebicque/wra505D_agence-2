@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {grouperParJour, libelleJour, libelleNonLues, typeNotification} from './notifications.js';
+import {couleursNotification, grouperParJour, libelleJour, libelleNonLues, typeNotification} from './notifications.js';
 
 const maintenant = new Date(2026, 8, 24, 10, 0);
 
@@ -42,5 +42,15 @@ describe('typeNotification', () => {
     it('nomme chaque type et retombe sur une notification générique', () => {
         expect(typeNotification('message').libelle).toBe('Message');
         expect(typeNotification('inconnu')).toEqual({libelle: 'Notification', icone: 'pi pi-bell'});
+    });
+});
+
+describe('couleursNotification', () => {
+    it('prend les jetons du type, et ceux de « autre » pour un type inconnu', () => {
+        expect(couleursNotification('absence')['--notification-couleur']).toBe('var(--p-notification-absence-color)');
+        expect(couleursNotification('inconnu')).toEqual({
+            '--notification-fond': 'var(--p-notification-autre-background)',
+            '--notification-couleur': 'var(--p-notification-autre-color)',
+        });
     });
 });

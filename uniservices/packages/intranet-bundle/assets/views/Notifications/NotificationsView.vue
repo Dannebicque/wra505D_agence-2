@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { HeaderComponent, GlobalLoader } from '@components';
 import { useNotificationStore } from '@stores';
-import { TYPES_NOTIFICATION, grouperParJour, heure, libelleNonLues, typeNotification } from '@helpers/notifications.js';
+import { TYPES_NOTIFICATION, couleursNotification, grouperParJour, heure, libelleNonLues, typeNotification } from '@helpers/notifications.js';
 
 const store = useNotificationStore();
 
@@ -69,11 +69,11 @@ onMounted(() => store.charger());
       <h2 :id="`jour-${index}`" class="text-lg font-semibold mb-3">{{ groupe.jour }}</h2>
       <ul class="list-none p-0 m-0 flex flex-col gap-3">
         <li v-for="notification in groupe.notifications" :key="notification.cle">
-          <article :class="['notification', { 'notification--non-lue': !notification.lue }]">
-            <i :class="[typeNotification(notification.type).icone, 'text-xl mt-1']" aria-hidden="true"></i>
+          <article :class="['notification', { 'notification--non-lue': !notification.lue }]" :style="couleursNotification(notification.type)">
+            <span class="notification-icone" aria-hidden="true"><i :class="typeNotification(notification.type).icone"></i></span>
             <div class="flex-1 min-w-0">
               <p class="m-0 text-sm notification-meta">
-                {{ typeNotification(notification.type).libelle }} · {{ heure(new Date(notification.date)) }}
+                <span class="notification-type">{{ typeNotification(notification.type).libelle }}</span> · {{ heure(new Date(notification.date)) }}
                 <strong v-if="!notification.lue"> · Non lue</strong>
               </p>
               <h3 class="notification-titre">{{ notification.titre }}</h3>
@@ -114,6 +114,25 @@ onMounted(() => store.charger());
 
 .notification-meta {
   color: var(--text-color-secondary, #676d75);
+}
+
+/* La couleur double le type, écrit juste à côté : elle ne porte jamais seule l'information. */
+.notification-icone {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--notification-fond);
+  color: var(--notification-couleur);
+  font-size: 1.125rem;
+}
+
+.notification-type {
+  font-weight: 600;
+  color: var(--notification-couleur);
 }
 
 /* Les titres du thème sont faits pour une page : ici, un titre par notification. */
