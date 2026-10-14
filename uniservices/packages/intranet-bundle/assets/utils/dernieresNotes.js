@@ -3,7 +3,8 @@
  * chacune avec la matière dont elle dépend.
  */
 export function dernieresNotes(releve, nombre = 5) {
-    const evaluations = (releve?.semestres ?? []).flatMap(semestre =>
+    // Le relevé couvre toutes les années depuis 2026 : l'accueil ne parle que de l'année en cours.
+    const evaluations = (releve?.semestres ?? []).filter(semestre => semestre.actif !== false).flatMap(semestre =>
         semestre.ues.flatMap(ue =>
             ue.enseignements.flatMap(enseignement =>
                 enseignement.evaluations

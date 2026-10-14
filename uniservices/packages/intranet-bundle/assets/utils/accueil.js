@@ -61,7 +61,7 @@ export function tonNote(note) {
  * à la plus ancienne.
  */
 export function absencesARegler(releve) {
-    const absences = (releve?.semestres ?? []).flatMap(semestre => semestre.absences?.liste ?? []);
+    const absences = (releve?.semestres ?? []).filter(semestre => semestre.actif !== false).flatMap(semestre => semestre.absences?.liste ?? []);
 
     return {
         aJustifier: absences.filter(absence => ['aucune', 'refusee'].includes(absence.justification)),

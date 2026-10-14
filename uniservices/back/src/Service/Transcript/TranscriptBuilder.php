@@ -8,6 +8,7 @@ use App\Entity\Etudiant\EtudiantNote;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Scolarite\ScolEvaluation;
+use App\Entity\Structure\StructureSemestre;
 use App\Entity\Structure\StructureUe;
 use App\Entity\Users\Etudiant;
 use App\Enum\EtatEvaluationEnum;
@@ -16,8 +17,9 @@ use IntranetBundle\Entity\Etudiant\EtudiantAbsence;
 use IntranetBundle\Enum\EtatJustificatifEnum;
 
 /**
- * Relevé de l'année en cours d'un étudiant : UE, matières, évaluations, notes publiées, moyennes
- * provisoires et absences, semestre par semestre.
+ * Relevé d'un étudiant, semestre par semestre, pour chaque année tenue par uniServices : UE,
+ * matières, évaluations, notes publiées, moyennes provisoires, pénalités d'absence et absences.
+ * Les années reprises de la V3 n'ont pas de semestre structuré ni de notes : elles n'y sont pas.
  *
  * Une note n'est montrée que si son évaluation est publiée : c'est le seul mécanisme de
  * publication que le code utilise, le drapeau EtudiantNote::$publiee n'étant jamais renseigné.
@@ -35,21 +37,26 @@ final readonly class TranscriptBuilder
      */
     public function build(Etudiant $student): array
     {
-        $studentEnrollment = $this->entityManager->getRepository(EtudiantScolarite::class)
-            ->findOneBy(['etudiant' => $student, 'actif' => true]);
-        if (null === $studentEnrollment) {
-            return ['anneeUniversitaire' => null, 'semestres' => []];
-        }
+        $enrollments = $this->entityManager->getRepository(EtudiantScolarite::class)->findBy(['etudiant' => $student]);
+        usort($enrollments, static fn (EtudiantScolarite $a, EtudiantScolarite $b): int => ($a->getAnneeUniversitaire()?->getAnnee() ?? 0) <=> ($b->getAnneeUniversitaire()?->getAnnee() ?? 0));
 
+        $activeYear = null;
         $semesters = [];
-        foreach ($studentEnrollment->getScolariteSemestre() as $enrollmentSemester) {
-            if (null !== $enrollmentSemester->getSemestre()) {
-                $semesters[] = $this->semester($studentEnrollment, $enrollmentSemester);
+        foreach ($enrollments as $studentEnrollment) {
+            if (true === $studentEnrollment->isActif()) {
+                $activeYear = $studentEnrollment->getAnneeUniversitaire()?->getLibelle();
+            }
+            $enrollmentSemesters = $studentEnrollment->getScolariteSemestre()->toArray();
+            usort($enrollmentSemesters, static fn (EtudiantScolariteSemestre $a, EtudiantScolariteSemestre $b): int => ($a->getSemestre()?->getOrdreLmd() ?? 0) <=> ($b->getSemestre()?->getOrdreLmd() ?? 0));
+            foreach ($enrollmentSemesters as $enrollmentSemester) {
+                if (null !== $enrollmentSemester->getSemestre()) {
+                    $semesters[] = $this->semester($studentEnrollment, $enrollmentSemester);
+                }
             }
         }
 
         return [
-            'anneeUniversitaire' => $studentEnrollment->getAnneeUniversitaire()?->getLibelle(),
+            'anneeUniversitaire' => $activeYear,
             'semestres' => $semesters,
         ];
     }
@@ -73,6 +80,8 @@ final readonly class TranscriptBuilder
 
         $evaluations = $this->evaluationsByTeaching($teachingIds, $studentEnrollment);
         $grades = $this->gradesByEvaluation($enrollmentSemester);
+        $absences = $this->absences($enrollmentSemester);
+        $penalty = $this->penalty($semester);
 
         $teachingAverages = [];
         $courseRows = [];
@@ -99,6 +108,8 @@ final readonly class TranscriptBuilder
                     $evaluationRows[] = $row;
                 }
                 $teachingAverages[$id] ??= $this->calculator->teachingAverage($retainedGrades);
+                $penalizing = $absences['parEnseignement'][$id] ?? ['penalisantes' => 0, 'enAttente' => 0];
+                $penalizingCount = $penalty['active'] ? $penalizing['penalisantes'] : 0;
 
                 $teachings[] = [
                     'code' => $teaching->getCodeEnseignement(),
@@ -106,6 +117,10 @@ final readonly class TranscriptBuilder
                     'type' => $teaching->getType()->getLibelle(),
                     'coefficient' => $teachingCourse->getCoefficient(),
                     'moyenne' => $teachingAverages[$id],
+                    'absencesPenalisantes' => $penalizingCount,
+                    'absencesEnAttente' => $penalty['active'] ? $penalizing['enAttente'] : 0,
+                    'penalite' => $penalizingCount * $penalty['points'],
+                    'moyennePenalisee' => $this->calculator->penalizedAverage($teachingAverages[$id], $penalizingCount, $penalty['points']),
                     'evaluations' => $evaluationRows,
                 ];
             }
@@ -113,18 +128,49 @@ final readonly class TranscriptBuilder
             $courseRows[] = [
                 'numero' => $course->getNumero(),
                 'libelle' => $course->getLibelle(),
-                'moyenne' => $this->calculator->courseAverage(array_map(
-                    fn (array $row) => ['moyenne' => $row['moyenne'], 'coefficient' => $row['coefficient'] ?? 0.0],
-                    $teachings,
-                )),
+                'moyenne' => $this->courseAverage($teachings, 'moyennePenalisee'),
+                'moyenneSansPenalite' => $this->courseAverage($teachings, 'moyenne'),
                 'enseignements' => $teachings,
             ];
         }
 
         return [
+            'id' => $enrollmentSemester->getId(),
             'libelle' => $semester?->getLibelle(),
+            'anneeUniversitaire' => $studentEnrollment->getAnneeUniversitaire()?->getLibelle(),
+            'actif' => true === $studentEnrollment->isActif(),
+            'penalite' => $penalty,
             'ues' => $courseRows,
-            'absences' => $this->absences($enrollmentSemester),
+            'absences' => $absences['resume'],
+        ];
+    }
+
+    /**
+     * @param list<array<string, mixed>> $teachings
+     */
+    private function courseAverage(array $teachings, string $field): ?float
+    {
+        return $this->calculator->courseAverage(array_map(
+            static fn (array $row): array => [
+                'moyenne' => is_float($row[$field]) ? $row[$field] : null,
+                'coefficient' => is_float($row['coefficient']) ? $row['coefficient'] : 0.0,
+            ],
+            $teachings,
+        ));
+    }
+
+    /**
+     * Options du semestre, avec les valeurs par défaut du client quand elles n'ont jamais été réglées.
+     *
+     * @return array{active: bool, points: float}
+     */
+    private function penalty(?StructureSemestre $semester): array
+    {
+        $options = $semester?->getOpt() ?? [];
+
+        return [
+            'active' => (bool) ($options['opt_penalite_absence'] ?? true),
+            'points' => is_numeric($options['penalite_absence'] ?? null) ? (float) $options['penalite_absence'] : 0.5,
         ];
     }
 
@@ -209,7 +255,14 @@ final readonly class TranscriptBuilder
     }
 
     /**
-     * @return array{total: int, justifiees: int, injustifiees: int, enAttente: int, liste: list<array<string, ?string>>}
+     * Le résumé des absences du semestre, et pour chaque enseignement celles qui le pénalisent :
+     * toutes sauf les justifiées validées. Celles en attente de décision pénalisent jusqu'à
+     * l'acceptation du justificatif, comme en V3, et sont comptées à part pour le dire.
+     *
+     * @return array{
+     *     resume: array{total: int, justifiees: int, injustifiees: int, enAttente: int, liste: list<array<string, ?string>>},
+     *     parEnseignement: array<int, array{penalisantes: int, enAttente: int}>
+     * }
      */
     private function absences(EtudiantScolariteSemestre $enrollmentSemester): array
     {
@@ -226,6 +279,7 @@ final readonly class TranscriptBuilder
 
         $counters = ['validee' => 0, 'aucune' => 0, 'refusee' => 0, 'en_attente' => 0];
         $list = [];
+        $byTeaching = [];
         foreach ($absences as $absence) {
             $justification = match ($absence->getAbsenceJustificatif()?->getEtat()) {
                 EtatJustificatifEnum::VALIDE => 'validee',
@@ -235,21 +289,33 @@ final readonly class TranscriptBuilder
             };
             ++$counters[$justification];
             $event = $absence->getEvent();
+            $teachingId = $event?->getEnseignement()?->getId();
+            if (null !== $teachingId && 'validee' !== $justification) {
+                $byTeaching[$teachingId] ??= ['penalisantes' => 0, 'enAttente' => 0];
+                ++$byTeaching[$teachingId]['penalisantes'];
+                if ('en_attente' === $justification) {
+                    ++$byTeaching[$teachingId]['enAttente'];
+                }
+            }
             $matiere = trim(($event?->getCodeModule() ?? '').' '.($event?->getLibModule() ?? ''));
             $list[] = [
                 'debut' => $event?->getDebut()?->format(\DateTimeInterface::ATOM),
                 'fin' => $event?->getFin()?->format(\DateTimeInterface::ATOM),
                 'matiere' => $matiere !== '' && $matiere !== '0' ? $matiere : null,
+                'code' => $event?->getEnseignement()?->getCodeEnseignement(),
                 'justification' => $justification,
             ];
         }
 
         return [
-            'total' => count($list),
-            'justifiees' => $counters['validee'],
-            'injustifiees' => $counters['aucune'] + $counters['refusee'],
-            'enAttente' => $counters['en_attente'],
-            'liste' => $list,
+            'resume' => [
+                'total' => count($list),
+                'justifiees' => $counters['validee'],
+                'injustifiees' => $counters['aucune'] + $counters['refusee'],
+                'enAttente' => $counters['en_attente'],
+                'liste' => $list,
+            ],
+            'parEnseignement' => $byTeaching,
         ];
     }
 }

@@ -1,8 +1,7 @@
 <script setup>
 import {computed} from 'vue';
-import {formatDate, resultatEvaluation} from '@/utils/scolarite.js';
+import {formatDate, resultatEvaluation, tonEvaluation} from '@/utils/scolarite.js';
 import {dernieresNotes} from '@/utils/dernieresNotes.js';
-import {tonNote} from '@/utils/accueil.js';
 import {LigneAccueil} from '@components';
 
 // Le relevé de /api/me/scolarite, lu une fois par l'accueil pour ce bloc et pour « À faire ».
@@ -12,16 +11,6 @@ const props = defineProps({
 });
 
 const notes = computed(() => dernieresNotes(props.releve, 4));
-
-// La couleur reste discrète : la valeur seule se teinte, sous 10 ou à partir de 14 (décision du
-// 14/10). Un statut (absence, dispense) se lit en atténué, sauf l'absence qui compte 0.
-const tonValeur = (evaluation) => {
-  const resultat = resultatEvaluation(evaluation);
-  if (resultat.severite === 'danger') {
-    return 'faible';
-  }
-  return resultat.severite ? 'statut' : tonNote(evaluation.note);
-};
 </script>
 
 <template>
@@ -45,7 +34,7 @@ const tonValeur = (evaluation) => {
         <time :datetime="evaluation.date">{{ formatDate(evaluation.date) }}</time>
       </template>
       <template #valeur>
-        <span :class="['note', `note--${tonValeur(evaluation)}`]">{{ resultatEvaluation(evaluation).texte }}</span>
+        <span :class="['note', `note--${tonEvaluation(evaluation)}`]">{{ resultatEvaluation(evaluation).texte }}</span>
       </template>
     </LigneAccueil>
   </ul>
