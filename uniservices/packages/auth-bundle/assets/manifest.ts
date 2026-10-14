@@ -74,6 +74,7 @@ export default {
     },
     {
       path: '/auth/profil',
+      name: 'profil',
       component: AppProfil,
       props: route => ({
         logoUrl: LogoIut,

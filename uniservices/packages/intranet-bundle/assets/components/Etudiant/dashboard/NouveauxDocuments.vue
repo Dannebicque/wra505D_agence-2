@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {getWidgetDataByCodeService} from '@requests';
-import LigneAccueil from './LigneAccueil.vue';
+import {LigneAccueil} from '@components';
 
 const AFFICHES = 4;
 // La forme de l'icône dit le type de fichier ; la couleur reste aux cours (TB-11).
