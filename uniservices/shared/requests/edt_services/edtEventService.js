@@ -23,10 +23,11 @@ const getEdtEventsService = async (params, scope ='', showToast = false) => {
 }
 
 // semaine : un jour de la semaine voulue, au format AAAA-MM-JJ.
-const getMonEmploiDuTempsService = async (semaine) => {
+// enArrierePlan : lecture d'avance, dont l'échec reste silencieux au lieu d'ouvrir la page 500.
+const getMonEmploiDuTempsService = async (semaine, enArrierePlan = false) => {
     return await apiCall(
         api.get,
-        ['/api/me/emploi-du-temps', { params: { semaine } }],
+        ['/api/me/emploi-du-temps', { params: { semaine }, ...(enArrierePlan ? { pageErreurServeur: false } : {}) }],
         'Emploi du temps récupéré avec succès',
         'Erreur lors de la récupération de l\'emploi du temps',
         false

@@ -32,7 +32,7 @@ describe('Agenda de l\'étudiant', () => {
 
     it('affiche les cours de ses groupes', () => {
         cy.get('.vuecal__event', { timeout: 15000 }).should('have.length.greaterThan', 0);
-        cy.contains('Une erreur est survenue lors du chargement de l\'emploi du temps').should('not.exist');
+        cy.contains('L\'emploi du temps n\'a pas pu être chargé').should('not.exist');
     });
 
     it('atteint un cours au clavier, ouvre son détail et rend le focus en le fermant', () => {
@@ -159,6 +159,54 @@ describe('Semaine de l\'étudiant en bureau', () => {
         cy.get('.cours-carte').should('not.exist');
     });
 
+    it('garde la semaine et la vue dans l\'adresse, rechargement compris', () => {
+        cy.location('search').should('eq', '?affichage=semaine');
+        cy.get('button[aria-label="Semaine suivante"]').click();
+        cy.location('search').should('match', /^\?affichage=semaine&date=\d{4}-\d{2}-\d{2}$/);
+        cy.get('.edt-barre__titre').invoke('text').then((titre) => {
+            cy.reload();
+            cy.get('.cours-carte', { timeout: 15000 }).should('exist');
+            cy.get('.edt-barre__titre').should('have.text', titre);
+        });
+        cy.get('button[aria-label="Aujourd\'hui"]').click();
+        cy.location('search').should('eq', '?affichage=semaine');
+    });
+
+    it('retient la vue Jour d\'une visite à l\'autre', () => {
+        cy.contains('.p-togglebutton', 'Jour').click();
+        cy.location('search').should('eq', '?affichage=jour');
+        cy.visit('/app/intranet/agenda');
+        cy.get('.vuecal--day-view', { timeout: 15000 }).should('exist');
+        cy.contains('.p-togglebutton', 'Jour').should('have.attr', 'aria-pressed', 'true');
+    });
+
+    // Une erreur 500 ouvre la page d'erreur de toute l'application : « Réessayer » sert quand le
+    // réseau tombe, le cas du téléphone dans le tramway.
+    it('propose de réessayer quand le réseau tombe', () => {
+        let enPanne = true;
+        cy.intercept('GET', '**/api/me/emploi-du-temps?semaine=*', (req) => {
+            if (enPanne) {
+                req.reply({ forceNetworkError: true });
+            }
+        });
+        // La semaine suivante est déjà lue d'avance : c'est celle d'après qui tombe en panne.
+        cy.get('button[aria-label="Semaine suivante"]').click();
+        cy.contains('[role="status"]', 'Semaine du');
+        cy.get('button[aria-label="Semaine suivante"]').click();
+        cy.contains('[role="alert"]', 'L\'emploi du temps n\'a pas pu être chargé').should('be.visible');
+        cy.location('search').invoke('match', /date=([\d-]+)/).its(1).then((semaine) => {
+            cy.then(() => {
+                enPanne = false;
+            });
+            cy.contains('button', 'Réessayer').should(($bouton) => {
+                expect($bouton[0].getBoundingClientRect().height).to.be.at.least(44);
+            }).click();
+            cy.get('[role="alert"]').should('not.exist');
+            cy.get('.vuecal').should('exist');
+            cy.location('search').should('contain', `date=${semaine}`);
+        });
+    });
+
     it('réserve dans ses options la place de la synchronisation iCal, pas encore active', () => {
         cy.get('button[aria-label="Plus d\'options"]').click();
         cy.contains('#edt-options [role="menuitem"]', 'Synchroniser avec mon agenda').should('have.attr', 'aria-disabled', 'true')
@@ -199,6 +247,14 @@ describe('Semaine de l\'étudiant en bureau', () => {
             const jeton = win.getComputedStyle($carte[0].ownerDocument.documentElement).getPropertyValue('--p-seance-cm-background').trim();
             expect(rapport($carte[0].ownerDocument, win.getComputedStyle($carte[0]).backgroundColor, jeton)).to.be.closeTo(1, 0.01);
         });
+    });
+
+    it('reste sur la semaine affichée quand la lecture d\'avance échoue sur le serveur', () => {
+        cy.intercept('GET', '**/api/me/emploi-du-temps?semaine=*', { statusCode: 500 }).as('avance');
+        cy.get('button[aria-label="Semaine suivante"]').click();
+        cy.wait('@avance');
+        cy.location('pathname').should('eq', '/app/intranet/agenda');
+        cy.get('.cours-carte').should('exist');
     });
 
     it('lit chaque carte à 4,5:1 au moins, en clair comme en sombre', () => {

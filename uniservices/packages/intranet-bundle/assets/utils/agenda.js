@@ -162,3 +162,27 @@ export function saisonDeVacances(lundi) {
     const mois = Number(lundi.split('-')[1]) - 1;
     return SAISONS_DE_VACANCES.find(({mois: liste}) => liste.includes(mois))?.saison ?? 'ete';
 }
+
+// L'adresse parle français, comme le reste de l'intranet : « ?affichage=semaine&date=2026-10-14 ».
+// Pas « vue » : en développement, Vite prend toute adresse en « ?vue » pour un morceau de composant.
+const VUES_ADRESSE = {day: 'jour', week: 'semaine'};
+
+export function lireAdresseAgenda(query) {
+    const vue = Object.keys(VUES_ADRESSE).find((id) => VUES_ADRESSE[id] === query.affichage) ?? null;
+    // Un paramètre répété arrive en tableau : seul un texte est lu.
+    const morceaux = typeof query.date === 'string' ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(query.date) : null;
+    if (!morceaux) {
+        return {date: null, vue};
+    }
+    const [annee, mois, jour] = morceaux.slice(1).map(Number);
+    const date = new Date(annee, mois - 1, jour);
+    // new Date(2026, 1, 31) donne le 3 mars : une date impossible est ignorée, pas corrigée.
+    return {date: date.getMonth() === mois - 1 && date.getDate() === jour ? date : null, vue};
+}
+
+export function adresseAgenda({date, vue}) {
+    return {
+        ...(vue ? {affichage: VUES_ADRESSE[vue]} : {}),
+        ...(date ? {date} : {}),
+    };
+}
