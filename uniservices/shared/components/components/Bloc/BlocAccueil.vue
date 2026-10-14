@@ -23,10 +23,13 @@ const id = useId();
         '--bloc-teinte-couleur': `var(--p-seance-${teinte}-color)`,
       } : null"
   >
-    <h2 :id="id" class="bloc-accueil__titre">
-      <span class="bloc-accueil__icone" aria-hidden="true"><i :class="icone"></i></span>
-      {{ titre }}
-    </h2>
+    <div class="bloc-accueil__entete">
+      <h2 :id="id" class="bloc-accueil__titre">
+        <span class="bloc-accueil__icone" aria-hidden="true"><i :class="icone"></i></span>
+        {{ titre }}
+      </h2>
+      <slot name="actions"/>
+    </div>
     <slot/>
     <RouterLink v-if="lien" :to="lien" class="bloc-accueil__lien">
       {{ texteLien }}
@@ -46,6 +49,14 @@ const id = useId();
   background: var(--p-content-background);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px -4px rgb(0 0 0 / 0.06);
   overflow: hidden;
+}
+
+.bloc-accueil__entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
 }
 
 .bloc-accueil__titre {
