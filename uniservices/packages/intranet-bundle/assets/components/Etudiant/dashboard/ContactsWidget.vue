@@ -86,10 +86,12 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
   color: var(--p-text-muted-color);
 }
 
-/* Une pastille de 32 px ; la zone de toucher garde 44 px et plus, débordant de 7 px en haut et en bas. */
+/* Une pastille de 32 px, qui s'étire sur la largeur de la carte ; la zone de toucher garde 44 px et
+   plus, débordant de 7 px en haut et en bas. */
 .contact__action {
   position: relative;
   display: inline-flex;
+  flex: 1 1 8rem;
   align-items: center;
   gap: 0.375rem;
   min-height: 2.25rem;
