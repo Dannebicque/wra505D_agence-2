@@ -112,7 +112,7 @@ const computedMenuItems = computed(() => {
 
 <template>
   <div class="layout-wrapper" :class="containerClass">
-    <app-topbar :app-name :logo-url></app-topbar>
+    <app-topbar :logo-url></app-topbar>
     <app-sidebar :menu-items="computedMenuItems"></app-sidebar>
     <div class="layout-main-container">
       <div class="flex justify-between items-center">

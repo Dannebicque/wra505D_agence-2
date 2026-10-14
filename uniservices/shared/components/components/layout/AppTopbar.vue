@@ -148,10 +148,6 @@ const fetchData = async () => {
 };
 
 const props = defineProps({
-  appName: {
-    type: String,
-    required: true
-  },
   logoUrl: {
     type: String,
     required: false
@@ -370,11 +366,11 @@ const selectAnneeUniversitaire = (annee) => {
         <i class="pi pi-bars" aria-hidden="true"></i>
       </button>
 
-      <!-- L'étudiant a un seul menu : le nom du module ne lui apprend rien, le logo mène à l'accueil. -->
-      <router-link to="/" class="layout-topbar-logo" :aria-label="estEtudiant ? 'Intranet, accueil' : undefined">
+      <!-- Le nom du module ne dit rien de plus que le menu : le logo et le nom de l'application mènent à l'accueil. -->
+      <router-link to="/" class="layout-topbar-logo" aria-label="Unitranet, accueil">
         <LogoIut v-if="logoUrl === logoIutUrl" class="rounded-xl p-2" />
-        <Logo v-else :logo-url="logoUrl" alt="logo" class="rounded-xl p-2" /> <span v-if="!estEtudiant" class="text-lg">{{ appName }}</span>
-        <span v-else class="layout-topbar-logo-nom"><LogoNom /></span>
+        <Logo v-else :logo-url="logoUrl" alt="" class="rounded-xl p-2" />
+        <span class="layout-topbar-logo-nom"><LogoNom /></span>
       </router-link>
     </div>
 
