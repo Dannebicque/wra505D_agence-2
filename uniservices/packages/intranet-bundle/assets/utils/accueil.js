@@ -1,4 +1,5 @@
 import {parseEdtDate} from './prochainCours.js';
+import {saisonDeVacances} from './agenda.js';
 
 const minuit = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
@@ -93,5 +94,38 @@ export function chargeDeLaSemaine(cours, lundi) {
         }
     }
     return jours;
+}
+
+const NOMS_DE_VACANCES = {
+    toussaint: 'de la Toussaint',
+    noel: 'de Noël',
+    hiver: 'd\'hiver',
+    printemps: 'de printemps',
+    ete: 'd\'été',
+};
+
+/**
+ * Prochaines vacances d'après la charge des semaines de /api/me/emploi-du-temps/semaines : la
+ * première semaine à venir sans cours, suivie d'une semaine de cours (sinon c'est la fin de
+ * l'année). Elles commencent le samedi qui la précède.
+ */
+export function prochainesVacances(semaines, aujourdhui) {
+    const lundiCourant = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth(), aujourdhui.getDate() - ((aujourdhui.getDay() + 6) % 7));
+    const triees = [...semaines].sort((a, b) => a.lundi.localeCompare(b.lundi));
+    const indice = triees.findIndex((semaine, i) => joursAvant(semaine.lundi, lundiCourant) > 0
+        && semaine.minutes === 0
+        && triees.slice(i + 1).some(suivante => suivante.minutes > 0));
+    if (indice === -1) {
+        return null;
+    }
+
+    const lundi = triees[indice].lundi;
+    const [annee, mois, jour] = lundi.split('-').map(Number);
+    const samedi = new Date(annee, mois - 1, jour - 2);
+    return {
+        debut: samedi,
+        jours: Math.max(0, Math.round((samedi - minuit(aujourdhui)) / 86400000)),
+        nom: NOMS_DE_VACANCES[saisonDeVacances(lundi)],
+    };
 }
 

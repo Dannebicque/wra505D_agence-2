@@ -5,6 +5,7 @@ import {
     joursAvant,
     libelleDelai,
     libelleJour,
+    prochainesVacances,
     premierCoursApres,
     tonNote,
 } from './accueil.js';
@@ -180,6 +181,36 @@ describe('chargeDeLaSemaine', () => {
 
     it('ignore un cours aux dates illisibles', () => {
         expect(chargeDeLaSemaine([{debut: null, fin: null}], lundi).every(jour => jour.minutes === 0)).toBe(true);
+    });
+});
+
+describe('prochainesVacances', () => {
+    const semaine = (lundi, minutes) => ({lundi, minutes});
+    const annee = [
+        semaine('2026-10-12', 1800),
+        semaine('2026-10-19', 1500),
+        semaine('2026-10-26', 0),
+        semaine('2026-11-02', 1600),
+    ];
+
+    it('trouve la première semaine sans cours à venir, et la fait commencer au samedi d\'avant', () => {
+        const vacances = prochainesVacances(annee, new Date(2026, 9, 14, 10, 0));
+        expect(vacances.debut).toEqual(new Date(2026, 9, 24));
+        expect(vacances.jours).toBe(10);
+        expect(vacances.nom).toBe('de la Toussaint');
+    });
+
+    it('ignore la semaine en cours, même sans cours', () => {
+        const vacances = prochainesVacances([semaine('2026-10-12', 0), ...annee.slice(1)], new Date(2026, 9, 14));
+        expect(vacances.debut).toEqual(new Date(2026, 9, 24));
+    });
+
+    it('ne prend pas la fin de l\'année pour des vacances', () => {
+        expect(prochainesVacances([semaine('2026-10-12', 1800), semaine('2026-10-19', 0)], new Date(2026, 9, 14))).toBeNull();
+    });
+
+    it('lit les semaines dans l\'ordre, quel que soit celui de l\'API', () => {
+        expect(prochainesVacances([...annee].reverse(), new Date(2026, 9, 14)).jours).toBe(10);
     });
 });
 

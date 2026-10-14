@@ -63,8 +63,9 @@ const attributs = computed(() => {
 
 .ligne__corps {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.25rem 0.75rem;
   min-height: 44px;
   margin-inline: -0.5rem;
   padding: 0.375rem 0.5rem;
@@ -97,7 +98,7 @@ const attributs = computed(() => {
 .ligne__texte {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 1 1 11rem;
   min-width: 0;
 }
 
@@ -112,9 +113,11 @@ const attributs = computed(() => {
   color: var(--p-text-muted-color);
 }
 
+/* Faute de place, la valeur passe sous le libellé, toujours à droite, plutôt que d'être coupée. */
 .ligne__valeur {
   flex-shrink: 0;
-  max-width: 45%;
+  max-width: 100%;
+  margin-left: auto;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;

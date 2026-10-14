@@ -58,15 +58,25 @@ const finDeJournee = computed(() => {
       <span v-if="semaine" class="bienvenue__formation"><br>{{ semaine }}</span>
     </p>
 
-    <div v-if="journee.cours.value && totalSemaine > 0" class="bienvenue__semaine">
-      <p class="bienvenue__semaine-titre">Cette semaine · {{ formatDelai(totalSemaine) }} de cours</p>
-      <ol class="bienvenue__jours">
-        <li v-for="jour in jours" :key="jour.nom" :class="['bienvenue__jour', `bienvenue__jour--${jour.etat}`]">
-          <span class="bienvenue__barre" aria-hidden="true"><span :style="{ height: jour.hauteur }"></span></span>
-          <span class="bienvenue__initiale" aria-hidden="true">{{ jour.initiale }}</span>
-          <span class="sr-only">{{ jour.nom }} : {{ jour.minutes ? formatDelai(jour.minutes) : 'pas de cours' }}{{ jour.etat === 'aujourdhui' ? ', aujourd\'hui' : '' }}</span>
-        </li>
-      </ol>
+    <div class="bienvenue__milieu">
+      <figure v-if="journee.cours.value && totalSemaine > 0" class="bienvenue__semaine">
+        <ol class="bienvenue__jours">
+          <li v-for="jour in jours" :key="jour.nom" :class="['bienvenue__jour', `bienvenue__jour--${jour.etat}`]">
+            <span class="bienvenue__barre" aria-hidden="true"><span :style="{ height: jour.hauteur }"></span></span>
+            <span class="bienvenue__initiale" aria-hidden="true">{{ jour.initiale }}</span>
+            <span class="sr-only">{{ jour.nom }} : {{ jour.minutes ? formatDelai(jour.minutes) : 'pas de cours' }}{{ jour.etat === 'aujourdhui' ? ', aujourd\'hui' : '' }}</span>
+          </li>
+        </ol>
+        <figcaption class="bienvenue__legende">Cette semaine · {{ formatDelai(totalSemaine) }} de cours</figcaption>
+      </figure>
+
+      <p v-if="journee.vacances.value" class="bienvenue__vacances">
+        <span class="bienvenue__vacances-icone" aria-hidden="true"><i class="pi pi-sun"></i></span>
+        <span>
+          Vacances {{ journee.vacances.value.nom }}
+          <strong>{{ journee.vacances.value.jours > 1 ? `dans ${journee.vacances.value.jours} jours` : (journee.vacances.value.jours === 1 ? 'demain' : 'aujourd\'hui') }}</strong>
+        </span>
+      </p>
     </div>
 
     <p v-if="journee.hasError.value" class="bienvenue__infos">L'emploi du temps est indisponible pour le moment.</p>
@@ -207,30 +217,69 @@ const finDeJournee = computed(() => {
   line-height: 1.35;
 }
 
-.bienvenue__semaine {
+/* Le milieu de la carte, centré entre le bonjour et les repères du moment. */
+.bienvenue__milieu {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
   margin: auto 0;
   padding: 1.5rem 0 0.5rem;
-  max-width: 20rem;
 }
 
-.bienvenue__semaine-titre {
-  margin: 0 0 0.625rem;
-  font-size: 0.9375rem;
-  color: var(--p-primary-200);
+.bienvenue__semaine {
+  width: 100%;
+  max-width: 17rem;
+  margin: 0;
 }
 
 .bienvenue__jours {
   display: flex;
+  justify-content: center;
   gap: 0.625rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.bienvenue__legende {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--p-primary-200);
+}
+
+/* Le jaune de l'accent porte du texte violet (5,29:1) : la touche estivale de la carte. */
+.bienvenue__vacances {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0.375rem 1rem 0.375rem 0.375rem;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  background: color-mix(in srgb, #FFFFFF 12%, transparent);
+}
+
+.bienvenue__vacances strong {
+  font-weight: 700;
+}
+
+.bienvenue__vacances-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--accent-color);
+  color: var(--p-primary-500);
+}
+
 .bienvenue__jour {
   display: flex;
-  flex: 1;
+  flex: 0 1 2.25rem;
   flex-direction: column;
   align-items: center;
   gap: 0.375rem;
@@ -292,7 +341,7 @@ const finDeJournee = computed(() => {
   }
 
   .bienvenue__formation,
-  .bienvenue__semaine {
+  .bienvenue__milieu {
     display: none;
   }
 
