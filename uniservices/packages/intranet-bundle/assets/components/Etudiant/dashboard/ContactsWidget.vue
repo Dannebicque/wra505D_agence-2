@@ -74,8 +74,8 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
 .contact {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-content: center;
+  gap: 0.875rem;
   padding: 1rem 1.125rem;
   border-radius: 14px;
   border: 1px solid var(--p-content-border-color);
