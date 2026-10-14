@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, watch} from 'vue';
+import {computed, nextTick, ref, watch} from 'vue';
 import {deposerJustificatifService} from '@requests';
 import {showSuccess} from '@helpers/toast.js';
 import {creneauAbsence, dateHeureLocale, erreurPiece, periodeAbsence, PIECE_JUSTIFICATIVE} from '@/utils/scolarite.js';
@@ -61,11 +61,11 @@ const deposerSurZone = (evenement) => {
   choisirPiece(evenement.dataTransfer?.files?.[0]);
 };
 
-const retirerPiece = () => {
+// La zone de dépôt revient à la place du bouton « Retirer » : le focus la suit.
+const retirerPiece = async () => {
   piece.value = null;
-  if (champPiece.value) {
-    champPiece.value.value = '';
-  }
+  await nextTick();
+  champPiece.value?.focus();
 };
 
 const taille = (octets) => {
@@ -124,6 +124,7 @@ const envoyer = async () => {
       v-model:visible="visible"
       position="right"
       header="Justifier une absence"
+      aria-label="Justifier une absence"
       class="justificatif"
       :style="{ width: 'min(32rem, 100vw)' }"
       :block-scroll="true"
@@ -147,7 +148,7 @@ const envoyer = async () => {
                 hour-format="24"
                 date-format="dd/mm/yy"
                 :invalid="!!erreurs.debut"
-                :aria-describedby="erreurs.debut ? 'justificatif-debut-erreur' : undefined"
+                :pt="{ pcInputText: { root: { 'aria-describedby': erreurs.debut ? 'justificatif-debut-erreur' : undefined } } }"
                 fluid
             />
             <small v-if="erreurs.debut" id="justificatif-debut-erreur" class="erreur">{{ erreurs.debut }}</small>
@@ -161,7 +162,7 @@ const envoyer = async () => {
                 hour-format="24"
                 date-format="dd/mm/yy"
                 :invalid="!!erreurs.fin"
-                :aria-describedby="erreurs.fin ? 'justificatif-fin-erreur' : undefined"
+                :pt="{ pcInputText: { root: { 'aria-describedby': erreurs.fin ? 'justificatif-fin-erreur' : undefined } } }"
                 fluid
             />
             <small v-if="erreurs.fin" id="justificatif-fin-erreur" class="erreur">{{ erreurs.fin }}</small>
@@ -178,7 +179,7 @@ const envoyer = async () => {
               type="button"
               :class="['suggestion', { 'suggestion--choisie': motif === suggestion }]"
               :aria-pressed="motif === suggestion"
-              @click="motif = suggestion"
+              @click="motif = motif === suggestion ? '' : suggestion"
           >{{ suggestion }}</button>
         </div>
         <Textarea
@@ -207,17 +208,18 @@ const envoyer = async () => {
           <i class="pi pi-cloud-upload depot__icone" aria-hidden="true"></i>
           <span class="depot__texte">Glissez le fichier ici ou <span class="depot__lien">choisissez-le</span></span>
           <span class="depot__aide">PDF, JPG ou PNG, 5 Mo au plus</span>
+          <!-- Dans la zone : son focus clavier la fait ressortir (focus-within). -->
+          <input
+              id="justificatif-piece"
+              ref="champPiece"
+              type="file"
+              class="sr-only"
+              :accept="PIECE_JUSTIFICATIVE.types.join(',')"
+              aria-labelledby="justificatif-piece-titre"
+              :aria-describedby="erreurs.fichier ? 'justificatif-piece-erreur' : undefined"
+              @change="choisirPiece($event.target.files?.[0])"
+          />
         </label>
-        <input
-            id="justificatif-piece"
-            ref="champPiece"
-            type="file"
-            class="sr-only"
-            :accept="PIECE_JUSTIFICATIVE.types.join(',')"
-            aria-labelledby="justificatif-piece-titre"
-            :aria-describedby="erreurs.fichier ? 'justificatif-piece-erreur' : undefined"
-            @change="choisirPiece($event.target.files?.[0])"
-        />
         <div v-if="piece" :class="['piece', { 'piece--erreur': erreurs.fichier }]">
           <i :class="['pi', piece.type === 'application/pdf' ? 'pi-file-pdf' : 'pi-image', 'piece__icone']" aria-hidden="true"></i>
           <span class="piece__texte">
@@ -322,8 +324,7 @@ const envoyer = async () => {
 }
 
 .suggestion:focus-visible,
-.depot:focus-within,
-#justificatif-piece:focus-visible + .piece {
+.depot:focus-within {
   outline: 2px solid var(--p-primary-color);
   outline-offset: 2px;
 }
