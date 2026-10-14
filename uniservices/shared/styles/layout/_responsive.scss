@@ -9,6 +9,29 @@
     }
 }
 
+@keyframes logo-nom-trace {
+    from {
+        stroke-dashoffset: 1;
+        opacity: 0;
+    }
+    1% {
+        opacity: 1;
+    }
+    to {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
+}
+
+@keyframes logo-nom-pose {
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
 @media (min-width: 992px) {
     .layout-wrapper {
         background-color: var(--surface-card);
@@ -82,8 +105,27 @@
                 border-left: solid .5px var(--primary-color);
             }
 
+            // Le nom se dessine chaque fois que le menu se déplie : l'élément n'existe à l'écran
+            // qu'à ce moment, ce qui relance l'animation. Les traits se succèdent dans l'ordre
+            // des lettres.
             &:not(.layout-static-inactive) .layout-topbar-logo-nom {
-                display: inline;
+                display: inline-flex;
+
+                .logo-nom-trait {
+                    stroke-dasharray: 1;
+                    animation: logo-nom-trace 0.3s ease-out calc(var(--rang) * 0.07s) both;
+                }
+
+                .logo-nom-point {
+                    animation: logo-nom-pose 0.25s ease-out calc(var(--rang) * 0.07s) both;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .logo-nom-trait,
+                    .logo-nom-point {
+                        animation: none;
+                    }
+                }
             }
 
             // Replié, le menu reste une colonne d'icônes : les libellés sont masqués à l'écran
