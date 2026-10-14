@@ -284,11 +284,9 @@ donner l'URL de comparaison.
 
 ## Ce qu'il reste à faire, dans l'ordre
 
-- **C17, emploi du temps de référence**, priorité de l'équipe depuis le 13/10/2026 : C17.0 à C17.3
-  faits, C17.4 à C17.6 en partie (détail dans la fiche C17 du backlog). Reste : la journée en liste
-  sur téléphone avec bandeau des jours et balayage, la date dans l'URL, « Réessayer » sur erreur,
-  la feuille du bas et les liens vers la matière, les widgets de l'accueil (C17.7), puis
-  l'abonnement iCal, dont le menu d'options garde la place.
+- **C17, emploi du temps de référence** : terminé, hors abonnement iCal (le menu d'options lui garde
+  sa place) et liens vers la matière, qui viendront avec P1. Le mobile en liste et la feuille du
+  bas sont écartés (LCS, 14/10/2026).
 0. **Fausse base V3** pour exécuter les migrateurs de la reprise E21 : les 13 lots sont mergés,
    mais aucun migrateur n'a encore tourné sur des données V3.
 1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture
@@ -429,6 +427,12 @@ Cinq failles à leur signaler, car elles sont dans leur code de production :
   retirer les commentaires `(DC2Type:…)` des colonnes. DBAL 4 ne les lit plus : ils sont
   inoffensifs. `doctrine:schema:update --force` les retire une fois pour toutes, sans toucher aux
   données ; recharger les fixtures a le même effet.
+- **Une réponse 500 ouvre la page d'erreur de toute l'application** (`shared/helpers/axios.js`). Un
+  écran ne peut proposer « Réessayer » que sur une perte de réseau ou une erreur 4xx. Une requête
+  lancée sans que l'utilisateur l'ait demandée (lecture d'avance) passe `pageErreurServeur: false`
+  dans sa configuration axios.
+- **Pas de paramètre `vue` dans une adresse du front** : en développement, Vite prend toute
+  adresse en `?vue` pour un morceau de composant et répond une erreur. L'agenda dit `affichage`.
 - **Tester l'API sans mot de passe** : générer un jeton en console, puis l'envoyer en
   `Authorization: Bearer`.
   `php bin/console lexik:jwt:generate-token -c 'App\Entity\Users\Etudiant' etudiant`
