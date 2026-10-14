@@ -38,7 +38,7 @@ const pastille = (evaluation) => PASTILLES[tonNote(evaluation.note)];
         <span class="flex flex-col">
           <span class="font-semibold">{{ evaluation.libelle }}</span>
           {{ ' ' }}
-          <span class="text-sm">
+          <span>
             {{ evaluation.matiere.code }} {{ evaluation.matiere.libelle }},
             <time :datetime="evaluation.date">{{ formatDate(evaluation.date) }}</time>
           </span>
@@ -64,7 +64,7 @@ const pastille = (evaluation) => PASTILLES[tonNote(evaluation.note)];
 .note {
   padding: 0 0.625rem;
   border-radius: 999px;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   line-height: 1.5rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

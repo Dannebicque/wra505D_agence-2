@@ -117,19 +117,19 @@ const pluriel = (nombre, mot) => `${nombre} ${mot}${nombre > 1 ? 's' : ''}`;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.375rem;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
 .a-faire__detail {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   color: var(--p-text-color);
 }
 
 .a-faire__pastille {
   padding: 0 0.5rem;
   border-radius: 999px;
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   line-height: 1.25rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;

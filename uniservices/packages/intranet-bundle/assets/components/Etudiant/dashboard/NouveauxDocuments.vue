@@ -112,12 +112,12 @@ const jourCourt = (valeur) => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
 .documents__detail {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   color: var(--p-text-muted-color);
 }
 </style>

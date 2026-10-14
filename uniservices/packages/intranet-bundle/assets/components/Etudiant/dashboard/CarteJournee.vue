@@ -230,7 +230,7 @@ const styleSeance = (seance) => {
 .journee__date {
   position: relative;
   margin: 0 0 0.875rem;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-primary-200);
 }
 
@@ -253,7 +253,7 @@ const styleSeance = (seance) => {
   margin-bottom: 0.375rem !important;
   padding: 0 0.625rem;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   line-height: 1.375rem;
   background: var(--accent-color);
@@ -272,7 +272,7 @@ const styleSeance = (seance) => {
   align-items: center;
   gap: 0.25rem;
   margin-top: 0.25rem !important;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-primary-100);
 }
 
@@ -280,7 +280,7 @@ const styleSeance = (seance) => {
   margin-top: 0.75rem !important;
   padding-top: 0.625rem;
   border-top: 1px solid color-mix(in srgb, #FFFFFF 22%, transparent);
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-primary-200);
 }
 
@@ -309,7 +309,7 @@ const styleSeance = (seance) => {
 }
 
 .journee__heure {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
   color: var(--p-text-muted-color);
 }
@@ -322,14 +322,14 @@ const styleSeance = (seance) => {
   min-width: 0;
   padding: 0.4375rem 0.75rem;
   border-radius: 14px;
-  font-size: 0.875rem;
+  font-size: 1rem;
   background: var(--seance-fond);
 }
 
 .journee__type {
   padding: 0 0.5rem;
   border-radius: 999px;
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   font-weight: 700;
   line-height: 1.25rem;
   letter-spacing: 0.03em;
@@ -360,7 +360,7 @@ const styleSeance = (seance) => {
 
 .journee__maintenant {
   margin-left: auto;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--seance-couleur);
 }
@@ -379,23 +379,22 @@ const styleSeance = (seance) => {
 }
 
 .journee__lien {
-  display: flex;
+  align-self: flex-end;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
   min-height: 44px;
   margin-top: auto;
-  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  padding: 0 0.25rem 0 0.75rem;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
-  background: var(--p-seance-cm-background);
   color: var(--p-seance-cm-color);
   transition: background-color 150ms ease;
 }
 
 .journee__lien:hover {
-  background: color-mix(in srgb, var(--p-seance-cm-pill-background) 14%, var(--p-seance-cm-background));
+  background: var(--p-seance-cm-background);
 }
 
 .journee__lien:focus-visible {
@@ -403,18 +402,17 @@ const styleSeance = (seance) => {
   outline-offset: 2px;
 }
 
-/* La flèche dans une pastille, comme les types de séance de l'agenda : elle glisse au survol. */
+/* Une pastille pâle autour de la flèche, aux couleurs du bloc : présente sans peser. */
 .journee__fleche {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.75rem;
+  height: 1.75rem;
   flex-shrink: 0;
   border-radius: 999px;
   font-size: 0.75rem;
-  background: var(--p-seance-cm-pill-background);
-  color: var(--p-seance-cm-pill-color);
+  background: var(--p-seance-cm-background);
   transition: transform 150ms ease;
 }
 

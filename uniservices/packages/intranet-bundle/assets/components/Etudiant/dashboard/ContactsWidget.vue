@@ -52,7 +52,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
             Site web<span class="sr-only"> du département {{ departement.libelle }}, nouvel onglet</span>
           </a>
         </div>
-        <p v-else class="m-0! text-sm">Coordonnées non renseignées</p>
+        <p v-else class="m-0!">Coordonnées non renseignées</p>
       </li>
     </ul>
   </div>
@@ -86,7 +86,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
 }
 
 .contact__sien {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--p-seance-cm-color);
 }
@@ -95,7 +95,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
   gap: 0.375rem;
   padding: 0.25rem 0.875rem;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 1rem;
   background: var(--p-content-background);
   color: var(--p-text-color);
   border: 1px solid var(--ui-border-color);

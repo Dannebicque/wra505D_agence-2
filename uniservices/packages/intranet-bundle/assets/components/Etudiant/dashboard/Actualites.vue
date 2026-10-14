@@ -92,7 +92,7 @@ const jourCourt = (valeur) => (valeur ? new Date(valeur).toLocaleDateString('fr-
 .actualites__source {
   padding: 0 0.5rem;
   border-radius: 999px;
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   font-weight: 700;
   line-height: 1.25rem;
   letter-spacing: 0.03em;
@@ -110,7 +110,7 @@ const jourCourt = (valeur) => (valeur ? new Date(valeur).toLocaleDateString('fr-
 }
 
 .actualites__titre {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -127,7 +127,7 @@ const jourCourt = (valeur) => (valeur ? new Date(valeur).toLocaleDateString('fr-
 }
 
 .actualites__date {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   color: var(--p-text-muted-color);
 }
 </style>

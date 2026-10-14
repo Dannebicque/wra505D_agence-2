@@ -21,8 +21,6 @@ const id = useId();
       :style="{
         '--lien-background': `var(--p-seance-${teinte}-background)`,
         '--lien-color': `var(--p-seance-${teinte}-color)`,
-        '--lien-pill-background': `var(--p-seance-${teinte}-pill-background)`,
-        '--lien-pill-color': `var(--p-seance-${teinte}-pill-color)`,
       }"
   >
     <h2 :id="id" class="bloc-accueil__titre">
@@ -73,27 +71,26 @@ const id = useId();
   height: 2rem;
   flex-shrink: 0;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 1rem;
 }
 
 .bloc-accueil__lien {
-  display: flex;
+  align-self: flex-end;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
   min-height: 44px;
   margin-top: auto;
-  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  padding: 0 0.25rem 0 0.75rem;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
-  background: var(--lien-background);
   color: var(--lien-color);
   transition: background-color 150ms ease;
 }
 
 .bloc-accueil__lien:hover {
-  background: color-mix(in srgb, var(--lien-pill-background) 14%, var(--lien-background));
+  background: var(--lien-background);
 }
 
 .bloc-accueil__lien:focus-visible {
@@ -101,18 +98,17 @@ const id = useId();
   outline-offset: 2px;
 }
 
-/* La flèche dans une pastille, comme les types de séance de l'agenda : elle glisse au survol. */
+/* Une pastille pâle autour de la flèche, aux couleurs du bloc : présente sans peser. */
 .bloc-accueil__fleche {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.75rem;
+  height: 1.75rem;
   flex-shrink: 0;
   border-radius: 999px;
   font-size: 0.75rem;
-  background: var(--lien-pill-background);
-  color: var(--lien-pill-color);
+  background: var(--lien-background);
   transition: transform 150ms ease;
 }
 
