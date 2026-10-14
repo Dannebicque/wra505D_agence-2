@@ -384,7 +384,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 5. Les modules d'un étudiant sont codés en dur (`intranet`, `documents`, `SecurityController`) :
    doivent-ils suivre ceux de son département, pour lui ouvrir Stages et Assistance ?
 
-Cinq failles à leur signaler, car elles sont dans leur code de production :
+Six failles à leur signaler, car elles sont dans leur code de production :
 
 - la déconnexion qui ne déconnectait pas, corrigée chez nous ;
 - le lien d'abonnement iCal de l'intranet V3 : son identifiant est `MD5(prenom.nom)`, donc
@@ -394,7 +394,9 @@ Cinq failles à leur signaler, car elles sont dans leur code de production :
 - les fiches étudiantes, lisibles sans connexion, et le PATCH d'une fiche, qui laissait un
   étudiant se donner `ROLE_SUPER_ADMIN`, corrigés chez nous (E22) ;
 - les stages des étudiants, lisibles, modifiables et supprimables sans connexion, corrigés chez
-  nous (E24).
+  nous (E24) ;
+- les absences et les justificatifs de tous les étudiants, motifs médicaux compris, lisibles et
+  modifiables sans connexion, corrigés chez nous (E25).
 
 ---
 

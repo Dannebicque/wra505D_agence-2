@@ -287,6 +287,17 @@ tous les départements. Sur sa demande non validée, l'étudiant écrit encore t
 `stage_etudiant:write` (dates de convention, tuteur universitaire) ; seuls l'état, la date de
 validation et la note sont tenus.
 
+### E25 · [back] Absences et justificatifs lisibles et modifiables sans connexion · S · fait
+**Pourquoi** constaté le 14/10/2026 en préparant le dépôt de justificatif : aucune opération de
+`EtudiantAbsence` ni de `EtudiantAbsenceJustificatif` ne portait de contrôle. Sans connexion,
+`GET /api/administration/etudiant_absences` et `/etudiant_absence_justificatifs` rendaient les
+absences et les motifs, souvent médicaux, de tous les étudiants ; PATCH et DELETE étaient ouverts
+de même. Le voter du client (`CAN_*_ABSENCE`, `CAN_*_JUSTIFICATIF`) existait, branché nulle part.
+**Fait** chaque opération passe par ce voter : non connecté 401, étudiant 403, personnel habilité
+200. Les routes du personnel écartent l'étudiant, qui passera par `/api/me` pour déposer les siens.
+Test : `AbsenceAccessTest`.
+**Reste** un POST vide du personnel répond 500 au lieu de 400 (validation absente, déjà le cas).
+
 ### E23 · [back] Import d'étudiants ouvert sans connexion · S · fait
 **Pourquoi** Constaté le 12/10/2026, pendant E22 : `POST /api/etudiants/new`
 (`CreateEtudiantController`) n'avait aucun contrôle d'accès. Un appel anonyme atteignait le
