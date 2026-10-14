@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from 'vue';
+import {computed, onMounted, onUnmounted, ref} from 'vue';
 import CoursCarte from '@/components/Edt/CoursCarte.vue';
 import {libelleCours} from '@/utils/agenda.js';
 import {libelleJour} from '@/utils/accueil.js';
@@ -10,7 +10,15 @@ const props = defineProps({
   journee: {type: Object, required: true},
 });
 
-const HAUTEUR_HEURE = 64;
+// 64 px par heure en bureau ; 48 sur un téléphone, pour que la journée tienne à l'écran dès
+// l'arrivée sous la carte de bienvenue.
+const telephone = window.matchMedia('(max-width: 1023px)');
+const hauteurHeure = ref(telephone.matches ? 48 : 64);
+const suivreEcran = (evenement) => {
+  hauteurHeure.value = evenement.matches ? 48 : 64;
+};
+onMounted(() => telephone.addEventListener('change', suivreEcran));
+onUnmounted(() => telephone.removeEventListener('change', suivreEcran));
 
 const cours = computed(() => props.journee.coursDuJour.value);
 
@@ -27,7 +35,7 @@ const heures = computed(() => (plage.value
     ? Array.from({length: plage.value.fin - plage.value.debut + 1}, (_, i) => plage.value.debut + i)
     : []));
 
-const position = (date) => ((date.getHours() - plage.value.debut) * 60 + date.getMinutes()) / 60 * HAUTEUR_HEURE;
+const position = (date) => ((date.getHours() - plage.value.debut) * 60 + date.getMinutes()) / 60 * hauteurHeure.value;
 
 // Le trait d'une heure occupe le premier pixel de sa case : comme sur l'emploi du temps, la carte
 // laisse le même vide au-dessus et au-dessous.
@@ -62,14 +70,14 @@ const heure = (date) => date.toLocaleTimeString('fr-FR', {hour: '2-digit', minut
     </template>
   </p>
 
-  <div v-else class="jour" :style="{ height: `${(plage.fin - plage.debut) * HAUTEUR_HEURE}px` }">
+  <div v-else class="jour" :style="{ height: `${(plage.fin - plage.debut) * hauteurHeure}px` }">
     <div class="jour__heures" aria-hidden="true">
-      <span v-for="h in heures" :key="h" class="jour__heure" :style="{ top: `${(h - plage.debut) * HAUTEUR_HEURE}px` }">
+      <span v-for="h in heures" :key="h" class="jour__heure" :style="{ top: `${(h - plage.debut) * hauteurHeure}px` }">
         {{ String(h).padStart(2, '0') }}:00
       </span>
     </div>
     <div class="jour__grille">
-      <span v-for="h in heures" :key="h" class="jour__trait" :style="{ top: `${(h - plage.debut) * HAUTEUR_HEURE}px` }" aria-hidden="true"></span>
+      <span v-for="h in heures" :key="h" class="jour__trait" :style="{ top: `${(h - plage.debut) * hauteurHeure}px` }" aria-hidden="true"></span>
       <ol class="jour__cours" aria-label="Cours d'aujourd'hui">
         <li v-for="seance in cours" :key="seance.id ?? `${seance.debut}-${seance.codeModule}`" class="jour__creneau" :style="placement(seance)">
           <span class="sr-only">{{ libelleCours(seance) }}</span>
@@ -131,10 +139,10 @@ const heure = (date) => date.toLocaleTimeString('fr-FR', {hour: '2-digit', minut
   right: 0;
 }
 
-/* Sous les cartes : elle ne barre jamais le texte d'un cours, son point reste visible dans la marge. */
+/* Par-dessus les cartes, d'un bord à l'autre, comme sur l'emploi du temps. */
 .jour__maintenant {
   position: absolute;
-  z-index: 0;
+  z-index: 2;
   left: -0.375rem;
   right: 0;
   height: 2px;

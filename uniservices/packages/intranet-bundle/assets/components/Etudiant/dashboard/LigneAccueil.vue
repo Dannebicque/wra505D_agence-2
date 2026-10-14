@@ -76,10 +76,6 @@ const attributs = computed(() => {
   background: var(--p-content-hover-background);
 }
 
-.ligne__corps--lien:hover .ligne__titre {
-  text-decoration: underline;
-}
-
 .ligne__corps--lien:focus-visible {
   outline: 2px solid var(--p-primary-color);
   outline-offset: 0;

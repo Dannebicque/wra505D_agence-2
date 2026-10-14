@@ -1,7 +1,7 @@
 import {computed, onMounted, onUnmounted, ref} from 'vue';
 import {getMonEmploiDuTempsService} from '@requests';
 import {getSituationDuJour, parseEdtDate} from '@/utils/prochainCours.js';
-import {premierCoursApres} from '@/utils/accueil.js';
+import {chargeDeLaSemaine, premierCoursApres} from '@/utils/accueil.js';
 
 const isoDate = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 const lundiDe = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - ((date.getDay() + 6) % 7));
@@ -59,5 +59,7 @@ export function useJournee() {
 
     const situation = computed(() => getSituationDuJour(coursDuJour.value, maintenant.value));
 
-    return {cours, coursDuJour, situation, suivant, semaineFormation, hasError, maintenant};
+    const semaine = computed(() => chargeDeLaSemaine(cours.value ?? [], lundiDe(maintenant.value)));
+
+    return {cours, coursDuJour, situation, suivant, semaine, semaineFormation, hasError, maintenant};
 }

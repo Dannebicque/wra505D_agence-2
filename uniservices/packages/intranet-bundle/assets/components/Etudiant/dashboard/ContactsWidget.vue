@@ -35,7 +35,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
           <a
               v-if="departement.telephone"
               :href="telephoneHref(departement.telephone)"
-              class="contact__action touch-target"
+              class="contact__action"
           >
             <i class="pi pi-phone" aria-hidden="true"/>
             <span class="sr-only">Téléphone du département {{ departement.libelle }} :</span>
@@ -46,7 +46,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
               :href="departement.siteWeb"
               target="_blank"
               rel="noopener"
-              class="contact__action touch-target"
+              class="contact__action"
           >
             <i class="pi pi-external-link" aria-hidden="true"/>
             Site web<span class="sr-only"> du département {{ departement.libelle }}, nouvel onglet</span>
@@ -87,21 +87,46 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
 }
 
 .contact__action {
-  gap: 0.375rem;
-  padding: 0.25rem 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1rem 0 0.375rem;
   border-radius: 999px;
   font-size: 1rem;
-  background: var(--p-content-background);
+  font-variant-numeric: tabular-nums;
+  background: var(--p-content-hover-background);
   color: var(--p-text-color);
-  border: 1px solid var(--ui-border-color);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+/* L'icône dans sa pastille, centrée : elle s'aligne sur le texte quelle que soit la taille. */
+.contact__action i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  line-height: 1;
+  background: var(--p-content-background);
+  color: var(--p-primary-color);
 }
 
 .contact__action:hover {
-  border-color: var(--p-primary-color);
+  background: var(--p-seance-cm-background);
+  color: var(--p-seance-cm-color);
 }
 
 .contact__action:focus-visible {
   outline: 2px solid var(--p-primary-color);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact__action {
+    transition: none;
+  }
 }
 </style>

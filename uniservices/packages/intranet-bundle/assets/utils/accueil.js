@@ -67,3 +67,31 @@ export function absencesARegler(releve) {
         enAttente: absences.filter(absence => absence.justification === 'en_attente'),
     };
 }
+
+/**
+ * Minutes de cours de chaque jour de la semaine qui commence au lundi donné, du lundi au vendredi,
+ * plus le samedi ou le dimanche s'ils portent un cours. Les chevauchements ne sont pas fusionnés :
+ * c'est le temps inscrit à l'emploi du temps.
+ */
+export function chargeDeLaSemaine(cours, lundi) {
+    const parJour = new Map();
+    cours.forEach(seance => {
+        const debut = parseEdtDate(seance.debut);
+        const fin = parseEdtDate(seance.fin);
+        if (debut && fin) {
+            const cle = debut.toDateString();
+            parJour.set(cle, (parJour.get(cle) ?? 0) + Math.round((fin - debut) / 60000));
+        }
+    });
+
+    const jours = [];
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(lundi.getFullYear(), lundi.getMonth(), lundi.getDate() + i);
+        const minutes = parJour.get(date.toDateString()) ?? 0;
+        if (i < 5 || minutes > 0) {
+            jours.push({date, minutes});
+        }
+    }
+    return jours;
+}
+

@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {
     absencesARegler,
+    chargeDeLaSemaine,
     joursAvant,
     libelleDelai,
     libelleJour,
@@ -159,3 +160,26 @@ describe('absencesARegler', () => {
             .toEqual({aJustifier: [], enAttente: []});
     });
 });
+
+describe('chargeDeLaSemaine', () => {
+    const lundi = new Date(2026, 9, 12);
+    const seance = (jour, debut, fin) => ({debut: `2026-10-${jour}T${debut}:00+00:00`, fin: `2026-10-${jour}T${fin}:00+00:00`});
+
+    it('additionne les minutes de chaque jour, du lundi au vendredi', () => {
+        const jours = chargeDeLaSemaine([seance(12, '08:00', '10:00'), seance(12, '13:30', '15:30'), seance(14, '10:15', '12:15')], lundi);
+        expect(jours.map(jour => jour.minutes)).toEqual([240, 0, 120, 0, 0]);
+        expect(jours[0].date).toEqual(new Date(2026, 9, 12));
+    });
+
+    it('n\'ajoute le samedi que s\'il porte un cours', () => {
+        expect(chargeDeLaSemaine([], lundi)).toHaveLength(5);
+        const jours = chargeDeLaSemaine([seance(17, '09:00', '12:00')], lundi);
+        expect(jours).toHaveLength(6);
+        expect(jours[5].minutes).toBe(180);
+    });
+
+    it('ignore un cours aux dates illisibles', () => {
+        expect(chargeDeLaSemaine([{debut: null, fin: null}], lundi).every(jour => jour.minutes === 0)).toBe(true);
+    });
+});
+

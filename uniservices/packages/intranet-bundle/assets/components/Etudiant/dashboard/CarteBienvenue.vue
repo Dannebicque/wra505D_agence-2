@@ -20,6 +20,22 @@ const semaine = computed(() => {
   return numero ? `${numero}${numero === 1 ? 're' : 'e'} semaine de formation` : null;
 });
 
+// La semaine en barres, une par jour : la hauteur dit les heures de cours, aujourd'hui en jaune.
+const jours = computed(() => {
+  const semaine = props.journee.semaine.value;
+  const plusLong = Math.max(60, ...semaine.map(jour => jour.minutes));
+  const aujourdhui = props.journee.maintenant.value.toDateString();
+  return semaine.map(jour => ({
+    ...jour,
+    initiale: jour.date.toLocaleDateString('fr-FR', {weekday: 'narrow'}),
+    nom: jour.date.toLocaleDateString('fr-FR', {weekday: 'long'}),
+    hauteur: `${Math.max(6, Math.round(jour.minutes / plusLong * 100))}%`,
+    etat: jour.date.toDateString() === aujourdhui ? 'aujourdhui' : (jour.date < props.journee.maintenant.value ? 'passe' : 'a-venir'),
+  }));
+});
+
+const totalSemaine = computed(() => props.journee.semaine.value.reduce((total, jour) => total + jour.minutes, 0));
+
 const finDeJournee = computed(() => {
   const cours = props.journee.coursDuJour.value;
   return cours.length ? new Date(Math.max(...cours.map(seance => seance.end))) : null;
@@ -39,8 +55,19 @@ const finDeJournee = computed(() => {
     </h2>
     <p class="bienvenue__date">
       {{ journee.maintenant.value.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) }}
-      <template v-if="semaine"><br>{{ semaine }}</template>
+      <span v-if="semaine" class="bienvenue__formation"><br>{{ semaine }}</span>
     </p>
+
+    <div v-if="journee.cours.value && totalSemaine > 0" class="bienvenue__semaine">
+      <p class="bienvenue__semaine-titre">Cette semaine · {{ formatDelai(totalSemaine) }} de cours</p>
+      <ol class="bienvenue__jours">
+        <li v-for="jour in jours" :key="jour.nom" :class="['bienvenue__jour', `bienvenue__jour--${jour.etat}`]">
+          <span class="bienvenue__barre" aria-hidden="true"><span :style="{ height: jour.hauteur }"></span></span>
+          <span class="bienvenue__initiale" aria-hidden="true">{{ jour.initiale }}</span>
+          <span class="sr-only">{{ jour.nom }} : {{ jour.minutes ? formatDelai(jour.minutes) : 'pas de cours' }}{{ jour.etat === 'aujourdhui' ? ', aujourd\'hui' : '' }}</span>
+        </li>
+      </ol>
+    </div>
 
     <p v-if="journee.hasError.value" class="bienvenue__infos">L'emploi du temps est indisponible pour le moment.</p>
     <Skeleton v-else-if="journee.cours.value === null" width="70%" height="2.5rem" class="bienvenue__infos opacity-40" aria-hidden="true"/>
@@ -178,5 +205,126 @@ const finDeJournee = computed(() => {
   font-size: 1.125rem;
   font-weight: 600;
   line-height: 1.35;
+}
+
+.bienvenue__semaine {
+  position: relative;
+  margin: auto 0;
+  padding: 1.5rem 0 0.5rem;
+  max-width: 20rem;
+}
+
+.bienvenue__semaine-titre {
+  margin: 0 0 0.625rem;
+  font-size: 0.9375rem;
+  color: var(--p-primary-200);
+}
+
+.bienvenue__jours {
+  display: flex;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bienvenue__jour {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.bienvenue__barre {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 2.25rem;
+  height: 7rem;
+}
+
+.bienvenue__barre span {
+  width: 100%;
+  border-radius: 999px;
+  background: var(--p-primary-200);
+}
+
+/* Les barres disent une quantité : chacune garde 3:1 au moins sur le violet. */
+.bienvenue__jour--passe .bienvenue__barre span {
+  background: var(--p-primary-400);
+}
+
+.bienvenue__jour--aujourdhui .bienvenue__barre span {
+  background: var(--accent-color);
+}
+
+.bienvenue__initiale {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--p-primary-200);
+}
+
+.bienvenue__jour--aujourdhui .bienvenue__initiale {
+  color: var(--accent-color);
+}
+
+/* Sur un téléphone, la carte se resserre pour que la journée tienne à l'écran dès l'arrivée : un
+   bonjour sur une ligne, sans la semaine, les deux repères côte à côte. */
+@media (max-width: 1023px) {
+  .bienvenue {
+    min-height: 0;
+    padding: 1rem 1.125rem;
+  }
+
+  .bienvenue__bonjour {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0 0.375rem;
+    align-items: baseline;
+    font-size: 1.5rem !important;
+  }
+
+  .bienvenue__date {
+    margin-top: 0.125rem;
+    font-size: 0.9375rem;
+  }
+
+  .bienvenue__formation,
+  .bienvenue__semaine {
+    display: none;
+  }
+
+  .bienvenue__infos {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+    padding-top: 0.875rem;
+    max-width: none;
+  }
+
+  .bienvenue__infos dd {
+    font-size: 1rem;
+  }
+
+  .bienvenue__cercle--accent {
+    width: 5.5rem;
+    height: 5.5rem;
+    right: -1.75rem;
+    top: -1.75rem;
+  }
+
+  .bienvenue__cercle--clair {
+    right: 4.25rem;
+    top: 1.25rem;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .bienvenue__cercle--point,
+  .bienvenue__cercle--sombre {
+    display: none;
+  }
 }
 </style>
