@@ -4,12 +4,10 @@ import {
   getEtudiantScolaritesService,
   getEtudiantScolariteSemestresService,
   getEtudiantService,
-  getGroupesService,
-  updateEtudiantScolariteSemestreService,
 } from '@requests';
 import {useUsersStore} from '@stores';
 import {formatNaissance} from '@helpers/date.js';
-import {groupesApresChoix, iriGroupe, scolariteEnCours} from '@helpers/profil.js';
+import {scolariteEnCours} from '@helpers/profil.js';
 import {BlocAccueil, ErrorView, LigneAccueil} from '@components';
 import CarteEtudiant from './CarteEtudiant.vue';
 import CoordonneesEtudiant from './CoordonneesEtudiant.vue';
@@ -23,19 +21,13 @@ const scolarites = ref(null);
 const erreurScolarites = ref(false);
 const editionCoordonnees = ref(false);
 
-// Une inscription avec ses semestres, et pour chacun les groupes disponibles : un semestre dont la
-// lecture échoue reste affiché, sans groupes, plutôt que de faire tomber toute la scolarité.
-const chargerScolarite = async (scolarite) => {
-  const semestres = await getEtudiantScolariteSemestresService({scolarite: scolarite.id}).catch(() => []);
-  return {
-    ...scolarite,
-    semestres: await Promise.all(semestres.map(async (scoSemestre) => ({
-      ...scoSemestre,
-      groupes: scoSemestre.groupes ?? [],
-      disponibles: await getGroupesService({semestre: scoSemestre.semestre.id}, '/mini').catch(() => []),
-    }))),
-  };
-};
+// Une inscription avec ses semestres et leurs groupes : un semestre dont la lecture échoue est
+// simplement absent, plutôt que de faire tomber toute la scolarité.
+const chargerScolarite = async (scolarite) => ({
+  ...scolarite,
+  semestres: (await getEtudiantScolariteSemestresService({scolarite: scolarite.id}).catch(() => []))
+      .map((scoSemestre) => ({...scoSemestre, groupes: scoSemestre.groupes ?? []})),
+});
 
 const chargerScolarites = async (id) => {
   try {
@@ -62,16 +54,6 @@ onMounted(async () => {
 
 const enCours = computed(() => scolariteEnCours(scolarites.value));
 const naissance = computed(() => formatNaissance(etudiant.value?.date_naissance));
-
-const changerGroupe = async (scoSemestre, groupeId, type) => {
-  const avant = scoSemestre.groupes;
-  scoSemestre.groupes = groupesApresChoix(avant, scoSemestre.disponibles, groupeId, type);
-  try {
-    await updateEtudiantScolariteSemestreService(scoSemestre.id, {groupes: scoSemestre.groupes.map(iriGroupe)}, true);
-  } catch {
-    scoSemestre.groupes = avant;
-  }
-};
 </script>
 
 <template>
@@ -136,7 +118,6 @@ const changerGroupe = async (scoSemestre, groupeId, type) => {
         class="mon-profil__scolarite"
         :scolarites="scolarites"
         :erreur="erreurScolarites"
-        @changer-groupe="changerGroupe"
     />
   </div>
 </template>

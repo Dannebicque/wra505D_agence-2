@@ -106,20 +106,6 @@ export function scolariteEnCours(scolarites) {
     };
 }
 
-// Un seul groupe par type : le choix remplace celui du même type, un choix vide le retire.
-export function groupesApresChoix(groupes, disponibles, groupeId, type) {
-    const autres = (groupes ?? []).filter((groupe) => groupe.type !== type);
-    if (groupeId === null || groupeId === undefined) {
-        return autres;
-    }
-    const choisi = (disponibles ?? []).find((groupe) => groupe.id === groupeId) ?? { id: groupeId, type };
-    return [...autres, choisi];
-}
-
-export function iriGroupe(groupe) {
-    return groupe['@id'] ?? `/api/structure_groupes/${groupe.id}`;
-}
-
 // Le jury tranche par un booléen ; tant qu'il ne l'a pas fait, la décision est en attente.
 export function decisionJury(valeur) {
     if (valeur === true) {

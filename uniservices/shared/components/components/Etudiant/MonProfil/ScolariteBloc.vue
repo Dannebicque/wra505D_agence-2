@@ -4,13 +4,11 @@ import {decisionJury, moyenneSur20} from '@helpers/profil.js';
 import {BlocAccueil, LigneAccueil} from '@components';
 
 // Les inscriptions chargées par la page, de la plus récente à la plus ancienne, chacune avec ses
-// semestres, leurs groupes et les groupes disponibles.
+// semestres et leurs groupes.
 const props = defineProps({
   scolarites: {type: Array, default: null},
   erreur: {type: Boolean, default: false},
 });
-
-const emit = defineEmits(['changer-groupe']);
 
 const ongletActif = ref(null);
 watch(() => props.scolarites, (scolarites) => {
@@ -24,8 +22,9 @@ const plusieursAnnees = computed(() => (props.scolarites?.length ?? 0) > 1);
 // Les types de groupe reprennent les couleurs des séances de l'emploi du temps.
 const teinte = (type) => ({CM: 'cm', TD: 'td', TP: 'tp'})[type] ?? 'autre';
 
-const groupeChoisi = (scoSemestre, type) => scoSemestre.groupes?.find((groupe) => groupe.type === type)?.id ?? null;
-const groupesDuType = (scoSemestre, type) => (scoSemestre.disponibles ?? []).filter((groupe) => groupe.type === type);
+// Les groupes sont attribués par la scolarité : l'étudiant les consulte, il ne les choisit pas.
+const groupeDuType = (scoSemestre, type) => scoSemestre.groupes?.find((groupe) => groupe.type === type) ?? null;
+const aDesGroupes = (scoSemestre) => (scoSemestre.groupes?.length ?? 0) > 0;
 
 const aUnBilan = (scoSemestre) => scoSemestre.moyenne != null || scoSemestre.decision != null;
 </script>
@@ -51,31 +50,24 @@ const aUnBilan = (scoSemestre) => scoSemestre.moyenne != null || scoSemestre.dec
               <span class="scolarite__semestre-libelle">{{ scoSemestre.semestre.libelle }}</span>
             </h3>
 
-            <div v-if="scoSemestre.semestre.typesGroupe?.length" class="scolarite__groupes">
-              <div v-for="type in scoSemestre.semestre.typesGroupe" :key="type" class="scolarite__groupe">
-                <label :for="`groupe-${scoSemestre.id}-${type}`" class="scolarite__groupe-label">
-                  <span
-                      class="scolarite__pastille"
-                      aria-hidden="true"
-                      :style="{
-                        background: `var(--p-seance-${teinte(type)}-background)`,
-                        color: `var(--p-seance-${teinte(type)}-color)`,
-                      }"
-                  >{{ type }}</span>
-                  <span class="sr-only">Groupe {{ type }}</span>
-                </label>
-                <Select
-                    :input-id="`groupe-${scoSemestre.id}-${type}`"
-                    :model-value="groupeChoisi(scoSemestre, type)"
-                    :options="groupesDuType(scoSemestre, type)"
-                    option-label="libelle"
-                    option-value="id"
-                    placeholder="Choisir"
-                    class="scolarite__select"
-                    @update:model-value="groupeId => emit('changer-groupe', scoSemestre, groupeId, type)"
-                />
-              </div>
-            </div>
+            <ul
+                v-if="aDesGroupes(scoSemestre)"
+                class="scolarite__groupes"
+                :aria-label="`Groupes du semestre ${scoSemestre.semestre.libelle}`"
+            >
+              <li v-for="type in scoSemestre.semestre.typesGroupe" :key="type" class="scolarite__groupe">
+                <span
+                    class="scolarite__pastille"
+                    :style="{
+                      background: `var(--p-seance-${teinte(type)}-background)`,
+                      color: `var(--p-seance-${teinte(type)}-color)`,
+                    }"
+                >{{ type }}</span>
+                <span v-if="!groupeDuType(scoSemestre, type)" class="scolarite__groupe-nom scolarite__groupe-vide">non attribué</span>
+                <span v-else-if="groupeDuType(scoSemestre, type).libelle !== type" class="scolarite__groupe-nom">{{ groupeDuType(scoSemestre, type).libelle }}</span>
+              </li>
+            </ul>
+            <p v-else class="scolarite__vide">Aucun groupe enregistré pour ce semestre.</p>
 
             <template v-if="aUnBilan(scoSemestre)">
               <h4 class="scolarite__sous-titre">Bilan du semestre</h4>
@@ -160,33 +152,46 @@ const aUnBilan = (scoSemestre) => scoSemestre.moyenne != null || scoSemestre.dec
 }
 
 .scolarite__groupes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: 0.75rem;
-}
-
-.scolarite__groupe {
   display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.scolarite__groupe-label {
+/* La capsule de la carte étudiante, sur fond clair : le type à sa teinte de séance, le groupe en
+   texte courant. */
+.scolarite__groupe {
   display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--p-content-background);
+}
+
+.scolarite__groupe-nom {
+  padding-right: 0.625rem;
+}
+
+.scolarite__groupe-vide {
+  font-weight: 400;
+  color: var(--p-text-muted-color);
 }
 
 .scolarite__pastille {
-  padding: 0.125rem 0.625rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0 0.625rem;
   border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-}
-
-.scolarite__select {
-  width: 100%;
-  min-height: 44px;
-  align-items: center;
 }
 
 .scolarite__sous-titre {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-    champsModifies, decisionJury, groupesApresChoix, initiales, iriGroupe, lignesAdresse, moyenneSur20, normaliserAdresse,
+    champsModifies, decisionJury, initiales, lignesAdresse, moyenneSur20, normaliserAdresse,
     scolariteEnCours,
 } from './profil.js';
 
@@ -130,35 +130,6 @@ describe('scolariteEnCours', () => {
     it('se rabat sur l\'année de l\'inscription sans semestre', () => {
         expect(scolariteEnCours([{ actif: true, anneeUniversitaire: { libelle: '2026/2027' }, annee: [{ libelle: 'MMI 2' }] }]))
             .toEqual({ anneeUniversitaire: '2026/2027', formation: 'MMI 2', semestre: null, groupes: [] });
-    });
-});
-
-describe('groupesApresChoix', () => {
-    const actuels = [groupe(50, 'CM', 'CM'), groupe(51, 'TD', 'AB'), groupe(52, 'TP', 'A')];
-    const disponibles = [...actuels, groupe(53, 'TP', 'B')];
-
-    it('remplace le groupe du même type', () => {
-        expect(groupesApresChoix(actuels, disponibles, 53, 'TP').map((g) => g.id)).toEqual([50, 51, 53]);
-    });
-
-    it('retire le groupe quand le choix est vide', () => {
-        expect(groupesApresChoix(actuels, disponibles, null, 'TD').map((g) => g.id)).toEqual([50, 52]);
-    });
-
-    it('ajoute un type encore absent', () => {
-        expect(groupesApresChoix([groupe(50, 'CM', 'CM')], disponibles, 51, 'TD').map((g) => g.id)).toEqual([50, 51]);
-    });
-
-    it('ne modifie pas la liste reçue', () => {
-        groupesApresChoix(actuels, disponibles, 53, 'TP');
-        expect(actuels.map((g) => g.id)).toEqual([50, 51, 52]);
-    });
-});
-
-describe('iriGroupe', () => {
-    it('reprend l\'IRI du groupe, ou la construit', () => {
-        expect(iriGroupe(groupe(50, 'CM', 'CM'))).toBe('/api/structure_groupes/50');
-        expect(iriGroupe({ id: 7, type: 'TD' })).toBe('/api/structure_groupes/7');
     });
 });
 

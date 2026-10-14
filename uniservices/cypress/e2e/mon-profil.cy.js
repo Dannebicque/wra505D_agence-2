@@ -69,11 +69,11 @@ describe('Profil de l\'étudiant', () => {
         cy.contains('li', 'Mail personnel').should('contain', 'jane.doe@exemple.fr').and('not.contain', 'autre@exemple.fr');
     });
 
-    it('relie chaque choix de groupe à son libellé', () => {
-        cy.contains('h2', 'Scolarité').closest('section').find('label[for^="groupe-"]', { timeout: 15000 })
-            .should('have.length.at.least', 1)
-            .each((label) => {
-                cy.get(`#${label.attr('for')}`).should('exist');
-            });
+    it('montre les groupes attribués sans les laisser choisir', () => {
+        cy.contains('h2', 'Scolarité').closest('section').within(() => {
+            cy.get('[aria-label="Groupes du semestre S1"] li', { timeout: 15000 }).should('have.length', 3);
+            cy.contains('li', 'TD').should('contain', 'AB');
+            cy.get('[role="combobox"], select').should('not.exist');
+        });
     });
 });
