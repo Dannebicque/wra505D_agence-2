@@ -20,7 +20,13 @@ const formes = lettres.flatMap(({ x, traits, point }) => [
 </script>
 
 <template>
-  <svg class="logo-nom" viewBox="-3 -1 162 30" aria-hidden="true" focusable="false">
+  <svg
+      class="logo-nom"
+      viewBox="-3 -1 162 30"
+      aria-hidden="true"
+      focusable="false"
+      :style="{ '--formes': formes.length - 1 }"
+  >
     <template v-for="forme in formes" :key="forme.rang">
       <circle
           v-if="forme.point"
