@@ -204,13 +204,18 @@ const copierMail = () => {
   list-style: none;
 }
 
+/* Toutes les capsules ont la même hauteur et leur texte au centre, qu'elles portent un type seul
+   (CM) ou un type et son groupe (TD AB). */
 .carte-etudiant__groupe {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: center;
   gap: 0.375rem;
-  padding: 0.25rem 0.75rem;
+  min-height: 2rem;
+  padding: 0 0.875rem;
   border-radius: 999px;
   font-weight: 700;
+  line-height: 1;
   background: color-mix(in srgb, #FFFFFF 12%, transparent);
 }
 
@@ -218,6 +223,13 @@ const copierMail = () => {
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
   color: var(--p-primary-200);
+}
+
+/* Seul dans sa capsule, le type n'a plus à s'effacer devant un nom de groupe. */
+.carte-etudiant__groupe-type:only-child {
+  font-size: 1rem;
+  letter-spacing: 0;
+  color: inherit;
 }
 
 .carte-etudiant__pied {
