@@ -163,7 +163,7 @@ const styleSeance = (seance) => {
       </ol>
       <RouterLink to="/intranet/agenda" class="journee__lien">
         Voir la semaine
-        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+        <span class="journee__fleche" aria-hidden="true"><i class="pi pi-arrow-right"></i></span>
       </RouterLink>
     </div>
   </section>
@@ -379,19 +379,53 @@ const styleSeance = (seance) => {
 }
 
 .journee__lien {
-  align-self: flex-end;
-  margin-top: auto;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.375rem;
+  justify-content: space-between;
+  gap: 0.75rem;
   min-height: 44px;
-  padding: 0 0.25rem;
+  margin-top: auto;
+  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--p-primary-color);
+  background: var(--p-seance-cm-background);
+  color: var(--p-seance-cm-color);
+  transition: background-color 150ms ease;
 }
 
 .journee__lien:hover {
-  text-decoration: underline;
+  background: color-mix(in srgb, var(--p-seance-cm-pill-background) 14%, var(--p-seance-cm-background));
+}
+
+.journee__lien:focus-visible {
+  outline: 2px solid var(--p-seance-cm-color);
+  outline-offset: 2px;
+}
+
+/* La flèche dans une pastille, comme les types de séance de l'agenda : elle glisse au survol. */
+.journee__fleche {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: var(--p-seance-cm-pill-background);
+  color: var(--p-seance-cm-pill-color);
+  transition: transform 150ms ease;
+}
+
+.journee__lien:hover .journee__fleche {
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journee__lien,
+  .journee__fleche {
+    transition: none;
+  }
 }
 </style>

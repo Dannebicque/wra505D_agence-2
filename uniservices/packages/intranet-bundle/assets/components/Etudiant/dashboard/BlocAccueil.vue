@@ -15,7 +15,16 @@ const id = useId();
 </script>
 
 <template>
-  <section class="bloc-accueil" :aria-labelledby="id">
+  <section
+      class="bloc-accueil"
+      :aria-labelledby="id"
+      :style="{
+        '--lien-background': `var(--p-seance-${teinte}-background)`,
+        '--lien-color': `var(--p-seance-${teinte}-color)`,
+        '--lien-pill-background': `var(--p-seance-${teinte}-pill-background)`,
+        '--lien-pill-color': `var(--p-seance-${teinte}-pill-color)`,
+      }"
+  >
     <h2 :id="id" class="bloc-accueil__titre">
       <span
           class="bloc-accueil__icone"
@@ -29,7 +38,7 @@ const id = useId();
     <slot/>
     <RouterLink v-if="lien" :to="lien" class="bloc-accueil__lien">
       {{ texteLien }}
-      <i class="pi pi-arrow-right" aria-hidden="true"></i>
+      <span class="bloc-accueil__fleche" aria-hidden="true"><i class="pi pi-arrow-right"></i></span>
     </RouterLink>
   </section>
 </template>
@@ -68,19 +77,53 @@ const id = useId();
 }
 
 .bloc-accueil__lien {
-  align-self: flex-end;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.375rem;
+  justify-content: space-between;
+  gap: 0.75rem;
   min-height: 44px;
   margin-top: auto;
-  padding: 0 0.25rem;
+  padding: 0.25rem 0.25rem 0.25rem 1rem;
+  border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--p-primary-color);
+  background: var(--lien-background);
+  color: var(--lien-color);
+  transition: background-color 150ms ease;
 }
 
 .bloc-accueil__lien:hover {
-  text-decoration: underline;
+  background: color-mix(in srgb, var(--lien-pill-background) 14%, var(--lien-background));
+}
+
+.bloc-accueil__lien:focus-visible {
+  outline: 2px solid var(--lien-color);
+  outline-offset: 2px;
+}
+
+/* La flèche dans une pastille, comme les types de séance de l'agenda : elle glisse au survol. */
+.bloc-accueil__fleche {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: var(--lien-pill-background);
+  color: var(--lien-pill-color);
+  transition: transform 150ms ease;
+}
+
+.bloc-accueil__lien:hover .bloc-accueil__fleche {
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bloc-accueil__lien,
+  .bloc-accueil__fleche {
+    transition: none;
+  }
 }
 </style>
