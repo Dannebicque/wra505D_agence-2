@@ -67,7 +67,7 @@ WHERE a.diplome_id = :diplome_id
 SQL;
             } else {
                 $groupSql = <<<'SQL'
-SELECT DISTINCT g.id, g.parent_id, g.libelle, g.code_apogee, g.ordre, g.parcours, g.apc_parcours_id, g.id_edu_sign, tg.type
+SELECT DISTINCT g.id, g.parent_id, g.libelle, g.code_apogee, g.ordre, g.parcours_id, g.apc_parcours_id, g.id_edu_sign, tg.type
 FROM groupe g
 INNER JOIN type_groupe tg ON tg.id = g.type_groupe_id
 INNER JOIN semestre s ON s.id = tg.semestre_id
@@ -95,7 +95,7 @@ SQL;
                         $unknownTypes[LooseValue::castString($row['type'])] = ($unknownTypes[LooseValue::castString($row['type'])] ?? 0) + 1;
                         $type = TypeGroupeEnum::TYPE_GROUPE_AUTRE;
                     }
-                    if (LooseValue::truthyString($row['parcours']) !== null || LooseValue::truthyString($row['apc_parcours_id']) !== null) {
+                    if (LooseValue::truthyString($row['parcours_id']) !== null || LooseValue::truthyString($row['apc_parcours_id']) !== null) {
                         ++$legacyParcoursLinks;
                     }
                     if (LooseValue::truthyString($row['id_edu_sign']) !== null) {
