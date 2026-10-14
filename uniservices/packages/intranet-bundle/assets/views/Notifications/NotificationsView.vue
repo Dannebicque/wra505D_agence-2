@@ -6,7 +6,7 @@ import { TYPES_NOTIFICATION, couleursNotification, grouperParJour, heure, libell
 
 const store = useNotificationStore();
 
-const etat = ref('toutes');
+const etat = ref('non_lues');
 const etats = [{ label: 'Toutes', value: 'toutes' }, { label: 'Non lues', value: 'non_lues' }];
 const type = ref('tous');
 const types = [
@@ -18,6 +18,13 @@ const affichees = computed(() => store.notifications.filter(notification =>
   (etat.value === 'toutes' || !notification.lue) && (type.value === 'tous' || notification.type === type.value)));
 
 const jours = computed(() => grouperParJour(affichees.value));
+
+const messageVide = computed(() => {
+  if (store.notifications.length === 0) return 'Rien de nouveau pour l\'instant.';
+  if (etat.value === 'non_lues' && type.value === 'tous') return 'Toutes vos notifications sont lues.';
+
+  return 'Aucune notification ne correspond à ces filtres.';
+});
 
 // Un message se lit ici en entier : il n'a pas d'autre page où mener.
 const estIci = (notification) => notification.lien === '/intranet/notifications';
@@ -62,7 +69,7 @@ onMounted(() => store.charger());
     </div>
 
     <Message v-if="jours.length === 0" severity="info">
-      {{ store.notifications.length === 0 ? 'Rien de nouveau pour l\'instant.' : 'Aucune notification ne correspond à ces filtres.' }}
+      {{ messageVide }}
     </Message>
 
     <section v-for="(groupe, index) in jours" :key="groupe.jour" class="mb-8" :aria-labelledby="`jour-${index}`">

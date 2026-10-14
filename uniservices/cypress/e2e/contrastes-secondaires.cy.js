@@ -57,7 +57,7 @@ describe('Contrastes des textes secondaires', () => {
         });
 
         cy.visit('/app/intranet/notifications');
-        cy.contains('.p-togglebutton', 'Non lues', { timeout: 15000 }).find('.p-togglebutton-label').then(($filtre) => {
+        cy.contains('.p-togglebutton', 'Toutes', { timeout: 15000 }).find('.p-togglebutton-label').then(($filtre) => {
             expect(contraste($filtre[0])).to.be.at.least(4.5);
         });
     });
