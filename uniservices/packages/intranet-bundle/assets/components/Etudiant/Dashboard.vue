@@ -44,7 +44,7 @@ onMounted(() => {
 <template>
   <!-- La page ouvre sur la journée : son titre reste pour les lecteurs d'écran, comme l'agenda.
        Sans lui, rien ne sépare plus la journée de la barre du haut, qui la recouvre en mobile. -->
-  <section class="col-span-12 lg:col-span-10 pb-14 mt-10 md:mt-0">
+  <section class="col-span-12 lg:col-span-10 mt-10 md:mt-0">
     <h1 class="sr-only">Accueil</h1>
 
     <div class="accueil">
