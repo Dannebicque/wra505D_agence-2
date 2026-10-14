@@ -154,6 +154,9 @@ SQL;
                         ->setDepartement($diplome?->getDepartement())
                         ->setOrdre(LooseValue::castInt($row['ordre']));
                     $this->entityManager->persist($scolarite);
+                    // Une ligne V3 par semestre : le second semestre de l'année doit retrouver cette
+                    // scolarité, que findOneBy ne voit qu'une fois écrite.
+                    $this->entityManager->flush();
                     ++$created;
                 } else {
                     ++$updated;
