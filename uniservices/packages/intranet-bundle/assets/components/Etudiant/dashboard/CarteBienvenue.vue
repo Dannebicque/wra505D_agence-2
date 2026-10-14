@@ -56,6 +56,8 @@ const jours = computed(() => {
     initiale: jour.date.toLocaleDateString('fr-FR', {weekday: 'narrow'}),
     nom: jour.date.toLocaleDateString('fr-FR', {weekday: 'long'}),
     hauteur: `${Math.max(6, Math.round(jour.minutes / plusLong * 100))}%`,
+    // Sans affichage dans l'adresse, l'agenda reprend la vue Jour ou Semaine choisie la dernière fois.
+    lien: {path: '/intranet/agenda', query: {date: [jour.date.getFullYear(), String(jour.date.getMonth() + 1).padStart(2, '0'), String(jour.date.getDate()).padStart(2, '0')].join('-')}},
     etat: jour.date.toDateString() === aujourdhui ? 'aujourdhui' : (jour.date < props.journee.maintenant.value ? 'passe' : 'a-venir'),
   }));
 });
@@ -95,9 +97,11 @@ const finDeJournee = computed(() => {
       <figure v-if="journee.cours.value && totalSemaine > 0" class="bienvenue__semaine">
         <ol class="bienvenue__jours">
           <li v-for="jour in jours" :key="jour.nom" :class="['bienvenue__jour', `bienvenue__jour--${jour.etat}`]">
-            <span class="bienvenue__barre" aria-hidden="true"><span :style="{ height: jour.hauteur }"></span></span>
-            <span class="bienvenue__initiale" aria-hidden="true">{{ jour.initiale }}</span>
-            <span class="sr-only">{{ jour.nom }} : {{ jour.minutes ? formatDelai(jour.minutes) : 'pas de cours' }}{{ jour.etat === 'aujourdhui' ? ', aujourd\'hui' : '' }}</span>
+            <RouterLink :to="jour.lien" class="bienvenue__lien">
+              <span class="bienvenue__barre" aria-hidden="true"><span :style="{ height: jour.hauteur }"></span></span>
+              <span class="bienvenue__initiale" aria-hidden="true">{{ jour.initiale }}</span>
+              <span class="sr-only">{{ jour.nom }} : {{ jour.minutes ? formatDelai(jour.minutes) : 'pas de cours' }}{{ jour.etat === 'aujourdhui' ? ', aujourd\'hui' : '' }}, voir l'emploi du temps</span>
+            </RouterLink>
           </li>
         </ol>
         <figcaption class="bienvenue__legende">Cette semaine · {{ formatDelai(totalSemaine) }} de cours</figcaption>
@@ -262,7 +266,8 @@ const finDeJournee = computed(() => {
 .bienvenue__jours {
   display: flex;
   justify-content: center;
-  gap: 0.625rem;
+  /* Cinq colonnes de 44 px tiennent dans la figure, dont la largeur est plafonnée. */
+  gap: 0.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -325,10 +330,29 @@ const finDeJournee = computed(() => {
 
 .bienvenue__jour {
   display: flex;
-  flex: 0 1 2.25rem;
+  flex: 0 0 44px;
+}
+
+/* Toute la colonne est cliquable, sur 44 px de large : la barre garde sa largeur. */
+.bienvenue__lien {
+  display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   gap: 0.375rem;
+  padding: 0.25rem 0;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.bienvenue__lien:hover .bienvenue__barre span {
+  filter: brightness(1.12);
+}
+
+/* Le jaune de l'accent tient 5,29:1 sur le violet. */
+.bienvenue__lien:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 .bienvenue__barre {
