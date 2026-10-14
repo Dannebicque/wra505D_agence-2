@@ -44,7 +44,7 @@ final readonly class MigrateIntranetV3DocumentCommand
         bool $list = false,
         #[Option(description: 'Contrôle les cardinalités V3/UniServices sans importer.')]
         bool $check = false,
-        #[Option(description: 'Dossier V3 contenant public/upload/documents/.')]
+        #[Option(description: 'Dossier des fichiers de documents V3 (son public/upload/documents/).')]
         ?string $filesSource = null,
         #[Option(description: 'Dossier cible dans lequel copier/contrôler les fichiers.')]
         ?string $filesTarget = null,
