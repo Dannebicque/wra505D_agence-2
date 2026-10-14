@@ -129,30 +129,25 @@ export function prochainesVacances(semaines, aujourdhui) {
     };
 }
 
-// Des astuces vraies sur l'application : le jour sans événement en tire une au hasard du calendrier.
-const ASTUCES = [
-    'Astuce : la recherche du haut trouve pages, personnes et matières',
-    'Astuce : les notifications réunissent notes, absences et documents',
-    'Astuce : l\'étoile d\'un document le garde dans vos favoris',
-    'Astuce : « Notes et absences » détaille chaque évaluation',
-    'Astuce : le choix de semaine de l\'emploi du temps montre sa charge',
-];
-
 const jourDeLAnnee = (date) => Math.round((minuit(date) - new Date(date.getFullYear(), 0, 0)) / 86400000);
 const minutesDe = (cours) => cours.reduce((total, seance) => total + Math.round((seance.end - seance.start) / 60000), 0);
 
+// Plusieurs façons de dire bonne journée, pour qu'un jour ordinaire ne ressemble pas à la veille.
+const SALUTS_DU_MATIN = ['Bonne journée, {prenom}', 'Belle journée à vous', 'Bonne journée et bon courage'];
+
 /**
- * L'événement du jour de la carte de bienvenue, pour qu'elle surprenne chaque jour : d'abord ce
- * qui compte (anniversaire, évaluation, vacances, rentrée, fin de semaine), puis, faute de mieux,
- * un message qui change chaque jour parmi ceux qui s'appliquent, dont une astuce.
+ * Le message du jour de la carte de bienvenue : d'abord un vrai événement (anniversaire,
+ * évaluation, vacances, rentrée, week-end), sinon un mot bienveillant selon la journée et
+ * l'heure. Jamais plus de 31 caractères hors prénom : il tient sur une ligne de la carte.
  *
  * @param contexte {aujourdhui, prenom, naissance, coursDuJour, semaine, semaines, semaineFormation,
  *   vacances, evaluations} ; coursDuJour et evaluations portent start, end, codeModule, evaluation.
- * @returns {{cle: string, icone: string, texte: string}}
+ * @returns {{cle: string, icone: string, texte: string, important: boolean}} important : un vrai
+ *   événement, affiché même sur un téléphone.
  */
 export function evenementDuJour(contexte) {
     const {aujourdhui, prenom, naissance, coursDuJour = [], semaine = [], semaines = [], semaineFormation, vacances, evaluations = []} = contexte;
-    const evenement = (cle, icone, texte) => ({cle, icone, texte});
+    const evenement = (cle, icone, texte, important = true) => ({cle, icone, texte: texte.replace('{prenom}', prenom ?? ''), important});
     const jour = minuit(aujourdhui);
     const weekEnd = [0, 6].includes(jour.getDay());
     const joursSuivants = semaine.filter(j => minuit(j.date) > jour);
@@ -167,12 +162,11 @@ export function evenementDuJour(contexte) {
     if (naissance) {
         const [, mois, jourNaissance] = naissance.slice(0, 10).split('-').map(Number);
         if (mois === jour.getMonth() + 1 && jourNaissance === jour.getDate()) {
-            return evenement('anniversaire', 'pi pi-gift', `Joyeux anniversaire, ${prenom}`);
+            return evenement('anniversaire', 'pi pi-gift', 'Joyeux anniversaire, {prenom}');
         }
     }
-    const evaluationDuJour = coursDuJour.find(seance => seance.evaluation);
-    if (evaluationDuJour) {
-        return evenement('evaluation', 'pi pi-pencil', `Évaluation aujourd'hui en ${evaluationDuJour.codeModule}`);
+    if (coursDuJour.some(seance => seance.evaluation)) {
+        return evenement('evaluation', 'pi pi-pencil', 'Bon courage pour l\'évaluation');
     }
     if (enVacances) {
         return evenement('vacances', 'pi pi-sun', `Bonnes vacances ${NOMS_DE_VACANCES[saisonDeVacances(iso(lundi))]}`);
@@ -191,33 +185,34 @@ export function evenementDuJour(contexte) {
         const nomDuJour = evaluationProche.start.toLocaleDateString('fr-FR', {weekday: 'long'});
         return evenement('evaluation-proche', 'pi pi-pencil', `Évaluation ${nomDuJour} en ${evaluationProche.codeModule}`);
     }
+    if (vacances && vacances.jours <= 7) {
+        return evenement('vacances-proches', 'pi pi-sun', vacances.jours > 1 ? `Vacances dans ${vacances.jours} jours` : 'Vacances demain');
+    }
     if (weekEnd && !coursDuJour.length) {
         return evenement('week-end', 'pi pi-heart', 'Bon week-end');
     }
+
+    const duJour = minutesDe(coursDuJour);
+    if (jour.getDay() === 1 && coursDuJour.length) {
+        return evenement('semaine', 'pi pi-heart', 'Bonne semaine, {prenom}', false);
+    }
     if (coursDuJour.length && joursSuivants.every(j => j.minutes === 0)) {
-        return evenement('fin-de-semaine', 'pi pi-forward', 'Dernier jour de la semaine');
+        return evenement('fin-de-semaine', 'pi pi-forward', 'Bientôt le week-end, courage', false);
     }
     if (!coursDuJour.length) {
-        return evenement('sans-cours', 'pi pi-face-smile', 'Journée sans cours');
+        return evenement('sans-cours', 'pi pi-face-smile', 'Journée sans cours, profitez-en', false);
     }
-
-    const possibles = [];
-    const duJour = minutesDe(coursDuJour);
-    const jourCharge = semaine.filter(j => j.minutes > 0).length > 1 && semaine.every(j => j.minutes <= duJour);
-    if (vacances && vacances.jours <= 21) {
-        possibles.push(evenement('vacances-proches', 'pi pi-sun', `Vacances ${vacances.nom} dans ${vacances.jours} jours`));
+    if (semaine.filter(j => j.minutes > 0).length > 1 && semaine.every(j => j.minutes <= duJour)) {
+        return evenement('journee-chargee', 'pi pi-bolt', 'Grosse journée, bon courage', false);
     }
-    if (jourCharge) {
-        possibles.push(evenement('journee-chargee', 'pi pi-bolt', 'Journée la plus chargée de la semaine'));
-    } else if (duJour <= 120) {
-        possibles.push(evenement('journee-legere', 'pi pi-star', 'Journée légère, profitez-en'));
+    if (duJour <= 120) {
+        return evenement('journee-legere', 'pi pi-face-smile', 'Journée tranquille aujourd\'hui', false);
     }
-    if (semaineFormation && semaineFormation % 5 === 0) {
-        possibles.push(evenement('etape', 'pi pi-chart-line', `Déjà ${semaineFormation} semaines de formation`));
+    if (aujourdhui.getHours() >= 18) {
+        return evenement('soir', 'pi pi-moon', 'Bonne soirée, {prenom}', false);
     }
-    const astuce = ASTUCES[jourDeLAnnee(jour) % ASTUCES.length];
-    possibles.push(evenement('astuce', 'pi pi-lightbulb', astuce));
-
-    return possibles[jourDeLAnnee(jour) % possibles.length];
+    if (aujourdhui.getHours() >= 12) {
+        return evenement('apres-midi', 'pi pi-sun', 'Bon après-midi, {prenom}', false);
+    }
+    return evenement('journee', 'pi pi-sun', SALUTS_DU_MATIN[jourDeLAnnee(jour) % SALUTS_DU_MATIN.length], false);
 }
-

@@ -82,9 +82,12 @@ const finDeJournee = computed(() => {
       {{ journee.maintenant.value.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) }}
       <span v-if="semaine" class="bienvenue__formation"><br>{{ semaine }}</span>
     </p>
-    <p v-if="evenement" :class="['bienvenue__evenement', `bienvenue__evenement--${evenement.cle}`]">
+    <p
+        v-if="evenement"
+        :class="['bienvenue__evenement', `bienvenue__evenement--${evenement.cle}`, { 'bienvenue__evenement--doux': !evenement.important }]"
+    >
       <span class="bienvenue__evenement-icone" aria-hidden="true"><i :class="evenement.icone"></i></span>
-      <span>{{ evenement.texte }}</span>
+      <span class="bienvenue__evenement-texte">{{ evenement.texte }}</span>
     </p>
 
     <div class="bienvenue__milieu">
@@ -271,17 +274,27 @@ const finDeJournee = computed(() => {
   color: var(--p-primary-200);
 }
 
-/* L'événement du jour, rattaché à l'en-tête : une pastille jaune pour l'icône (violet sur
-   l'accent, 5,29:1), le texte à côté, qui passe à la ligne sans déformer la pastille. */
+/* L'événement du jour, rattaché à l'en-tête : une capsule sur un voile clair, toujours sur une
+   ligne (les messages font 31 caractères au plus) ; un prénom trop long s'abrège plutôt que de
+   déformer la capsule. Icône violette sur l'accent : 5,29:1. */
 .bienvenue__evenement {
   position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.5rem;
+  max-width: calc(100% - 2rem);
   margin: 0.875rem 0 0;
-  max-width: calc(100% - 2.5rem);
+  padding: 0.25rem 0.875rem 0.25rem 0.25rem;
+  border-radius: 999px;
   font-size: 0.9375rem;
-  line-height: 1.4;
+  background: color-mix(in srgb, #FFFFFF 12%, transparent);
+}
+
+.bienvenue__evenement-texte {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bienvenue__evenement-icone {
@@ -291,16 +304,21 @@ const finDeJournee = computed(() => {
   justify-content: center;
   width: 1.75rem;
   height: 1.75rem;
-  margin-top: -0.25rem;
   border-radius: 999px;
   font-size: 0.875rem;
   background: var(--accent-color);
   color: var(--p-primary-500);
 }
 
-/* Le jour de son anniversaire, le texte prend le jaune et la graisse. */
+/* Le jour de son anniversaire, la capsule passe au jaune plein. */
 .bienvenue__evenement--anniversaire {
   font-weight: 700;
+  background: var(--accent-color);
+  color: var(--p-primary-500);
+}
+
+.bienvenue__evenement--anniversaire .bienvenue__evenement-icone {
+  background: var(--p-primary-500);
   color: var(--accent-color);
 }
 
@@ -367,11 +385,11 @@ const finDeJournee = computed(() => {
     font-size: 0.9375rem;
   }
 
-  /* Le téléphone reste léger : ni semaine de formation, ni charge de la semaine, ni astuce. Les
-     vrais événements, rares, restent. */
+  /* Le téléphone reste léger : ni semaine de formation, ni charge de la semaine, ni mot du jour
+     ordinaire. Les vrais événements, rares, restent. */
   .bienvenue__formation,
   .bienvenue__milieu,
-  .bienvenue__evenement--astuce {
+  .bienvenue__evenement--doux {
     display: none;
   }
 

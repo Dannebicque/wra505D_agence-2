@@ -243,9 +243,9 @@ describe('evenementDuJour', () => {
         expect(evenementDuJour({...base, naissance: '2006-10-14'}).texte).toBe('Joyeux anniversaire, Jane');
     });
 
-    it('annonce une évaluation du jour, puis une évaluation plus tard dans la semaine', () => {
+    it('encourage le jour d\'une évaluation, puis annonce celle d\'un autre jour', () => {
         expect(evenementDuJour({...base, coursDuJour: [seance(14, '08:00', '10:00', {evaluation: true})]}).texte)
-            .toBe('Évaluation aujourd\'hui en R1.02');
+            .toBe('Bon courage pour l\'évaluation');
         expect(evenementDuJour({...base, evaluations: [seance(15, '10:00', '12:00', {evaluation: true})]}).texte)
             .toBe('Évaluation jeudi en R1.02');
     });
@@ -266,28 +266,41 @@ describe('evenementDuJour', () => {
         expect(evenementDuJour({...base, semaineFormation: 1}).cle).toBe('rentree');
     });
 
-    it('distingue le week-end, le dernier jour de cours et une journée sans cours', () => {
-        expect(evenementDuJour({...base, aujourdhui: new Date(2026, 9, 17), coursDuJour: []}).cle).toBe('week-end');
-        expect(evenementDuJour({...base, aujourdhui: new Date(2026, 9, 16), vacances: null}).cle).toBe('fin-de-semaine');
-        expect(evenementDuJour({...base, coursDuJour: []}).cle).toBe('sans-cours');
+    it('compte les jours jusqu\'aux vacances la dernière semaine, pas avant', () => {
+        expect(evenementDuJour({...base, vacances: {jours: 6, nom: 'de la Toussaint'}}).texte).toBe('Vacances dans 6 jours');
+        expect(evenementDuJour(base).cle).not.toBe('vacances-proches');
     });
 
-    it('fait varier le message ordinaire d\'un jour à l\'autre', () => {
-        const cles = new Set([12, 13, 14, 15].map((jour) => evenementDuJour({
-            ...base,
-            aujourdhui: new Date(2026, 9, jour, 9, 0),
-            coursDuJour: [seance(jour, '08:00', '10:00')],
-            semaine: semaine([120, 120, 120, 120, 480]),
-            vacances: {jours: 20, nom: 'de la Toussaint'},
-            semaineFormation: 5,
-        }).cle));
-        expect(cles.size).toBeGreaterThan(1);
+    it('souhaite un bon week-end et marque les vrais événements comme importants', () => {
+        const weekEnd = evenementDuJour({...base, aujourdhui: new Date(2026, 9, 17), coursDuJour: [], vacances: null});
+        expect(weekEnd.texte).toBe('Bon week-end');
+        expect(weekEnd.important).toBe(true);
     });
 
-    it('n\'invente jamais un événement : il rend toujours un texte et une icône', () => {
-        const evenement = evenementDuJour({aujourdhui: mercredi, prenom: 'Jane', coursDuJour: [seance(14, '08:00', '17:00')]});
-        expect(evenement.texte).toBeTruthy();
-        expect(evenement.icone).toMatch(/^pi pi-/);
+    it('a un mot bienveillant pour chaque jour ordinaire, sans astuce', () => {
+        const sans = {...base, vacances: null};
+        expect(evenementDuJour({...sans, aujourdhui: new Date(2026, 9, 12, 9, 0), coursDuJour: [seance(12, '08:00', '10:00')]}).cle).toBe('semaine');
+        expect(evenementDuJour({...sans, aujourdhui: new Date(2026, 9, 16, 9, 0), coursDuJour: [seance(16, '08:00', '10:00')]}).cle).toBe('fin-de-semaine');
+        expect(evenementDuJour({...sans, coursDuJour: []}).cle).toBe('sans-cours');
+        expect(evenementDuJour({...sans, coursDuJour: [seance(14, '08:00', '17:00')]}).cle).toBe('journee-chargee');
+        expect(evenementDuJour({...sans, coursDuJour: [seance(14, '08:00', '09:30')]}).cle).toBe('journee-legere');
+        expect(evenementDuJour({...sans, aujourdhui: new Date(2026, 9, 14, 19, 0)}).texte).toBe('Bonne soirée, Jane');
+        expect(evenementDuJour({...sans, aujourdhui: new Date(2026, 9, 14, 14, 0)}).texte).toBe('Bon après-midi, Jane');
+        expect(evenementDuJour(sans).important).toBe(false);
+        expect(evenementDuJour(sans).texte).not.toMatch(/Astuce/);
+    });
+
+    it('tient sur une ligne : 31 caractères au plus, hors prénom', () => {
+        const contextes = [
+            base,
+            {...base, naissance: '2006-10-14'},
+            {...base, coursDuJour: [seance(14, '08:00', '10:00', {evaluation: true})]},
+            {...base, aujourdhui: new Date(2026, 9, 28), coursDuJour: [], semaine: semaine([0, 0, 0, 0, 0])},
+            {...base, aujourdhui: new Date(2026, 9, 23), vacances: {jours: 1, nom: 'de la Toussaint'}, semaine: semaine([300, 300, 300, 300, 300])},
+            {...base, vacances: null, coursDuJour: []},
+        ];
+        contextes.forEach((contexte) => {
+            expect(evenementDuJour({...contexte, prenom: ''}).texte.length).toBeLessThanOrEqual(31);
+        });
     });
 });
-

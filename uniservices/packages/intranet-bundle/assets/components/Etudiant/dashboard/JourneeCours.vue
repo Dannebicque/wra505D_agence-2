@@ -10,12 +10,12 @@ const props = defineProps({
   journee: {type: Object, required: true},
 });
 
-// 64 px par heure en bureau ; 46 sur un téléphone, pour que la journée tienne à l'écran dès
-// l'arrivée sous la carte de bienvenue.
+// 64 px par heure en bureau, 56 sur un téléphone : la journée garde de l'air, les cours d'une
+// heure restent lisibles.
 const telephone = window.matchMedia('(max-width: 1023px)');
-const hauteurHeure = ref(telephone.matches ? 46 : 64);
+const hauteurHeure = ref(telephone.matches ? 56 : 64);
 const suivreEcran = (evenement) => {
-  hauteurHeure.value = evenement.matches ? 46 : 64;
+  hauteurHeure.value = evenement.matches ? 56 : 64;
 };
 onMounted(() => telephone.addEventListener('change', suivreEcran));
 onUnmounted(() => telephone.removeEventListener('change', suivreEcran));
