@@ -1035,7 +1035,7 @@ Tests : `naissance.test.js`, `mon-profil.cy.js` (qui remplace `profil-etudiant.c
 **Pourquoi** SCO-3 : prénom, nom, login et adresse restent vides alors que l'API les renvoie.
 
 ### F6 · [front] Profil dans l'identité de l'accueil · M
-**Fait** (JEREMY, #172 et #175), mergé sur `develop`. Le lien « Profil » du compte menait l'étudiant
+**Fait** (JEREMY, #172, #175 et #178), mergé sur `develop`. Le lien « Profil » du compte menait l'étudiant
 sur `/auth/profil`, hors du menu et en erreur (identifiant manquant, comme avant F3). Il le mène
 désormais sur `/intranet/profil`, sous la barre haute et le menu de l'étudiant, sans fil d'Ariane
 comme l'agenda ; le personnel garde `/auth/profil`. La page reprend la trame de l'accueil : carte
@@ -1045,9 +1045,8 @@ rend la fiche), scolarité par année avec le bilan du semestre (moyenne, rang, 
 proposition). `BlocAccueil` et `LigneAccueil` passent dans `shared/components`. Les fixtures
 remplissent la fiche de Jane Doe et jugent son S1 de l'an dernier (#175). Tests : `profil.test.js`,
 `mon-profil.cy.js`.
-**En revue** (JEREMY, #178) : les groupes passent en lecture seule. Le composant du client laissait
-l'étudiant changer lui-même ses groupes CM, TD et TP, enregistrés en base ; ils sont attribués par
-la scolarité.
+Les groupes sont en lecture seule (#178) : le composant du client laissait l'étudiant changer
+lui-même ses groupes CM, TD et TP, enregistrés en base ; ils sont attribués par la scolarité.
 **Pourquoi** la page était la seule de l'étudiant hors de son menu, en erreur, et sans rien de la
 direction artistique retenue pour l'accueil et l'emploi du temps.
 
