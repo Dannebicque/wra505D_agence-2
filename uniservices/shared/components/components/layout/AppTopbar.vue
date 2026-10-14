@@ -368,8 +368,9 @@ const selectAnneeUniversitaire = (annee) => {
       </button>
 
       <!-- L'étudiant a un seul menu : le nom du module ne lui apprend rien, le logo mène à l'accueil. -->
-      <router-link to="/" class="layout-topbar-logo" :aria-label="estEtudiant ? 'Accueil' : undefined">
+      <router-link to="/" class="layout-topbar-logo" :aria-label="estEtudiant ? 'Intranet, accueil' : undefined">
         <Logo :logo-url="logoUrl" alt="logo" class="rounded-xl p-2" /> <span v-if="!estEtudiant" class="text-lg">{{ appName }}</span>
+        <span v-else class="layout-topbar-logo-nom">Intranet</span>
       </router-link>
     </div>
 

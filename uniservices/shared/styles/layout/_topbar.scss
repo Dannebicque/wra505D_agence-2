@@ -40,6 +40,14 @@
         span {
             text-transform: uppercase;
         }
+
+        // Le menu replié ne laisse la place qu'au logo : le nom n'apparaît que menu déplié.
+        .layout-topbar-logo-nom {
+            display: none;
+            text-transform: none;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+        }
     }
 
     .layout-topbar-action {

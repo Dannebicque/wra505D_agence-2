@@ -82,6 +82,10 @@
                 border-left: solid .5px var(--primary-color);
             }
 
+            &:not(.layout-static-inactive) .layout-topbar-logo-nom {
+                display: inline;
+            }
+
             // Replié, le menu reste une colonne d'icônes : les libellés sont masqués à l'écran
             // mais restent lus, et une infobulle les affiche au survol et au focus.
             &.layout-static-inactive {
