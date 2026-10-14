@@ -129,90 +129,97 @@ export function prochainesVacances(semaines, aujourdhui) {
     };
 }
 
-const jourDeLAnnee = (date) => Math.round((minuit(date) - new Date(date.getFullYear(), 0, 0)) / 86400000);
 const minutesDe = (cours) => cours.reduce((total, seance) => total + Math.round((seance.end - seance.start) / 60000), 0);
 
-// Plusieurs façons de dire bonne journée, pour qu'un jour ordinaire ne ressemble pas à la veille.
-const SALUTS_DU_MATIN = ['Bonne journée, {prenom}', 'Belle journée à vous', 'Bonne journée et bon courage'];
-
 /**
- * Le message du jour de la carte de bienvenue : d'abord un vrai événement (anniversaire,
- * évaluation, vacances, rentrée, week-end), sinon un mot bienveillant selon la journée et
- * l'heure. Jamais plus de 31 caractères hors prénom : il tient sur une ligne de la carte.
+ * Les messages possibles du jour pour la carte de bienvenue : les vrais événements (évaluation,
+ * vacances, rentrée, week-end), et des mots bienveillants selon la journée et l'heure. Jamais plus
+ * de 31 caractères hors prénom : chacun tient sur une ligne de la carte.
  *
  * @param contexte {aujourdhui, prenom, naissance, coursDuJour, semaine, semaines, semaineFormation,
  *   vacances, evaluations} ; coursDuJour et evaluations portent start, end, codeModule, evaluation.
- * @returns {{cle: string, icone: string, texte: string, important: boolean}} important : un vrai
- *   événement, affiché même sur un téléphone.
+ * @returns {Array<{cle: string, icone: string, texte: string, important: boolean}>} important : un
+ *   vrai événement, affiché même sur un téléphone.
  */
-export function evenementDuJour(contexte) {
+export function messagesDuJour(contexte) {
     const {aujourdhui, prenom, naissance, coursDuJour = [], semaine = [], semaines = [], semaineFormation, vacances, evaluations = []} = contexte;
-    const evenement = (cle, icone, texte, important = true) => ({cle, icone, texte: texte.replace('{prenom}', prenom ?? ''), important});
+    const message = (cle, icone, texte, important = true) => ({cle, icone, texte: texte.replace('{prenom}', prenom ?? ''), important});
     const jour = minuit(aujourdhui);
-    const weekEnd = [0, 6].includes(jour.getDay());
     const joursSuivants = semaine.filter(j => minuit(j.date) > jour);
     const joursPrecedents = semaine.filter(j => minuit(j.date) < jour);
     const lundi = new Date(jour.getFullYear(), jour.getMonth(), jour.getDate() - ((jour.getDay() + 6) % 7));
     const iso = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
     const semaineDu = (date) => semaines.find(s => s.lundi === iso(date));
     const lundiPrecedent = new Date(lundi.getFullYear(), lundi.getMonth(), lundi.getDate() - 7);
-    const enVacances = semaineDu(lundi)?.minutes === 0 && semaines.some(s => s.lundi > iso(lundi) && s.minutes > 0)
-        && semaines.some(s => s.lundi < iso(lundi) && s.minutes > 0);
+    const duJour = minutesDe(coursDuJour);
+    const messages = [];
 
     if (naissance) {
         const [, mois, jourNaissance] = naissance.slice(0, 10).split('-').map(Number);
         if (mois === jour.getMonth() + 1 && jourNaissance === jour.getDate()) {
-            return evenement('anniversaire', 'pi pi-gift', 'Joyeux anniversaire, {prenom}');
+            messages.push(message('anniversaire', 'pi pi-gift', 'Joyeux anniversaire, {prenom}'));
         }
     }
     if (coursDuJour.some(seance => seance.evaluation)) {
-        return evenement('evaluation', 'pi pi-pencil', 'Bon courage pour l\'évaluation');
+        messages.push(message('evaluation', 'pi pi-pencil', 'Bon courage pour l\'évaluation'));
     }
-    if (enVacances) {
-        return evenement('vacances', 'pi pi-sun', `Bonnes vacances ${NOMS_DE_VACANCES[saisonDeVacances(iso(lundi))]}`);
+    if (semaineDu(lundi)?.minutes === 0 && semaines.some(s => s.lundi > iso(lundi) && s.minutes > 0)
+        && semaines.some(s => s.lundi < iso(lundi) && s.minutes > 0)) {
+        messages.push(message('vacances', 'pi pi-sun', `Bonnes vacances ${NOMS_DE_VACANCES[saisonDeVacances(iso(lundi))]}`));
     }
     if (vacances && vacances.jours <= 3 && coursDuJour.length && joursSuivants.every(j => j.minutes === 0)) {
-        return evenement('veille-de-vacances', 'pi pi-sun', 'Dernier jour avant les vacances');
+        messages.push(message('veille-de-vacances', 'pi pi-sun', 'Dernier jour avant les vacances'));
+    } else if (vacances && vacances.jours <= 21) {
+        messages.push(message('vacances-proches', 'pi pi-sun', vacances.jours > 1 ? `Vacances dans ${vacances.jours} jours` : 'Vacances demain'));
     }
     if (coursDuJour.length && semaineDu(lundiPrecedent)?.minutes === 0 && joursPrecedents.every(j => j.minutes === 0)) {
-        return evenement('retour', 'pi pi-sparkles', 'Bon retour de vacances');
+        messages.push(message('retour', 'pi pi-sparkles', 'Bon retour de vacances'));
     }
     if (semaineFormation === 1) {
-        return evenement('rentree', 'pi pi-flag', 'Bonne rentrée');
+        messages.push(message('rentree', 'pi pi-flag', 'Bonne rentrée'));
     }
     const evaluationProche = evaluations.find(seance => minuit(seance.start) > jour);
     if (evaluationProche) {
         const nomDuJour = evaluationProche.start.toLocaleDateString('fr-FR', {weekday: 'long'});
-        return evenement('evaluation-proche', 'pi pi-pencil', `Évaluation ${nomDuJour} en ${evaluationProche.codeModule}`);
+        messages.push(message('evaluation-proche', 'pi pi-pencil', `Évaluation ${nomDuJour} en ${evaluationProche.codeModule}`));
     }
-    if (vacances && vacances.jours <= 7) {
-        return evenement('vacances-proches', 'pi pi-sun', vacances.jours > 1 ? `Vacances dans ${vacances.jours} jours` : 'Vacances demain');
-    }
-    if (weekEnd && !coursDuJour.length) {
-        return evenement('week-end', 'pi pi-heart', 'Bon week-end');
+    if ([0, 6].includes(jour.getDay()) && !coursDuJour.length) {
+        messages.push(message('week-end', 'pi pi-heart', 'Bon week-end'));
     }
 
-    const duJour = minutesDe(coursDuJour);
     if (jour.getDay() === 1 && coursDuJour.length) {
-        return evenement('semaine', 'pi pi-heart', 'Bonne semaine, {prenom}', false);
+        messages.push(message('semaine', 'pi pi-heart', 'Bonne semaine, {prenom}', false));
     }
     if (coursDuJour.length && joursSuivants.every(j => j.minutes === 0)) {
-        return evenement('fin-de-semaine', 'pi pi-forward', 'Bientôt le week-end, courage', false);
+        messages.push(message('fin-de-semaine', 'pi pi-forward', 'Bientôt le week-end, courage', false));
     }
-    if (!coursDuJour.length) {
-        return evenement('sans-cours', 'pi pi-face-smile', 'Journée sans cours, profitez-en', false);
+    if (!coursDuJour.length && ![0, 6].includes(jour.getDay())) {
+        messages.push(message('sans-cours', 'pi pi-face-smile', 'Journée sans cours, profitez-en', false));
     }
-    if (semaine.filter(j => j.minutes > 0).length > 1 && semaine.every(j => j.minutes <= duJour)) {
-        return evenement('journee-chargee', 'pi pi-bolt', 'Grosse journée, bon courage', false);
-    }
-    if (duJour <= 120) {
-        return evenement('journee-legere', 'pi pi-face-smile', 'Journée tranquille aujourd\'hui', false);
+    if (semaine.filter(j => j.minutes > 0).length > 1 && duJour > 0 && semaine.every(j => j.minutes <= duJour)) {
+        messages.push(message('journee-chargee', 'pi pi-bolt', 'Grosse journée, bon courage', false));
+    } else if (duJour > 0 && duJour <= 120) {
+        messages.push(message('journee-legere', 'pi pi-face-smile', 'Journée tranquille aujourd\'hui', false));
     }
     if (aujourdhui.getHours() >= 18) {
-        return evenement('soir', 'pi pi-moon', 'Bonne soirée, {prenom}', false);
+        messages.push(message('soir', 'pi pi-moon', 'Bonne soirée, {prenom}', false));
+    } else if (aujourdhui.getHours() >= 12) {
+        messages.push(message('apres-midi', 'pi pi-sun', 'Bon après-midi, {prenom}', false));
+    } else {
+        messages.push(message('journee', 'pi pi-sun', 'Bonne journée, {prenom}', false));
+        messages.push(message('courage', 'pi pi-heart', 'Bonne journée et bon courage', false));
     }
-    if (aujourdhui.getHours() >= 12) {
-        return evenement('apres-midi', 'pi pi-sun', 'Bon après-midi, {prenom}', false);
-    }
-    return evenement('journee', 'pi pi-sun', SALUTS_DU_MATIN[jourDeLAnnee(jour) % SALUTS_DU_MATIN.length], false);
+    return messages;
+}
+
+/**
+ * Le message affiché : l'anniversaire l'emporte toujours, sinon un tirage parmi les messages du
+ * jour, refait à chaque chargement de la page pour que la carte surprenne.
+ *
+ * @param tirage nombre de [0, 1[, Math.random() par défaut.
+ */
+export function evenementDuJour(contexte, tirage = Math.random()) {
+    const messages = messagesDuJour(contexte);
+    return messages.find(message => message.cle === 'anniversaire')
+        ?? messages[Math.min(messages.length - 1, Math.floor(tirage * messages.length))];
 }

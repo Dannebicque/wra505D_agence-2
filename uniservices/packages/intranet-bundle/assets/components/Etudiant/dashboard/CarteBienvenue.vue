@@ -23,8 +23,9 @@ onMounted(async () => {
   }
 });
 
-// Un événement par jour, pour que la carte surprenne : anniversaire, vacances, rentrée, évaluation,
-// fin de semaine, ou à défaut un message qui change d'un jour à l'autre.
+// Un message tiré au chargement parmi ceux du jour (vacances, évaluation, bon courage…), pour que
+// la carte surprenne à chaque visite ; le tirage reste le même pendant la visite.
+const tirage = Math.random();
 const evenement = computed(() => (props.journee.cours.value === null ? null : evenementDuJour({
   aujourdhui: props.journee.maintenant.value,
   prenom: userStore.user?.prenom,
@@ -35,7 +36,7 @@ const evenement = computed(() => (props.journee.cours.value === null ? null : ev
   semaineFormation: props.journee.semaineFormation.value,
   vacances: props.journee.vacances.value,
   evaluations: props.journee.evaluations.value,
-})));
+}, tirage)));
 
 const heure = (date) => date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
 const lieu = (seance) => seance.salle || 'lieu non précisé';
@@ -222,8 +223,7 @@ const finDeJournee = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
-  margin: auto 0 0;
-  padding-top: 1.5rem;
+  margin: 0;
   max-width: calc(100% - 5rem);
 }
 
@@ -242,14 +242,15 @@ const finDeJournee = computed(() => {
   line-height: 1.35;
 }
 
-/* Le milieu de la carte : la semaine, centrée entre l'en-tête et les repères du moment. */
+/* Le milieu de la carte : la semaine, centrée entre l'en-tête et les repères du moment. Lui seul
+   a des marges automatiques, pour que l'espace libre se partage également dessus et dessous. */
 .bienvenue__milieu {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: auto 0;
-  padding: 1.5rem 0 0.5rem;
+  padding: 1.5rem 0;
 }
 
 .bienvenue__semaine {
