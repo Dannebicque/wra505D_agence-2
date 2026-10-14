@@ -39,3 +39,42 @@ describe('Journée de l\'étudiant sur l\'accueil', () => {
         });
     });
 });
+
+/** Mercredi de la troisième semaine de cours de la fausse base Celcat, comme agenda-etudiant.cy.js. */
+const mercrediDeSemaineDeCours = () => {
+    const aujourdhui = new Date();
+    const mois = aujourdhui.getMonth() + 1;
+    const annee = (mois === 8 && aujourdhui.getDate() >= 15) || mois > 8 ? aujourdhui.getFullYear() : aujourdhui.getFullYear() - 1;
+    const premierSeptembre = new Date(annee, 8, 1);
+    const lundi = 1 - ((premierSeptembre.getDay() + 6) % 7);
+    return new Date(annee, 8, lundi + 16, 9, 0);
+};
+
+describe('Semaine de la carte de bienvenue', () => {
+    beforeEach(() => {
+        cy.viewport(1280, 800);
+        cy.connexionInvite('etudiant');
+        cy.clock(mercrediDeSemaineDeCours(), ['Date']);
+    });
+
+    it('ouvre le jour cliqué dans la vue de l\'agenda choisie la dernière fois', () => {
+        cy.visit('/app/intranet/', {
+            onBeforeLoad: (win) => win.localStorage.setItem('agenda.vue', 'day'),
+        });
+        cy.get('.bienvenue__lien', { timeout: 15000 }).should('have.length.at.least', 5).each(($lien) => {
+            expect($lien[0].getBoundingClientRect().width).to.be.at.least(44);
+        });
+        cy.get('.bienvenue__lien').eq(3).should('contain', 'voir l\'emploi du temps').click();
+        cy.location('pathname').should('eq', '/app/intranet/agenda');
+        cy.get('.vuecal--day-view', { timeout: 15000 }).should('exist');
+        cy.get('.vuecal h2').invoke('text').should('match', /^Jeudi \d/);
+    });
+
+    it('ouvre la semaine quand c\'est la vue retenue', () => {
+        cy.visit('/app/intranet/', {
+            onBeforeLoad: (win) => win.localStorage.setItem('agenda.vue', 'week'),
+        });
+        cy.get('.bienvenue__lien', { timeout: 15000 }).eq(3).click();
+        cy.get('.vuecal--week-view', { timeout: 15000 }).should('exist');
+    });
+});
