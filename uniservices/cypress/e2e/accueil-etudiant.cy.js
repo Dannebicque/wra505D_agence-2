@@ -54,14 +54,25 @@ describe('Accueil de l\'étudiant', () => {
         cy.contains('Mon dashboard').should('not.exist');
     });
 
-    it('aligne en bureau la journée et « À faire », puis documents, actualités et notes', () => {
+    it('range en bureau ce qui le concerne à gauche, ce qui se passe autour à droite', () => {
         cy.visit('/app/intranet/');
-        const haut = (selecteur) => cy.get(selecteur, { timeout: 15000 }).then(($bloc) => Math.round($bloc[0].getBoundingClientRect().top));
-        haut('.journee').then((journee) => haut('.accueil__a-faire').should('eq', journee));
-        haut('.accueil__documents').then((documents) => {
-            haut('.accueil__actualites').should('eq', documents);
-            haut('.accueil__notes').should('eq', documents);
+        const boite = (selecteur) => cy.get(selecteur, { timeout: 15000 }).then(($bloc) => $bloc[0].getBoundingClientRect());
+        boite('.journee').then((journee) => {
+            boite('.accueil__documents').its('top').should('be.closeTo', journee.top, 1);
+            boite('.accueil__a-faire').its('left').should('be.closeTo', journee.left, 1);
+            boite('.accueil__notes').its('left').should('be.closeTo', journee.left, 1);
         });
+        boite('.accueil__documents').then((documents) => {
+            boite('.accueil__actualites').its('left').should('be.closeTo', documents.left, 1);
+            boite('.accueil__contacts').its('left').should('be.closeTo', documents.left, 1);
+        });
+    });
+
+    it('réserve le rouge à ce qui demande une action', () => {
+        cy.intercept('GET', '**/api/me/scolarite', releve);
+        cy.visit('/app/intranet/');
+        cy.get('.accueil__a-faire .ligne--action', { timeout: 15000 }).should('have.length', 1).and('contain', 'absence à justifier');
+        cy.get('.accueil__documents, .accueil__actualites').find('[class*="seance"]').should('not.exist');
     });
 
     it('liste les absences à régler et les évaluations à venir', () => {
@@ -80,18 +91,15 @@ describe('Accueil de l\'étudiant', () => {
         });
     });
 
-    it('colore chaque note selon son seuil, avec les jetons du thème', () => {
+    it('teinte discrètement la seule valeur de chaque note, selon son seuil', () => {
         cy.intercept('GET', '**/api/me/scolarite', releve);
         cy.visit('/app/intranet/');
 
-        const pastille = (type) => cy.window().then((fenetre) => fenetre.getComputedStyle(fenetre.document.documentElement)
-            .getPropertyValue(`--p-seance-${type}-pill-background`).trim());
-        const fond = (texte) => cy.get('.accueil__notes', { timeout: 15000 }).contains('.note', texte)
-            .then(($note) => $note[0].style.background);
-
-        [['8 / 20', 'evaluation'], ['12 / 20', 'cm'], ['15 / 20', 'tp']].forEach(([texte, type]) => {
-            fond(texte).should('eq', `var(--p-seance-${type}-pill-background)`);
-            pastille(type).should('not.be.empty');
+        cy.get('.accueil__notes', { timeout: 15000 }).within(() => {
+            cy.contains('.note', '8 / 20').should('have.class', 'note--faible');
+            cy.contains('.note', '12 / 20').should('have.class', 'note--moyenne');
+            cy.contains('.note', '15 / 20').should('have.class', 'note--bonne');
+            cy.get('.note').each(($note) => expect($note.css('background-color')).to.match(/rgba\(0, 0, 0, 0\)|transparent/));
         });
     });
 });

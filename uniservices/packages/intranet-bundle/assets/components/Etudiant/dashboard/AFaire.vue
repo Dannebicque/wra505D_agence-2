@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from 'vue';
 import {absencesARegler, libelleDelai} from '@/utils/accueil.js';
+import LigneAccueil from './LigneAccueil.vue';
 
 const props = defineProps({
   // Relevé de /api/me/scolarite et échéances de /api/me/cahier-de-texte ; null tant qu'ils ne
@@ -29,8 +30,8 @@ const pluriel = (nombre, mot) => `${nombre} ${mot}${nombre > 1 ? 's' : ''}`;
   <p v-if="erreur" class="m-0!">Ce qui vous attend n'a pas pu être chargé.</p>
 
   <div v-else-if="!charge" class="flex flex-col gap-2" aria-hidden="true">
-    <Skeleton height="3.25rem" border-radius="14px"/>
-    <Skeleton height="3.25rem" border-radius="14px"/>
+    <Skeleton height="2.75rem" border-radius="12px"/>
+    <Skeleton height="2.75rem" border-radius="12px"/>
   </div>
 
   <p v-else-if="rienAFaire" class="a-faire__rien">
@@ -39,31 +40,24 @@ const pluriel = (nombre, mot) => `${nombre} ${mot}${nombre > 1 ? 's' : ''}`;
   </p>
 
   <ul v-else class="a-faire">
-    <li v-if="absences.aJustifier.length" class="a-faire__tuile a-faire__tuile--evaluation">
-      <RouterLink to="/intranet/scolarite" class="a-faire__lien">
-        <span class="a-faire__titre">{{ pluriel(absences.aJustifier.length, 'absence') }} à justifier</span>
-        <span class="a-faire__detail">
-          {{ absences.aJustifier[0].matiere }}, {{ jourCourt(absences.aJustifier[0].debut) }}
-        </span>
-      </RouterLink>
-    </li>
-    <li v-if="absences.enAttente.length" class="a-faire__tuile a-faire__tuile--td">
-      <RouterLink to="/intranet/scolarite" class="a-faire__lien">
-        <span class="a-faire__titre">{{ pluriel(absences.enAttente.length, 'justificatif') }} en attente</span>
-        <span class="a-faire__detail">{{ absences.enAttente[0].matiere }}</span>
-      </RouterLink>
-    </li>
-    <li v-for="echeance in prochaines" :key="`${echeance.date}-${echeance.code}-${echeance.libelle}`" class="a-faire__tuile a-faire__tuile--cm">
-      <RouterLink to="/intranet/cahier-de-texte" class="a-faire__lien">
-        <span class="a-faire__titre">
-          <span class="a-faire__pastille">{{ echeance.type || echeance.libelle }}</span>
-          {{ echeance.code }} {{ echeance.matiere }}
-        </span>
-        <span class="a-faire__detail">
-          <time :datetime="echeance.date">{{ jourCourt(echeance.date) }}</time> · {{ libelleDelai(echeance.date, aujourdhui) }}
-        </span>
-      </RouterLink>
-    </li>
+    <LigneAccueil v-if="absences.aJustifier.length" to="/intranet/scolarite" icone="pi pi-exclamation-circle" ton="action">
+      <template #titre>{{ pluriel(absences.aJustifier.length, 'absence') }} à justifier</template>
+      <template #detail>{{ absences.aJustifier[0].matiere }}, {{ jourCourt(absences.aJustifier[0].debut) }}</template>
+    </LigneAccueil>
+    <LigneAccueil v-if="absences.enAttente.length" to="/intranet/scolarite" icone="pi pi-clock">
+      <template #titre>{{ pluriel(absences.enAttente.length, 'justificatif') }} en attente</template>
+      <template #detail>{{ absences.enAttente[0].matiere }}</template>
+    </LigneAccueil>
+    <LigneAccueil
+        v-for="echeance in prochaines"
+        :key="`${echeance.date}-${echeance.code}-${echeance.libelle}`"
+        to="/intranet/cahier-de-texte"
+        icone="pi pi-calendar"
+    >
+      <template #titre>{{ echeance.code }} {{ echeance.matiere }}</template>
+      <template #detail>{{ echeance.type || echeance.libelle }} · <time :datetime="echeance.date">{{ jourCourt(echeance.date) }}</time></template>
+      <template #valeur>{{ libelleDelai(echeance.date, aujourdhui) }}</template>
+    </LigneAccueil>
   </ul>
 </template>
 
@@ -71,70 +65,9 @@ const pluriel = (nombre, mot) => `${nombre} ${mot}${nombre > 1 ? 's' : ''}`;
 .a-faire {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.125rem;
   margin: 0;
   padding: 0;
-  list-style: none;
-}
-
-.a-faire__tuile {
-  border-radius: 14px;
-  background: var(--tuile-fond);
-  color: var(--tuile-couleur);
-}
-
-.a-faire__tuile--evaluation {
-  --tuile-fond: var(--p-seance-evaluation-background);
-  --tuile-couleur: var(--p-seance-evaluation-color);
-}
-
-.a-faire__tuile--td {
-  --tuile-fond: var(--p-seance-td-background);
-  --tuile-couleur: var(--p-seance-td-color);
-}
-
-.a-faire__tuile--cm {
-  --tuile-fond: var(--p-seance-cm-background);
-  --tuile-couleur: var(--p-seance-cm-color);
-}
-
-.a-faire__lien {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  min-height: 44px;
-  padding: 0.5rem 0.75rem;
-  border-radius: inherit;
-  color: inherit;
-}
-
-.a-faire__lien:hover .a-faire__titre {
-  text-decoration: underline;
-}
-
-.a-faire__titre {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.a-faire__detail {
-  font-size: 0.9375rem;
-  color: var(--p-text-color);
-}
-
-.a-faire__pastille {
-  padding: 0 0.5rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  background: var(--p-seance-cm-pill-background);
-  color: var(--p-seance-cm-pill-color);
 }
 
 .a-faire__rien {
@@ -142,7 +75,6 @@ const pluriel = (nombre, mot) => `${nombre} ${mot}${nombre > 1 ? 's' : ''}`;
   align-items: center;
   gap: 0.5rem;
   margin: 0;
-  color: var(--p-seance-tp-color);
-  font-weight: 600;
+  color: var(--p-text-muted-color);
 }
 </style>

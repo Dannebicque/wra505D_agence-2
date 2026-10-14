@@ -47,57 +47,52 @@ onMounted(() => {
   <section class="col-span-12 lg:col-span-10 mt-10 md:mt-0">
     <h1 class="sr-only">Accueil</h1>
 
+    <!-- Deux colonnes qui suivent l'ordre du code, celui de l'importance : ce qui me concerne
+         aujourd'hui à gauche, ce qui se passe autour à droite. Le téléphone garde cet ordre. -->
     <div class="accueil">
-      <CarteJournee class="accueil__journee"/>
+      <div class="accueil__colonne">
+        <CarteJournee class="accueil__journee"/>
 
-      <BlocAccueil titre="À faire" icone="pi pi-flag" teinte="evaluation" class="accueil__a-faire">
-        <AFaire :releve="releve" :echeances="echeances" :erreur="erreurReleve || erreurEcheances"/>
-      </BlocAccueil>
+        <BlocAccueil titre="À faire" icone="pi pi-flag" class="accueil__a-faire">
+          <AFaire :releve="releve" :echeances="echeances" :erreur="erreurReleve || erreurEcheances"/>
+        </BlocAccueil>
 
-      <BlocAccueil class="accueil__notes" titre="Dernières notes" icone="pi pi-chart-bar" teinte="tp" lien="/intranet/scolarite" texte-lien="Toutes mes notes">
-        <NotesWidget :releve="releve" :erreur="erreurReleve"/>
-      </BlocAccueil>
+        <BlocAccueil class="accueil__notes" titre="Dernières notes" icone="pi pi-chart-bar" lien="/intranet/scolarite" texte-lien="Toutes mes notes">
+          <NotesWidget :releve="releve" :erreur="erreurReleve"/>
+        </BlocAccueil>
+      </div>
 
-      <BlocAccueil class="accueil__documents" titre="Nouveaux documents" icone="pi pi-folder-open" teinte="cm" lien="/documents" texte-lien="Tous les documents">
-        <NouveauxDocuments/>
-      </BlocAccueil>
+      <div class="accueil__colonne">
+        <BlocAccueil class="accueil__documents" titre="Nouveaux documents" icone="pi pi-folder-open" lien="/documents" texte-lien="Tous les documents">
+          <NouveauxDocuments/>
+        </BlocAccueil>
 
-      <BlocAccueil class="accueil__actualites" titre="Actualités" icone="pi pi-megaphone" teinte="td">
-        <Actualites/>
-      </BlocAccueil>
+        <BlocAccueil class="accueil__actualites" titre="Actualités" icone="pi pi-megaphone">
+          <Actualites/>
+        </BlocAccueil>
 
-      <BlocAccueil class="accueil__contacts" titre="Contacts" icone="pi pi-phone" teinte="sae">
-        <ContactsWidget v-if="contacts" :data="contacts"/>
-        <Skeleton v-else height="5rem" border-radius="14px" aria-hidden="true"/>
-      </BlocAccueil>
+        <BlocAccueil class="accueil__contacts" titre="Contacts" icone="pi pi-phone">
+          <ContactsWidget v-if="contacts" :data="contacts"/>
+          <Skeleton v-else height="5rem" border-radius="14px" aria-hidden="true"/>
+        </BlocAccueil>
+      </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-/* Le code suit l'ordre d'importance, que lisent le clavier, les lecteurs d'écran et le téléphone :
-   la journée, ce qui attend une action, les notes, puis ce qu'on consulte. En bureau, les zones
-   rangent les blocs de même hauteur sur une même rangée. */
-.accueil {
+.accueil,
+.accueil__colonne {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+  align-content: start;
 }
 
 @media (min-width: 1024px) {
   .accueil {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-areas:
-      "journee journee a-faire"
-      "documents actualites notes"
-      "contacts contacts contacts";
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
   }
-
-  .accueil__journee { grid-area: journee; }
-  .accueil__a-faire { grid-area: a-faire; }
-  .accueil__notes { grid-area: notes; }
-  .accueil__documents { grid-area: documents; }
-  .accueil__actualites { grid-area: actualites; }
-  .accueil__contacts { grid-area: contacts; }
 }
 </style>

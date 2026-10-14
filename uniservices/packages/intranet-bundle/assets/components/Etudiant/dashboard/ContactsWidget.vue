@@ -20,7 +20,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
       <li
           v-for="departement in departements"
           :key="departement.id"
-          :class="['contact', { 'contact--sien': departement.id === data.departementEtudiantId }]"
+          class="contact"
       >
         <div class="flex items-center gap-3">
           <span class="contact__icone" aria-hidden="true">
@@ -69,10 +69,6 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
   background: var(--p-content-hover-background);
 }
 
-.contact--sien {
-  background: var(--p-seance-cm-background);
-}
-
 .contact__icone {
   display: inline-flex;
   align-items: center;
@@ -82,13 +78,12 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
   flex-shrink: 0;
   border-radius: 999px;
   background: var(--p-content-background);
-  color: var(--p-seance-cm-color);
+  color: var(--p-text-muted-color);
 }
 
 .contact__sien {
   font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--p-seance-cm-color);
+  color: var(--p-text-muted-color);
 }
 
 .contact__action {

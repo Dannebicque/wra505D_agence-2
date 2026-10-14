@@ -61,16 +61,10 @@ const situation = computed(() => getSituationDuJour(coursDuJour.value, maintenan
 
 const intitule = (seance) => [seance.codeModule, seance.libModule].filter(Boolean).join(' ');
 
-const apres = computed(() => suivant.value
-    && `${libelleJour(suivant.value.debut, maintenant.value)} ${heure(suivant.value.debut)}, ${suivant.value.codeModule}${suivant.value.salle ? ` en ${suivant.value.salle}` : ''}`);
-
-const ensuite = computed(() => {
-  const {prochain} = situation.value;
-  if (prochain) {
-    return `${heure(prochain.debut)}, ${intitule(prochain)}${prochain.salle ? ` en ${prochain.salle}` : ''}`;
-  }
-  return suivant.value ? `fin de journée · ${apres.value}` : 'fin de journée';
-});
+// Le prochain cours n'est signalé dans la liste que s'il n'y en a pas en cours : un seul repère.
+const estProchain = (seance) => !situation.value.enCours
+    && situation.value.prochain?.debut.getTime() === seance.start.getTime()
+    && situation.value.prochain.codeModule === seance.codeModule;
 
 const styleSeance = (seance) => {
   const type = typeSeance(seance);
@@ -85,61 +79,36 @@ const styleSeance = (seance) => {
 
 <template>
   <section class="journee" aria-labelledby="accueil-bonjour">
+    <!-- Le bandeau dit où en est la journée ; la liste dessous porte les cours, sans doublon (TB-15). -->
     <div class="journee__bandeau">
-      <span class="journee__cercle journee__cercle--accent" aria-hidden="true"></span>
-      <span class="journee__cercle journee__cercle--clair" aria-hidden="true"></span>
-      <span class="journee__cercle journee__cercle--sombre" aria-hidden="true"></span>
+      <span class="journee__cercle" aria-hidden="true"></span>
 
       <h2 id="accueil-bonjour" class="journee__bonjour">
         <span class="font-light">Bonjour,</span> {{ userStore.user?.prenom }}
       </h2>
       <p class="journee__date">{{ maintenant.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) }}</p>
 
-      <div v-if="hasError" class="journee__moment">
-        <p class="journee__titre">L'emploi du temps est indisponible pour le moment.</p>
-      </div>
-      <div v-else-if="cours === null" class="journee__moment" aria-hidden="true">
-        <Skeleton width="6rem" height="1.25rem" border-radius="999px" class="mb-2 opacity-40"/>
-        <Skeleton width="70%" height="1.5rem" class="opacity-40"/>
-      </div>
-      <div v-else-if="situation.enCours" class="journee__moment">
-        <p class="journee__etiquette">En cours</p>
-        <p class="journee__titre">{{ intitule(situation.enCours) }}</p>
-        <p class="journee__detail">
-          <i class="pi pi-map-marker" aria-hidden="true"></i>
-          <span class="sr-only">Lieu :</span>
-          {{ situation.enCours.salle || 'Lieu non précisé' }} · jusqu'à
-          <time :datetime="dateAttr(situation.enCours.fin)">{{ heure(situation.enCours.fin) }}</time>,
-          encore {{ formatDelai(minutesEntre(maintenant, situation.enCours.fin)) }}
-        </p>
-        <p class="journee__ensuite">Ensuite : {{ ensuite }}</p>
-      </div>
-      <div v-else-if="situation.prochain" class="journee__moment">
-        <p class="journee__etiquette">Prochain cours</p>
-        <p class="journee__titre">{{ intitule(situation.prochain) }}</p>
-        <p class="journee__detail">
-          <i class="pi pi-map-marker" aria-hidden="true"></i>
-          <span class="sr-only">Lieu :</span>
-          {{ situation.prochain.salle || 'Lieu non précisé' }} · à
-          <time :datetime="dateAttr(situation.prochain.debut)">{{ heure(situation.prochain.debut) }}</time>,
-          dans {{ formatDelai(minutesEntre(maintenant, situation.prochain.debut)) }}
-        </p>
-      </div>
-      <div v-else class="journee__moment">
-        <p class="journee__etiquette">{{ situation.aDesCours ? 'Journée terminée' : 'Pas de cours aujourd\'hui' }}</p>
-        <p class="journee__titre">
-          <template v-if="suivant">
-            <span class="capitalize">{{ libelleJour(suivant.debut, maintenant) }}</span>{{ ' ' }}
-            <time :datetime="dateAttr(suivant.debut)">{{ heure(suivant.debut) }}</time> · {{ intitule(suivant) }}
-          </template>
-          <template v-else>Aucun cours prévu d'ici la semaine prochaine.</template>
-        </p>
-        <p v-if="suivant?.salle" class="journee__detail">
-          <i class="pi pi-map-marker" aria-hidden="true"></i>
-          <span class="sr-only">Lieu :</span>
-          {{ suivant.salle }}
-        </p>
-      </div>
+      <p v-if="hasError" class="journee__etat">L'emploi du temps est indisponible pour le moment.</p>
+      <Skeleton v-else-if="cours === null" width="70%" height="1.5rem" class="mt-2 opacity-40" aria-hidden="true"/>
+      <p v-else-if="situation.enCours" class="journee__etat">
+        En cours jusqu'à <time :datetime="dateAttr(situation.enCours.fin)">{{ heure(situation.enCours.fin) }}</time>,
+        encore {{ formatDelai(minutesEntre(maintenant, situation.enCours.fin)) }}<template v-if="situation.enCours.salle">,
+        en <strong>{{ situation.enCours.salle }}</strong></template>.
+      </p>
+      <p v-else-if="situation.prochain" class="journee__etat">
+        Prochain cours à <time :datetime="dateAttr(situation.prochain.debut)">{{ heure(situation.prochain.debut) }}</time>,
+        dans {{ formatDelai(minutesEntre(maintenant, situation.prochain.debut)) }}<template v-if="situation.prochain.salle">,
+        en <strong>{{ situation.prochain.salle }}</strong></template>.
+      </p>
+      <p v-else class="journee__etat">
+        {{ situation.aDesCours ? 'Journée terminée.' : 'Pas de cours aujourd\'hui.' }}
+        <template v-if="suivant">
+          <span class="capitalize">{{ libelleJour(suivant.debut, maintenant) }}</span> à
+          <time :datetime="dateAttr(suivant.debut)">{{ heure(suivant.debut) }}</time> :
+          {{ intitule(suivant) }}<template v-if="suivant.salle"> en <strong>{{ suivant.salle }}</strong></template>.
+        </template>
+        <template v-else>Aucun cours prévu d'ici la semaine prochaine.</template>
+      </p>
     </div>
 
     <div class="journee__corps">
@@ -157,6 +126,7 @@ const styleSeance = (seance) => {
             <span class="journee__libelle">{{ seance.libModule }}</span>
             <span v-if="seance.salle" class="journee__salle">· {{ seance.salle }}</span>
             <span v-if="etatCours(seance, maintenant).etat === 'en-cours'" class="journee__maintenant">en cours</span>
+            <span v-else-if="estProchain(seance)" class="journee__maintenant">dans {{ formatDelai(minutesEntre(maintenant, seance.start)) }}</span>
             <span v-else-if="etatCours(seance, maintenant).etat === 'passe'" class="sr-only">, terminé</span>
           </span>
         </li>
@@ -179,11 +149,11 @@ const styleSeance = (seance) => {
   overflow: hidden;
 }
 
-/* Le violet de l'IUT en plein, quel que soit le thème : le texte blanc y garde 9,95:1. Les
-   cercles reprennent ceux du logo, rangés à droite pour ne jamais passer sous le texte. */
+/* Le violet de l'IUT en plein, quel que soit le thème : le texte blanc y garde 9,95:1. Un seul
+   cercle, celui du logo, rangé dans l'angle pour ne jamais passer sous le texte. */
 .journee__bandeau {
   position: relative;
-  padding: 1.125rem 1.25rem 1.25rem;
+  padding: 1rem 1.25rem 1.125rem;
   background: var(--p-primary-500);
   color: #FFFFFF;
   overflow: hidden;
@@ -191,46 +161,30 @@ const styleSeance = (seance) => {
 
 .journee__cercle {
   position: absolute;
+  right: -1.5rem;
+  top: -1.5rem;
+  width: 4.5rem;
+  height: 4.5rem;
   border-radius: 999px;
+  background: var(--accent-color);
   pointer-events: none;
 }
 
-.journee__cercle--accent {
-  right: -2.25rem;
-  top: -2.25rem;
-  width: 6.5rem;
-  height: 6.5rem;
-  background: var(--accent-color);
-}
-
-.journee__cercle--clair {
-  right: 4rem;
-  top: 2.5rem;
-  width: 1.75rem;
-  height: 1.75rem;
-  background: var(--p-primary-300);
-}
-
-.journee__cercle--sombre {
-  right: 1.25rem;
-  bottom: -2.5rem;
-  width: 5rem;
-  height: 5rem;
-  background: var(--p-primary-600);
-}
-
+/* Trois niveaux : le bonjour, l'état de la journée, la date (TB-13). */
 .journee__bonjour {
   position: relative;
   margin: 0 !important;
-  font-size: 1rem !important;
+  max-width: calc(100% - 3.5rem);
+  font-size: 1.5rem !important;
   font-weight: 700;
+  line-height: 1.25;
   color: inherit;
 }
 
 .journee__date {
   position: relative;
-  margin: 0 0 0.875rem;
-  font-size: 1rem;
+  margin: 0.125rem 0 0;
+  font-size: 0.9375rem;
   color: var(--p-primary-200);
 }
 
@@ -238,50 +192,15 @@ const styleSeance = (seance) => {
   text-transform: uppercase;
 }
 
-.journee__moment {
+.journee__etat {
   position: relative;
-  max-width: calc(100% - 6rem);
-}
-
-.journee__moment p {
-  margin: 0;
-}
-
-/* Texte violet sur l'accent : 5,29:1. */
-.journee__etiquette {
-  display: inline-block;
-  margin-bottom: 0.375rem !important;
-  padding: 0 0.625rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  line-height: 1.375rem;
-  background: var(--accent-color);
-  color: var(--p-primary-500);
-}
-
-.journee__titre {
+  margin: 0.625rem 0 0;
   font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.journee__etat strong {
   font-weight: 700;
-  line-height: 1.3;
-}
-
-.journee__detail {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.25rem !important;
-  font-size: 1rem;
-  color: var(--p-primary-100);
-}
-
-.journee__ensuite {
-  margin-top: 0.75rem !important;
-  padding-top: 0.625rem;
-  border-top: 1px solid color-mix(in srgb, #FFFFFF 22%, transparent);
-  font-size: 1rem;
-  color: var(--p-primary-200);
 }
 
 .journee__corps {
@@ -339,6 +258,7 @@ const styleSeance = (seance) => {
 }
 
 .journee__code {
+  font-weight: 600;
   color: var(--seance-couleur);
 }
 

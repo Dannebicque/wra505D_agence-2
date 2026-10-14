@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue';
 import {getWidgetDataByCodeService} from '@requests';
+import LigneAccueil from './LigneAccueil.vue';
 
 const AFFICHEES = 4;
 
@@ -48,23 +49,21 @@ const jourCourt = (valeur) => (valeur ? new Date(valeur).toLocaleDateString('fr-
   <p v-if="hasError && actualites.length === 0" class="m-0!">Les actualités n'ont pas pu être chargées.</p>
 
   <div v-else-if="departement === null" class="flex flex-col gap-2" aria-hidden="true">
-    <Skeleton height="2.5rem" border-radius="12px"/>
-    <Skeleton height="2.5rem" border-radius="12px"/>
+    <Skeleton height="2.75rem" border-radius="12px"/>
+    <Skeleton height="2.75rem" border-radius="12px"/>
   </div>
 
   <p v-else-if="actualites.length === 0" class="m-0!">Aucune actualité pour le moment.</p>
 
+  <!-- La source n'est dite que pour l'IUT : le fil est d'abord celui du département (TB-18). -->
   <ul v-else class="actualites">
-    <li v-for="actu in actualites" :key="`${actu.source}-${actu.titre}`" class="actualites__item">
-      <span :class="['actualites__source', `actualites__source--${actu.source}`]">
-        {{ actu.source === 'iut' ? 'IUT' : 'Département' }}
-      </span>
-      <a v-if="actu.lien" :href="actu.lien" target="_blank" rel="noopener" class="actualites__titre actualites__titre--lien">
-        {{ actu.titre }}<span class="sr-only">, nouvel onglet</span>
-      </a>
-      <span v-else class="actualites__titre">{{ actu.titre }}</span>
-      <time v-if="actu.date" :datetime="actu.date" class="actualites__date">{{ jourCourt(actu.date) }}</time>
-    </li>
+    <LigneAccueil v-for="actu in actualites" :key="`${actu.source}-${actu.titre}`" :href="actu.lien">
+      <template #titre>{{ actu.titre }}</template>
+      <template #detail>
+        <time v-if="actu.date" :datetime="actu.date">{{ jourCourt(actu.date) }}</time>
+        <template v-if="actu.source === 'iut'"> · IUT</template>
+      </template>
+    </LigneAccueil>
   </ul>
 </template>
 
@@ -72,62 +71,8 @@ const jourCourt = (valeur) => (valeur ? new Date(valeur).toLocaleDateString('fr-
 .actualites {
   display: flex;
   flex-direction: column;
+  gap: 0.125rem;
   margin: 0;
   padding: 0;
-  list-style: none;
-}
-
-.actualites__item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
-  padding: 0.625rem 0;
-}
-
-.actualites__item + .actualites__item {
-  border-top: 1px solid var(--p-content-border-color);
-}
-
-.actualites__source {
-  padding: 0 0.5rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  line-height: 1.25rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.actualites__source--departement {
-  background: var(--p-seance-cm-pill-background);
-  color: var(--p-seance-cm-pill-color);
-}
-
-.actualites__source--iut {
-  background: var(--p-seance-autre-pill-background);
-  color: var(--p-seance-autre-pill-color);
-}
-
-.actualites__titre {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.actualites__titre--lien {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  margin-block: -0.75rem;
-  color: inherit;
-}
-
-.actualites__titre--lien:hover {
-  text-decoration: underline;
-}
-
-.actualites__date {
-  font-size: 0.9375rem;
-  color: var(--p-text-muted-color);
 }
 </style>

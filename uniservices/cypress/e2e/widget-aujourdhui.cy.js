@@ -7,27 +7,26 @@ describe('Journée de l\'étudiant sur l\'accueil', () => {
         cy.visit('/app/intranet/');
     });
 
-    // Le bandeau et la liste lisent les mêmes cours : ils ne doivent jamais se contredire, quel
-    // que soit le jour où le test tourne.
-    it('annonce dans le bandeau un cours que la liste du jour montre aussi', () => {
-        journee().find('.journee__etiquette', { timeout: 15000 }).invoke('text').then((etiquette) => {
-            if (/Pas de cours aujourd'hui/.test(etiquette)) {
-                journee().find('.journee__liste').should('not.exist');
-                return;
-            }
-            journee().find('.journee__liste li').should('have.length.greaterThan', 0);
-            if (/En cours|Prochain cours/.test(etiquette)) {
-                journee().find('.journee__titre').invoke('text').then((titre) => {
-                    journee().find('.journee__liste').should('contain', titre.trim().split(' ')[0]);
-                });
+    // Le bandeau dit l'état, la liste porte les cours : le cours que le bandeau situe est celui que
+    // la liste signale, quel que soit le jour où le test tourne.
+    it('signale dans la liste le cours dont parle le bandeau', () => {
+        journee().find('.journee__etat', { timeout: 15000 }).invoke('text').then((etat) => {
+            if (/^\s*En cours/.test(etat)) {
+                journee().find('.journee__cours--en-cours').should('contain', 'en cours');
+            } else if (/^\s*Prochain cours/.test(etat)) {
+                journee().find('.journee__maintenant').should('contain', 'dans');
+            } else {
+                journee().find('.journee__maintenant').should('not.exist');
             }
         });
     });
 
-    it('marque d\'un mot, pas seulement d\'une couleur, le cours en cours', () => {
-        journee().find('.journee__etiquette', { timeout: 15000 }).invoke('text').then((etiquette) => {
-            if (/En cours/.test(etiquette)) {
-                journee().find('.journee__cours--en-cours').should('contain', 'en cours');
+    it('ne répète pas dans le bandeau l\'intitulé du cours en cours', () => {
+        journee().find('.journee__etat', { timeout: 15000 }).invoke('text').then((etat) => {
+            if (/^\s*(En cours|Prochain cours)/.test(etat)) {
+                journee().find('.journee__liste .journee__libelle').each(($libelle) => {
+                    expect(etat).not.to.contain($libelle.text().trim());
+                });
             }
         });
     });

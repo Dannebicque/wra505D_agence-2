@@ -4,9 +4,6 @@ import {useId} from 'vue';
 defineProps({
   titre: {type: String, required: true},
   icone: {type: String, required: true},
-  // Teinte de la pastille d'icône, prise aux types de séance du preset : l'accueil parle les
-  // couleurs de l'agenda.
-  teinte: {type: String, default: 'cm'},
   lien: {type: String, default: null},
   texteLien: {type: String, default: null},
 });
@@ -15,22 +12,9 @@ const id = useId();
 </script>
 
 <template>
-  <section
-      class="bloc-accueil"
-      :aria-labelledby="id"
-      :style="{
-        '--lien-background': `var(--p-seance-${teinte}-background)`,
-        '--lien-color': `var(--p-seance-${teinte}-color)`,
-      }"
-  >
+  <section class="bloc-accueil" :aria-labelledby="id">
     <h2 :id="id" class="bloc-accueil__titre">
-      <span
-          class="bloc-accueil__icone"
-          :style="{ background: `var(--p-seance-${teinte}-background)`, color: `var(--p-seance-${teinte}-color)` }"
-          aria-hidden="true"
-      >
-        <i :class="icone"></i>
-      </span>
+      <span class="bloc-accueil__icone" aria-hidden="true"><i :class="icone"></i></span>
       {{ titre }}
     </h2>
     <slot/>
@@ -59,8 +43,8 @@ const id = useId();
   align-items: center;
   gap: 0.625rem;
   margin: 0 !important;
-  font-size: 1rem !important;
-  font-weight: 700;
+  font-size: 1.125rem !important;
+  font-weight: 600;
 }
 
 .bloc-accueil__icone {
@@ -72,6 +56,7 @@ const id = useId();
   flex-shrink: 0;
   border-radius: 999px;
   font-size: 1rem;
+  color: var(--p-text-muted-color);
 }
 
 .bloc-accueil__lien {
@@ -85,16 +70,16 @@ const id = useId();
   border-radius: 999px;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--lien-color);
+  color: var(--p-primary-color);
   transition: background-color 150ms ease;
 }
 
 .bloc-accueil__lien:hover {
-  background: var(--lien-background);
+  background: var(--p-content-hover-background);
 }
 
 .bloc-accueil__lien:focus-visible {
-  outline: 2px solid var(--lien-color);
+  outline: 2px solid var(--p-primary-color);
   outline-offset: 2px;
 }
 
@@ -108,7 +93,7 @@ const id = useId();
   flex-shrink: 0;
   border-radius: 999px;
   font-size: 0.75rem;
-  background: var(--lien-background);
+  background: var(--p-content-hover-background);
   transition: transform 150ms ease;
 }
 
