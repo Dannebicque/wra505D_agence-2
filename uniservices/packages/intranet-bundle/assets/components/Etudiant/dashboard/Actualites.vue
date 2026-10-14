@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue';
 import {getWidgetDataByCodeService} from '@requests';
-import LigneAccueil from './LigneAccueil.vue';
+import {LigneAccueil} from '@components';
 
 const AFFICHEES = 4;
 

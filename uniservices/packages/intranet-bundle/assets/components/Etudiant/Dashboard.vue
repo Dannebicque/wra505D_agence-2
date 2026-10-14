@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {getMaScolariteService, getMonCahierDeTexteService, getWidgetDataByCodeService} from '@requests';
-import BlocAccueil from '@/components/Etudiant/dashboard/BlocAccueil.vue';
+import {BlocAccueil} from '@components';
 import CarteBienvenue from '@/components/Etudiant/dashboard/CarteBienvenue.vue';
 import JourneeCours from '@/components/Etudiant/dashboard/JourneeCours.vue';
 import {useJournee} from '@/components/Etudiant/dashboard/useJournee.js';

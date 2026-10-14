@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from 'vue';
 import {absencesARegler, libelleDelai} from '@/utils/accueil.js';
-import LigneAccueil from './LigneAccueil.vue';
+import {LigneAccueil} from '@components';
 
 const props = defineProps({
   // Relevé de /api/me/scolarite et échéances de /api/me/cahier-de-texte ; null tant qu'ils ne

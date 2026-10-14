@@ -3,7 +3,7 @@ import {computed} from 'vue';
 import {formatDate, resultatEvaluation} from '@/utils/scolarite.js';
 import {dernieresNotes} from '@/utils/dernieresNotes.js';
 import {tonNote} from '@/utils/accueil.js';
-import LigneAccueil from './LigneAccueil.vue';
+import {LigneAccueil} from '@components';
 
 // Le relevé de /api/me/scolarite, lu une fois par l'accueil pour ce bloc et pour « À faire ».
 const props = defineProps({

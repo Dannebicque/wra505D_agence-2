@@ -33,6 +33,8 @@ import QuickActionCard from './components/QuickActionCard.vue'
 import ActionButtonVertical from './components/ActionButtonVertical.vue'
 import UserCard from "./components/User/UserCard.vue";
 import EdtEventRow from "./components/Edt/EdtEventRow.vue";
+import BlocAccueil from "./components/Bloc/BlocAccueil.vue";
+import LigneAccueil from "./components/Bloc/LigneAccueil.vue";
 
 import PersonnelsListe from "./components/Personnel/PersonnelsListe.vue";
 
@@ -83,6 +85,8 @@ export {
   widgetRegistry,
   UserCard,
   EdtEventRow,
+  BlocAccueil,
+  LigneAccueil,
 
   // Form validation exports
   FormValidator,
