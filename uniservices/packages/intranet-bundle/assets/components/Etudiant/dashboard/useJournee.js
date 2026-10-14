@@ -71,7 +71,13 @@ export function useJournee() {
 
     const semaine = computed(() => chargeDeLaSemaine(cours.value ?? [], lundiDe(maintenant.value)));
 
+    const evaluations = computed(() => (cours.value ?? [])
+        .filter(seance => seance.evaluation)
+        .map(seance => ({...seance, start: parseEdtDate(seance.debut), end: parseEdtDate(seance.fin)}))
+        .filter(seance => seance.start)
+        .sort((a, b) => a.start - b.start));
+
     const vacances = computed(() => prochainesVacances(semaines.value, maintenant.value));
 
-    return {cours, coursDuJour, situation, suivant, semaine, semaineFormation, vacances, hasError, maintenant};
+    return {cours, coursDuJour, situation, suivant, semaine, semaines, semaineFormation, vacances, evaluations, hasError, maintenant};
 }

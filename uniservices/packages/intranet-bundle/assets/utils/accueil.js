@@ -129,3 +129,95 @@ export function prochainesVacances(semaines, aujourdhui) {
     };
 }
 
+// Des astuces vraies sur l'application : le jour sans événement en tire une au hasard du calendrier.
+const ASTUCES = [
+    'Astuce : la recherche du haut trouve pages, personnes et matières',
+    'Astuce : les notifications réunissent notes, absences et documents',
+    'Astuce : l\'étoile d\'un document le garde dans vos favoris',
+    'Astuce : « Notes et absences » détaille chaque évaluation',
+    'Astuce : le choix de semaine de l\'emploi du temps montre sa charge',
+];
+
+const jourDeLAnnee = (date) => Math.round((minuit(date) - new Date(date.getFullYear(), 0, 0)) / 86400000);
+const minutesDe = (cours) => cours.reduce((total, seance) => total + Math.round((seance.end - seance.start) / 60000), 0);
+
+/**
+ * L'événement du jour de la carte de bienvenue, pour qu'elle surprenne chaque jour : d'abord ce
+ * qui compte (anniversaire, évaluation, vacances, rentrée, fin de semaine), puis, faute de mieux,
+ * un message qui change chaque jour parmi ceux qui s'appliquent, dont une astuce.
+ *
+ * @param contexte {aujourdhui, prenom, naissance, coursDuJour, semaine, semaines, semaineFormation,
+ *   vacances, evaluations} ; coursDuJour et evaluations portent start, end, codeModule, evaluation.
+ * @returns {{cle: string, icone: string, texte: string}}
+ */
+export function evenementDuJour(contexte) {
+    const {aujourdhui, prenom, naissance, coursDuJour = [], semaine = [], semaines = [], semaineFormation, vacances, evaluations = []} = contexte;
+    const evenement = (cle, icone, texte) => ({cle, icone, texte});
+    const jour = minuit(aujourdhui);
+    const weekEnd = [0, 6].includes(jour.getDay());
+    const joursSuivants = semaine.filter(j => minuit(j.date) > jour);
+    const joursPrecedents = semaine.filter(j => minuit(j.date) < jour);
+    const lundi = new Date(jour.getFullYear(), jour.getMonth(), jour.getDate() - ((jour.getDay() + 6) % 7));
+    const iso = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+    const semaineDu = (date) => semaines.find(s => s.lundi === iso(date));
+    const lundiPrecedent = new Date(lundi.getFullYear(), lundi.getMonth(), lundi.getDate() - 7);
+    const enVacances = semaineDu(lundi)?.minutes === 0 && semaines.some(s => s.lundi > iso(lundi) && s.minutes > 0)
+        && semaines.some(s => s.lundi < iso(lundi) && s.minutes > 0);
+
+    if (naissance) {
+        const [, mois, jourNaissance] = naissance.slice(0, 10).split('-').map(Number);
+        if (mois === jour.getMonth() + 1 && jourNaissance === jour.getDate()) {
+            return evenement('anniversaire', 'pi pi-gift', `Joyeux anniversaire, ${prenom}`);
+        }
+    }
+    const evaluationDuJour = coursDuJour.find(seance => seance.evaluation);
+    if (evaluationDuJour) {
+        return evenement('evaluation', 'pi pi-pencil', `Évaluation aujourd'hui en ${evaluationDuJour.codeModule}`);
+    }
+    if (enVacances) {
+        return evenement('vacances', 'pi pi-sun', `Bonnes vacances ${NOMS_DE_VACANCES[saisonDeVacances(iso(lundi))]}`);
+    }
+    if (vacances && vacances.jours <= 3 && coursDuJour.length && joursSuivants.every(j => j.minutes === 0)) {
+        return evenement('veille-de-vacances', 'pi pi-sun', 'Dernier jour avant les vacances');
+    }
+    if (coursDuJour.length && semaineDu(lundiPrecedent)?.minutes === 0 && joursPrecedents.every(j => j.minutes === 0)) {
+        return evenement('retour', 'pi pi-sparkles', 'Bon retour de vacances');
+    }
+    if (semaineFormation === 1) {
+        return evenement('rentree', 'pi pi-flag', 'Bonne rentrée');
+    }
+    const evaluationProche = evaluations.find(seance => minuit(seance.start) > jour);
+    if (evaluationProche) {
+        const nomDuJour = evaluationProche.start.toLocaleDateString('fr-FR', {weekday: 'long'});
+        return evenement('evaluation-proche', 'pi pi-pencil', `Évaluation ${nomDuJour} en ${evaluationProche.codeModule}`);
+    }
+    if (weekEnd && !coursDuJour.length) {
+        return evenement('week-end', 'pi pi-heart', 'Bon week-end');
+    }
+    if (coursDuJour.length && joursSuivants.every(j => j.minutes === 0)) {
+        return evenement('fin-de-semaine', 'pi pi-forward', 'Dernier jour de la semaine');
+    }
+    if (!coursDuJour.length) {
+        return evenement('sans-cours', 'pi pi-face-smile', 'Journée sans cours');
+    }
+
+    const possibles = [];
+    const duJour = minutesDe(coursDuJour);
+    const jourCharge = semaine.filter(j => j.minutes > 0).length > 1 && semaine.every(j => j.minutes <= duJour);
+    if (vacances && vacances.jours <= 21) {
+        possibles.push(evenement('vacances-proches', 'pi pi-sun', `Vacances ${vacances.nom} dans ${vacances.jours} jours`));
+    }
+    if (jourCharge) {
+        possibles.push(evenement('journee-chargee', 'pi pi-bolt', 'Journée la plus chargée de la semaine'));
+    } else if (duJour <= 120) {
+        possibles.push(evenement('journee-legere', 'pi pi-star', 'Journée légère, profitez-en'));
+    }
+    if (semaineFormation && semaineFormation % 5 === 0) {
+        possibles.push(evenement('etape', 'pi pi-chart-line', `Déjà ${semaineFormation} semaines de formation`));
+    }
+    const astuce = ASTUCES[jourDeLAnnee(jour) % ASTUCES.length];
+    possibles.push(evenement('astuce', 'pi pi-lightbulb', astuce));
+
+    return possibles[jourDeLAnnee(jour) % possibles.length];
+}
+

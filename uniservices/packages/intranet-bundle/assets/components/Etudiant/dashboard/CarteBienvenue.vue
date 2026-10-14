@@ -1,8 +1,9 @@
 <script setup>
-import {computed} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import {useUsersStore} from '@stores';
+import {getEtudiantService} from '@requests';
 import {formatDelai, minutesEntre} from '@/utils/prochainCours.js';
-import {libelleJour} from '@/utils/accueil.js';
+import {evenementDuJour, libelleJour} from '@/utils/accueil.js';
 
 // La journée lue par l'accueil (useJournee) : la carte n'en garde que l'essentiel, elle est d'abord
 // là pour l'identité de l'IUT.
@@ -11,6 +12,30 @@ const props = defineProps({
 });
 
 const userStore = useUsersStore();
+
+// La date de naissance n'est que sur la fiche de l'étudiant : elle ne sert qu'à l'anniversaire.
+const naissance = ref(null);
+onMounted(async () => {
+  try {
+    naissance.value = (await getEtudiantService(userStore.user.id)).date_naissance ?? null;
+  } catch {
+    naissance.value = null;
+  }
+});
+
+// Un événement par jour, pour que la carte surprenne : anniversaire, vacances, rentrée, évaluation,
+// fin de semaine, ou à défaut un message qui change d'un jour à l'autre.
+const evenement = computed(() => (props.journee.cours.value === null ? null : evenementDuJour({
+  aujourdhui: props.journee.maintenant.value,
+  prenom: userStore.user?.prenom,
+  naissance: naissance.value,
+  coursDuJour: props.journee.coursDuJour.value,
+  semaine: props.journee.semaine.value,
+  semaines: props.journee.semaines.value,
+  semaineFormation: props.journee.semaineFormation.value,
+  vacances: props.journee.vacances.value,
+  evaluations: props.journee.evaluations.value,
+})));
 
 const heure = (date) => date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
 const lieu = (seance) => seance.salle || 'lieu non précisé';
@@ -57,6 +82,10 @@ const finDeJournee = computed(() => {
       {{ journee.maintenant.value.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) }}
       <span v-if="semaine" class="bienvenue__formation"><br>{{ semaine }}</span>
     </p>
+    <p v-if="evenement" :class="['bienvenue__evenement', `bienvenue__evenement--${evenement.cle}`]">
+      <span class="bienvenue__evenement-icone" aria-hidden="true"><i :class="evenement.icone"></i></span>
+      <span>{{ evenement.texte }}</span>
+    </p>
 
     <div class="bienvenue__milieu">
       <figure v-if="journee.cours.value && totalSemaine > 0" class="bienvenue__semaine">
@@ -70,13 +99,6 @@ const finDeJournee = computed(() => {
         <figcaption class="bienvenue__legende">Cette semaine · {{ formatDelai(totalSemaine) }} de cours</figcaption>
       </figure>
 
-      <p v-if="journee.vacances.value" class="bienvenue__vacances">
-        <span class="bienvenue__vacances-icone" aria-hidden="true"><i class="pi pi-sun"></i></span>
-        <span>
-          Vacances {{ journee.vacances.value.nom }}
-          <strong>{{ journee.vacances.value.jours > 1 ? `dans ${journee.vacances.value.jours} jours` : (journee.vacances.value.jours === 1 ? 'demain' : 'aujourd\'hui') }}</strong>
-        </span>
-      </p>
     </div>
 
     <p v-if="journee.hasError.value" class="bienvenue__infos">L'emploi du temps est indisponible pour le moment.</p>
@@ -217,13 +239,12 @@ const finDeJournee = computed(() => {
   line-height: 1.35;
 }
 
-/* Le milieu de la carte, centré entre le bonjour et les repères du moment. */
+/* Le milieu de la carte : la semaine, centrée entre l'en-tête et les repères du moment. */
 .bienvenue__milieu {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
   margin: auto 0;
   padding: 1.5rem 0 0.5rem;
 }
@@ -250,31 +271,37 @@ const finDeJournee = computed(() => {
   color: var(--p-primary-200);
 }
 
-/* Le jaune de l'accent porte du texte violet (5,29:1) : la touche estivale de la carte. */
-.bienvenue__vacances {
-  display: inline-flex;
-  align-items: center;
+/* L'événement du jour, rattaché à l'en-tête : une pastille jaune pour l'icône (violet sur
+   l'accent, 5,29:1), le texte à côté, qui passe à la ligne sans déformer la pastille. */
+.bienvenue__evenement {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
   gap: 0.625rem;
-  margin: 0;
-  padding: 0.375rem 1rem 0.375rem 0.375rem;
-  border-radius: 999px;
+  margin: 0.875rem 0 0;
+  max-width: calc(100% - 2.5rem);
   font-size: 0.9375rem;
-  background: color-mix(in srgb, #FFFFFF 12%, transparent);
+  line-height: 1.4;
 }
 
-.bienvenue__vacances strong {
-  font-weight: 700;
-}
-
-.bienvenue__vacances-icone {
+.bienvenue__evenement-icone {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: -0.25rem;
   border-radius: 999px;
+  font-size: 0.875rem;
   background: var(--accent-color);
   color: var(--p-primary-500);
+}
+
+/* Le jour de son anniversaire, le texte prend le jaune et la graisse. */
+.bienvenue__evenement--anniversaire {
+  font-weight: 700;
+  color: var(--accent-color);
 }
 
 .bienvenue__jour {
@@ -324,7 +351,7 @@ const finDeJournee = computed(() => {
 @media (max-width: 1023px) {
   .bienvenue {
     min-height: 0;
-    padding: 1rem 1.125rem;
+    padding: 0.875rem 1rem;
   }
 
   .bienvenue__bonjour {
@@ -340,16 +367,23 @@ const finDeJournee = computed(() => {
     font-size: 0.9375rem;
   }
 
+  /* Le téléphone reste léger : ni semaine de formation, ni charge de la semaine, ni astuce. Les
+     vrais événements, rares, restent. */
   .bienvenue__formation,
-  .bienvenue__milieu {
+  .bienvenue__milieu,
+  .bienvenue__evenement--astuce {
     display: none;
+  }
+
+  .bienvenue__evenement {
+    margin-top: 0.5rem;
   }
 
   .bienvenue__infos {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 0.25rem 1.5rem;
-    padding-top: 0.875rem;
+    padding-top: 0.625rem;
     max-width: none;
   }
 
