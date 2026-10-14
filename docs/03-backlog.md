@@ -941,11 +941,11 @@ couleur par sens, un écart d'au moins x 1,4 entre l'état et le texte courant, 
 
 | Lot | Contenu | État |
 |---|---|---|
-| C19.1 | couleurs : teintes de séance réservées aux cours, rouge réservé à l'action, le reste neutre | à faire |
-| C19.2 | échelle typographique à trois niveaux, gras limité | à faire |
-| C19.3 | bandeau allégé, sans doublon avec la liste du jour | à faire |
-| C19.4 | un motif de ligne unique pour « À faire », notes, documents et actualités | à faire |
-| C19.5 | deux colonnes dans l'ordre d'importance, aucun bloc étiré | à faire |
+| C19.1 | couleurs : teintes de séance réservées aux cours, rouge réservé à l'action, le reste neutre | fait |
+| C19.2 | échelle typographique à trois niveaux, gras limité | fait : x 1,5, 24 textes gras sur 79 au lieu de 45 sur 82 |
+| C19.3 | bandeau allégé, sans doublon avec la liste du jour | fait : un cercle, une phrase d'état ; la liste signale le cours en cours ou le prochain |
+| C19.4 | un motif de ligne unique pour « À faire », notes, documents et actualités | fait (`LigneAccueil.vue`) |
+| C19.5 | deux colonnes dans l'ordre d'importance, aucun bloc étiré | fait |
 
 ## Colonne D — Recherche
 

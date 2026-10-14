@@ -112,3 +112,23 @@ au plus trois motifs.
 Disposition retenue pour C19.5 : deux colonnes, qui suivent l'ordre d'importance du code. À
 gauche la journée, « À faire » et les notes ; à droite les documents, les actualités et les
 contacts. Le téléphone garde le même ordre en une colonne.
+
+## 9. Après C19 (14/10/2026)
+
+Même mesure, même écran, contenu égal :
+
+| | Avant | Après |
+|---|---|---|
+| Mots | 226 | 223 |
+| Fonds de couleur distincts | 13 | 10 |
+| Blocs teintés | 14 | 8 |
+| Pastilles de texte | 19 | 4, les types de séance |
+| Couleurs de texte | 11 | 8 |
+| Textes en gras ou demi-gras | 45 sur 82 | 24 sur 79 |
+| Écart entre le plus gros texte et le texte courant | x 1,13 | x 1,5 |
+| Motifs | 9 | 3 : carte de la journée, ligne de bloc, carte de contact |
+
+Couleurs : les teintes de séance ne marquent plus que les cours ; le rouge, l'absence à justifier
+et, en discret, la valeur d'une note sous 10. Contrastes : 4,51:1 au plus bas en clair (salle d'un
+cours passé), 5,47:1 en sombre.
+
