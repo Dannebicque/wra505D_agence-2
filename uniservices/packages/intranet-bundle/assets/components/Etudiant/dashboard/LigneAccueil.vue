@@ -12,6 +12,8 @@ const props = defineProps({
   ton: {type: String, default: 'neutre'},
   // Teinte propre à la ligne ; sinon l'icône prend celle de son bloc.
   teinte: {type: String, default: null},
+  // Une tuile teintée plutôt qu'une ligne blanche : pour les blocs qui demandent l'attention.
+  pleine: {type: Boolean, default: false},
 });
 
 const balise = computed(() => {
@@ -32,7 +34,7 @@ const attributs = computed(() => {
 
 <template>
   <li
-      :class="['ligne', `ligne--${ton}`]"
+      :class="['ligne', `ligne--${ton}`, { 'ligne--pleine': pleine }]"
       :style="teinte ? {
         '--bloc-teinte-fond': `var(--p-seance-${teinte}-background)`,
         '--bloc-teinte-couleur': `var(--p-seance-${teinte}-color)`,
@@ -120,6 +122,30 @@ const attributs = computed(() => {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+.ligne--pleine .ligne__corps {
+  margin-inline: 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--bloc-teinte-fond);
+}
+
+.ligne--pleine .ligne__corps--lien:hover {
+  background: color-mix(in srgb, var(--bloc-teinte-couleur) 10%, var(--bloc-teinte-fond));
+}
+
+.ligne--pleine .ligne__icone {
+  background: var(--p-content-background);
+}
+
+.ligne--pleine .ligne__titre,
+.ligne--pleine .ligne__valeur {
+  color: var(--bloc-teinte-couleur);
+}
+
+/* Sur une tuile teintée, le gris atténué tombe trop près de 4,5:1 : le détail prend le texte courant. */
+.ligne--pleine .ligne__detail {
+  color: var(--p-text-color);
 }
 
 .ligne--action .ligne__icone {

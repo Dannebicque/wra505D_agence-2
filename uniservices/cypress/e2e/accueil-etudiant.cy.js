@@ -46,7 +46,7 @@ describe('Accueil de l\'étudiant', () => {
         cy.contains('h1', 'Accueil');
         titres().should(($titres) => {
             expect([...$titres].map((titre) => titre.textContent.trim()).slice(1))
-                .to.deep.eq(['À faire', 'Dernières notes', 'Nouveaux documents', 'Actualités', 'Contacts']);
+                .to.deep.eq(['Aujourd\'hui', 'Dernières notes', 'Absences et à faire', 'Nouveaux documents', 'Actualités', 'Contacts']);
         });
         cy.get('#accueil-bonjour').should('contain', 'Bonjour');
         cy.contains('button', 'Personnaliser').should('not.exist');
@@ -54,11 +54,14 @@ describe('Accueil de l\'étudiant', () => {
         cy.contains('Mon dashboard').should('not.exist');
     });
 
-    it('se lit en bureau par rangées : la journée, puis l\'action et les notes, puis le reste', () => {
+    it('se lit en bureau par étages : la journée, puis notes et absences, puis le reste', () => {
         cy.visit('/app/intranet/');
         const boite = (selecteur) => cy.get(selecteur, { timeout: 15000 }).then(($bloc) => $bloc[0].getBoundingClientRect());
-        boite('.accueil').then((page) => boite('.journee').its('width').should('be.closeTo', page.width, 1));
-        boite('.accueil__a-faire').then((aFaire) => boite('.accueil__notes').its('top').should('be.closeTo', aFaire.top, 1));
+        boite('.bienvenue').then((bienvenue) => {
+            boite('.accueil__cours').its('top').should('be.closeTo', bienvenue.top, 1);
+            boite('.accueil__cours').its('left').should('be.greaterThan', bienvenue.right);
+        });
+        boite('.accueil__notes').then((notes) => boite('.accueil__a-faire').its('top').should('be.closeTo', notes.top, 1));
         boite('.accueil__documents').then((documents) => {
             boite('.accueil__actualites').its('top').should('be.closeTo', documents.top, 1);
             boite('.accueil__contacts').its('top').should('be.closeTo', documents.top, 1);
@@ -87,7 +90,7 @@ describe('Accueil de l\'étudiant', () => {
         });
     });
 
-    it('teinte discrètement la seule valeur de chaque note, selon son seuil', () => {
+    it('pose chaque note dans une pastille douce, teintée selon son seuil', () => {
         cy.intercept('GET', '**/api/me/scolarite', releve);
         cy.visit('/app/intranet/');
 
@@ -95,7 +98,9 @@ describe('Accueil de l\'étudiant', () => {
             cy.contains('.note', '8 / 20').should('have.class', 'note--faible');
             cy.contains('.note', '12 / 20').should('have.class', 'note--moyenne');
             cy.contains('.note', '15 / 20').should('have.class', 'note--bonne');
-            cy.get('.note').each(($note) => expect($note.css('background-color')).to.match(/rgba\(0, 0, 0, 0\)|transparent/));
+            cy.get('.note--faible, .note--moyenne, .note--bonne').each(($note) => {
+                expect($note.css('background-color')).not.to.match(/rgba\(0, 0, 0, 0\)|transparent/);
+            });
         });
     });
 });

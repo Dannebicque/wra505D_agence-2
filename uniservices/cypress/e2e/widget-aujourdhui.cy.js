@@ -1,5 +1,6 @@
 describe('Journée de l\'étudiant sur l\'accueil', () => {
-    const journee = () => cy.get('.journee', { timeout: 15000 });
+    const bienvenue = () => cy.get('.bienvenue', { timeout: 15000 });
+    const cours = () => cy.get('.accueil__cours', { timeout: 15000 });
 
     beforeEach(() => {
         cy.viewport(1280, 800);
@@ -7,33 +8,33 @@ describe('Journée de l\'étudiant sur l\'accueil', () => {
         cy.visit('/app/intranet/');
     });
 
-    // Le bandeau dit l'état, la liste porte les cours : le cours que le bandeau situe est celui que
-    // la liste signale, quel que soit le jour où le test tourne.
-    it('signale dans la liste le cours dont parle le bandeau', () => {
-        journee().find('.journee__etat', { timeout: 15000 }).invoke('text').then((etat) => {
-            if (/^\s*En cours/.test(etat)) {
-                journee().find('.cours--en-cours').should('contain', 'En cours');
-            } else if (/^\s*Prochain cours/.test(etat)) {
-                journee().find('.cours__etat').should('contain', 'Dans');
+    // La carte de bienvenue et la colonne des cours lisent la même journée : elles ne doivent jamais
+    // se contredire, quel que soit le jour où le test tourne.
+    it('dit dans la carte de bienvenue ce que montre la colonne des cours', () => {
+        bienvenue().find('dt', { timeout: 15000 }).first().invoke('text').then((etat) => {
+            if (/En ce moment/.test(etat)) {
+                cours().find('.cours-carte--en-cours').should('have.length', 1);
+            } else if (/Pas de cours/.test(etat)) {
+                cours().find('.jour').should('not.exist');
             } else {
-                journee().find('.cours__etat').should('not.exist');
+                cours().find('.cours-carte--en-cours').should('not.exist');
             }
         });
     });
 
-    it('ne répète pas dans le bandeau l\'intitulé du cours en cours', () => {
-        journee().find('.journee__etat', { timeout: 15000 }).invoke('text').then((etat) => {
-            if (/^\s*(En cours|Prochain cours)/.test(etat)) {
-                journee().find('.cours__libelle').each(($libelle) => {
-                    expect(etat).not.to.contain($libelle.text().trim());
-                });
+    it('garde chaque cours lisible : aucune carte sous 40 px de haut', () => {
+        cours().find('.jour__creneau').then(($creneaux) => {
+            if (!$creneaux.length) {
+                return;
             }
+            const hauteurs = [...$creneaux].map((creneau) => creneau.getBoundingClientRect().height);
+            expect(Math.min(...hauteurs)).to.be.at.least(40);
         });
     });
 
     it('mène à la semaine par un lien de 44 px', () => {
-        journee().contains('a', 'Voir la semaine').should('have.attr', 'href').and('match', /\/intranet\/agenda$/);
-        journee().contains('a', 'Voir la semaine').then(($lien) => {
+        cours().contains('a', 'Voir la semaine').should('have.attr', 'href').and('match', /\/intranet\/agenda$/);
+        cours().contains('a', 'Voir la semaine').then(($lien) => {
             expect($lien[0].getBoundingClientRect().height).to.be.at.least(44);
         });
     });

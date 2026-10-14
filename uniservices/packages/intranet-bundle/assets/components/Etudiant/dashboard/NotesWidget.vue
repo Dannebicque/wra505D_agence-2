@@ -60,15 +60,33 @@ const tonValeur = (evaluation) => {
   padding: 0;
 }
 
+.note {
+  display: inline-block;
+  padding: 0 0.625rem;
+  border-radius: 999px;
+  line-height: 1.625rem;
+  white-space: nowrap;
+}
+
+/* Une pastille douce, teinte pâle et texte foncé du même type : la couleur se voit sans crier. */
 .note--faible {
+  background: var(--p-seance-evaluation-background);
   color: var(--p-seance-evaluation-color);
 }
 
+.note--moyenne {
+  background: var(--p-seance-cm-background);
+  color: var(--p-seance-cm-color);
+}
+
 .note--bonne {
+  background: var(--p-seance-tp-background);
   color: var(--p-seance-tp-color);
 }
 
 .note--statut {
+  padding: 0;
+  white-space: normal;
   font-weight: 400;
   font-size: 0.9375rem;
   color: var(--p-text-muted-color);

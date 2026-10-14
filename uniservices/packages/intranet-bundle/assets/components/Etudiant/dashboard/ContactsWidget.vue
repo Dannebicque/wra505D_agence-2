@@ -66,7 +66,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
   gap: 0.625rem;
   padding: 0.75rem;
   border-radius: 14px;
-  background: var(--p-content-hover-background);
+  border: 1px solid var(--p-content-border-color);
 }
 
 .contact__icone {
@@ -77,7 +77,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
   height: 2.25rem;
   flex-shrink: 0;
   border-radius: 999px;
-  background: var(--p-content-background);
+  background: var(--p-content-hover-background);
   color: var(--p-text-muted-color);
 }
 
