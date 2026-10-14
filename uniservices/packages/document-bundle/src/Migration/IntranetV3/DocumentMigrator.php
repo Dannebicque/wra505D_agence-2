@@ -55,6 +55,9 @@ final class DocumentMigrator extends AbstractMigrator
                 }
 
                 $visibility = match ($row['type_destinataire'] ?? null) {
+                    // « ALL » : tous les utilisateurs de l'intranet, ce que PUBLIC désigne ici. « PERM »
+                    // (permanents seuls) n'a pas d'équivalent : PERSONNEL l'ouvrirait aux vacataires.
+                    'ALL' => 'PUBLIC',
                     'ETU' => 'ETUDIANT',
                     'PERS' => 'PERSONNEL',
                     null, '' => 'PUBLIC',

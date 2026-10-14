@@ -26,6 +26,8 @@
 
 # Database dumps
 *.sql
+# Schéma de la V3, généré depuis son mapping : la fausse base de migration en dépend.
+!back/src/DataFixtures/IntranetV3/schema.sql
 *.dump
 
 # IDE and editors
