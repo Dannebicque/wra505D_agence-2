@@ -77,18 +77,24 @@ class StructureEnseignementFixtures extends Fixture implements OrderedFixtureInt
         }
 
         $departement = $this->departementRepository->findOneBy(['libelle' => 'MMI']);
+        // Des dates et des liens variés : l'accueil de l'étudiant les trie et en montre quatre.
         $actualites = [
-            ['Réunion de rentrée des MMI 1', 'Présentation de l\'année, de l\'équipe et des emplois du temps.', TypePublicEnum::TYPE_PUBLIC_ETUDIANT],
-            ['Conseil de département', 'Ordre du jour : bilan de la rentrée et projets tutorés.', TypePublicEnum::TYPE_PUBLIC_PERSONNEL],
+            ['Réunion de rentrée des MMI 1', 'Présentation de l\'année, de l\'équipe et des emplois du temps.', TypePublicEnum::TYPE_PUBLIC_ETUDIANT, 'today', null],
+            ['Conseil de département', 'Ordre du jour : bilan de la rentrée et projets tutorés.', TypePublicEnum::TYPE_PUBLIC_PERSONNEL, 'today', null],
+            ['Atelier CV et LinkedIn avec le BDE', 'Jeudi de 12 h 30 à 13 h 30, salle B204 : venez avec votre ordinateur.', TypePublicEnum::TYPE_PUBLIC_ETUDIANT, '-1 day', null],
+            ['Choix des options du semestre 2', 'Le formulaire est ouvert jusqu\'à la fin du mois.', TypePublicEnum::TYPE_PUBLIC_ETUDIANT, '-3 days', 'https://www.iut-troyes.univ-reims.fr'],
+            ['Portes ouvertes de l\'IUT', 'Les MMI 1 tiennent le stand du département et présentent leurs travaux.', TypePublicEnum::TYPE_PUBLIC_ETUDIANT, '-6 days', 'https://www.iut-troyes.univ-reims.fr'],
+            ['Projets tutorés : dépôt des sujets', 'Les sujets sont à déposer sur l\'espace documents avant les vacances.', TypePublicEnum::TYPE_PUBLIC_ETUDIANT, '-9 days', null],
         ];
-        foreach ($actualites as [$libelle, $description, $public]) {
+        foreach ($actualites as [$libelle, $description, $public, $debut, $lien]) {
             $actualite = new DepartementActualite();
             $actualite->setLibelle($libelle)
                 ->setDescription($description)
                 ->setDepartement($departement)
                 ->setPublic([$public])
-                ->setDateDebut(new \DateTime('today'))
-                ->setDateFin(new \DateTime('+1 month'));
+                ->setDateDebut(new \DateTime($debut))
+                ->setDateFin(new \DateTime('+1 month'))
+                ->setLink($lien);
             $manager->persist($actualite);
         }
 
