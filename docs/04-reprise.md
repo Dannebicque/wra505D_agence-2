@@ -58,6 +58,24 @@ php bin/console doctrine:database:drop --force && php bin/console doctrine:datab
 php bin/console doctrine:schema:update --force -n && php bin/console doctrine:fixtures:load -n
 ```
 
+Migration de l'intranet V3 sur une fausse base, depuis `uniservices/back`, avec dans
+`back/.env.local` `DATABASE_URL_ORIGINAL` vers une base dont le nom contient `fausse` (la commande
+la vide) ; la cible doit être une base jetable, pas celle du développement :
+
+```bash
+php bin/console app:intranet-v3:fausse-base
+DATABASE_URL=…/uniservices_migration php bin/console app:migrate-intranet-v3
+DATABASE_URL=…/uniservices_migration php bin/console app:migrate-intranet-v3-document --files-source=var/intranet-v3/public/upload/documents --files-target=var/documents
+DATABASE_URL=…/uniservices_migration php bin/console app:migrate-intranet-v3-stage
+```
+
+Le schéma V3 (`src/DataFixtures/IntranetV3/schema.sql`) est généré depuis le mapping de la V3,
+jamais écrit à la main : clone de `Dannebicque/intranetV3`, `composer install` (son
+`composer.lock` pointe `dannebicque/table-bundle` vers un dossier local : le remplacer par
+`https://github.com/Dannebicque/TableBundle.git`), `APP_ENV=prod APP_DEBUG=0 doctrine:schema:create`
+sur une base vide (le profiler de dev interroge la base au démarrage), puis
+`mariadb-dump --no-data`.
+
 Emploi du temps simulé, depuis `uniservices/back` :
 
 ```bash
@@ -284,11 +302,15 @@ donner l'URL de comparaison.
 
 ## Ce qu'il reste à faire, dans l'ordre
 
-- **C17, emploi du temps de référence** : terminé, hors abonnement iCal (le menu d'options lui garde
-  sa place) et liens vers la matière, qui viendront avec P1. Le mobile en liste et la feuille du
-  bas sont écartés (LCS, 14/10/2026).
-0. **Fausse base V3** pour exécuter les migrateurs de la reprise E21 : les 13 lots sont mergés,
-   mais aucun migrateur n'a encore tourné sur des données V3.
+- **C17, emploi du temps de référence**, priorité de l'équipe depuis le 13/10/2026 : C17.0 à C17.3
+  faits, C17.4 à C17.6 en partie (détail dans la fiche C17 du backlog). Reste : la journée en liste
+  sur téléphone avec bandeau des jours et balayage, la date dans l'URL, « Réessayer » sur erreur,
+  la feuille du bas et les liens vers la matière, les widgets de l'accueil (C17.7), puis
+  l'abonnement iCal, dont le menu d'options garde la place.
+0. **Migration V3, documents « PERM »** : la fausse base V3 fait tourner les trois migrations (job
+   « Migration intranet V3 » de CI-Back). Reste une décision : les documents V3 réservés aux
+   permanents (`PERM`) ne sont pas migrés, uniServices n'ayant pas de visibilité aussi restreinte
+   (`PERSONNEL` les ouvrirait aux vacataires).
 1. **E8, sécurité des documents** : lecture anonyme de tous les documents, et écriture
    impossible à quiconque (`ROLE_PERSONNEL` jamais attribué).
 2. **P1, fiche matière** : prochains cours, documents, notes et absences d'une matière, réunis.
@@ -303,7 +325,12 @@ donner l'URL de comparaison.
 8. **Import d'étudiants** : il inscrit chaque étudiant dans *tous* les groupes du semestre, TD et
    TP compris, au lieu des siens.
 9. **À transmettre au client** : la fuite des clés d'API de leur commit #247, et l'écran du
-   personnel « Référentiels de compétences », qui n'envoie pas `diplomeId` (E18).
+   personnel « Référentiels de compétences », qui n'envoie pas `diplomeId` (E18). Et trois défauts
+   de leur migration V3, trouvés par la fausse base et corrigés chez nous : le parcours d'un groupe
+   n'est jamais lu (`$row['parcours']` au lieu de `parcours_id`) ; un étudiant inscrit à deux
+   semestres d'une même année reçoit deux scolarités (`findOneBy` ne voit pas l'entité non encore
+   écrite) ; les documents V3 destinés à tous (`ALL`) sont ignorés. Enfin, le `composer.lock` de
+   l'intranet V3 ne s'installe que sur le poste de Cyndel.
 10. Le reste du backlog (P2, P4), et les questions au client ci-dessous.
 
 ## Décisions

@@ -43,3 +43,60 @@ jobs:
 
       - name: Run backend quality checks
         run: make check
+
+  migration-v3:
+    name: Migration intranet V3
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: uniservices/back
+    # MariaDB, comme la V3 : son schéma est un export MariaDB.
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/uniservices_migration?serverVersion=10.11.0-MariaDB&charset=utf8mb4
+      DATABASE_URL_ORIGINAL: mysql://root:root@127.0.0.1:3306/intranetv3_fausse?serverVersion=10.11.0-MariaDB&charset=utf8mb4
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql, iconv, simplexml
+          coverage: none
+          tools: composer:v2
+
+      - name: Install back-end dependencies
+        run: composer install --no-progress --no-interaction --prefer-dist
+
+      - name: Create the target schema and the fake V3 database
+        run: |
+          php bin/console doctrine:database:create --no-interaction
+          php bin/console doctrine:database:create --connection=copy --no-interaction
+          php bin/console doctrine:schema:update --force --no-interaction
+          php bin/console app:intranet-v3:fausse-base
+
+      # Une ligne ignorée trahit un défaut autant qu'un échec : la fausse base n'en prévoit aucune.
+      - name: Migrate core data
+        run: |
+          php bin/console app:migrate-intranet-v3 --no-progress | tee "$RUNNER_TEMP/migration.txt"
+          awk '/Bilan/{b=1} b && NF==6 && $2 ~ /^[0-9]+$/ {s+=$4+$5} END{if (s>0) {print s" ligne(s) ignorée(s) ou en échec"; exit 1}}' "$RUNNER_TEMP/migration.txt"
+
+      - name: Migrate documents
+        run: php bin/console app:migrate-intranet-v3-document --no-progress --files-source=var/intranet-v3/public/upload/documents --files-target=var/documents
+
+      - name: Migrate internships
+        run: php bin/console app:migrate-intranet-v3-stage --no-progress
