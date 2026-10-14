@@ -29,36 +29,45 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiFilter(AbsenceFilter::class)]
 #[ApiResource(
     operations: [
+        // Les règles d'accès du voter du client (CAN_*_ABSENCE) : sans elles, toute absence de tout
+        // étudiant était lisible, et modifiable, sans connexion.
         new GetCollection(
             uriTemplate: '/administration/etudiant_absences',
+            security: "is_granted('CAN_VIEW_ABSENCE')",
             normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
             provider: AbsenceEpisodeProvider::class,
         ),
         new GetCollection(
             uriTemplate: '/administration/last/etudiant_absences',
+            security: "is_granted('CAN_VIEW_ABSENCE')",
             normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
         ),
         new GetCollection(
             uriTemplate: '/administration/stats/etudiant_absences',
+            security: "is_granted('CAN_VIEW_ABSENCE')",
             paginationEnabled: false,
             normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
             provider: AbsenceStatsProvider::class
         ),
         new GetCollection(
             uriTemplate: '/administration/repartition/etudiant_absences',
+            security: "is_granted('CAN_VIEW_ABSENCE')",
             normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
         ),
         new Post(
             uriTemplate: '/administration/etudiant_absences',
+            security: "is_granted('CAN_EDIT_ABSENCE')",
             denormalizationContext: ['groups' => ['absence:write:administration']],
             processor: EtudiantAbsenceCreateProcessor::class,
         ),
         new Patch(
             uriTemplate: '/administration/etudiant_absences/{id}',
+            security: "is_granted('CAN_EDIT_ABSENCE', object)",
             denormalizationContext: ['groups' => ['absence:write:administration']],
         ),
         new Delete(
             uriTemplate: '/administration/etudiant_absences/{id}',
+            security: "is_granted('CAN_DELETE_ABSENCE', object)",
         )
     ],
     order: ['createdAt' => 'ASC']

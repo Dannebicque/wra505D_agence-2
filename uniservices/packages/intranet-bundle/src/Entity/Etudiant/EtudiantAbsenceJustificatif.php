@@ -33,23 +33,29 @@ use Symfony\Component\Serializer\Attribute\Groups;
 ])]
 #[ApiResource(
     operations: [
+        // Écran du personnel seul : CAN_VIEW_JUSTIFICATIF sans sujet écarte les étudiants, qui
+        // déposent les leurs par /api/me. Les motifs, souvent médicaux, étaient lisibles sans connexion.
         new GetCollection(
             uriTemplate: '/administration/etudiant_absence_justificatifs',
+            security: "is_granted('CAN_VIEW_JUSTIFICATIF')",
             normalizationContext: ['groups' => ['justificatif:administration']],
         ),
         new Post(
             uriTemplate: '/administration/etudiant_absence_justificatifs',
+            security: "is_granted('CAN_VIEW_JUSTIFICATIF') and is_granted('CAN_EDIT_JUSTIFICATIF')",
             denormalizationContext: ['groups' => ['justificatif:write:administration']],
             normalizationContext: ['groups' => ['justificatif:administration']],
             processor: EtudiantAbsenceJustificatifCreateProcessor::class,
         ),
         new Patch(
             uriTemplate: '/administration/etudiant_absence_justificatifs/{id}',
+            security: "is_granted('CAN_VIEW_JUSTIFICATIF') and is_granted('CAN_EDIT_JUSTIFICATIF', object)",
             denormalizationContext: ['groups' => ['justificatif:write:administration']],
             normalizationContext: ['groups' => ['justificatif:administration']],
         ),
         new Delete(
             uriTemplate: '/administration/etudiant_absence_justificatifs/{id}',
+            security: "is_granted('CAN_DELETE_JUSTIFICATIF', object)",
             normalizationContext: ['groups' => ['justificatif:administration']],
         )
     ],
