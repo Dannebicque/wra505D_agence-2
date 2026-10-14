@@ -926,7 +926,7 @@ mobile, en clair et en sombre, chaque texte à 4,5:1 au moins. Cypress et Vitest
 | C18.3 | disposition fixe en zones : journée et « À faire », puis documents, actualités et notes, puis contacts ; une colonne en mobile, même ordre que le code | fait |
 | C18.4 | blocs : « À faire » (`/api/me/scolarite`, `/api/me/cahier-de-texte`), « Nouveaux documents » (`document.recents`), un seul fil d'actualités département et IUT, notes par seuil, contacts restylés | fait |
 | C18.5 | nettoyages : `initiales` jamais déclaré, `intranet.documents_recents` au catalogue sans définition, fil d'Ariane « Dashboard » (P5) | fait |
-| C18.6 | back : le système de widgets n'a plus d'usage étudiant (définitions `intranet.notes`, `intranet.contacts`, `intranet.actualites*` réservées à l'étudiant, route `/widgets`) | à décider |
+| C18.6 | back : le système de widgets n'a plus d'usage étudiant | fait : `intranet.notes` (pense-bêtes factices) supprimé, widgets étudiants retirés des dispositions, « Aujourd'hui » réservé au personnel ; contacts et actualités gardent leur définition, l'accueil lisant leurs données par `/api/widgets/{code}/data` |
 
 **JEREMY** est titulaire de la colonne C : à prévenir avant d'attaquer.
 

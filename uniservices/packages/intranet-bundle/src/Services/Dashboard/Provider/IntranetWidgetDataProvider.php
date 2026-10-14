@@ -7,7 +7,6 @@ use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Repository\Edt\EdtEventRepository;
 use App\Repository\Structure\StructureDepartementRepository;
-use App\Service\Notification\StudentSemesters;
 use AuthBundle\Services\Dashboard\Provider\AuthWidgetDataProvider;
 
 class IntranetWidgetDataProvider implements WidgetDataProviderInterface
@@ -16,7 +15,6 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         private readonly EdtEventRepository $edtEventRepository,
         private readonly StructureDepartementRepository $structureDepartementRepository,
         private readonly AuthWidgetDataProvider $authWidgetDataProvider,
-        private readonly StudentSemesters $semestersEtudiant,
     ) {
     }
 
@@ -29,7 +27,7 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
     public function getData(string $code, Personnel|Etudiant $user): array
     {
         return match ($code) {
-            'intranet.emploi_du_temps' => $this->getEmploiDuTemps($user),
+            'intranet.emploi_du_temps' => $user instanceof Personnel ? $this->getEmploiDuTemps($user) : [],
             'intranet.contacts' => $this->getContacts($user),
             'intranet.actualites' => $this->authWidgetDataProvider->getData('auth.actus_int', $user),
             'intranet.actualites_iut' => $this->authWidgetDataProvider->getData('auth.actus_ext', $user),
@@ -37,12 +35,6 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
                 'items' => [
                     ['label' => '3 validations de stages en attente', 'priority' => 'high'],
                     ['label' => '2 conventions à signer aujourd\'hui', 'priority' => 'medium'],
-                ],
-            ],
-            'intranet.notes' => [
-                'items' => [
-                    ['title' => 'Relancer alternants absents', 'done' => false],
-                    ['title' => 'Préparer réunion pédagogique', 'done' => true],
                 ],
             ],
             default => [],
@@ -74,13 +66,11 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
     }
 
     /** @return array<string, mixed> */
-    private function getEmploiDuTemps(Personnel|Etudiant $user): array
+    private function getEmploiDuTemps(Personnel $user): array
     {
         $today = new \DateTimeImmutable('today');
         $tomorrow = $today->modify('+1 day');
-        $events = $user instanceof Personnel
-            ? $this->edtEventRepository->findByPersonnelAndRange($user->getId() ?? throw new \LogicException('Personnel ID is required'), $today, $tomorrow)
-            : $this->edtEventRepository->findByGroupesAndRange($this->groupes($user), $today, $tomorrow);
+        $events = $this->edtEventRepository->findByPersonnelAndRange($user->getId() ?? throw new \LogicException('Personnel ID is required'), $today, $tomorrow);
         $formatter = new \IntlDateFormatter('fr_FR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, \IntlDateFormatter::GREGORIAN, 'EEEE d MMMM yyyy');
         return [
             'todayLabel' => $formatter->format($today),
@@ -93,22 +83,5 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
                 'eval'   => $e->isEvaluation(),
             ], $events),
         ];
-    }
-
-    /**
-     * Les groupes de l'étudiant dans ses semestres de l'année, ceux que lit son emploi du temps.
-     *
-     * @return list<int>
-     */
-    private function groupes(Etudiant $student): array
-    {
-        $ids = [];
-        foreach ($this->semestersEtudiant->forStudent($student) as $scolariteSemestre) {
-            foreach ($scolariteSemestre->getGroupes() as $groupe) {
-                $ids[] = $groupe->getId();
-            }
-        }
-
-        return array_values(array_unique(array_filter($ids, static fn (?int $id): bool => $id !== null && $id !== 0)));
     }
 }
