@@ -18,7 +18,7 @@ describe('Page d\'erreur serveur', () => {
         cy.reload();
 
         cy.location('pathname', { timeout: 15000 }).should('eq', '/app/intranet/scolarite');
-        cy.contains('h2', 'Semestre S1', { timeout: 15000 });
+        cy.contains('h1', 'Notes et absences', { timeout: 15000 });
     });
 
     it('ramène sur l\'accueil une page d\'erreur ouverte sans erreur', () => {
