@@ -16,7 +16,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
 
 <template>
   <div v-if="departements.length > 0" class="contacts @container">
-    <ul class="list-none m-0 p-0 grid grid-cols-1 @xl:grid-cols-2 gap-2">
+    <ul class="list-none m-0 p-0 grid grid-cols-1 @xl:grid-cols-2 gap-3">
       <li
           v-for="departement in departements"
           :key="departement.id"
@@ -31,7 +31,7 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
             <span v-if="departement.id === data.departementEtudiantId" class="contact__sien">Votre département</span>
           </div>
         </div>
-        <div v-if="departement.telephone || departement.siteWeb" class="flex flex-wrap gap-2">
+        <div v-if="departement.telephone || departement.siteWeb" class="flex flex-wrap gap-3">
           <a
               v-if="departement.telephone"
               :href="telephoneHref(departement.telephone)"
@@ -74,9 +74,9 @@ const telephoneHref = (telephone) => `tel:${telephone.replace(/[^\d+]/g, '')}`;
 .contact {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 0.625rem;
-  padding: 0.75rem;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.125rem;
   border-radius: 14px;
   border: 1px solid var(--p-content-border-color);
 }
