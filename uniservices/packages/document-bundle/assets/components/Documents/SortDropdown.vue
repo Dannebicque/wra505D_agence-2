@@ -46,3 +46,11 @@ const triChoisi = computed({
     />
   </div>
 </template>
+
+<style scoped>
+/* Le select est agrandi à 44 px : sans cela, son texte reste collé en haut du champ. */
+:deep(.p-select-label) {
+  display: flex;
+  align-items: center;
+}
+</style>
