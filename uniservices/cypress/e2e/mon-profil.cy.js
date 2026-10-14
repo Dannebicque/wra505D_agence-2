@@ -1,8 +1,18 @@
-describe('Profil de l\'étudiant, depuis le menu du compte', () => {
+describe('Profil de l\'étudiant', () => {
     beforeEach(() => {
         cy.viewport(1280, 800);
         cy.connexionInvite('etudiant');
+        cy.visit('/app/intranet/profil');
+        cy.contains('h2', 'Coordonnées', { timeout: 15000 });
+    });
+
+    it('s\'ouvre dans l\'intranet, sous le menu de l\'étudiant, depuis le lien du compte', () => {
         cy.visit('/app/auth/profil');
+        cy.location('pathname').should('eq', '/app/intranet/profil');
+        cy.get('.layout-sidebar').within(() => {
+            cy.contains('a', 'Accueil').should('have.attr', 'href', '/app/intranet/');
+            cy.contains('a', 'Emploi du temps').should('have.attr', 'href', '/app/intranet/agenda');
+        });
         cy.contains('h2', 'Coordonnées', { timeout: 15000 });
     });
 
