@@ -12,6 +12,7 @@ import ErrorView from './components/ErrorView.vue';
 import PhotoUser from './components/PhotoUser.vue';
 import ProfilEtudiant from "./components/Etudiant/ProfilEtudiant/ProfilEtudiant.vue";
 import ScolariteEtudiant from "./components/Etudiant/ProfilEtudiant/ScolariteEtudiant.vue";
+import MonProfil from "./components/Etudiant/MonProfil/MonProfil.vue";
 import ProfilPersonnel from "./components/Personnel/ProfilPersonnel.vue";
 import PermissionGuard from "./components/Permission/PermissionGuard.vue";
 import MessageCard from "./components/Messages/MessageCard.vue";
@@ -77,6 +78,7 @@ export {
   PersonnelsListe,
   ProfilEtudiant,
   ScolariteEtudiant,
+  MonProfil,
   ProfilPersonnel,
   WidgetCard,
   DashboardWidgetsConfiguration,
