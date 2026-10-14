@@ -132,3 +132,24 @@ Couleurs : les teintes de séance ne marquent plus que les cours ; le rouge, l'a
 et, en discret, la valeur d'une note sous 10. Contrastes : 4,51:1 au plus bas en clair (salle d'un
 cours passé), 5,47:1 en sombre.
 
+## 10. Version retenue (14/10/2026)
+
+La version sobre du §9 lisait mieux mais avait perdu la touche qui distingue l'accueil d'un
+tableau de bord d'école ; la disposition restait la cause principale de l'illisibilité. Retenue
+avec LCS après quatre itérations :
+
+- **Trois étages.** 1. La journée : à gauche une carte violette aux cercles du logo (bonjour, date,
+  semaine de formation, un message du jour, la charge de la semaine en barres, « En ce moment »
+  et « Fin de journée ») ; à droite la journée comme sur l'emploi du temps, mêmes cartes
+  (`CoursCarte`), hauteur proportionnelle à la durée, pauses visibles, trait de l'heure. 2. Notes
+  puis « Absences et à faire » : fond blanc, éléments en couleur (tuiles teintées par sens,
+  pastilles de note douces par seuil). 3. Documents, actualités, contacts : blancs, la couleur
+  seulement au survol.
+- **Message du jour** tiré à chaque chargement parmi ceux qui s'appliquent (vacances proches,
+  bon courage, bonne journée, rentrée, week-end…), l'anniversaire toujours en premier ; aucune
+  astuce. 31 caractères au plus : il tient sur une ligne.
+- **Téléphone** : carte violette réduite à l'essentiel (ni semaine de formation, ni message, ni
+  barres), la journée à 56 px par heure, toujours en tête.
+- Données de la journée lues une fois (`useJournee`) pour les deux cartes ; logique en fonctions
+  pures testées (`accueil.js`, 39 tests).
+

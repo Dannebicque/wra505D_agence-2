@@ -935,7 +935,8 @@ mobile, en clair et en sombre, chaque texte à 4,5:1 au moins. Cypress et Vitest
 à cinq points focaux, une couleur pour sept sens, aucune hiérarchie typographique, neuf motifs.
 Le mobile, lu bloc après bloc, rend mieux ; l'emploi du temps, aussi dense, se lit d'un coup d'œil.
 **Décidé avec LCS (14/10/2026)** : notes colorées par seuil mais en discret, bandeau violet allégé,
-emploi du temps inchangé.
+emploi du temps inchangé. Puis, la version sobre jugée trop neutre, une version en trois étages,
+décrite au §10 de l'audit : c'est elle qui est livrée.
 **Terminé quand** la mesure du §2 de l'audit, refaite sur le premier écran en bureau, donne une
 couleur par sens, un écart d'au moins x 1,4 entre l'état et le texte courant, au plus trois motifs.
 
@@ -943,9 +944,9 @@ couleur par sens, un écart d'au moins x 1,4 entre l'état et le texte courant, 
 |---|---|---|
 | C19.1 | couleurs : teintes de séance réservées aux cours, rouge réservé à l'action, le reste neutre | fait |
 | C19.2 | échelle typographique à trois niveaux, gras limité | fait : x 1,5, 24 textes gras sur 79 au lieu de 45 sur 82 |
-| C19.3 | bandeau allégé, sans doublon avec la liste du jour | fait : un cercle, une phrase d'état ; la liste signale le cours en cours ou le prochain |
+| C19.3 | bandeau allégé, sans doublon avec la liste du jour | fait, puis remplacé : carte de bienvenue violette à gauche et journée de l'emploi du temps à droite (audit §10) |
 | C19.4 | un motif de ligne unique pour « À faire », notes, documents et actualités | fait (`LigneAccueil.vue`) |
-| C19.5 | deux colonnes dans l'ordre d'importance, aucun bloc étiré | fait |
+| C19.5 | deux colonnes dans l'ordre d'importance, aucun bloc étiré | fait, puis remplacé : trois étages de hiérarchie (audit §10) |
 
 ## Colonne D — Recherche
 
