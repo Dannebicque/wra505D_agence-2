@@ -41,7 +41,7 @@ onMounted( () => {
       :description="description"
   />
   <!-- Sans fil d'Ariane, rien ne le sépare plus de la barre du haut, qui le recouvre en mobile. -->
-  <div class="card" :class="{ 'mt-10 md:mt-4': store.isEtudiant }">
+  <div class="card" :class="{ 'mt-10 md:mt-0': store.isEtudiant }">
     <component v-if="tabs.length === 1" :is="tabs[0].component" />
     <Tabs v-else value="0">
       <TabList>
