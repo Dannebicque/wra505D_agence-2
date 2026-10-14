@@ -930,6 +930,23 @@ mobile, en clair et en sombre, chaque texte à 4,5:1 au moins. Cypress et Vitest
 
 **JEREMY** est titulaire de la colonne C : à prévenir avant d'attaquer.
 
+### C19 · [front] Accueil lisible d'un coup d'œil en bureau · M, 5 lots
+**Pourquoi** recette du 14/10/2026 (`docs/07-audit-accueil.md`), TB-11 à TB-18 : en bureau, quatre
+à cinq points focaux, une couleur pour sept sens, aucune hiérarchie typographique, neuf motifs.
+Le mobile, lu bloc après bloc, rend mieux ; l'emploi du temps, aussi dense, se lit d'un coup d'œil.
+**Décidé avec LCS (14/10/2026)** : notes colorées par seuil mais en discret, bandeau violet allégé,
+emploi du temps inchangé.
+**Terminé quand** la mesure du §2 de l'audit, refaite sur le premier écran en bureau, donne une
+couleur par sens, un écart d'au moins x 1,4 entre l'état et le texte courant, au plus trois motifs.
+
+| Lot | Contenu | État |
+|---|---|---|
+| C19.1 | couleurs : teintes de séance réservées aux cours, rouge réservé à l'action, le reste neutre | à faire |
+| C19.2 | échelle typographique à trois niveaux, gras limité | à faire |
+| C19.3 | bandeau allégé, sans doublon avec la liste du jour | à faire |
+| C19.4 | un motif de ligne unique pour « À faire », notes, documents et actualités | à faire |
+| C19.5 | deux colonnes dans l'ordre d'importance, aucun bloc étiré | à faire |
+
 ## Colonne D — Recherche
 
 **Priorité 1 du projet**, et la colonne la plus lourde. RECH-1 est, selon l'audit, le défaut le

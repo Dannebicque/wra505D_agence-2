@@ -97,15 +97,18 @@ contenu.
 | C19.3 | Bandeau sans doublon avec la liste, une seule étiquette d'état lisible | TB-12, TB-15 |
 | C19.4 | Motif de liste unique pour les blocs secondaires | TB-14 |
 | C19.5 | Trame à deux colonnes, sans bloc étiré | TB-17 |
-| C19.6 | Emploi du temps : aucun texte sous 12 px | EDT-24 |
+| C19.6 | Emploi du temps : aucun texte sous 12 px | EDT-24, non retenu (§8) |
 
 Chaque lot se vérifie par la même mesure qu'au §2, refaite après : on vise, sur le premier écran
 en bureau, une couleur par sens, un écart d'au moins x 1,4 entre l'état et le texte courant, et
 au plus trois motifs.
 
-## 8. Décisions à prendre
+## 8. Décisions (LCS, 14/10/2026)
 
-1. Notes : on garde la couleur par seuil (décidée le 13/10) sous une forme discrète, ou on passe
-   au neutre ?
-2. Bandeau : violet allégé, ou en-tête clair avec le violet en filet ?
-3. C19.6 (emploi du temps) dans la même branche, ou à part ?
+1. Notes : la couleur par seuil reste, en discret : la valeur seule se colore, sans pastille.
+2. Bandeau : violet allégé, moins haut, un seul cercle.
+3. L'emploi du temps n'est pas touché : C19.6 et EDT-24 ne sont pas retenus.
+
+Disposition retenue pour C19.5 : deux colonnes, qui suivent l'ordre d'importance du code. À
+gauche la journée, « À faire » et les notes ; à droite les documents, les actualités et les
+contacts. Le téléphone garde le même ordre en une colonne.
