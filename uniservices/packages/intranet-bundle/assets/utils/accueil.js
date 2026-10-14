@@ -138,12 +138,11 @@ const minutesDe = (cours) => cours.reduce((total, seance) => total + Math.round(
  *
  * @param contexte {aujourdhui, prenom, naissance, coursDuJour, semaine, semaines, semaineFormation,
  *   vacances, evaluations} ; coursDuJour et evaluations portent start, end, codeModule, evaluation.
- * @returns {Array<{cle: string, icone: string, texte: string, important: boolean}>} important : un
- *   vrai événement, affiché même sur un téléphone.
+ * @returns {Array<{cle: string, icone: string, texte: string}>}
  */
 export function messagesDuJour(contexte) {
     const {aujourdhui, prenom, naissance, coursDuJour = [], semaine = [], semaines = [], semaineFormation, vacances, evaluations = []} = contexte;
-    const message = (cle, icone, texte, important = true) => ({cle, icone, texte: texte.replace('{prenom}', prenom ?? ''), important});
+    const message = (cle, icone, texte) => ({cle, icone, texte: texte.replace('{prenom}', prenom ?? '')});
     const jour = minuit(aujourdhui);
     const joursSuivants = semaine.filter(j => minuit(j.date) > jour);
     const joursPrecedents = semaine.filter(j => minuit(j.date) < jour);
@@ -188,26 +187,26 @@ export function messagesDuJour(contexte) {
     }
 
     if (jour.getDay() === 1 && coursDuJour.length) {
-        messages.push(message('semaine', 'pi pi-heart', 'Bonne semaine, {prenom}', false));
+        messages.push(message('semaine', 'pi pi-heart', 'Bonne semaine, {prenom}'));
     }
     if (coursDuJour.length && joursSuivants.every(j => j.minutes === 0)) {
-        messages.push(message('fin-de-semaine', 'pi pi-forward', 'Bientôt le week-end, courage', false));
+        messages.push(message('fin-de-semaine', 'pi pi-forward', 'Bientôt le week-end, courage'));
     }
     if (!coursDuJour.length && ![0, 6].includes(jour.getDay())) {
-        messages.push(message('sans-cours', 'pi pi-face-smile', 'Journée sans cours, profitez-en', false));
+        messages.push(message('sans-cours', 'pi pi-face-smile', 'Journée sans cours, profitez-en'));
     }
     if (semaine.filter(j => j.minutes > 0).length > 1 && duJour > 0 && semaine.every(j => j.minutes <= duJour)) {
-        messages.push(message('journee-chargee', 'pi pi-bolt', 'Grosse journée, bon courage', false));
+        messages.push(message('journee-chargee', 'pi pi-bolt', 'Grosse journée, bon courage'));
     } else if (duJour > 0 && duJour <= 120) {
-        messages.push(message('journee-legere', 'pi pi-face-smile', 'Journée tranquille aujourd\'hui', false));
+        messages.push(message('journee-legere', 'pi pi-face-smile', 'Journée tranquille aujourd\'hui'));
     }
     if (aujourdhui.getHours() >= 18) {
-        messages.push(message('soir', 'pi pi-moon', 'Bonne soirée, {prenom}', false));
+        messages.push(message('soir', 'pi pi-moon', 'Bonne soirée, {prenom}'));
     } else if (aujourdhui.getHours() >= 12) {
-        messages.push(message('apres-midi', 'pi pi-sun', 'Bon après-midi, {prenom}', false));
+        messages.push(message('apres-midi', 'pi pi-sun', 'Bon après-midi, {prenom}'));
     } else {
-        messages.push(message('journee', 'pi pi-sun', 'Bonne journée, {prenom}', false));
-        messages.push(message('courage', 'pi pi-heart', 'Bonne journée et bon courage', false));
+        messages.push(message('journee', 'pi pi-sun', 'Bonne journée, {prenom}'));
+        messages.push(message('courage', 'pi pi-heart', 'Bonne journée et bon courage'));
     }
     return messages;
 }

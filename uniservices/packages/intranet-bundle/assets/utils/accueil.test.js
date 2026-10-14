@@ -287,12 +287,6 @@ describe('messagesDuJour et evenementDuJour', () => {
         messagesDuJour(sans).forEach(message => expect(message.texte).not.toMatch(/Astuce/));
     });
 
-    it('distingue les vrais événements, affichés même sur un téléphone', () => {
-        const parCle = Object.fromEntries(messagesDuJour(base).map(message => [message.cle, message.important]));
-        expect(parCle['vacances-proches']).toBe(true);
-        expect(parCle.journee).toBe(false);
-    });
-
     it('tient sur une ligne : 31 caractères au plus, hors prénom', () => {
         const contextes = [
             base,

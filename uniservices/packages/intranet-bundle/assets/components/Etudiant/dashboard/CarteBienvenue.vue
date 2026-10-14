@@ -85,7 +85,7 @@ const finDeJournee = computed(() => {
     </p>
     <p
         v-if="evenement"
-        :class="['bienvenue__evenement', `bienvenue__evenement--${evenement.cle}`, { 'bienvenue__evenement--doux': !evenement.important }]"
+        :class="['bienvenue__evenement', `bienvenue__evenement--${evenement.cle}`]"
     >
       <span class="bienvenue__evenement-icone" aria-hidden="true"><i :class="evenement.icone"></i></span>
       <span class="bienvenue__evenement-texte">{{ evenement.texte }}</span>
@@ -386,16 +386,12 @@ const finDeJournee = computed(() => {
     font-size: 0.9375rem;
   }
 
-  /* Le téléphone reste léger : ni semaine de formation, ni charge de la semaine, ni mot du jour
-     ordinaire. Les vrais événements, rares, restent. */
+  /* Le téléphone reste léger : ni semaine de formation, ni message du jour, ni charge de la
+     semaine. */
   .bienvenue__formation,
-  .bienvenue__milieu,
-  .bienvenue__evenement--doux {
+  .bienvenue__evenement,
+  .bienvenue__milieu {
     display: none;
-  }
-
-  .bienvenue__evenement {
-    margin-top: 0.5rem;
   }
 
   .bienvenue__infos {
