@@ -454,6 +454,12 @@ Cinq failles à leur signaler, car elles sont dans leur code de production :
   retirer les commentaires `(DC2Type:…)` des colonnes. DBAL 4 ne les lit plus : ils sont
   inoffensifs. `doctrine:schema:update --force` les retire une fois pour toutes, sans toucher aux
   données ; recharger les fixtures a le même effet.
+- **Une réponse 500 ouvre la page d'erreur de toute l'application** (`shared/helpers/axios.js`). Un
+  écran ne peut proposer « Réessayer » que sur une perte de réseau ou une erreur 4xx. Une requête
+  lancée sans que l'utilisateur l'ait demandée (lecture d'avance) passe `pageErreurServeur: false`
+  dans sa configuration axios.
+- **Pas de paramètre `vue` dans une adresse du front** : en développement, Vite prend toute
+  adresse en `?vue` pour un morceau de composant et répond une erreur. L'agenda dit `affichage`.
 - **Tester l'API sans mot de passe** : générer un jeton en console, puis l'envoyer en
   `Authorization: Bearer`.
   `php bin/console lexik:jwt:generate-token -c 'App\Entity\Users\Etudiant' etudiant`

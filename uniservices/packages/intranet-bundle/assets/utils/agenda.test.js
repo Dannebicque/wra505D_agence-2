@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {
+    adresseAgenda,
     annonceAgenda,
     coursParJour,
     densiteCarte,
@@ -7,6 +8,7 @@ import {
     joursDeLaSemaine,
     libelleCours,
     libelleSemaine,
+    lireAdresseAgenda,
     pausesDuJour,
     saisonDeVacances,
     titrePeriode,
@@ -267,5 +269,33 @@ describe('saisonDeVacances', () => {
         expect(saisonDeVacances('2027-02-15')).toBe('hiver');
         expect(saisonDeVacances('2027-04-19')).toBe('printemps');
         expect(saisonDeVacances('2027-07-12')).toBe('ete');
+    });
+});
+
+describe('adresse de l\'agenda', () => {
+    it('lit la vue et la date de l\'adresse', () => {
+        const {date, vue} = lireAdresseAgenda({affichage: 'jour', date: '2026-10-14'});
+        expect(vue).toBe('day');
+        expect([date.getFullYear(), date.getMonth(), date.getDate()]).toEqual([2026, 9, 14]);
+        expect(lireAdresseAgenda({affichage: 'semaine'})).toEqual({date: null, vue: 'week'});
+    });
+
+    it('ignore une vue inconnue et une date mal formée ou impossible', () => {
+        expect(lireAdresseAgenda({affichage: 'mois', date: '14/10/2026'})).toEqual({date: null, vue: null});
+        expect(lireAdresseAgenda({date: '2026-02-31'}).date).toBeNull();
+        expect(lireAdresseAgenda({date: ['2026-10-14']}).date).toBeNull();
+        expect(lireAdresseAgenda({})).toEqual({date: null, vue: null});
+    });
+
+    it('n\'écrit que ce qui s\'écarte de l\'ouverture par défaut', () => {
+        expect(adresseAgenda({date: '2026-10-14', vue: 'week'})).toEqual({affichage: 'semaine', date: '2026-10-14'});
+        expect(adresseAgenda({date: null, vue: 'day'})).toEqual({affichage: 'jour'});
+        expect(adresseAgenda({date: null, vue: null})).toEqual({});
+    });
+
+    it('relit ce qu\'elle écrit', () => {
+        const {date, vue} = lireAdresseAgenda(adresseAgenda({date: '2027-01-04', vue: 'day'}));
+        expect(vue).toBe('day');
+        expect(date.toDateString()).toBe(new Date(2027, 0, 4).toDateString());
     });
 });

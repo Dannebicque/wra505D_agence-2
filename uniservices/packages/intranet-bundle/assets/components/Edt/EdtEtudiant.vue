@@ -3,14 +3,14 @@ import { VueCal } from 'vue-cal'
 import 'vue-cal/style'
 
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
+import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router'
 import CoursCarte from './CoursCarte.vue'
 import SelecteurSemaine from './SelecteurSemaine.vue'
 import VacancesConfettis from './VacancesConfettis.vue'
 import {getMesSemainesService, getMonEmploiDuTempsService} from "@requests";
 import {getISOWeekNumber} from "@helpers/date";
-import {annonceAgenda, joursDeLaSemaine, libelleCours, libelleSemaine, titrePeriode, typeSeance} from '@/utils/agenda.js';
+import {adresseAgenda, annonceAgenda, joursDeLaSemaine, libelleCours, libelleSemaine, lireAdresseAgenda, titrePeriode, typeSeance} from '@/utils/agenda.js';
 import {formatDelai, minutesEntre, parseEdtDate} from '@/utils/prochainCours.js';
-import {ErrorView} from "@components";
 
 // Bornes de la hauteur d'une heure : 40 px fait tenir 8 h – 19 h sur un écran de 800 px de haut ;
 // au-delà de 80 px, la semaine s'étire pour rien.
@@ -41,20 +41,47 @@ const zoneGrille = ref({});
 const maintenant = ref(new Date());
 const horloge = setInterval(() => { maintenant.value = new Date(); }, 60000);
 
+const route = useRoute();
+const router = useRouter();
+const adresse = lireAdresseAgenda(route.query);
+
 const vues = [
   { id: 'day', libelle: 'Jour' },
   { id: 'week', libelle: 'Semaine' },
 ];
+// Le choix Jour / Semaine survit à la visite suivante. Le stockage peut être refusé (navigation
+// privée) : la semaine reste alors l'ouverture par défaut.
+const CLE_VUE = 'agenda.vue';
+const vueRetenue = () => {
+  try {
+    return vues.some(({id}) => id === localStorage.getItem(CLE_VUE)) ? localStorage.getItem(CLE_VUE) : 'week';
+  } catch {
+    return 'week';
+  }
+};
+const retenirVue = (vue) => {
+  try {
+    localStorage.setItem(CLE_VUE, vue);
+  } catch {
+    // Sans stockage, le choix ne vaut que pour cette visite.
+  }
+};
 // Cinq colonnes ne tiennent pas sur un téléphone tenu en long : il ouvre la journée. Tourné en
-// large, il retrouve la semaine.
+// large, il retrouve la vue choisie.
 // Tenu en long, il n'a pas la place d'une bascule : la vue suit l'orientation seule.
 const telephoneEnLong = window.matchMedia('(max-width: 767px) and (orientation: portrait)');
 const enLong = ref(telephoneEnLong.matches);
-const vueAffichee = ref(enLong.value ? 'day' : 'week');
+const vueAffichee = ref(enLong.value ? 'day' : (adresse.vue ?? vueRetenue()));
 const suivreOrientation = (evenement) => {
   enLong.value = evenement.matches;
-  vueAffichee.value = evenement.matches ? 'day' : 'week';
+  vueAffichee.value = evenement.matches ? 'day' : vueRetenue();
 };
+const choisirVue = (vue) => {
+  vueAffichee.value = vue;
+  retenirVue(vue);
+};
+// Date d'ouverture de vue-cal : celle de l'adresse, puis celle qu'on réessaie de charger.
+const dateDeDepart = ref(adresse.date ?? new Date());
 
 const minutes = (heure) => {
   const [h, m] = heure.split(':').map(Number);
@@ -151,13 +178,29 @@ onBeforeUnmount(() => {
   telephoneEnLong.removeEventListener('change', suivreOrientation);
 });
 
+// Une semaine déjà vue ne se recharge pas, et la suivante est lue d'avance : la flèche « Semaine
+// suivante » répond sans attendre le réseau. Une lecture en échec sort du cache pour être retentée.
+const cacheSemaines = new Map();
+const lireSemaine = (semaine, enArrierePlan = false) => {
+  if (!cacheSemaines.has(semaine)) {
+    cacheSemaines.set(semaine, getMonEmploiDuTempsService(semaine, enArrierePlan).catch((erreur) => {
+      cacheSemaines.delete(semaine);
+      throw erreur;
+    }));
+  }
+  return cacheSemaines.get(semaine);
+};
+const prechargerSemaine = (lundi) => {
+  lireSemaine(isoDate(new Date(lundi.getFullYear(), lundi.getMonth(), lundi.getDate() + 7)), true).catch(() => {});
+};
+
 const chargerSemaine = async (lundi) => {
   const semaine = isoDate(lundi);
   if (semaine === semaineChargee.value) {
     return;
   }
   try {
-    const reponse = await getMonEmploiDuTempsService(semaine);
+    const reponse = await lireSemaine(semaine);
     plage.value = reponse.plage;
     semaineFormation.value = reponse.semaineFormation;
     events.value = reponse.cours.map(cours => ({
@@ -169,19 +212,51 @@ const chargerSemaine = async (lundi) => {
     }));
     semaineChargee.value = semaine;
     hasError.value = false;
+    prechargerSemaine(lundi);
     await nextTick();
     ajusterHauteur();
   } catch (error) {
+    dateDeDepart.value = vuecalRef.value?.view?.firstCellDate ?? lundi;
     hasError.value = true;
   }
 };
 
+const reessayer = () => {
+  hasError.value = false;
+};
+
 watch(() => vuecalRef.value?.view?.start, async (debut) => {
   if (debut) {
+    noterAdresse();
     await chargerSemaine(lundiDe(new Date(debut)));
     annoncerPeriode();
   }
 }, { immediate: true });
+
+watch(vueAffichee, () => nextTick(noterAdresse));
+
+// La période affichée vit dans l'adresse : rechargement, retour depuis une autre page et lien
+// partagé rouvrent la même semaine. Aujourd'hui n'y est pas écrit, pour qu'un favori de l'agenda
+// ouvre toujours la semaine en cours. Remplacer plutôt qu'empiler : chaque clic sur une flèche
+// n'ajoute pas une page à l'historique.
+// Une fois la page quittée, réécrire son adresse annulerait la navigation en cours : un clic dans
+// le menu pendant le chargement de la semaine laisserait l'étudiant sur l'agenda.
+let quittee = false;
+onBeforeRouteLeave(() => {
+  quittee = true;
+});
+const noterAdresse = () => {
+  const view = vuecalRef.value?.view;
+  if (quittee || !view?.firstCellDate) {
+    return;
+  }
+  router.replace({
+    query: adresseAgenda({
+      date: aujourdhuiAffiche(view) ? null : isoDate(view.firstCellDate),
+      vue: enLong.value ? null : vueAffichee.value,
+    }),
+  });
+};
 
 const annoncerPeriode = () => {
   const view = vuecalRef.value?.view;
@@ -291,7 +366,11 @@ const detail = computed(() => {
     />
   </Transition>
 
-  <ErrorView v-if="hasError" message="Une erreur est survenue lors du chargement de l'emploi du temps. Veuillez réessayer plus tard." />
+  <div v-if="hasError" class="edt-erreur" role="alert">
+    <i class="pi pi-exclamation-triangle edt-erreur__icone" aria-hidden="true"></i>
+    <p class="edt-erreur__texte">L'emploi du temps n'a pas pu être chargé.</p>
+    <Button label="Réessayer" icon="pi pi-refresh" class="min-h-[44px]!" @click="reessayer" />
+  </div>
   <div v-else ref="cadre" class="edt-cadre">
     <vue-cal
         ref="vuecalRef"
@@ -304,6 +383,7 @@ const detail = computed(() => {
         :time-cell-height="hauteurHeure"
         :views="['day', 'week']"
         v-model:view="vueAffichee"
+        :view-date="dateDeDepart"
         :theme="false"
         diy
         :events="events"
@@ -365,7 +445,8 @@ const detail = computed(() => {
             </Transition>
             <SelectButton
                 v-if="!enLong"
-                v-model="vueAffichee"
+                :model-value="vueAffichee"
+                @update:model-value="choisirVue"
                 :options="vues"
                 option-label="libelle"
                 option-value="id"
@@ -416,6 +497,18 @@ const detail = computed(() => {
 @reference "../../assets/tailwind.css";
 
 /* Le cadre .card de la page n'a pas de marge intérieure : l'agenda prend la sienne. */
+.edt-erreur {
+  @apply flex flex-col items-center gap-4 px-6 py-16 text-center;
+}
+
+.edt-erreur__icone {
+  @apply text-3xl! text-muted-color;
+}
+
+.edt-erreur__texte {
+  @apply m-0 text-color;
+}
+
 .edt-cadre {
   @apply relative px-3 pt-3 pb-1 md:px-6 md:pt-5;
 }

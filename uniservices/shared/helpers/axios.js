@@ -156,7 +156,8 @@ api.interceptors.response.use(
             logout();
         }
 
-        if (error.response && error.response.status >= 500) {
+        // Une lecture d'avance, que l'utilisateur n'a pas demandée, ne doit pas l'arracher à sa page.
+        if (error.response && error.response.status >= 500 && originalRequest?.pageErreurServeur !== false) {
             redirectToServerErrorPage(error);
         }
 

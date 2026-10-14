@@ -884,9 +884,9 @@ Cypress, en bureau et en mobile, en clair et en sombre, sur une base neuve.
 | C17.1 | [back] `/api/me/emploi-du-temps?semaine=…`, heures avec fuseau, plage horaire de l'année, `/api/edt_events` fermée aux anonymes ; `/api/me/emploi-du-temps/semaines`, charge de chaque semaine | fait (#160, rattrapage) |
 | C17.2 | jetons de type de séance dans le preset, fonctions pures de placement, Vitest | fait (#161) |
 | C17.3 | semaine en bureau : carte adaptée à la durée, plage horaire fixe pour l'étudiant, samedi s'il a cours, mode sombre | fait (#162, rattrapage) |
-| C17.4 | mobile : bandeau des jours, journée en liste avec ses pauses, balayage | en partie : jour tenu en long, semaine en large, « Aujourd'hui » flottant ; reste le bandeau, la liste, le balayage |
-| C17.5 | date et vue dans l'URL, cache, chargement, état vide, erreur avec « Réessayer » | en partie : sélecteur de semaine avec la charge de chacune, semaines de vacances illustrées ; reste l'URL, le cache, « Réessayer » |
-| C17.6 | détail d'un cours modal, feuille du bas en mobile, liens vers la matière | en partie : modal, fermé d'un clic à côté, aux couleurs du type ; reste la feuille du bas et les liens |
+| C17.4 | mobile : bandeau des jours, journée en liste avec ses pauses, balayage | fait en partie : jour tenu en long, semaine en large, « Aujourd'hui » flottant ; bandeau, liste et balayage écartés, la vue jour étant jugée suffisante (LCS, 14/10/2026) |
+| C17.5 | date et vue dans l'URL, cache, chargement, état vide, erreur avec « Réessayer » | fait : `?affichage=semaine&date=AAAA-MM-JJ` (ou `jour`) (date omise quand aujourd'hui est affiché), vue retenue, semaines en cache et suivante lue d'avance, « Réessayer » sur perte de réseau ; sélecteur de semaine avec sa charge, vacances illustrées |
+| C17.6 | détail d'un cours modal, feuille du bas en mobile, liens vers la matière | fait en partie : modal, fermé d'un clic à côté, aux couleurs du type ; feuille du bas écartée (LCS, 14/10/2026), liens vers la matière avec P1 |
 | C17.7 | widgets « Maintenant » et « Aujourd'hui » sur la même carte | fait (C18.2) |
 
 **Fait aussi, au fil des retours de LCS et LOU** : couleurs de séance dans la DA (pastilles
