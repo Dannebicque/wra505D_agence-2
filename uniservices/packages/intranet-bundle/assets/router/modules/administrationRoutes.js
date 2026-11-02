@@ -1,21 +1,11 @@
-import previsionnelRoutes from './previsionnelRoutes.js'
-import stageAdministrationRoutes from './stageAdministrationRoutes.js'
-import anneeAdministrationRoutes from './anneeAdministrationRoutes.js'
-import PersonnelsListeView from "@/views/Personnels/PersonnelsListeView.vue";
-import EtudiantsAjoutView from "@/views/Etudiants/EtudiantsAjoutView.vue";
-import AdministrationView from '@/views/Administration/AdministrationView.vue';
-import EtudiantAddApogee from '@/components/Etudiant/EtudiantAddApogee.vue';
-import EtudiantAddManuel from '@/components/Etudiant/EtudiantAddManuel.vue';
-import EtudiantsAjoutResultView from '@/views/Etudiants/EtudiantsAjoutResultView.vue';
-import PnView from '@/views/Pn/PnView.vue';
-import RefCompetencesIndexView from '@/views/Ref-Competences/IndexView.vue';
-import PrevisionnelView from '@/views/Previsionnel/PrevisionnelView.vue';
-import PlanCoursAdminView from '@/views/PlanCours/Administration/PlanCoursAdminView.vue';
+import previsionnelRoutes from './previsionnelRoutes.js';
+import stageAdministrationRoutes from './stageAdministrationRoutes.js';
+import anneeAdministrationRoutes from './anneeAdministrationRoutes.js';
 
 export default [
   {
     path: 'administration',
-    component: AdministrationView,
+    component: () => import('@/views/Administration/AdministrationView.vue'),
     meta: {
       permission: 'canViewAdministration',
       breadcrumb: [{ label: 'Dashboard', route: '/' }, {
@@ -27,7 +17,7 @@ export default [
   },
   {
     path: 'administration/personnels',
-    component: PersonnelsListeView,
+    component: () => import('@/views/Personnels/PersonnelsListeView.vue'),
     meta: {
       permission: 'canViewAdministration',
       breadcrumb: [{ label: 'Dashboard', route: '/' }, {
@@ -46,10 +36,9 @@ export default [
       }]
     },
     children: [
-
       {
         path: 'ajout',
-        component: EtudiantsAjoutView,
+        component: () => import('@/views/Etudiants/EtudiantsAjoutView.vue'),
         meta: {
           breadcrumb: [{ label: 'Dashboard', route: '/' }, {
             label: 'Administration',
@@ -59,11 +48,13 @@ export default [
         children: [
           {
             path: 'apogee',
-            component: EtudiantAddApogee,
-          },{
+            component: () => import('@/components/Etudiant/EtudiantAddApogee.vue'),
+          },
+          {
             path: 'manuel',
-            component: EtudiantAddManuel,
-          },{
+            component: () => import('@/components/Etudiant/EtudiantAddManuel.vue'),
+          },
+          {
             path: 'sans-scolarite',
             name: 'ajout-etudiants-sans-scolarite',
             component: () => import('@/components/Etudiant/EtudiantsSansScolarite.vue'),
@@ -72,7 +63,7 @@ export default [
       },
       {
         path: 'ajout/result',
-        component: EtudiantsAjoutResultView,
+        component: () => import('@/views/Etudiants/EtudiantsAjoutResultView.vue'),
         meta: {
           breadcrumb: [{ label: 'Dashboard', route: '/' }, {
             label: 'Administration',
@@ -85,7 +76,7 @@ export default [
   },
   {
     path: 'administration/pn',
-    component: PnView,
+    component: () => import('@/views/Pn/PnView.vue'),
     meta: {
       permission: 'canViewAdministration',
       breadcrumb: [{ label: 'Dashboard', route: '/' }, {
@@ -96,7 +87,7 @@ export default [
   },
   {
     path: 'administration/referentiels-competences',
-    component: RefCompetencesIndexView,
+    component: () => import('@/views/Ref-Competences/IndexView.vue'),
     meta: {
       permission: 'canViewAdministration',
       breadcrumb: [{ label: 'Dashboard', route: '/' }, {
@@ -107,7 +98,7 @@ export default [
   },
   {
     path: 'administration/plans-cours',
-    component: PlanCoursAdminView,
+    component: () => import('@/views/PlanCours/Administration/PlanCoursAdminView.vue'),
     meta: {
       permission: 'canViewAdministration',
       breadcrumb: [
@@ -119,7 +110,7 @@ export default [
   },
   {
     path: 'administration/previsionnel',
-    component: PrevisionnelView,
+    component: () => import('@/views/Previsionnel/PrevisionnelView.vue'),
     meta: {
       permission: 'canViewAdministration',
       breadcrumb: [
@@ -134,15 +125,8 @@ export default [
   {
     path: 'administration/stages',
     meta: {
-        permission: 'canViewAdministration',
+      permission: 'canViewAdministration',
     },
-    // component: () => import('@/views/Stages/AdministrationView.vue'),
-    // meta: {
-    //   breadcrumb: [
-    //     { label: 'Dashboard', route: '/' },
-    //     { label: 'Administration', route: '/intranet/administration', icon: 'pi pi-wrench' },
-    //     { label: 'Stages', route: null, icon: 'pi pi-clock' }]
-    // },
     children: [
       ...stageAdministrationRoutes
     ]
@@ -164,8 +148,7 @@ export default [
   {
     path: 'administration/qualite',
     meta: {
-        permission: 'canViewAdministration',
+      permission: 'canViewAdministration',
     },
-  },
-
+  }
 ];

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import {getAnneeService, getGroupesService, getSemestresService, updateGroupeService } from "@requests";
-import { SimpleSkeleton, GlobalLoader, PermissionGuard, ButtonDelete, ButtonEdit, ButtonInfo, HeaderComponent } from "@components";
+import { SimpleSkeleton, ListSkeleton, PermissionGuard, ButtonDelete, ButtonEdit, ButtonInfo, HeaderComponent } from "@components";
 import { useUsersStore, useSemestreStore, useAnneeStore } from "@stores";
 import {typesGroupes} from "@config/uniServices.js";
 import {useRoute, useRouter} from "vue-router";
@@ -208,7 +208,7 @@ const deleteGroupeFromSemestre = async (groupeId, semestre) => {
       </div>
     </div>
     <div class="card-body flex items-start justify-center gap-2">
-      <GlobalLoader v-if="isLoadingGroupes" class="w-full h-64" />
+      <ListSkeleton v-if="isLoadingGroupes" class="w-full" />
       <div v-else v-for="semestre in semestres" :key="semestre.id" class="p-4 w-full card">
         <h3 class="text-xl! font-black mb-4">Semestre {{ semestre.libelle }}</h3>
         <div v-for="(groupesType, type) in groupes[semestre.id]" :key="type" class="mb-4 bg-primary-300/20 rounded-md p-2">
