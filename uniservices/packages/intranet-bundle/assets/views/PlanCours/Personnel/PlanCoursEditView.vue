@@ -190,7 +190,7 @@ const savePlan = async (etat = 'EN_COURS', redirect = false) => {
       payload.intervenants = form.value.intervenantIds.map(id => `/api/personnels/${id}`)
     }
 
-    const updated = await updatePlanCoursService(planCoursId.value, payload, false)
+    const updated = await updatePlanCoursService(planCoursId.value, payload, '', false)
     planCours.value = updated
     showSuccess(etat === 'COMPLET' ? 'Plan de cours validé et transmis avec succès !' : 'Plan de cours enregistré.')
 

@@ -13,6 +13,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ImportApogeeEtudiantController extends AbstractController
 {
     #[Route('/api/etudiants/import_apogee', methods: ['POST'])]
+    #[Route('/api/import_apogee/etudiants', methods: ['POST'])]
     #[IsGranted('CAN_EDIT_ETUDIANT_SCOLARITE')]
     public function import(Request $request): Response
     {

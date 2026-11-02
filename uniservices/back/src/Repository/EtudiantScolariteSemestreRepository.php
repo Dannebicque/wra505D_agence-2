@@ -31,4 +31,22 @@ class EtudiantScolariteSemestreRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    /**
+     * @return list<EtudiantScolariteSemestre>
+     */
+    public function findBySemestreAndAnneeUniversitaire(int $semestreId, int $anneeUniversitaireId): array
+    {
+        /** @var list<EtudiantScolariteSemestre> */
+        return $this->createQueryBuilder('ess')
+            ->join('ess.scolarite', 'sco')
+            ->join('sco.anneeUniversitaire', 'au')
+            ->andWhere('ess.semestre = :semestreId')
+            ->andWhere('au.id = :anneeUniversitaireId')
+            ->setParameter('semestreId', $semestreId)
+            ->setParameter('anneeUniversitaireId', $anneeUniversitaireId)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

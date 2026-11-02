@@ -48,7 +48,7 @@ const getAnneesUniv = async () => {
 
 const deleteAnneeUniv = async (anneeUniv) => {
   try {
-    await deleteAnneeUniversitaireService(anneeUniv.id, true);
+    await deleteAnneeUniversitaireService(anneeUniv.id, '', true);
     await getAnneesUniv();
     await getCurrentAnneeUniv();
   } catch (error) {
