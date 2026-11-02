@@ -17,3 +17,10 @@ intranet_controllers:
         path: '../../packages/intranet-bundle/src/Controller/'
         namespace: IntranetBundle\Controller
     type: attribute
+
+# Génération, dépôt et lecture des PDF des demandes d'achat, ajoutés par le client.
+finance_controllers:
+    resource:
+        path: '../../packages/finance-bundle/src/Controller/'
+        namespace: FinanceBundle\Controller
+    type: attribute

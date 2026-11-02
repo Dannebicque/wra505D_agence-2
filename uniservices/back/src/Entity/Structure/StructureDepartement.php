@@ -67,11 +67,11 @@ class StructureDepartement implements TimestampableInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(groups: ['departement:administration', 'departement:read', 'personnel:read', 'departement_personnel:read', 'scoralite:read', 'diplome:detail', 'pn:detail', 'pn:light', 'scolarite:user'])]
+    #[Groups(groups: ['departement:administration', 'departement:read', 'personnel:read', 'departement_personnel:read', 'scoralite:read', 'diplome:detail', 'pn:detail', 'pn:light', 'scolarite:user', 'finance:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(groups: ['departement:administration', 'departement:read', 'personnel:read', 'etudiant:read', 'departement_personnel:read', 'scolarite:read', 'diplome:detail', 'pn:detail', 'pn:light', 'scolarite:user', 'departement:write'])]
+    #[Groups(groups: ['departement:administration', 'departement:read', 'personnel:read', 'etudiant:read', 'departement_personnel:read', 'scolarite:read', 'diplome:detail', 'pn:detail', 'pn:light', 'scolarite:user', 'departement:write', 'finance:read'])]
     private ?string $libelle = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -83,7 +83,7 @@ class StructureDepartement implements TimestampableInterface
     private ?string $telContact = null;
 
     #[ORM\Column(length: 16, nullable: true)]
-    #[Groups(groups: ['departement:administration', 'departement:read', 'departement:write'])]
+    #[Groups(groups: ['departement:administration', 'departement:read', 'departement:write', 'finance:read'])]
     private ?string $couleur = null;
 
     #[ORM\Column(length: 255, nullable: true)]

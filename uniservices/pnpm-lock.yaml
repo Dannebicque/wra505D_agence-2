@@ -149,6 +149,8 @@ importers:
 
   packages/document-bundle: {}
 
+  packages/finance-bundle: {}
+
   packages/helpdesk-bundle: {}
 
   packages/intranet-bundle: {}
