@@ -23,6 +23,7 @@ const selectedAnneeUniversitaireId = computed(() => anneeUnivStore.selectedAnnee
 const anneesList = ref([]);
 const isLoadingAnnees = ref(false);
 const isLoadingStats = ref(false);
+const selectedAnnee = computed(() => anneesList.value.find(a => a.id === filters.value.annee.value) || null);
 
 const isInitialLoading = ref(true);
 
@@ -244,6 +245,28 @@ const deleteEtudiant = async etudiant => {
   </div>
 
   <div class="card">
+    <header class="card-header flex justify-between items-center w-full mb-6">
+      <div>
+        <p class="top-card-header">
+          Liste
+        </p>
+        <div class="flex flex-col items-start">
+          <p class="uppercase text-xs font-bold mb-0! text-muted-color">
+            {{ selectedAnnee ? selectedAnnee.libelle : 'Toutes les années' }}
+          </p>
+          <h2 class="mt-0!">
+            Étudiants inscrits dans le département
+          </h2>
+        </div>
+      </div>
+      <Button
+          as="router-link"
+          :to="{ name: 'ajout-etudiants-sans-scolarite' }"
+          label="Voir les étudiants sans scolarité"
+          icon="pi pi-eye"
+          severity="primary"
+      />
+    </header>
     <div class="card-body">
       <DataTable
           scrollHeight="800px"

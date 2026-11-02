@@ -10,6 +10,8 @@ use App\Entity\Structure\StructureAnnee;
 use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Users\Etudiant;
 use App\Repository\EtudiantRepository;
+use App\Repository\EtudiantScolariteRepository;
+use App\Repository\EtudiantScolariteSemestreRepository;
 use App\Repository\Structure\StructureAnneeRepository;
 use App\Repository\Structure\StructureAnneeUniversitaireRepository;
 use App\Repository\Structure\StructureSemestreRepository;
@@ -28,23 +30,78 @@ class CreateEtudiantController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly EtudiantRepository $etudiantRepository,
+        private readonly EtudiantScolariteRepository $etudiantScolariteRepository,
+        private readonly EtudiantScolariteSemestreRepository $etudiantScolariteSemestreRepository,
         private readonly StructureAnneeRepository $structureAnneeRepository,
         private readonly StructureSemestreRepository $structureSemestreRepository,
         private readonly StructureAnneeUniversitaireRepository $structureAnneeUniversitaireRepository
     ) {
     }
 
+    #[Route('/api/etudiants/{id}/integrer_scolarite', methods: ['POST'], name: 'integrer_etudiant_scolarite')]
+    #[Route('/api/{id}/integrer_scolarite/etudiants', methods: ['POST'])]
+    #[IsGranted('CAN_EDIT_ETUDIANT_SCOLARITE')]
+    public function integrerScolarite(int $id, Request $request): Response
+    {
+        $data = $request->toArray();
+        $anneeUnivId = LooseValue::nullableInt($data['anneeUniversitaireId'] ?? null);
+        $anneeId = LooseValue::nullableInt($data['anneeId'] ?? null);
+
+        if ($anneeUnivId === null || $anneeId === null) {
+            return new JsonResponse(['message' => 'anneeUniversitaireId et anneeId sont obligatoires'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $etudiant = $this->etudiantRepository->find($id);
+        if (!$etudiant instanceof Etudiant) {
+            return new JsonResponse(['message' => 'Étudiant introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        $anneeUniv = $this->structureAnneeUniversitaireRepository->find($anneeUnivId);
+        if (!$anneeUniv instanceof StructureAnneeUniversitaire) {
+            return new JsonResponse(['message' => 'Année universitaire introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        $annee = $this->structureAnneeRepository->find($anneeId);
+        if (!$annee instanceof StructureAnnee) {
+            return new JsonResponse(['message' => 'Année pédagogique introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        $scolarite = $this->etudiantScolariteRepository->findOneBy([
+            'etudiant' => $etudiant,
+            'anneeUniversitaire' => $anneeUniv,
+        ]);
+
+        if (!$scolarite instanceof EtudiantScolarite) {
+            $scolarite = $this->createEtudiantScolariteFromData($etudiant, $anneeUniv, $annee);
+            $this->entityManager->persist($scolarite);
+        }
+
+        $scolariteSemestres = $this->createEtudiantScolariteSemestreFromData($scolarite, $annee, false);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'message' => 'Scolarité intégrée avec succès',
+            'scolariteId' => $scolarite->getId(),
+            'scolariteSemestreIds' => array_map(static fn (EtudiantScolariteSemestre $semestre): ?int => $semestre->getId(), $scolariteSemestres),
+        ], Response::HTTP_OK);
+    }
+
     #[Route('/api/etudiants/new', methods: ['POST'], name: 'create_etudiant')]
+    #[Route('/api/new/etudiants', methods: ['POST'])]
     #[IsGranted('CAN_EDIT_ETUDIANT_SCOLARITE')]
     public function create(Request $request): Response
     {
         // Récupérer les données JSON envoyées dans la requête
         $data = $request->toArray();
         $fileContent = $data['fileContent'] ?? null;
-        $anneeUniv = $this->structureAnneeUniversitaireRepository->findOneBy(['id' => $data['anneeUniversitaireId']]);
+        $anneeUniv = $this->structureAnneeUniversitaireRepository->findOneBy(['id' => $data['anneeUniversitaireId'] ?? null]);
 
         if (!(bool) $fileContent) {
             return new JsonResponse(['message' => 'No file content provided'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!$anneeUniv instanceof StructureAnneeUniversitaire) {
+            return new JsonResponse(['message' => 'Année universitaire introuvable'], Response::HTTP_BAD_REQUEST);
         }
 
         // Traiter le contenu du fichier CSV
@@ -63,7 +120,8 @@ class CreateEtudiantController extends AbstractController
         $processedLines = []; // Tableau pour stocker les informations sur chaque ligne traitée
 
         // Traiter chaque ligne de données (à partir de la deuxième ligne)
-        for ($i = 1; $i < count($lines); $i++) {
+        $linesCount = count($lines);
+        for ($i = 1; $i < $linesCount; $i++) {
             $line = trim($lines[$i]);
             if ($line === '' || $line === '0') {
                 continue; // Ignorer les lignes vides
@@ -111,23 +169,34 @@ class CreateEtudiantController extends AbstractController
                     $existingEtudiant = $this->etudiantRepository->findOneBy(['num_ine' => $rowData['numero_ine']]);
                 }
 
-                if (!$existingEtudiant instanceof Etudiant && (bool) ($rowData['nom'] ?? false) && (isset($rowData['prenom']) && ($rowData['prenom'] !== '' && $rowData['prenom'] !== '0'))) {
-                    // Générer un username basé sur le prénom et le nom comme dans createEtudiantFromData
-                    $username = strtolower($rowData['prenom'] . '.' . $rowData['nom']);
-                    $username = preg_replace('/[^a-z0-9.]/', '', $username) ?? '';
-                    $existingEtudiant = $this->etudiantRepository->findOneBy(['username' => $username]);
-                }
-
                 if ($existingEtudiant instanceof Etudiant) {
-                    // L'étudiant existe déjà
-                    $lineInfo['status'] = 'existant';
-                    $lineInfo['message'] = 'Étudiant déjà inscrit';
+                    // L'étudiant existe déjà, vérifier son intégration pour l'année ciblée
+                    $etudiantSco = $this->etudiantScolariteRepository->findOneBy([
+                        'etudiant' => $existingEtudiant,
+                        'anneeUniversitaire' => $anneeUniv,
+                    ]);
+
+                    $hasScolarite = $etudiantSco instanceof EtudiantScolarite;
+                    $hasSemestres = $hasScolarite && $this->hasScolariteSemestresForAnnee($etudiantSco, $annee);
+
+                    if (!$etudiantSco instanceof EtudiantScolarite) {
+                        $etudiantSco = $this->createEtudiantScolariteFromData($existingEtudiant, $anneeUniv, $annee);
+                        $this->entityManager->persist($etudiantSco);
+                    }
+
+                    $this->createEtudiantScolariteSemestreFromData($etudiantSco, $annee);
+
+                    if ($hasScolarite && $hasSemestres) {
+                        $lineInfo['status'] = 'existant';
+                        $lineInfo['message'] = 'Étudiant déjà inscrit';
+                    } else {
+                        $lineInfo['status'] = 'intégré';
+                        $lineInfo['message'] = 'Étudiant existant intégré à l\'année sélectionnée';
+                    }
+
                     $lineInfo['etudiantId'] = $existingEtudiant->getId();
                 } else {
                     // Créer un nouvel étudiant
-                    if (!$anneeUniv instanceof StructureAnneeUniversitaire) {
-                        throw new \LogicException('Année universitaire non trouvée');
-                    }
                     $etudiant = $this->createEtudiantFromData($rowData, $anneeUniv);
                     $this->entityManager->persist($etudiant);
                     $etudiantSco = $this->createEtudiantScolariteFromData($etudiant, $anneeUniv, $annee);
@@ -252,26 +321,59 @@ class CreateEtudiantController extends AbstractController
         return $etudiantSco;
     }
 
-    public function createEtudiantScolariteSemestreFromData(EtudiantScolarite $etudiantScolarite, StructureAnnee $annee): mixed
+    /**
+     * Crée les semestres de scolarité manquants de l'année ; ceux qui existent déjà sont rendus tels quels.
+     *
+     * @return list<EtudiantScolariteSemestre>
+     */
+    public function createEtudiantScolariteSemestreFromData(EtudiantScolarite $etudiantScolarite, StructureAnnee $annee, bool $assignDefaultGroupes = true): array
     {
         $semestres = $this->structureSemestreRepository->findBy(['annee' => $annee]);
+        $createdSemestres = [];
 
-        $etudiantScoSemestre = null;
-        if (count($semestres) === 2) {
-            foreach ($semestres as $semestre) {
-                $etudiantScoSemestre = new EtudiantScolariteSemestre();
-                $etudiantScoSemestre->setScolarite($etudiantScolarite);
-                $etudiantScoSemestre->setSemestre($semestre);
+        foreach ($semestres as $semestre) {
+            $existing = $this->etudiantScolariteSemestreRepository->findOneBy([
+                'scolarite' => $etudiantScolarite,
+                'semestre' => $semestre,
+            ]);
+            if ($existing instanceof EtudiantScolariteSemestre) {
+                $createdSemestres[] = $existing;
+                continue;
+            }
+
+            $etudiantScoSemestre = new EtudiantScolariteSemestre();
+            $etudiantScoSemestre->setScolarite($etudiantScolarite);
+            $etudiantScoSemestre->setSemestre($semestre);
+
+            if ($assignDefaultGroupes) {
                 $groupes = $semestre->getGroupes();
                 foreach ($groupes as $groupe) {
                     $etudiantScoSemestre->addGroupe($groupe);
                 }
-                $this->entityManager->persist($etudiantScoSemestre);
-                $this->entityManager->flush();
             }
-        } else {
-            return null;
+
+            $this->entityManager->persist($etudiantScoSemestre);
+            $createdSemestres[] = $etudiantScoSemestre;
         }
-        return $etudiantScoSemestre;
+
+        return $createdSemestres;
+    }
+
+    private function hasScolariteSemestresForAnnee(EtudiantScolarite $etudiantScolarite, StructureAnnee $annee): bool
+    {
+        $semestres = $this->structureSemestreRepository->findBy(['annee' => $annee]);
+
+        foreach ($semestres as $semestre) {
+            $existing = $this->etudiantScolariteSemestreRepository->findOneBy([
+                'scolarite' => $etudiantScolarite,
+                'semestre' => $semestre,
+            ]);
+
+            if (!$existing instanceof EtudiantScolariteSemestre) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -1,9 +1,14 @@
 // L'import d'étudiants était ouvert sans connexion : n'importe qui pouvait créer des comptes. Il est
-// réservé au personnel qui peut modifier une scolarité. Aucun appel ne crée d'étudiant : un corps
-// sans fichier s'arrête avant toute écriture.
+// réservé au personnel qui peut modifier une scolarité, comme l'intégration d'un étudiant existant
+// et le report des groupes du semestre précédent. Aucun appel n'écrit : un corps incomplet
+// s'arrête avant toute écriture.
 const routes = [
     { url: '/api/etudiants/new', corps: { anneeUniversitaireId: 0 }, autorise: 400 },
+    { url: '/api/new/etudiants', corps: { anneeUniversitaireId: 0 }, autorise: 400 },
     { url: '/api/etudiants/import_apogee', corps: {}, autorise: 200 },
+    { url: '/api/import_apogee/etudiants', corps: {}, autorise: 200 },
+    { url: '/api/etudiants/0/integrer_scolarite', corps: {}, autorise: 400 },
+    { url: '/api/manage-groupes/synchro-semestre-previous/etudiant_scolarite_semestres', corps: {}, autorise: 204 },
 ];
 
 const connexion = (login) => {

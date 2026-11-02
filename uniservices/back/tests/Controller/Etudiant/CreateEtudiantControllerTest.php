@@ -6,7 +6,10 @@ namespace App\Tests\Controller\Etudiant;
 
 use App\Controller\Etudiant\CreateEtudiantController;
 use App\Entity\Users\Etudiant;
+use App\Entity\Etudiant\EtudiantScolarite;
 use App\Repository\EtudiantRepository;
+use App\Repository\EtudiantScolariteRepository;
+use App\Repository\EtudiantScolariteSemestreRepository;
 use App\Repository\Structure\StructureAnneeRepository;
 use App\Repository\Structure\StructureAnneeUniversitaireRepository;
 use App\Repository\Structure\StructureSemestreRepository;
@@ -63,6 +66,8 @@ final class CreateEtudiantControllerTest extends TestCase
         $response = (new CreateEtudiantController(
             $entityManager,
             $etudiantRepository,
+            $this->createStub(EtudiantScolariteRepository::class),
+            $this->createStub(EtudiantScolariteSemestreRepository::class),
             $structureAnneeRepository,
             $structureSemestreRepository,
             $structureAnneeUniversitaireRepository,
@@ -72,5 +77,60 @@ final class CreateEtudiantControllerTest extends TestCase
         self::assertSame(JsonResponse::HTTP_OK, $response->getStatusCode());
         self::assertInstanceOf(Etudiant::class, $persistedEtudiant);
         self::assertNull($persistedEtudiant->getPassword());
+    }
+
+    /** Vérifie qu’un étudiant déjà connu, sans scolarité pour l’année, y est intégré au lieu d’être ignoré. */
+    public function testIntegreUnEtudiantExistantSansScolarite(): void
+    {
+        $etudiant = new Etudiant();
+        $etudiantRepository = $this->createMock(EtudiantRepository::class);
+        $etudiantRepository->method('findOneBy')->willReturn($etudiant);
+        $etudiantScolariteRepository = $this->createMock(EtudiantScolariteRepository::class);
+        $etudiantScolariteRepository->method('findOneBy')->willReturn(null);
+        $structureAnneeRepository = $this->createMock(StructureAnneeRepository::class);
+        $structureAnneeRepository->method('findOneBy')->willReturn($this->createMock(StructureAnnee::class));
+        $structureAnneeUniversitaireRepository = $this->createMock(StructureAnneeUniversitaireRepository::class);
+        $structureAnneeUniversitaireRepository->method('findOneBy')->willReturn($this->createMock(StructureAnneeUniversitaire::class));
+        $structureSemestreRepository = $this->createMock(StructureSemestreRepository::class);
+        $structureSemestreRepository->method('findBy')->willReturn([]);
+
+        $persisted = [];
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('persist')->willReturnCallback(function (object $entity) use (&$persisted): void {
+            $persisted[] = $entity;
+        });
+
+        $request = Request::create(
+            '/api/etudiants/new',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'anneeUniversitaireId' => 1,
+                'fileContent' => "nom;prenom;annee_code_etape;numero_etudiant\nDupont;Alice;LIC1;12345",
+            ], JSON_THROW_ON_ERROR),
+        );
+
+        $response = (new CreateEtudiantController(
+            $entityManager,
+            $etudiantRepository,
+            $etudiantScolariteRepository,
+            $this->createStub(EtudiantScolariteSemestreRepository::class),
+            $structureAnneeRepository,
+            $structureSemestreRepository,
+            $structureAnneeUniversitaireRepository,
+        ))->create($request);
+
+        $body = json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($body);
+        self::assertSame(0, $body['created']);
+        self::assertIsArray($body['processedLines']);
+        self::assertIsArray($body['processedLines'][0]);
+        self::assertSame('intégré', $body['processedLines'][0]['status']);
+        self::assertCount(1, $persisted);
+        self::assertInstanceOf(EtudiantScolarite::class, $persisted[0]);
+        self::assertSame($etudiant, $persisted[0]->getEtudiant());
     }
 }
