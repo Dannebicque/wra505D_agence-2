@@ -11,10 +11,9 @@
           </div>
           <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">Page Introuvable</h1>
           <span class="text-muted-color text-center">La page que vous recherchez n'existe pas.</span>
-          
-          <!--  un bouton pour revenir à la page précédente  -->
-          <Button @click="$router.go(-1)" class="mt-4" severity="primary">
-            <span class="p-button-label">Retour</span>
+
+          <Button @click="$router.push('/intranet/')" class="mt-4" severity="primary">
+            <span class="p-button-label">Accueil</span>
           </Button>
         </div>
       </div>
