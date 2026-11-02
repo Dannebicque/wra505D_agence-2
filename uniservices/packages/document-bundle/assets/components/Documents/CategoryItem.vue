@@ -4,8 +4,8 @@
       :class="[
         'w-full flex items-center space-x-2 pr-3 text-sm font-medium rounded-md transition-colors',
         selectedCategory === category.id
-          ? 'bg-primary-50 text-primary-700 border border-primary-200'
-          : 'text-gray-700 hover:bg-gray-50'
+          ? 'bg-highlight border border-primary'
+          : 'text-color hover:bg-emphasis'
       ]"
     >
       <button
@@ -14,7 +14,7 @@
         :aria-label="`Sous-catégories de ${category.name}`"
         :aria-expanded="expanded"
         @click="toggleExpanded"
-        class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+        class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-emphasis rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
       >
         <svg
           :class="[
@@ -44,7 +44,7 @@
         <i :class="[category.icon, 'text-lg']" aria-hidden="true"></i>
         <span class="flex-1 text-left">{{ category.name }}</span>
 
-        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" aria-hidden="true">
+        <span class="text-xs bg-(--p-content-hover-background) text-muted-color px-2 py-1 rounded-full" aria-hidden="true">
           {{ category.documentCount }}
         </span>
         <span class="sr-only">{{ category.documentCount }} {{ category.documentCount > 1 ? 'documents' : 'document' }}</span>

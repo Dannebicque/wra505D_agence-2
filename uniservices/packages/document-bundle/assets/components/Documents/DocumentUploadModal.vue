@@ -10,23 +10,23 @@
     <form @submit.prevent="handleSubmit" class="space-y-4 pt-2">
       <!-- Title -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Titre du document *</label>
+        <label class="block text-sm font-medium text-color mb-1">Titre du document *</label>
         <input
           v-model="form.titre"
           type="text"
           required
           placeholder="ex: Guide de rentrée 2024-2025"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="w-full px-3 py-2 border border-(--p-ui-border-color) text-color rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Type -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Type de fichier</label>
+          <label class="block text-sm font-medium text-color mb-1">Type de fichier</label>
           <select
             v-model="form.type"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+            class="w-full px-3 py-2 border border-(--p-ui-border-color) text-color rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-(--p-content-background)"
           >
             <option value="pdf">PDF</option>
             <option value="word">Document Word</option>
@@ -40,10 +40,10 @@
 
         <!-- Category -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
+          <label class="block text-sm font-medium text-color mb-1">Catégorie</label>
           <select
             v-model="form.categoryId"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+            class="w-full px-3 py-2 border border-(--p-ui-border-color) text-color rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-(--p-content-background)"
           >
             <option value="">-- Sans catégorie --</option>
             <option v-for="cat in flatCategories" :key="cat.id" :value="cat.id">
@@ -55,48 +55,48 @@
 
       <!-- Description -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label class="block text-sm font-medium text-color mb-1">Description</label>
         <textarea
           v-model="form.description"
           rows="3"
           placeholder="Brève description du contenu..."
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="w-full px-3 py-2 border border-(--p-ui-border-color) text-color rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
         ></textarea>
       </div>
 
       <!-- Tags -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Tags (séparés par des virgules)</label>
+        <label class="block text-sm font-medium text-color mb-1">Tags (séparés par des virgules)</label>
         <input
           v-model="tagInput"
           type="text"
           placeholder="important, RH, stage"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="w-full px-3 py-2 border border-(--p-ui-border-color) text-color rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
       </div>
 
       <!-- Drag and Drop Dropzone Mock -->
       <div
-        class="border-2 border-dashed border-gray-300 hover:border-primary-400 rounded-lg p-6 text-center cursor-pointer transition-colors bg-gray-50 hover:bg-gray-100"
+        class="border-2 border-dashed border-(--p-ui-border-color) hover:border-primary rounded-lg p-6 text-center cursor-pointer transition-colors bg-(--p-content-hover-background) hover:bg-highlight"
       >
         <i class="pi pi-folder text-3xl mb-2" aria-hidden="true"></i>
-        <p class="text-sm font-medium text-gray-700">Glissez-déposez votre fichier ici, ou parcourez vos dossiers</p>
-        <p class="text-xs text-gray-600 mt-1">Formats acceptés : PDF, DOCX, XLSX, PNG, ZIP (Max 50 Mo)</p>
+        <p class="text-sm font-medium text-color">Glissez-déposez votre fichier ici, ou parcourez vos dossiers</p>
+        <p class="text-xs text-muted-color mt-1">Formats acceptés : PDF, DOCX, XLSX, PNG, ZIP (Max 50 Mo)</p>
       </div>
 
       <!-- Actions -->
-      <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+      <div class="flex justify-end space-x-3 pt-4 border-t border-surface">
         <button
           type="button"
           @click="$emit('update:visible', false)"
-          class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          class="px-4 py-2 text-sm font-medium text-color bg-(--p-content-background) border border-(--p-ui-border-color) rounded-md hover:bg-emphasis"
         >
           Annuler
         </button>
         <button
           type="submit"
           :disabled="loading"
-          class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50 flex items-center space-x-2"
+          class="px-4 py-2 text-sm font-medium text-primary-contrast bg-primary rounded-md hover:bg-primary-emphasis disabled:opacity-50 flex items-center space-x-2"
         >
           <span v-if="loading" class="animate-spin">⏳</span>
           <span>Enregistrer le document</span>

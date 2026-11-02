@@ -1,11 +1,11 @@
 <template>
-  <div class="h-full bg-white border-r border-gray-200 flex flex-col w-64">
+  <div class="h-full bg-(--p-content-background) border border-surface rounded-md overflow-hidden flex flex-col w-64">
     <!-- Action Header -->
-    <div class="p-4 border-b border-gray-200 space-y-3">
+    <div class="p-4 border-b border-surface space-y-3">
       <button
         v-permission="'isPersonnel'"
         @click="$emit('openUploadModal')"
-        class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow transition-all flex items-center justify-center space-x-2 text-sm"
+        class="w-full bg-primary hover:bg-primary-emphasis text-primary-contrast font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow transition-all flex items-center justify-center space-x-2 text-sm"
       >
         <span class="text-lg">+</span>
         <span>Nouveau document</span>
@@ -26,13 +26,13 @@
         :class="[
           'lien-filtre w-full min-h-[44px] flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
           toutAfficher
-            ? 'bg-primary-50 text-primary-700 border border-primary-200'
-            : 'text-gray-700 hover:bg-gray-50'
+            ? 'bg-highlight border border-primary'
+            : 'text-color hover:bg-emphasis'
         ]"
       >
         <i class="pi pi-folder text-lg" aria-hidden="true"></i>
         <span>Tous les documents</span>
-        <span class="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" aria-hidden="true">
+        <span class="ml-auto text-xs bg-(--p-content-hover-background) text-muted-color px-2 py-1 rounded-full" aria-hidden="true">
           {{ totalDocuments }}
         </span>
         <span class="sr-only">{{ totalDocuments }} {{ totalDocuments > 1 ? 'documents' : 'document' }}</span>
@@ -45,13 +45,13 @@
         :class="[
           'lien-filtre w-full min-h-[44px] flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
           showFavorites
-            ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-            : 'text-gray-700 hover:bg-gray-50'
+            ? 'bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-700'
+            : 'text-color hover:bg-emphasis'
         ]"
       >
         <i class="pi pi-star text-lg" aria-hidden="true"></i>
         <span>Favoris</span>
-        <span class="ml-auto text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" aria-hidden="true">
+        <span class="ml-auto text-xs bg-(--p-content-hover-background) text-muted-color px-2 py-1 rounded-full" aria-hidden="true">
           {{ favoriteCount }}
         </span>
         <span class="sr-only">{{ favoriteCount }} {{ favoriteCount > 1 ? 'documents' : 'document' }}</span>
@@ -62,7 +62,7 @@
         :key="section.titre"
         class="mt-6"
       >
-        <h2 class="text-xs! font-semibold! text-gray-600 uppercase tracking-wide mt-0! mb-2!">
+        <h2 class="text-xs! font-semibold! text-muted-color uppercase tracking-wide mt-0! mb-2!">
           {{ section.titre }}
         </h2>
         <ul class="space-y-1">
@@ -73,15 +73,15 @@
               :class="[
                 'lien-filtre w-full min-h-[44px] flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md text-left transition-colors',
                 selectedEnseignement === groupe.enseignement.id
-                  ? 'bg-primary-50 text-primary-700 border border-primary-600'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  ? 'bg-highlight border border-primary'
+                  : 'text-color hover:bg-emphasis'
               ]"
             >
               <span class="flex-1">
                 <span class="font-semibold">{{ groupe.enseignement.code }}</span>
                 {{ groupe.enseignement.libelle }}
               </span>
-              <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" aria-hidden="true">
+              <span class="text-xs bg-(--p-content-hover-background) text-muted-color px-2 py-1 rounded-full" aria-hidden="true">
                 {{ groupe.documentCount }}
               </span>
               <span class="sr-only">{{ groupe.documentCount }} {{ groupe.documentCount > 1 ? 'documents' : 'document' }}</span>
@@ -92,7 +92,7 @@
 
       <!-- Categories -->
       <div class="mt-6">
-        <h2 class="text-xs! font-semibold! text-gray-600 uppercase tracking-wide mt-0! mb-2!">
+        <h2 class="text-xs! font-semibold! text-muted-color uppercase tracking-wide mt-0! mb-2!">
           Catégories
         </h2>
         <div class="space-y-1">

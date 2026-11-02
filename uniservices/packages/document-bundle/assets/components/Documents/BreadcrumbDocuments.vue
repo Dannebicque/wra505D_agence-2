@@ -1,8 +1,8 @@
 <template>
-  <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+  <nav class="flex items-center space-x-2 text-sm text-muted-color mb-4">
     <button
       @click="$emit('navigate', null)"
-      class="hover:text-gray-700 transition-colors"
+      class="hover:text-color transition-colors"
     >
       <i class="pi pi-folder" aria-hidden="true"></i> Accueil
     </button>
@@ -15,12 +15,12 @@
       <button
         v-if="index < breadcrumbItems.length - 1"
         @click="$emit('navigate', item.id)"
-        class="hover:text-gray-700 transition-colors"
+        class="hover:text-color transition-colors"
       >
         <i :class="item.icon" aria-hidden="true"></i> {{ item.name }}
       </button>
       
-      <span v-else class="text-gray-900 font-medium">
+      <span v-else class="text-color font-medium">
         <i :class="item.icon" aria-hidden="true"></i> {{ item.name }}
       </span>
     </template>
