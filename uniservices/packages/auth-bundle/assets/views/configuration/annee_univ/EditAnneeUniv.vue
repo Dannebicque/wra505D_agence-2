@@ -141,7 +141,7 @@ const updateAnneeUniv = async () => {
       diplomes: selectedDiplomesIri,
     };
 
-    await updateAnneeUniversitaireService(anneeUnivId.value, data, true);
+    await updateAnneeUniversitaireService(anneeUnivId.value, data, '', true);
 
     // Si l'année est devenue active, rafraîchir le store
     if (anneeUniv.value.actif) {

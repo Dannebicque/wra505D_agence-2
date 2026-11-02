@@ -111,7 +111,7 @@ const createAnneeUniv = async () => {
       diplomes: selectedDiplomes.value.map(id => `/api/structure_diplomes/${id}`)
     };
     // Appeler le service pour créer l'année universitaire
-    await createAnneeUniversitaireService(data, true)
+    await createAnneeUniversitaireService(data, '', true)
     console.log("Année universitaire créée:", anneeUniv.value);
   } catch (error) {
     console.error("Erreur lors de la création de l'année universitaire:", error);
