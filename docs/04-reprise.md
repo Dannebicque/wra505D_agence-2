@@ -238,6 +238,9 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
 - **Symfony 8.1 n'est maintenu que jusqu'à fin janvier 2027** : passer en 8.2 avant.
 - Depuis le 26/09/2026, `accept_stored_in_the_clear` vaut `false` : au premier déploiement sur une
   base qui garde des jetons en clair, les sessions concernées devront se reconnecter une fois.
+- **Schéma** : E26.2 ajoute la table `departement_personnel_parcours_diplome` (diplômes d'un
+  responsable de parcours). Base locale existante : `php bin/console doctrine:schema:update --force`.
+  Un responsable de parcours sans diplôme rattaché perd ce rôle tant qu'on ne lui en confie pas.
 - **Au déploiement**, vider aussi les pools de cache :
   `php bin/console cache:pool:clear cache.global_clearer`. Le cache de métadonnées d'API Platform
   survit à `cache:clear` et garde des groupes de sérialisation périmés.
