@@ -11,7 +11,7 @@ describe('Fiches du trombinoscope', () => {
     });
 
     it('tiennent le nom et l\'adresse dans la carte', () => {
-        cy.contains('h3', 'Jane Doe').closest('.card').should(($carte) => {
+        cy.contains('h3', 'Jane Doe').closest('article').should(($carte) => {
             expect($carte.text()).to.contain('etudiant.user@etudiant.univ-reims.fr');
             expect($carte[0].scrollWidth).to.be.at.most($carte[0].clientWidth);
         });

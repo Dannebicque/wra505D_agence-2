@@ -21,6 +21,7 @@ class IntranetWidgetProvider implements WidgetProviderInterface
     {
         return [
             new WidgetDefinition('intranet.emploi_du_temps', 'intranet', 'Aujourd\'hui', 'pi pi-calendar', 'EmploiDuTempsWidget', 'large', true, defaultConfig: ['position' => 2], allowedProfiles: [WidgetDefinition::PROFILE_PERSONNEL]),
+            new WidgetDefinition('intranet.listings_etudiants', 'intranet', 'Listings & Émargements étudiants', 'pi pi-file-export', 'ListingsEtudiantsWidget', 'large', true, defaultConfig: ['position' => 2, 'colSpan' => 2, 'rowSpan' => 2], allowedProfiles: [WidgetDefinition::PROFILE_PERSONNEL]),
             new WidgetDefinition('intranet.actions_urgentes', 'intranet', 'Actions urgentes', 'pi pi-sparkles', 'ActionsUrgentesWidget', 'medium', true, defaultConfig: ['position' => 3], allowedProfiles: [WidgetDefinition::PROFILE_PERSONNEL]),
             // Plus des widgets : l'accueil fixe de l'étudiant lit leurs données par /api/widgets/{code}/data.
             new WidgetDefinition('intranet.contacts', 'intranet', 'Contacts', 'pi pi-users', 'ContactsWidget', 'medium', true, defaultConfig: ['position' => 6], allowedProfiles: [WidgetDefinition::PROFILE_ETUDIANT]),

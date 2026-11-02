@@ -37,6 +37,11 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
                     ['label' => '2 conventions à signer aujourd\'hui', 'priority' => 'medium'],
                 ],
             ],
+            'intranet.listings_etudiants' => [
+                'supportedFormats' => ['pdf', 'xlsx', 'csv'],
+                'hasGotenberg' => true,
+                'hasSpreadsheet' => true,
+            ],
             default => [],
         };
     }

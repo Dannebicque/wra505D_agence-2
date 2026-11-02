@@ -1,12 +1,29 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        # Couleurs des documents générés (PDF, Excel) : les jetons de la DA de CLAUDE.md, hors du
+        # thème PrimeVue qui ne s'y applique pas. Chaque couple fond et texte y est déjà mesuré.
+        document_palette:
+            primary: '#4D3677'
+            on_primary: '#FFFFFF'
+            accent: '#F7B000'
+            on_accent: '#4D3677'
+            text: '#4D5259'
+            muted: '#676D75'
+            border: '#7E848D'
+            background: '#F5F6FA'
+            surface: '#FFFFFF'
+            success: '#15C377'
+            on_success: '#0B3D26'
+            danger: '#F96868'
+            on_danger: '#4A1010'
     paths:
         # Templates des packages – fusionnés dans le pool global Twig
         # Un package peut ainsi hériter de 'emails/layout.html.twig' sans namespace
 #        '%kernel.project_dir%/../packages/auth-bundle/templates': ~
 #        '%kernel.project_dir%/../packages/edt-bundle/templates': ~
 #        '%kernel.project_dir%/../packages/helpdesk-bundle/templates': ~
-#        '%kernel.project_dir%/../packages/intranet-bundle/templates': ~
+        '%kernel.project_dir%/../packages/intranet-bundle/templates': Intranet
 #        '%kernel.project_dir%/../packages/questionnaire-bundle/templates': ~
 #        '%kernel.project_dir%/../packages/shell/templates': ~
 #        '%kernel.project_dir%/../packages/stage-bundle/templates': ~

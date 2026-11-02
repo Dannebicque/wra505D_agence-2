@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import {computed} from 'vue';
-import type {Etudiant, FilterState, Personnel} from '@types';
+import { computed } from 'vue';
+import type { FilterState } from '@types';
 
 interface Props {
-  students: Etudiant[];
-  staff: Personnel[];
-  filteredStudents: Etudiant[];
-  filteredStaff: Personnel[];
+  students: any[];
+  staff: any[];
+  filteredStudents: any[];
+  filteredStaff: any[];
   filters: FilterState;
+  anneeUnivLabel?: string;
 }
 
 const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  resetFilters: [];
+}>();
 
 const totalCount = computed(() => {
   return props.filters.mode === 'students' ? props.students.length : props.staff.length;
@@ -20,85 +25,85 @@ const filteredCount = computed(() => {
   return props.filters.mode === 'students' ? props.filteredStudents.length : props.filteredStaff.length;
 });
 
-const studentStats = computed(() => {
-  if (props.filters.mode !== 'students') return null;
-
-  const semesters = props.students.reduce((acc, student) => {
-    acc[student.semester] = (acc[student.semester] || 0) + 1;
-    return acc;
-  }, {} as Record<number, number>);
-
-  const statuses = props.students.reduce((acc, student) => {
-    acc[student.status] = (acc[student.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  return {semesters, statuses};
+const isFiltered = computed(() => {
+  if (props.filters.searchTerm) return true;
+  if (props.filters.mode === 'students') {
+    return Boolean(
+        props.filters.studentFilters.semester ||
+        props.filters.studentFilters.groupType ||
+        props.filters.studentFilters.group
+    );
+  }
+  return Boolean(props.filters.staffFilters.statut || props.filters.staffFilters.department);
 });
 
-const staffStats = computed(() => {
-  if (props.filters.mode !== 'staff') return null;
-
-  const statuses = props.staff.reduce((acc, member) => {
-    const statut = member.statut;
-    const group =
-        ['MCF', 'PRCE', 'PRAG', 'contractuel'].includes(statut) ? 'permanent' :
-            ['VAC', 'ATER', 'vacataire'].includes(statut) ? 'vacataires' :
-                'adm';
-    acc[group] = (acc[group] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  return {statuses};
+const activeFiltersList = computed(() => {
+  const list: string[] = [];
+  if (props.filters.searchTerm) {
+    list.push(`Recherche: "${props.filters.searchTerm}"`);
+  }
+  if (props.filters.mode === 'students') {
+    if (props.filters.studentFilters.semester) {
+      const match = props.students.find((s: any) => s.semestre === props.filters.studentFilters.semester);
+      list.push(match?.semestreLibelle ? `Semestre: ${match.semestreLibelle}` : `Semestre #${props.filters.studentFilters.semester}`);
+    }
+    if (props.filters.studentFilters.groupType) {
+      list.push(`Type: ${props.filters.studentFilters.groupType}`);
+    }
+    if (props.filters.studentFilters.group) {
+      list.push(`Groupe: ${props.filters.studentFilters.group}`);
+    }
+  } else {
+    if (props.filters.staffFilters.statut) {
+      list.push(`Statut: ${props.filters.staffFilters.statut}`);
+    }
+    if (props.filters.staffFilters.department) {
+      list.push(`Département: ${props.filters.staffFilters.department}`);
+    }
+  }
+  return list;
 });
 
 </script>
 
 <template>
-  <div class="bg-white border-b border-primary p-4">
-    <div class="flex items-center justify-between">
-      <!-- Count Summary -->
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2">
-          <span class="text-2xl font-bold text-gray-900">{{ filteredCount }}</span>
-          <span class="text-sm text-gray-500">/ {{ totalCount }}</span>
-          <span class="text-sm text-gray-700">
-            {{ filters.mode === 'students' ? 'étudiants' : 'personnels' }}
-          </span>
-        </div>
-
-        <div v-if="filteredCount < totalCount" class="flex items-center space-x-1">
-          <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.586V4z"/>
-          </svg>
-          <span class="text-sm text-primary-600">Filtré</span>
-        </div>
+  <div class="bg-surface-0 dark:bg-surface-900 border-b border-surface px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+    <!-- Left: Count summary & filter tag chips -->
+    <div class="flex items-center flex-wrap gap-3">
+      <div class="flex items-baseline gap-2">
+        <span class="text-2xl font-black text-color tracking-tight">{{ filteredCount }}</span>
+        <span class="text-sm font-semibold text-muted-color">/ {{ totalCount }}</span>
+        <span class="text-sm font-bold text-color">
+          {{ filters.mode === 'students' ? (filteredCount > 1 ? 'étudiants' : 'étudiant') : 'personnel' }}
+        </span>
+        <span
+            v-if="anneeUnivLabel && filters.mode === 'students'"
+            class="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-800 border border-primary-200"
+        >
+          {{ anneeUnivLabel }}
+        </span>
       </div>
 
-      <!-- Quick Stats -->
-      <div class="flex items-center space-x-6">
-        <div v-if="filters.mode === 'students' && studentStats" class="flex items-center space-x-4">
-          <div class="text-center">
-            <div class="text-sm font-medium text-gray-900">{{ Object.keys(studentStats.semesters).length }}</div>
-            <div class="text-xs text-gray-500">Semestres</div>
-          </div>
-          <div class="text-center">
-            <div class="text-sm font-medium text-success-600">{{ studentStats.statuses.active || 0 }}</div>
-            <div class="text-xs text-gray-500">Actifs</div>
-          </div>
-          <div v-if="studentStats.statuses.suspended" class="text-center">
-            <div class="text-sm font-medium text-warning-600">{{ studentStats.statuses.suspended }}</div>
-            <div class="text-xs text-gray-500">Suspendus</div>
-          </div>
-        </div>
+      <!-- Active filters tags -->
+      <div v-if="isFiltered" class="flex items-center gap-1.5 flex-wrap pl-2 border-l border-surface">
+        <span
+            v-for="flt in activeFiltersList"
+            :key="flt"
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-50 text-primary-800 border border-primary-300 shadow-2xs max-w-[200px] truncate"
+            v-tooltip.top="flt"
+            :title="flt"
+        >
+          <span class="truncate">{{ flt }}</span>
+        </span>
 
-        <div v-if="filters.mode === 'staff' && staffStats" class="flex items-center space-x-4">
-          <div class="text-center" v-for="(statut, key) in staffStats.statuses" :key="key">
-            <div class="text-sm font-medium text-primary-600">{{ staffStats.statuses[key] || 0 }}</div>
-            <div class="text-xs text-gray-500">{{ key }}</div>
-          </div>
-        </div>
+        <button
+            @click="emit('resetFilters')"
+            class="text-xs font-semibold text-muted-color hover:text-color bg-emphasis hover:bg-surface-200 dark:hover:bg-surface-700 px-2 py-0.5 rounded-md border border-[var(--ui-border-color)] transition-colors inline-flex items-center gap-1 ml-1 cursor-pointer"
+            title="Effacer les filtres"
+        >
+          <i class="pi pi-times-circle text-xs"></i>
+          <span>Effacer</span>
+        </button>
       </div>
     </div>
   </div>
