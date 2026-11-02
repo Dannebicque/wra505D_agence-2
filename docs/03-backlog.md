@@ -558,7 +558,7 @@ généré.
 |---|---|---|
 | E26.0 | socle : dépendances (`sensiolabs/gotenberg-bundle`, `xlsx`), `bundles.php`, routes, noms des bundles sans « Bundle », styleguide, commande de génération d'étudiants de dev (sans mot de passe affiché) | `4e18aebd5`, `54adc41ba`, `eb54915d9` (styleguide), `f2e14790f` |
 | E26.1 · en revue | filtres API Platform : 19 filtres et 19 ressources de `back/src` en `QueryParameter`, filtres natifs gardés en `#[ApiFilter]` | `cc4590889`, `c3baa69db` |
-| E26.2 | droits : responsable de parcours sur plusieurs diplômes, voters, accès des étudiants aux applications (réservé à `CAN_EDIT_ETUDIANT_SCOLARITE`) | `ac4950fd9`, `9090dcd54` |
+| E26.2 · en revue | droits : responsable de parcours limité aux diplômes de son affectation, rôles résolus par diplôme, `ROLE_PERSONNEL` et `ROLE_ETUDIANT` vérifiés comme types d'utilisateur, simulation de plusieurs rôles ; écran d'accès du personnel avec `ApplicationBadge` sans couleur par module | `ac4950fd9`, rôles de `7775e5908` |
 | E26.3 | étudiants : import CSV et ZIP, intégration en scolarité, synchronisation des groupes, profil ; nos contrôles E22 et E23 conservés | `a5cacfb08`, `5940864b0`, `b5bb65022`, `adb985cd7`, `4ee69bb15`, `df85c098e` |
 | E26.4 | exports PDF, Excel, CSV et trombinoscope du personnel, routes réservées au personnel du département | `2e37857a0`, `9520dbcd4`, `55a53493a`, `1f76d0b41` |
 | E26.5 | stage : convention générée, saisie de l'étudiant, partie enseignant, filtres des périodes ; notre `StageVoter` (E24) conservé et appliqué au PDF et aux avenants | `62fb937a5`, `2b9433565`, `a13210c97`, `c973bdd55` |
@@ -567,7 +567,7 @@ généré.
 | E26.8 | finance : bundle de #249, jamais repris, et sa refonte avec PDF, routes sous contrôle d'accès | `f97f829e8` |
 | E26.9 | absences et évaluations côté personnel, indicateurs ; notre dépôt de justificatif par l'étudiant (P2) conservé | `3076e6f07`, `6b12732d0`, `187b207c2`, `0c71cb7fb` |
 | E26.10 | widgets et tableaux de bord : accès aux widgets, widgets limités aux applications de l'utilisateur, tableau de bord des enseignements ; notre accueil étudiant (C18, C19) conservé | `11ff61d2e`, `688feada9`, `aa15909aa`, `7775e5908`, `6a4176191`, `0258d3783` |
-| E26.11 | interface transverse : composants et accessibilité, portail, badge d'application, année active, renommage `unitranet` en `intranet` dans le code ; le nom affiché reste Unitranet, nos jetons de couleur remplacent leurs couleurs en dur | `b79a176b0`, `3a4887acf`, `dc0ee62d9`, `6acb7381b`, `4978af083`, `94e79a0e3`, `5d8af9973` |
+| E26.11 | interface transverse : composants et accessibilité, portail, badge d'application, année active, renommage `unitranet` en `intranet` dans le code, accès des étudiants aux applications (`9090dcd54`, couleurs par module à adapter) ; le nom affiché reste Unitranet, nos jetons de couleur remplacent leurs couleurs en dur | `b79a176b0`, `3a4887acf`, `dc0ee62d9`, `6acb7381b`, `4978af083`, `94e79a0e3`, `5d8af9973`, `9090dcd54` |
 | E26.12 | configuration des modules et ses pages | `cad0a0ab9`, `6a30dbb22` |
 | E26.13 | messagerie : bundle, widget, purge, tests ; pièces jointes hors de `public/`, cibles limitées au département ; les messages reçus rejoignent le fil de notifications de l'étudiant | `b2d2c639d`, `1d31012d9`, `ab39d0de6`, `d2beffc79`, `39c2fb9f6` |
 

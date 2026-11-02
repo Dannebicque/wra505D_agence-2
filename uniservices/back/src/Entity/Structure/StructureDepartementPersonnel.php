@@ -15,7 +15,11 @@ use App\Entity\Traits\OldIdTrait;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
 use App\Filter\DepartementPersonnelFilter;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: StructureDepartementPersonnelRepository::class)]
 #[ApiResource(
@@ -35,17 +39,20 @@ use Symfony\Component\Serializer\Attribute\Groups;
             inputFormats: ['json' => ['application/ld+json']],
             outputFormats: ['json' => ['application/ld+json']],
             normalizationContext: ['groups' => ['departement_personnel:read']],
+            validationContext: ['groups' => ['change_departement']],
             processor: 'App\State\ChangeDepartementProcessor'
         ),
         new Post(
+            security: "is_granted('SUPER_ADMIN')",
             normalizationContext: ['groups' => ['departement_personnel:read']],
             denormalizationContext: ['groups' => ['departement_personnel:write']]
         ),
         new Patch(
+            security: "is_granted('SUPER_ADMIN')",
             normalizationContext: ['groups' => ['departement_personnel:read']],
             denormalizationContext: ['groups' => ['departement_personnel:write']]
         ),
-        new Delete()
+        new Delete(security: "is_granted('SUPER_ADMIN')")
     ],
     order: ['personnel.nom', 'departement.libelle'],
     parameters: [
@@ -72,6 +79,14 @@ class StructureDepartementPersonnel
     #[Groups(groups: ['departement_personnel:read', 'departement_personnel:write', 'departement:read'])]
     private array $permissions = [];
 
+    /** @var Collection<int, StructureDiplome> */
+    #[ORM\ManyToMany(targetEntity: StructureDiplome::class)]
+    #[ORM\JoinTable(name: 'departement_personnel_parcours_diplome')]
+    #[ORM\JoinColumn(name: 'affectation_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'diplome_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[Groups(['personnel:read', 'departement_personnel:read', 'departement_personnel:write', 'departement:read'])]
+    private Collection $responsableParcoursDiplomes;
+
     #[ORM\Column]
     #[Groups(groups: ['personnel:read', 'departement_personnel:read', 'departement:read', 'departement_personnel:write'])]
     private ?bool $defaut = null;
@@ -88,6 +103,73 @@ class StructureDepartementPersonnel
     #[ORM\Column]
     #[Groups(groups: ['departement_personnel:read', 'departement_personnel:write'])]
     private bool $affectation = false;
+
+    public function __construct()
+    {
+        $this->responsableParcoursDiplomes = new ArrayCollection();
+    }
+
+    /** @return Collection<int, StructureDiplome> */
+    public function getResponsableParcoursDiplomes(): Collection
+    {
+        return $this->responsableParcoursDiplomes;
+    }
+
+    public function addResponsableParcoursDiplome(StructureDiplome $diplome): static
+    {
+        if (!$this->responsableParcoursDiplomes->contains($diplome)) {
+            $this->responsableParcoursDiplomes->add($diplome);
+        }
+        return $this;
+    }
+
+    public function removeResponsableParcoursDiplome(StructureDiplome $diplome): static
+    {
+        $this->responsableParcoursDiplomes->removeElement($diplome);
+        return $this;
+    }
+
+    public function hasValidResponsableParcoursDiplomes(): bool
+    {
+        $departmentId = $this->departement?->getId();
+        if ($departmentId === null || $this->responsableParcoursDiplomes->isEmpty()) {
+            return false;
+        }
+        foreach ($this->responsableParcoursDiplomes as $diplome) {
+            if ($diplome->getId() === null || $diplome->getDepartement()?->getId() !== $departmentId) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function isResponsableParcoursForDiplome(StructureDiplome $diplome): bool
+    {
+        if ($diplome->getId() === null || !$this->hasValidResponsableParcoursDiplomes()) {
+            return false;
+        }
+        foreach ($this->responsableParcoursDiplomes as $assignedDiplome) {
+            if ($assignedDiplome->getId() === $diplome->getId()
+                && $diplome->getDepartement()?->getId() === $this->departement?->getId()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    #[Assert\Callback]
+    public function validateResponsableParcours(ExecutionContextInterface $context): void
+    {
+        $hasRole = in_array('ROLE_RESP_PARCOURS', $this->getPermissions(), true);
+        if ($hasRole && !$this->hasValidResponsableParcoursDiplomes()) {
+            $context->buildViolation('Le responsable de parcours doit être rattaché à au moins un diplôme, tous appartenant à ce département.')
+                ->atPath('responsableParcoursDiplomes')->addViolation();
+        }
+        if (!$hasRole && !$this->responsableParcoursDiplomes->isEmpty()) {
+            $context->buildViolation('Le rattachement à des diplômes nécessite le rôle Responsable de parcours.')
+                ->atPath('responsableParcoursDiplomes')->addViolation();
+        }
+    }
 
     public function getId(): ?int
     {
@@ -111,13 +193,14 @@ class StructureDepartementPersonnel
     /** @return list<string> */
     public function getPermissions(): array
     {
-        return $this->permissions;
+        // Ce sont des types d'utilisateur, pas des rôles métier : UserTypeVoter les vérifie.
+        return array_values(array_diff($this->permissions, ['ROLE_PERSONNEL', 'ROLE_ETUDIANT']));
     }
 
     /** @param list<string> $permissions */
     public function setPermissions(array $permissions): static
     {
-        $this->permissions = $permissions;
+        $this->permissions = array_values(array_diff($permissions, ['ROLE_PERSONNEL', 'ROLE_ETUDIANT']));
 
         return $this;
     }

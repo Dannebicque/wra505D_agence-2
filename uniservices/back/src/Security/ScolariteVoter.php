@@ -71,12 +71,12 @@ class ScolariteVoter extends Voter
         return match($attribute) {
             // Enseignement
             self::CAN_VIEW_ENSEIGNEMENT => $this->canViewEnseignement($user),
-            self::CAN_EDIT_ENSEIGNEMENT => $this->canEditEnseignement($user),
+            self::CAN_EDIT_ENSEIGNEMENT => $this->canEditEnseignement($user, $subject),
             self::CAN_DELETE_ENSEIGNEMENT => $this->canDeleteEnseignement($user),
 
             // EnseignementUe
             self::CAN_VIEW_ENSEIGNEMENT_UE => $this->canViewEnseignementUe($user),
-            self::CAN_EDIT_ENSEIGNEMENT_UE => $this->canEditEnseignementUe($user),
+            self::CAN_EDIT_ENSEIGNEMENT_UE => $this->canEditEnseignementUe($user, $subject),
             self::CAN_DELETE_ENSEIGNEMENT_UE => $this->canDeleteEnseignementUe($user),
 
             // Bac
@@ -94,9 +94,9 @@ class ScolariteVoter extends Voter
     }
 
     /** @param list<string> $roles */
-    private function hasAnyRole(Personnel $user, array $roles): bool
+    private function hasAnyRole(Personnel $user, array $roles, mixed $subject = null): bool
     {
-        return $this->effectivePermissionService->hasAnyPermission($user, $roles);
+        return $this->effectivePermissionService->hasAnyPermission($user, $roles, $subject);
     }
 
     // ========== Enseignement ==========
@@ -106,7 +106,7 @@ class ScolariteVoter extends Voter
         return true; // Tout le monde peut voir les enseignements
     }
 
-    private function canEditEnseignement(Personnel|Etudiant $user): bool
+    private function canEditEnseignement(Personnel|Etudiant $user, mixed $subject = null): bool
     {
         return $user instanceof Personnel && $this->hasAnyRole($user, [
             'SUPER_ADMIN',
@@ -114,7 +114,7 @@ class ScolariteVoter extends Voter
             'ROLE_CHEF_DEPT',
             'ROLE_RESP_PARCOURS',
             'ROLE_DIRECTEUR_ETUDES'
-        ]);
+        ], $subject);
     }
 
     private function canDeleteEnseignement(Personnel|Etudiant $user): bool
@@ -132,14 +132,14 @@ class ScolariteVoter extends Voter
         return true;
     }
 
-    private function canEditEnseignementUe(Personnel|Etudiant $user): bool
+    private function canEditEnseignementUe(Personnel|Etudiant $user, mixed $subject = null): bool
     {
         return $user instanceof Personnel && $this->hasAnyRole($user, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_CHEF_DEPT',
             'ROLE_RESP_PARCOURS'
-        ]);
+        ], $subject);
     }
 
     private function canDeleteEnseignementUe(Personnel|Etudiant $user): bool

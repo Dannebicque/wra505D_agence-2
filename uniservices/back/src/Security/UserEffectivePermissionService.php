@@ -8,6 +8,8 @@ use App\Entity\Users\Personnel;
 
 class UserEffectivePermissionService
 {
+    public const IUT_DIRECTION_ROLES = ['ROLE_DIRECTEUR_IUT', 'ROLE_DIRECTEUR_ADJOINT_IUT', 'ROLE_CHEF_SERVICES_ADMINISTRATIFS'];
+
     public function __construct(
         private readonly PermissionResolver $resolver
     ) {
@@ -16,34 +18,30 @@ class UserEffectivePermissionService
     /**
      * @return string[]
      */
-    public function getEffectivePermissions(Personnel|Etudiant $user): array
+    public function getEffectivePermissions(Personnel|Etudiant $user, mixed $subject = null): array
     {
         if ($user instanceof Etudiant) {
-            return ['ROLE_ETUDIANT'];
-        }
-
-        $activeDepartementPersonnel = $this->getActiveDepartementPersonnel($user);
-        if (null === $activeDepartementPersonnel) {
             return [];
         }
 
-        return $this->resolver->resolve(
-            $activeDepartementPersonnel->getPermissions(),
-            $activeDepartementPersonnel->getPackages()
-        );
+        $assignment = $this->getActiveDepartementPersonnel($user);
+        if ($assignment === null) {
+            return [];
+        }
+        return $this->resolver->resolveForDepartment($assignment, DiplomeScope::fromSubject($subject));
     }
 
-    public function hasPermission(Personnel|Etudiant $user, string $permission): bool
+    public function hasPermission(Personnel|Etudiant $user, string $permission, mixed $subject = null): bool
     {
-        return in_array($permission, $this->getEffectivePermissions($user), true);
+        return in_array($permission, $this->getEffectivePermissions($user, $subject), true);
     }
 
     /**
      * @param string[] $permissions
      */
-    public function hasAnyPermission(Personnel $user, array $permissions): bool
+    public function hasAnyPermission(Personnel $user, array $permissions, mixed $subject = null): bool
     {
-        $effectivePermissions = $this->getEffectivePermissions($user);
+        $effectivePermissions = $this->getEffectivePermissions($user, $subject);
 
         foreach ($permissions as $permission) {
             if (in_array($permission, $effectivePermissions, true)) {
@@ -54,12 +52,49 @@ class UserEffectivePermissionService
         return false;
     }
 
+    /**
+     * Responsibilities are metadata for navigation, never unscoped authorization.
+     *
+     * @return array<string, array{diplomeIds: list<int|null>}>
+     */
+    public function getScopedPermissions(Personnel|Etudiant $user): array
+    {
+        if (!$user instanceof Personnel) {
+            return [];
+        }
+        $assignment = $this->getActiveDepartementPersonnel($user);
+        if ($assignment === null || !$assignment->hasValidResponsableParcoursDiplomes()
+            || !in_array('ROLE_RESP_PARCOURS', $assignment->getPermissions(), true)
+            || !in_array('intranet', $assignment->getPackages(), true)) {
+            return [];
+        }
+        return ['ROLE_RESP_PARCOURS' => ['diplomeIds' => array_values(array_map(
+            static fn ($diplome) => $diplome->getId(),
+            $assignment->getResponsableParcoursDiplomes()->toArray()
+        ))]];
+    }
+
+    public function isTeacher(Personnel|Etudiant $user): bool
+    {
+        return $user instanceof Personnel && $this->hasPermission($user, 'ROLE_TEACHER');
+    }
+
+    public function isBiatss(Personnel|Etudiant $user): bool
+    {
+        return $user instanceof Personnel && $this->hasPermission($user, 'ROLE_BIATSS');
+    }
+
+    public function isDirectionIut(Personnel|Etudiant $user): bool
+    {
+        return $user instanceof Personnel && $this->hasAnyPermission($user, self::IUT_DIRECTION_ROLES);
+    }
+
     public function isSuperAdmin(Personnel|Etudiant $user): bool
     {
         return $user instanceof Personnel && $this->hasPermission($user, 'SUPER_ADMIN');
     }
 
-    private function getActiveDepartementPersonnel(Personnel $user): ?StructureDepartementPersonnel
+    public function getActiveDepartementPersonnel(Personnel $user): ?StructureDepartementPersonnel
     {
         foreach ($user->getDepartementsPersonnel() as $departementPersonnel) {
             if ($departementPersonnel->isDefaut() === true) {
