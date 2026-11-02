@@ -32,18 +32,24 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [
         new GetCollection(
             normalizationContext: ['groups' => ['finance:read', 'finance:list']],
-            paginationEnabled: false
+            paginationEnabled: false,
+            security: "is_granted('FINANCE_VIEW')"
         ),
         new Get(
-            normalizationContext: ['groups' => ['finance:read', 'finance:detail']]
+            normalizationContext: ['groups' => ['finance:read', 'finance:detail']],
+            security: "is_granted('FINANCE_VIEW', object)"
         ),
         new Post(
-            denormalizationContext: ['groups' => ['finance:write']]
+            denormalizationContext: ['groups' => ['finance:write']],
+            security: "is_granted('FINANCE_EDIT')",
+            securityPostDenormalize: "is_granted('FINANCE_EDIT', object)"
         ),
         new Patch(
-            denormalizationContext: ['groups' => ['finance:write', 'finance:update_step']]
+            denormalizationContext: ['groups' => ['finance:write', 'finance:update_step']],
+            security: "is_granted('FINANCE_EDIT', object)",
+            securityPostDenormalize: "is_granted('FINANCE_EDIT', object)"
         ),
-        new Delete()
+        new Delete(security: "is_granted('FINANCE_DELETE', object)")
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
@@ -244,8 +250,9 @@ class FinanceBonCommande implements TimestampableInterface
     #[Groups(['finance:read', 'finance:list', 'finance:write'])]
     private StatutCommandeEnum $statut = StatutCommandeEnum::BROUILLON;
 
+    // Lecture seule : le chemin est fixé au dépôt du PDF, jamais par le client de l'API.
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['finance:read', 'finance:detail', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:detail', 'finance:list'])]
     private ?string $pdfFilePath = null;
 
     public function __construct()

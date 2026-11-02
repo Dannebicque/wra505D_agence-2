@@ -41,6 +41,7 @@ class FinanceFixtures extends Fixture implements OrderedFixtureInterface, Fixtur
         $superadmin = $personnelRepo->findOneBy(['username' => 'superadmin']);
 
         $deptMmi = $deptRepo->findOneBy(['libelle' => 'MMI']);
+        $deptGea = $deptRepo->findOneBy(['libelle' => 'GEA']);
         $serviceFinancier = $serviceRepo->findOneBy(['libelle' => 'Service Financier']);
 
         // Fournisseurs
@@ -147,6 +148,19 @@ class FinanceFixtures extends Fixture implements OrderedFixtureInterface, Fixtur
             ->setAvisDirecteur(AvisDirecteurEnum::FAVORABLE)
             ->setStatut(StatutCommandeEnum::SOUMIS);
         $manager->persist($bc3);
+
+        // Commande 4 : demande d'un autre département, que le personnel de MMI ne doit pas voir.
+        $bc4 = new FinanceBonCommande();
+        $bc4->setDemandeur($superadmin)
+            ->setDepartement($deptGea)
+            ->setPrestation(TypePrestationEnum::FOURNITURES)
+            ->setObjetDemande('Licences logiciel de comptabilité')
+            ->setMontantHt('1200.00')
+            ->setMontantTtc('1440.00')
+            ->setFournisseur($f3)
+            ->setDateDemande(new \DateTime('2026-10-05'))
+            ->setStatut(StatutCommandeEnum::SOUMIS);
+        $manager->persist($bc4);
 
         $manager->flush();
     }

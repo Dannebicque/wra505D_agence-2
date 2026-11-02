@@ -12,7 +12,7 @@
             box-sizing: border-box;
             font-family: Arial, Helvetica, sans-serif;
             font-size: 9.5pt;
-            color: #111827;
+            color: {{ document_palette.text }};
         }
         body {
             margin: 0;
@@ -29,15 +29,15 @@
             font-weight: bold;
             font-size: 12pt;
             text-transform: uppercase;
-            border: 2px solid #000;
+            border: 2px solid {{ document_palette.text }};
             padding: 5px;
             margin-bottom: 6px;
-            background-color: #f9fafb;
+            background-color: {{ document_palette.background }};
         }
         .main-table {
             width: 100%;
             border-collapse: collapse;
-            border: 2px solid #000;
+            border: 2px solid {{ document_palette.text }};
         }
         .step-col {
             width: 28px;
@@ -46,22 +46,22 @@
             font-size: 8.5pt;
             writing-mode: vertical-rl;
             transform: rotate(180deg);
-            background-color: #f3f4f6;
-            border-right: 2px solid #000;
-            border-bottom: 2px solid #000;
+            background-color: {{ document_palette.background }};
+            border-right: 2px solid {{ document_palette.text }};
+            border-bottom: 2px solid {{ document_palette.text }};
             padding: 4px 0;
             vertical-align: middle;
         }
         .content-cell {
             padding: 6px 8px;
-            border-bottom: 2px solid #000;
+            border-bottom: 2px solid {{ document_palette.text }};
             vertical-align: top;
         }
         .checkbox-box {
             display: inline-block;
             width: 12px;
             height: 12px;
-            border: 1.5px solid #000;
+            border: 1.5px solid {{ document_palette.text }};
             margin-right: 4px;
             vertical-align: middle;
             text-align: center;
@@ -76,14 +76,14 @@
             font-weight: bold;
         }
         .underline-field {
-            border-bottom: 1px dotted #4b5563;
+            border-bottom: 1px dotted {{ document_palette.muted }};
             display: inline-block;
             min-width: 150px;
             padding-left: 4px;
         }
         .note-box {
-            border: 1px solid #9ca3af;
-            background: #fafafa;
+            border: 1px solid {{ document_palette.border }};
+            background: {{ document_palette.background }};
             min-height: 45px;
             padding: 5px;
             margin-top: 3px;
@@ -96,7 +96,7 @@
         }
         .sig-block {
             width: 48%;
-            border: 1px dashed #9ca3af;
+            border: 1px dashed {{ document_palette.border }};
             padding: 5px;
             min-height: 48px;
         }
@@ -116,7 +116,7 @@
         .pending-step-note {
             font-style: italic;
             font-size: 8pt;
-            color: #6b7280;
+            color: {{ document_palette.muted }};
             margin-top: 3px;
         }
     </style>
@@ -124,8 +124,8 @@
 <body>
 
     <div class="header">
-        <div style="font-weight: bold; font-size: 13pt; color: #1e3a8a;">
-            <span style="color:#f59e0b;">iUT</span> Troyes
+        <div style="font-weight: bold; font-size: 13pt; color: {{ document_palette.primary }};">
+            iUT Troyes
         </div>
         <div style="text-align: right; font-size: 8pt; text-transform: uppercase; font-weight: bold;">
             Université de Reims<br><span style="font-size: 7pt; font-weight: normal;">Champagne-Ardenne</span>
@@ -147,7 +147,7 @@
     </div>
 
     {% if step is defined and step == 1 %}
-    <div style="font-size: 8pt; color: #4b5563; margin-top: -3px; margin-bottom: 6px; text-align: center; font-style: italic;">
+    <div style="font-size: 8pt; color: {{ document_palette.muted }}; margin-top: -3px; margin-bottom: 6px; text-align: center; font-style: italic;">
         Demande initiale générée pour recueil de signature externe avant instruction par le directeur / chef de service.
     </div>
     {% endif %}
@@ -200,11 +200,11 @@
                         <div><strong>Date :</strong> {{ commande.dateDemande ? commande.dateDemande|date('d/m/Y') : ("now"|date('d/m/Y')) }}</div>
                         <div style="margin-top: 4px;"><strong>Signature du Responsable / Demandeur :</strong></div>
                         {% if commande.dateSignatureResponsable or commande.dateSignatureDemandeur %}
-                            <div style="color: #059669; font-size: 8pt; margin-top: 4px;">
+                            <div style="color: {{ document_palette.on_success }}; font-size: 8pt; margin-top: 4px;">
                                 [Signé le {{ (commande.dateSignatureResponsable ?? commande.dateSignatureDemandeur)|date('d/m/Y') }}]
                             </div>
                         {% else %}
-                            <div style="height: 32px; border: 1px dashed #d1d5db; margin-top: 4px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 7.5pt;">
+                            <div style="height: 32px; border: 1px dashed {{ document_palette.border }}; margin-top: 4px; display: flex; align-items: center; justify-content: center; color: {{ document_palette.border }}; font-size: 7.5pt;">
                                 Signature externe / manuscrite
                             </div>
                         {% endif %}
@@ -229,7 +229,7 @@
         <!-- 2 - VERIFICATION -->
         <tr>
             <td class="step-col">2 - VERIFICATION</td>
-            <td class="content-cell" style="{% if step is defined and step < 2 %}opacity: 0.5; background-color: #fafafa;{% endif %}">
+            <td class="content-cell" style="{% if step is defined and step < 2 %}opacity: 0.5; background-color: {{ document_palette.background }};{% endif %}">
                 <div class="row">
                     <span class="label">N° et Nom du fournisseur :</span>
                     <span class="underline-field" style="min-width: 380px;">
@@ -254,7 +254,7 @@
                     <span class="checkbox-box">{{ not commande.dateLivraisonRenseignee ? 'X' : '' }}</span> NON
                 </div>
                 <div class="signatures-grid" style="margin-top: 4px;">
-                    <div style="width: 100%; border: 1px dashed #9ca3af; padding: 4px;">
+                    <div style="width: 100%; border: 1px dashed {{ document_palette.border }}; padding: 4px;">
                         <strong>Date de vérification du service financier :</strong> {{ commande.dateVerificationFinanciere ? commande.dateVerificationFinanciere|date('d/m/Y') : '' }}
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <strong>Signature du service financier :</strong> {{ commande.verificateurFinancier ? commande.verificateurFinancier.display : '' }}
@@ -269,7 +269,7 @@
         <!-- 3 - VISA -->
         <tr>
             <td class="step-col">3 - VISA</td>
-            <td class="content-cell" style="padding-top: 4px; padding-bottom: 4px; {% if step is defined and step < 3 %}opacity: 0.5; background-color: #fafafa;{% endif %}">
+            <td class="content-cell" style="padding-top: 4px; padding-bottom: 4px; {% if step is defined and step < 3 %}opacity: 0.5; background-color: {{ document_palette.background }};{% endif %}">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div><strong>Date :</strong> {{ commande.dateVisaEngagement ? commande.dateVisaEngagement|date('d/m/Y') : '' }}</div>
                     <div><strong>Signature :</strong> {{ commande.signataireVisaEngagement ? commande.signataireVisaEngagement.display : '' }}</div>
@@ -287,7 +287,7 @@
         {% set rec = commande.receptions|first %}
         <tr>
             <td class="step-col">4 - CONSTATATION SERVICE FAIT</td>
-            <td class="content-cell" style="{% if step is defined and step < 4 %}opacity: 0.5; background-color: #fafafa;{% endif %}">
+            <td class="content-cell" style="{% if step is defined and step < 4 %}opacity: 0.5; background-color: {{ document_palette.background }};{% endif %}">
                 <div class="row">
                     Je soussigné* <span class="underline-field" style="min-width: 250px; font-weight: bold;">{{ rec and rec.receptionnaire ? rec.receptionnaire.display : (commande.demandeur ? commande.demandeur.display : '____________________') }}</span>
                     agissant en qualité de <span class="underline-field" style="min-width: 180px;">{{ rec ? rec.qualiteReceptionnaire : '________________' }}</span> atteste :
@@ -316,11 +316,11 @@
                 </div>
 
                 <div class="signatures-grid">
-                    <div style="width: 48%; border: 1px dashed #9ca3af; padding: 4px;">
+                    <div style="width: 48%; border: 1px dashed {{ document_palette.border }}; padding: 4px;">
                         <div style="font-size: 7.5pt;"><strong>Signature du demandeur de l'achat / réceptionnaire :</strong></div>
-                        <div style="font-size: 7.5pt; color: #059669; margin-top: 3px;">{{ rec and rec.dateSignatureServiceFait ? ('Signé le ' ~ rec.dateSignatureServiceFait|date('d/m/Y')) : '' }}</div>
+                        <div style="font-size: 7.5pt; color: {{ document_palette.on_success }}; margin-top: 3px;">{{ rec and rec.dateSignatureServiceFait ? ('Signé le ' ~ rec.dateSignatureServiceFait|date('d/m/Y')) : '' }}</div>
                     </div>
-                    <div style="width: 48%; border: 1px dashed #9ca3af; padding: 4px;">
+                    <div style="width: 48%; border: 1px dashed {{ document_palette.border }}; padding: 4px;">
                         <div style="font-size: 7.5pt;"><strong>Date :</strong> {{ rec and rec.dateSignatureServiceFait ? rec.dateSignatureServiceFait|date('d/m/Y') : '' }}</div>
                         <div style="font-size: 7.5pt; margin-top: 2px;"><strong>Signature du Responsable :</strong></div>
                     </div>
@@ -334,7 +334,7 @@
         <!-- 5 - CERTIFICATION -->
         <tr>
             <td class="step-col">5 - CERTIFICATION</td>
-            <td class="content-cell" style="padding-top: 4px; padding-bottom: 4px; {% if step is defined and step < 5 %}opacity: 0.5; background-color: #fafafa;{% endif %}">
+            <td class="content-cell" style="padding-top: 4px; padding-bottom: 4px; {% if step is defined and step < 5 %}opacity: 0.5; background-color: {{ document_palette.background }};{% endif %}">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div><strong>Pour certification du service fait</strong></div>
                     <div>Date : {{ commande.dateCertificationServiceFait ? commande.dateCertificationServiceFait|date('d/m/Y') : '' }}</div>

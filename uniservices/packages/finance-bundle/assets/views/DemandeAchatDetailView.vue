@@ -561,15 +561,7 @@ onMounted(async () => {
         >
             <template #actions>
                 <div class="flex flex-wrap items-center gap-2">
-                    <span
-                        v-if="!isNew && form.statut"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-2xs mr-1"
-                        :class="getStatusBadgeInfo(form.statut).badgeClass"
-                    >
-                        <span class="w-2 h-2 rounded-full shrink-0" :class="getStatusBadgeInfo(form.statut).dotClass"></span>
-                        <i :class="getStatusBadgeInfo(form.statut).icon" class="text-xs"></i>
-                        <span>{{ getStatusBadgeInfo(form.statut).label }}</span>
-                    </span>
+                    <Tag v-if="!isNew && form.statut" class="mr-1" :value="getStatusBadgeInfo(form.statut).label" :severity="getStatusBadgeInfo(form.statut).severity" :icon="getStatusBadgeInfo(form.statut).icon" />
                     <Button
                         v-if="!isNew"
                         label="Aperçu / Export PDF"
@@ -592,7 +584,7 @@ onMounted(async () => {
         </HeaderComponent>
 
         <!-- 2. Workflow Timeline interactive -->
-        <CustomCard v-if="!isNew" class="shadow-xs border border-gray-200 dark:border-gray-700">
+        <CustomCard v-if="!isNew" class="shadow-xs border border-surface">
             <BonCommandeWorkflowTimeline :commande="form" @select-step="handleSelectTimelineStep" />
         </CustomCard>
 
@@ -601,41 +593,41 @@ onMounted(async () => {
             <TabList class="mb-4">
                 <Tab value="1">
                     <span class="flex items-center gap-2">
-                        <i class="pi pi-file-edit text-blue-700"></i>
+                        <i aria-hidden="true" class="pi pi-file-edit text-primary"></i>
                         <span>1. Demande & Avis</span>
-                        <i v-if="isStep1Completed" class="pi pi-check text-emerald-600 text-xs"></i>
+                        <i aria-hidden="true" v-if="isStep1Completed" class="pi pi-check text-primary text-xs"></i>
                     </span>
                 </Tab>
                 <Tab value="2">
                     <span class="flex items-center gap-2">
-                        <i class="pi pi-search text-amber-700"></i>
+                        <i aria-hidden="true" class="pi pi-search text-primary"></i>
                         <span>2. Vérification SIFAC</span>
-                        <i v-if="isStep2Completed" class="pi pi-check text-emerald-600 text-xs"></i>
-                        <i v-else-if="!isStep2Unlocked" class="pi pi-lock text-gray-400 text-xs"></i>
+                        <i aria-hidden="true" v-if="isStep2Completed" class="pi pi-check text-primary text-xs"></i>
+                        <i aria-hidden="true" v-else-if="!isStep2Unlocked" class="pi pi-lock text-muted-color text-xs"></i>
                     </span>
                 </Tab>
                 <Tab value="3">
                     <span class="flex items-center gap-2">
-                        <i class="pi pi-check-circle text-purple-700"></i>
+                        <i aria-hidden="true" class="pi pi-check-circle text-primary"></i>
                         <span>3. Visa Engagement</span>
-                        <i v-if="isStep3Completed" class="pi pi-check text-emerald-600 text-xs"></i>
-                        <i v-else-if="!isStep3Unlocked" class="pi pi-lock text-gray-400 text-xs"></i>
+                        <i aria-hidden="true" v-if="isStep3Completed" class="pi pi-check text-primary text-xs"></i>
+                        <i aria-hidden="true" v-else-if="!isStep3Unlocked" class="pi pi-lock text-muted-color text-xs"></i>
                     </span>
                 </Tab>
                 <Tab value="4">
                     <span class="flex items-center gap-2">
-                        <i class="pi pi-box text-teal-700"></i>
+                        <i aria-hidden="true" class="pi pi-box text-primary"></i>
                         <span>4. Service Fait</span>
-                        <i v-if="isStep4Completed" class="pi pi-check text-emerald-600 text-xs"></i>
-                        <i v-else-if="!isStep4Unlocked" class="pi pi-lock text-gray-400 text-xs"></i>
+                        <i aria-hidden="true" v-if="isStep4Completed" class="pi pi-check text-primary text-xs"></i>
+                        <i aria-hidden="true" v-else-if="!isStep4Unlocked" class="pi pi-lock text-muted-color text-xs"></i>
                     </span>
                 </Tab>
                 <Tab value="5">
                     <span class="flex items-center gap-2">
-                        <i class="pi pi-wallet text-rose-700"></i>
+                        <i aria-hidden="true" class="pi pi-wallet text-primary"></i>
                         <span>5. Facture & Paiement</span>
-                        <i v-if="isStep5Completed" class="pi pi-check text-emerald-600 text-xs"></i>
-                        <i v-else-if="!isStep5Unlocked" class="pi pi-lock text-gray-400 text-xs"></i>
+                        <i aria-hidden="true" v-if="isStep5Completed" class="pi pi-check text-primary text-xs"></i>
+                        <i aria-hidden="true" v-else-if="!isStep5Unlocked" class="pi pi-lock text-muted-color text-xs"></i>
                     </span>
                 </Tab>
             </TabList>
@@ -647,9 +639,9 @@ onMounted(async () => {
                 <TabPanel value="1">
                     <div class="space-y-6">
                         <!-- Bloc 1 : Données de la demande -->
-                        <Card class="shadow-xs border-l-4 border-l-blue-700">
+                        <Card class="shadow-xs border-l-4 border-l-primary">
                             <template #title>
-                                <div class="text-base font-bold text-blue-900 dark:text-blue-300 flex items-center justify-between">
+                                <div class="text-base font-bold text-primary flex items-center justify-between">
                                     <span>1 — DEMANDE D'ACHAT INITIALE</span>
                                     <Tag v-if="form.dateDemande" severity="success" :value="'Soumise le ' + new Date(form.dateDemande).toLocaleDateString('fr-FR')" />
                                 </div>
@@ -658,13 +650,13 @@ onMounted(async () => {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <!-- Demandeur et Département -->
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Demandeur</label>
-                                        <InputText :value="currentDemandeurDisplay" disabled class="bg-gray-50 dark:bg-gray-800" />
+                                        <label for="finance-demandeur" class="text-xs font-semibold text-color">Demandeur</label>
+                                        <InputText id="finance-demandeur" :value="currentDemandeurDisplay" disabled class="bg-emphasis" />
                                     </div>
 
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Département d'imputation *</label>
-                                        <Select
+                                        <label for="finance-departement-d-imputation" class="text-xs font-semibold text-color">Département d'imputation *</label>
+                                        <Select input-id="finance-departement-d-imputation"
                                             v-if="allDepartements.length > 1"
                                             v-model="selectedDeptId"
                                             :options="departementSelectOptions"
@@ -672,53 +664,53 @@ onMounted(async () => {
                                             option-value="value"
                                             placeholder="Sélectionner le département"
                                         />
-                                        <InputText v-else :value="currentDepartmentDisplay" disabled class="bg-gray-50 dark:bg-gray-800" />
+                                        <InputText id="finance-departement-d-imputation" v-else :value="currentDepartmentDisplay" disabled class="bg-emphasis" />
                                     </div>
 
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Type de prestation *</label>
-                                        <Select v-model="form.prestation" :options="typePrestationOptions" option-label="label" option-value="value" />
+                                        <label for="finance-type-de-prestation" class="text-xs font-semibold text-color">Type de prestation *</label>
+                                        <Select input-id="finance-type-de-prestation" v-model="form.prestation" :options="typePrestationOptions" option-label="label" option-value="value" />
                                     </div>
 
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Centre Financier</label>
-                                        <InputText v-model="form.centreFinancier" placeholder="Ex: ACFA9B5FGL" />
+                                        <label for="finance-centre-financier" class="text-xs font-semibold text-color">Centre Financier</label>
+                                        <InputText id="finance-centre-financier" v-model="form.centreFinancier" placeholder="Ex: ACFA9B5FGL" />
                                     </div>
 
                                     <div class="flex flex-col gap-1 md:col-span-2">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Objet de la dépense (Libellé) *</label>
-                                        <InputText v-model="form.objetDemande" placeholder="Ex: Matériel informatique Salle 104, Fournitures pédagogiques..." />
+                                        <label for="finance-objet-de-la-depense" class="text-xs font-semibold text-color">Objet de la dépense (Libellé) *</label>
+                                        <InputText id="finance-objet-de-la-depense" v-model="form.objetDemande" placeholder="Ex: Matériel informatique Salle 104, Fournitures pédagogiques..." />
                                     </div>
 
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Montant HT (€) *</label>
-                                        <InputNumber v-model="form.montantHt" mode="currency" currency="EUR" locale="fr-FR" placeholder="0,00 €" />
+                                        <label for="finance-montant-ht" class="text-xs font-semibold text-color">Montant HT (€) *</label>
+                                        <InputNumber input-id="finance-montant-ht" v-model="form.montantHt" mode="currency" currency="EUR" locale="fr-FR" placeholder="0,00 €" />
                                     </div>
 
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Montant TTC (€)</label>
-                                        <InputNumber v-model="form.montantTtc" mode="currency" currency="EUR" locale="fr-FR" placeholder="Calculé automatiquement" />
+                                        <label for="finance-montant-ttc" class="text-xs font-semibold text-color">Montant TTC (€)</label>
+                                        <InputNumber input-id="finance-montant-ttc" v-model="form.montantTtc" mode="currency" currency="EUR" locale="fr-FR" placeholder="Calculé automatiquement" />
                                     </div>
 
                                     <!-- Fournisseur suggéré -->
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Fournisseur suggéré (Raison sociale)</label>
-                                        <InputText v-model="form.fournisseur.nomFournisseur" placeholder="Ex: DELL, TOUSSAINT, AMAZON..." />
+                                        <label for="finance-fournisseur-suggere-raison-sociale" class="text-xs font-semibold text-color">Fournisseur suggéré (Raison sociale)</label>
+                                        <InputText id="finance-fournisseur-suggere-raison-sociale" v-model="form.fournisseur.nomFournisseur" placeholder="Ex: DELL, TOUSSAINT, AMAZON..." />
                                     </div>
 
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">N° Fournisseur SIFAC (si connu)</label>
-                                        <InputText v-model="form.fournisseur.numeroFournisseur" placeholder="Ex: 1650, 1471..." />
+                                        <label for="finance-n-fournisseur-sifac-si" class="text-xs font-semibold text-color">N° Fournisseur SIFAC (si connu)</label>
+                                        <InputText id="finance-n-fournisseur-sifac-si" v-model="form.fournisseur.numeroFournisseur" placeholder="Ex: 1650, 1471..." />
                                     </div>
 
                                     <div class="flex flex-col gap-1 md:col-span-2">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Note explicative synthétique (contexte, motivation, objectifs pédagogiques)</label>
-                                        <Textarea v-model="form.noteExplicative" rows="3" auto-resize placeholder="Détailler le besoin et la justification de la dépense..." />
+                                        <label for="finance-note-explicative-synthetique-contexte" class="text-xs font-semibold text-color">Note explicative synthétique (contexte, motivation, objectifs pédagogiques)</label>
+                                        <Textarea id="finance-note-explicative-synthetique-contexte" v-model="form.noteExplicative" rows="3" auto-resize placeholder="Détailler le besoin et la justification de la dépense..." />
                                     </div>
                                 </div>
 
-                                <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                                    <span class="text-xs text-gray-500">
+                                <div class="mt-4 pt-3 border-t border-surface flex justify-between items-center">
+                                    <span class="text-xs text-muted-color">
                                         {{ form.statut === 'BROUILLON' ? 'Statut actuel : Brouillon' : `Statut : ${form.statut}` }}
                                     </span>
                                     <div class="flex gap-2">
@@ -744,9 +736,9 @@ onMounted(async () => {
                         </Card>
 
                         <!-- Bloc 2 : Document PDF Signé (Upload & Suivi) -->
-                        <Card class="shadow-xs border-l-4 border-l-blue-600">
+                        <Card class="shadow-xs border-l-4 border-l-primary">
                             <template #title>
-                                <div class="text-base font-bold text-blue-900 dark:text-blue-300 flex items-center justify-between">
+                                <div class="text-base font-bold text-primary flex items-center justify-between">
                                     <span>DOCUMENT DE LA DEMANDE SIGNÉ (ÉMARGEMENT EXTERNE)</span>
                                     <Tag v-if="form.pdfFilePath" severity="success" value="PDF signé disponible" />
                                     <Tag v-else severity="warn" value="En attente de signature" />
@@ -754,24 +746,24 @@ onMounted(async () => {
                             </template>
                             <template #content>
                                 <div class="space-y-4">
-                                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                                    <p class="text-xs text-muted-color">
                                         Générez le PDF de la demande ci-dessus, faites-le émarger/signer par le responsable ou demandeur (via votre outil habituel ou manuscritement), puis déposez le document signé ici pour instruire la demande.
                                     </p>
 
                                     <!-- Zone d'état et téléversement -->
-                                    <div class="p-4 rounded-lg border-2 border-dashed border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div class="p-4 rounded-lg border-2 border-dashed border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-950 flex flex-col sm:flex-row items-center justify-between gap-4">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-700 dark:text-blue-300">
-                                                <i class="pi pi-file-pdf text-lg"></i>
+                                            <div class="w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-950 flex items-center justify-center text-primary">
+                                                <i aria-hidden="true" class="pi pi-file-pdf text-lg"></i>
                                             </div>
                                             <div>
-                                                <div v-if="form.pdfFilePath" class="text-xs font-semibold text-blue-900 dark:text-blue-200">
+                                                <div v-if="form.pdfFilePath" class="text-xs font-semibold text-primary">
                                                     {{ form.pdfFilePath.split('/').pop() }}
                                                 </div>
-                                                <div v-else class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                                <div v-else class="text-xs font-semibold text-color">
                                                     Aucun document signé n'a été déposé pour le moment.
                                                 </div>
-                                                <div class="text-[11px] text-gray-500">
+                                                <div class="text-[11px] text-muted-color">
                                                     Formats acceptés : PDF uniquement
                                                 </div>
                                             </div>
@@ -808,9 +800,9 @@ onMounted(async () => {
                         </Card>
 
                         <!-- Bloc 3 : Avis du Directeur / Chef des services -->
-                        <Card class="shadow-xs border-l-4 border-l-blue-700">
+                        <Card class="shadow-xs border-l-4 border-l-primary">
                             <template #title>
-                                <div class="text-base font-bold text-blue-900 dark:text-blue-300 flex items-center justify-between">
+                                <div class="text-base font-bold text-primary flex items-center justify-between">
                                     <span>AVIS DU DIRECTEUR / CHEF DE SERVICE</span>
                                     <Tag
                                         v-if="form.avisDirecteur === 'FAVORABLE'"
@@ -839,16 +831,16 @@ onMounted(async () => {
                                     <!-- Avertissement si l'utilisateur n'est pas gestionnaire de décision -->
                                     <div
                                         v-if="!isDecisionManager"
-                                        class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg text-xs text-amber-900 dark:text-amber-200"
+                                        class="p-3 bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800 rounded-lg text-xs text-primary"
                                     >
-                                        <i class="pi pi-info-circle mr-1"></i>
+                                        <i aria-hidden="true" class="pi pi-info-circle mr-1"></i>
                                         L'avis officiel est saisi uniquement par le gestionnaire de la décision (Direction / Responsable financier).
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div class="flex flex-col gap-1">
-                                            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Décision</label>
-                                            <Select
+                                            <label for="finance-decision" class="text-xs font-semibold text-color">Décision</label>
+                                            <Select input-id="finance-decision"
                                                 v-if="isDecisionManager"
                                                 v-model="form.avisDirecteur"
                                                 :options="avisDirecteurOptions"
@@ -857,32 +849,32 @@ onMounted(async () => {
                                                 placeholder="Sélectionner l'avis de la direction"
                                                 show-clear
                                             />
-                                            <InputText
+                                            <InputText id="finance-decision"
                                                 v-else
                                                 :value="form.avisDirecteur ? (avisDirecteurOptions.find(o => o.value === form.avisDirecteur)?.label || form.avisDirecteur) : 'Non encore statué'"
                                                 disabled
-                                                class="bg-gray-50 dark:bg-gray-800"
+                                                class="bg-emphasis"
                                             />
                                         </div>
 
                                         <div class="flex flex-col gap-1">
-                                            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Date de l'avis</label>
-                                            <InputText :value="form.dateAvisDirecteur ? new Date(form.dateAvisDirecteur).toLocaleDateString('fr-FR') : 'Non visé'" disabled class="bg-gray-50 dark:bg-gray-800" />
+                                            <label for="finance-date-de-l-avis" class="text-xs font-semibold text-color">Date de l'avis</label>
+                                            <InputText id="finance-date-de-l-avis" :value="form.dateAvisDirecteur ? new Date(form.dateAvisDirecteur).toLocaleDateString('fr-FR') : 'Non visé'" disabled class="bg-emphasis" />
                                         </div>
 
                                         <div class="flex flex-col gap-1 md:col-span-2" v-if="isDecisionManager || form.avisDirecteurCommentaire">
-                                            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Commentaire / Demande de précisions</label>
-                                            <InputText
+                                            <label for="finance-commentaire-demande-de-precisions" class="text-xs font-semibold text-color">Commentaire / Demande de précisions</label>
+                                            <InputText id="finance-commentaire-demande-de-precisions"
                                                 v-model="form.avisDirecteurCommentaire"
                                                 :disabled="!isDecisionManager"
                                                 placeholder="Préciser les motivations ou les compléments d'informations nécessaires..."
-                                                :class="{ 'bg-gray-50 dark:bg-gray-800': !isDecisionManager }"
+                                                :class="{ 'bg-emphasis': !isDecisionManager }"
                                             />
                                         </div>
                                     </div>
 
                                     <!-- Boutons réservés au gestionnaire de décision -->
-                                    <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-2" v-if="isDecisionManager">
+                                    <div class="mt-4 pt-3 border-t border-surface flex justify-end gap-2" v-if="isDecisionManager">
                                         <Button
                                             label="Avis Favorable"
                                             icon="pi pi-thumbs-up"
@@ -916,9 +908,9 @@ onMounted(async () => {
                             L'avis favorable du Directeur ou Chef de service sur la demande initiale (Étape 1) est obligatoire pour procéder à la vérification financière SIFAC.
                         </Message>
 
-                        <Card class="shadow-xs border-l-4 border-l-amber-600">
+                        <Card class="shadow-xs border-l-4 border-l-primary">
                             <template #title>
-                                <div class="text-base font-bold text-amber-900 dark:text-amber-300 flex items-center justify-between">
+                                <div class="text-base font-bold text-primary flex items-center justify-between">
                                     <span>2 — VÉRIFICATION SERVICE FINANCIER (SIFAC)</span>
                                     <Tag v-if="form.dateVerificationFinanciere" severity="success" :value="'Vérifié le ' + new Date(form.dateVerificationFinanciere).toLocaleDateString('fr-FR')" />
                                 </div>
@@ -926,23 +918,23 @@ onMounted(async () => {
                             <template #content>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">N° Fournisseur SIFAC</label>
-                                        <InputText v-model="form.fournisseur.numeroFournisseur" :disabled="!isStep2Unlocked" placeholder="Ex: 1650, 1471" />
+                                        <label for="finance-n-fournisseur-sifac" class="text-xs font-semibold text-color">N° Fournisseur SIFAC</label>
+                                        <InputText id="finance-n-fournisseur-sifac" v-model="form.fournisseur.numeroFournisseur" :disabled="!isStep2Unlocked" placeholder="Ex: 1650, 1471" />
                                     </div>
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Nom du fournisseur</label>
-                                        <InputText v-model="form.fournisseur.nomFournisseur" :disabled="!isStep2Unlocked" placeholder="Ex: ELITE SECURITE, TOUSSAINT" />
+                                        <label for="finance-nom-du-fournisseur" class="text-xs font-semibold text-color">Nom du fournisseur</label>
+                                        <InputText id="finance-nom-du-fournisseur" v-model="form.fournisseur.nomFournisseur" :disabled="!isStep2Unlocked" placeholder="Ex: ELITE SECURITE, TOUSSAINT" />
                                     </div>
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">N° Bon de Commande SIFAC *</label>
-                                        <InputText v-model="form.numeroBonCommande" :disabled="!isStep2Unlocked" placeholder="Ex: 4500264424" />
+                                        <label for="finance-n-bon-de-commande" class="text-xs font-semibold text-color">N° Bon de Commande SIFAC *</label>
+                                        <InputText id="finance-n-bon-de-commande" v-model="form.numeroBonCommande" :disabled="!isStep2Unlocked" placeholder="Ex: 4500264424" />
                                     </div>
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Colis attendu</label>
-                                        <InputText v-model="form.colisAttendu" :disabled="!isStep2Unlocked" placeholder="Informations livraison / colis" />
+                                        <label for="finance-colis-attendu" class="text-xs font-semibold text-color">Colis attendu</label>
+                                        <InputText id="finance-colis-attendu" v-model="form.colisAttendu" :disabled="!isStep2Unlocked" placeholder="Informations livraison / colis" />
                                     </div>
 
-                                    <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-3 bg-emphasis rounded-lg border border-surface">
                                         <div class="flex items-center gap-2">
                                             <Checkbox v-model="form.commandeSurMarche" :disabled="!isStep2Unlocked" :binary="true" input-id="csm" />
                                             <label for="csm" class="text-xs font-medium">Commande sur marché</label>
@@ -962,8 +954,8 @@ onMounted(async () => {
                                     </div>
                                 </div>
 
-                                <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                                    <span class="text-xs text-gray-500">
+                                <div class="mt-4 pt-3 border-t border-surface flex justify-between items-center">
+                                    <span class="text-xs text-muted-color">
                                         {{ form.dateVerificationFinanciere ? ('Vérifié le ' + new Date(form.dateVerificationFinanciere).toLocaleDateString('fr-FR')) : 'Non encore visé par le service financier' }}
                                     </span>
                                     <div class="flex gap-2">
@@ -1000,19 +992,19 @@ onMounted(async () => {
                             La vérification financière SIFAC (Étape 2) doit être préalablement validée pour accorder le visa d'engagement budgétaire.
                         </Message>
 
-                        <Card class="shadow-xs border-l-4 border-l-purple-700">
+                        <Card class="shadow-xs border-l-4 border-l-primary">
                             <template #title>
-                                <div class="text-base font-bold text-purple-900 dark:text-purple-300 flex items-center justify-between">
+                                <div class="text-base font-bold text-primary flex items-center justify-between">
                                     <span>3 — VISA CHEF DES SERVICES ADMINISTRATIFS / RESPONSABLE FINANCIER</span>
                                     <Tag v-if="form.dateVisaEngagement" severity="success" :value="'Visa accordé le ' + new Date(form.dateVisaEngagement).toLocaleDateString('fr-FR')" />
                                 </div>
                             </template>
                             <template #content>
-                                <div class="p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900 rounded-lg mb-4">
-                                    <p class="text-xs text-purple-950 dark:text-purple-200 font-medium">
+                                <div class="p-4 bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800 rounded-lg mb-4">
+                                    <p class="text-xs text-primary font-medium">
                                         Visa d'engagement budgétaire et d'autorisation formelle de passation de la commande vers le fournisseur.
                                     </p>
-                                    <div class="mt-2 text-xs text-purple-800 dark:text-purple-300">
+                                    <div class="mt-2 text-xs text-primary">
                                         Date du visa : <strong>{{ form.dateVisaEngagement ? new Date(form.dateVisaEngagement).toLocaleDateString('fr-FR') : 'En attente de visa' }}</strong>
                                     </div>
                                 </div>
@@ -1050,9 +1042,9 @@ onMounted(async () => {
                             Le visa d'engagement CSA (Étape 3) doit être accordé avant de procéder à la constatation du service fait ou à la réception des biens.
                         </Message>
 
-                        <Card class="shadow-xs border-l-4 border-l-teal-600">
+                        <Card class="shadow-xs border-l-4 border-l-primary">
                             <template #title>
-                                <div class="text-base font-bold text-teal-900 dark:text-teal-300 flex items-center justify-between">
+                                <div class="text-base font-bold text-primary flex items-center justify-between">
                                     <span>4 — CONSTATATION SERVICE FAIT (RÉCEPTION)</span>
                                     <Tag v-if="currentReception.dateEffectiveReception" severity="success" :value="'Reçu le ' + new Date(currentReception.dateEffectiveReception).toLocaleDateString('fr-FR')" />
                                 </div>
@@ -1061,19 +1053,19 @@ onMounted(async () => {
                                 <div class="space-y-4">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div class="flex flex-col gap-1">
-                                            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Qualité du signataire / réceptionnaire</label>
-                                            <InputText v-model="currentReception.qualiteReceptionnaire" :disabled="!isStep4Unlocked" placeholder="Ex: Demandeur, Enseignant, Technicien..." />
+                                            <label for="finance-qualite-du-signataire-receptionnaire" class="text-xs font-semibold text-color">Qualité du signataire / réceptionnaire</label>
+                                            <InputText id="finance-qualite-du-signataire-receptionnaire" v-model="currentReception.qualiteReceptionnaire" :disabled="!isStep4Unlocked" placeholder="Ex: Demandeur, Enseignant, Technicien..." />
                                         </div>
                                         <div class="flex flex-col gap-1">
-                                            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Type de réception</label>
-                                            <Select v-model="currentReception.typeReception" :disabled="!isStep4Unlocked" :options="typeReceptionOptions" option-label="label" option-value="value" />
+                                            <label for="finance-type-de-reception" class="text-xs font-semibold text-color">Type de réception</label>
+                                            <Select input-id="finance-type-de-reception" v-model="currentReception.typeReception" :disabled="!isStep4Unlocked" :options="typeReceptionOptions" option-label="label" option-value="value" />
                                         </div>
                                         <div class="flex flex-col gap-1">
-                                            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Montant TTC constaté (€)</label>
-                                            <InputNumber v-model="currentReception.montantTtcConstate" :disabled="!isStep4Unlocked" mode="currency" currency="EUR" locale="fr-FR" />
+                                            <label for="finance-montant-ttc-constate" class="text-xs font-semibold text-color">Montant TTC constaté (€)</label>
+                                            <InputNumber input-id="finance-montant-ttc-constate" v-model="currentReception.montantTtcConstate" :disabled="!isStep4Unlocked" mode="currency" currency="EUR" locale="fr-FR" />
                                         </div>
                                         <div class="flex flex-col gap-1">
-                                            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Prestations conformes</label>
+                                            <span class="text-xs font-semibold text-color">Prestations conformes</span>
                                             <div class="flex items-center gap-2 mt-2">
                                                 <Checkbox v-model="currentReception.prestationsConformes" :disabled="!isStep4Unlocked" :binary="true" input-id="conf" />
                                                 <label for="conf" class="text-xs font-medium">Biens / prestations livrés conformes</label>
@@ -1082,9 +1074,9 @@ onMounted(async () => {
 
                                         <!-- Numéros MIGO -->
                                         <div class="md:col-span-2 flex flex-col gap-1">
-                                            <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Numéros MIGO (réception SIFAC)</label>
+                                            <label for="finance-numeros-migo-reception-sifac" class="text-xs font-semibold text-color">Numéros MIGO (réception SIFAC)</label>
                                             <div class="flex gap-2">
-                                                <InputText v-model="newMigoInput" :disabled="!isStep4Unlocked" placeholder="Nouveau numéro MIGO (ex: 5000412345)" class="flex-1" @keyup.enter="addMigo" />
+                                                <InputText id="finance-numeros-migo-reception-sifac" v-model="newMigoInput" :disabled="!isStep4Unlocked" placeholder="Nouveau numéro MIGO (ex: 5000412345)" class="flex-1" @keyup.enter="addMigo" />
                                                 <Button label="Ajouter MIGO" icon="pi pi-plus" size="small" :disabled="!isStep4Unlocked" @click="addMigo" />
                                             </div>
                                             <div class="flex flex-wrap gap-1 mt-2" v-if="currentReception.numerosMigo?.length">
@@ -1093,7 +1085,7 @@ onMounted(async () => {
                                         </div>
                                     </div>
 
-                                    <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center" v-if="isStep4Unlocked">
+                                    <div class="pt-3 border-t border-surface flex justify-between items-center" v-if="isStep4Unlocked">
                                         <Button
                                             label="Télécharger le PDF (Étape 4)"
                                             icon="pi pi-file-pdf"
@@ -1123,9 +1115,9 @@ onMounted(async () => {
                             La constatation effective du service fait (Étape 4) doit être réalisée avant le traitement de la facture et le paiement.
                         </Message>
 
-                        <Card class="shadow-xs border-l-4 border-l-rose-600">
+                        <Card class="shadow-xs border-l-4 border-l-primary">
                             <template #title>
-                                <div class="text-base font-bold text-rose-900 dark:text-rose-300 flex items-center justify-between">
+                                <div class="text-base font-bold text-primary flex items-center justify-between">
                                     <span>5 — FACTURE & PAIEMENT DU SERVICE FINANCIER</span>
                                     <Tag v-if="form.factureFinale" severity="success" value="Facture Soldée" />
                                 </div>
@@ -1133,24 +1125,24 @@ onMounted(async () => {
                             <template #content>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Date d'arrivée de la facture</label>
-                                        <InputText v-model="form.dateArriveeFacture" :disabled="!isStep5Unlocked" type="date" />
+                                        <label for="finance-date-d-arrivee-de" class="text-xs font-semibold text-color">Date d'arrivée de la facture</label>
+                                        <InputText id="finance-date-d-arrivee-de" v-model="form.dateArriveeFacture" :disabled="!isStep5Unlocked" type="date" />
                                     </div>
                                     <div class="flex flex-col gap-1">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Date de paiement effectif</label>
-                                        <InputText v-model="form.datePaiement" :disabled="!isStep5Unlocked" type="date" />
+                                        <label for="finance-date-de-paiement-effectif" class="text-xs font-semibold text-color">Date de paiement effectif</label>
+                                        <InputText id="finance-date-de-paiement-effectif" v-model="form.datePaiement" :disabled="!isStep5Unlocked" type="date" />
                                     </div>
                                     <div class="flex flex-col gap-1 md:col-span-2">
-                                        <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Motif de rejet (le cas échéant)</label>
-                                        <InputText v-model="form.rejetFactureMotif" :disabled="!isStep5Unlocked" placeholder="Motif si la facture a été rejetée ou retournée au fournisseur..." />
+                                        <label for="finance-motif-de-rejet-le" class="text-xs font-semibold text-color">Motif de rejet (le cas échéant)</label>
+                                        <InputText id="finance-motif-de-rejet-le" v-model="form.rejetFactureMotif" :disabled="!isStep5Unlocked" placeholder="Motif si la facture a été rejetée ou retournée au fournisseur..." />
                                     </div>
-                                    <div class="md:col-span-2 flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div class="md:col-span-2 flex items-center gap-2 p-3 bg-emphasis rounded-lg border border-surface">
                                         <Checkbox v-model="form.factureFinale" :disabled="!isStep5Unlocked" :binary="true" input-id="ff" />
-                                        <label for="ff" class="text-xs font-semibold text-gray-900 dark:text-white">Facture finale soldée (Clôture de la commande)</label>
+                                        <label for="ff" class="text-xs font-semibold text-color">Facture finale soldée (Clôture de la commande)</label>
                                     </div>
                                 </div>
 
-                                <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                                <div class="mt-4 pt-3 border-t border-surface flex justify-end">
                                     <Button
                                         label="Télécharger le PDF complet (Étape 5)"
                                         icon="pi pi-file-pdf"
@@ -1175,9 +1167,9 @@ onMounted(async () => {
             class="w-full max-w-5xl h-[90vh]"
         >
             <div class="space-y-3 h-full flex flex-col">
-                <div class="flex items-center justify-between gap-4 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between gap-4 p-2 bg-emphasis rounded-lg border border-surface">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Sélectionner l'étape à afficher :</span>
+                        <span class="text-xs font-semibold text-color">Sélectionner l'étape à afficher :</span>
                         <Select
                             v-model="pdfModalStep"
                             :options="pdfStepOptions"
@@ -1196,17 +1188,17 @@ onMounted(async () => {
                     />
                 </div>
 
-                <div v-if="modalPdfLoading" class="flex-1 w-full min-h-[500px] flex flex-col items-center justify-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
-                    <span class="text-sm text-gray-500">Génération du PDF par le serveur...</span>
+                <div v-if="modalPdfLoading" class="flex-1 w-full min-h-[500px] flex flex-col items-center justify-center gap-3 bg-emphasis rounded-lg border border-surface">
+                    <i aria-hidden="true" class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                    <span class="text-sm text-muted-color">Génération du PDF par le serveur...</span>
                 </div>
                 <div v-else-if="modalPdfBlobUrl" class="flex-1 w-full min-h-[500px]">
                     <iframe
                         :src="modalPdfBlobUrl"
-                        class="w-full h-full min-h-[520px] border border-gray-200 dark:border-gray-700 rounded-lg"
+                        class="w-full h-full min-h-[520px] border border-surface rounded-lg"
                     ></iframe>
                 </div>
-                <div v-else class="flex-1 w-full min-h-[500px] flex items-center justify-center text-gray-400 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                <div v-else class="flex-1 w-full min-h-[500px] flex items-center justify-center text-muted-color border border-dashed border-surface rounded-lg">
                     Aucun aperçu disponible
                 </div>
             </div>

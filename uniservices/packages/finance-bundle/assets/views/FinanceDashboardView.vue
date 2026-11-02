@@ -367,16 +367,16 @@ onMounted(async () => {
         </HeaderComponent>
 
         <!-- 2. Barre de Périmètre & Rôle (alignée sur le style du Dashboard Questionnaire) -->
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-4.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="bg-surface-0 dark:bg-surface-900 border border-surface rounded-2xl p-4.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-center gap-3.5">
-                <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                <div class="w-11 h-11 rounded-xl bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800 flex items-center justify-center text-primary shrink-0">
                     <BuildingOfficeIcon class="w-6 h-6" />
                 </div>
                 <div>
-                    <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <div class="text-xs font-semibold text-muted-color uppercase tracking-wider">
                         Périmètre d'affichage
                     </div>
-                    <div class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mt-0.5">
+                    <div class="text-base font-bold text-color flex items-center gap-2 mt-0.5">
                         <span>{{ currentScopeLabel }}</span>
                         <Tag :value="currentScopeBadge" severity="info" class="text-xs font-semibold" />
                     </div>
@@ -385,15 +385,15 @@ onMounted(async () => {
 
             <!-- Boutons de bascule de vue selon le rôle -->
             <div class="flex flex-wrap items-center gap-2.5">
-                <div class="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200 dark:border-slate-700">
+                <div class="inline-flex rounded-xl bg-emphasis p-1 border border-surface">
                     <button
                         v-if="canViewAll"
                         type="button"
                         :class="[
                             'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
                             selectedScope === 'all'
-                                ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-                                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                                ? 'bg-surface-0 dark:bg-surface-900 text-primary shadow-xs'
+                                : 'text-muted-color hover:text-color'
                         ]"
                         @click="setScope('all')"
                     >
@@ -405,8 +405,8 @@ onMounted(async () => {
                         :class="[
                             'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
                             selectedScope === 'dept'
-                                ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-                                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                                ? 'bg-surface-0 dark:bg-surface-900 text-primary shadow-xs'
+                                : 'text-muted-color hover:text-color'
                         ]"
                         @click="setScope('dept')"
                     >
@@ -417,8 +417,8 @@ onMounted(async () => {
                         :class="[
                             'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
                             selectedScope === 'my'
-                                ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
-                                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                                ? 'bg-surface-0 dark:bg-surface-900 text-primary shadow-xs'
+                                : 'text-muted-color hover:text-color'
                         ]"
                         @click="setScope('my')"
                     >
@@ -430,8 +430,8 @@ onMounted(async () => {
                         :class="[
                             'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
                             selectedScope === 'avis'
-                                ? 'bg-white dark:bg-slate-900 text-amber-700 dark:text-amber-400 shadow-xs'
-                                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                                ? 'bg-surface-0 dark:bg-surface-900 text-primary shadow-xs'
+                                : 'text-muted-color hover:text-color'
                         ]"
                         @click="setScope('avis')"
                     >
@@ -510,18 +510,18 @@ onMounted(async () => {
                 <template #header>
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-800 dark:text-white">Registre des Commandes</h3>
-                            <p class="text-xs text-gray-550 dark:text-gray-400">Cliquez sur une ligne pour déplier le détail (SIFAC, MIGO, factures) sans encombrer la vue.</p>
+                            <h3 class="text-lg font-bold text-color">Registre des Commandes</h3>
+                            <p class="text-xs text-muted-color">Cliquez sur une ligne pour déplier le détail (SIFAC, MIGO, factures) sans encombrer la vue.</p>
                         </div>
                         <div class="flex items-center gap-2 w-full sm:w-auto">
                             <IconField class="w-full sm:w-64">
                                 <InputIcon>
-                                    <i class="pi pi-search" />
+                                    <i aria-hidden="true" class="pi pi-search" />
                                 </InputIcon>
                                 <InputText
                                     v-model="filters['global'].value"
                                     placeholder="Rechercher..."
-                                    class="w-full py-1.5 px-3 text-sm rounded-lg border border-gray-300 dark:border-gray-700"
+                                    class="w-full py-1.5 px-3 text-sm rounded-lg border border-surface"
                                 />
                             </IconField>
                         </div>
@@ -530,8 +530,8 @@ onMounted(async () => {
 
                 <template #empty>
                     <div class="text-center py-10">
-                        <DocumentTextIcon class="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                        <p class="text-gray-600 dark:text-gray-400 font-medium">Aucun bon de commande trouvé pour ce périmètre.</p>
+                        <DocumentTextIcon class="w-12 h-12 text-muted-color mx-auto mb-2" />
+                        <p class="text-muted-color font-medium">Aucun bon de commande trouvé pour ce périmètre.</p>
                         <div class="mt-3">
                             <Button label="Créer une nouvelle demande" icon="pi pi-plus" size="small" @click="createNewDemande" />
                         </div>
@@ -553,13 +553,13 @@ onMounted(async () => {
                 <Column field="numeroBonCommande" header="Réf. / N° BC" sortable style="min-width: 9rem">
                     <template #body="{ data }">
                         <div class="flex flex-col">
-                            <span v-if="data.numeroBonCommande" class="font-mono text-xs font-bold text-blue-700 dark:text-blue-400">
+                            <span v-if="data.numeroBonCommande" class="font-mono text-xs font-bold text-primary">
                                 #{{ data.numeroBonCommande }}
                             </span>
-                            <span v-else class="text-xs text-gray-400 italic">
+                            <span v-else class="text-xs text-muted-color italic">
                                 Demande #{{ data.id }}
                             </span>
-                            <span v-if="data.centreFinancier" class="text-[10px] text-gray-500 font-mono">
+                            <span v-if="data.centreFinancier" class="text-[10px] text-muted-color font-mono">
                                 CF: {{ data.centreFinancier }}
                             </span>
                         </div>
@@ -570,14 +570,14 @@ onMounted(async () => {
                 <Column field="objetDemande" header="Objet de la dépense" sortable style="min-width: 14rem">
                     <template #body="{ data }">
                         <div class="flex flex-col">
-                            <span class="font-semibold text-gray-900 dark:text-white line-clamp-1" :title="data.objetDemande">
+                            <span class="font-semibold text-color line-clamp-1" :title="data.objetDemande">
                                 {{ data.objetDemande || 'Sans objet' }}
                             </span>
                             <div class="flex items-center gap-2 mt-0.5">
-                                <span class="text-[11px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium">
+                                <span class="text-[11px] px-1.5 py-0.2 rounded bg-emphasis text-muted-color font-medium">
                                     {{ data.prestation || 'Fournitures' }}
                                 </span>
-                                <span v-if="data.fournisseur?.nomFournisseur" class="text-xs text-gray-500 truncate max-w-[150px]" :title="data.fournisseur.nomFournisseur">
+                                <span v-if="data.fournisseur?.nomFournisseur" class="text-xs text-muted-color truncate max-w-[150px]" :title="data.fournisseur.nomFournisseur">
                                     {{ data.fournisseur.nomFournisseur }}
                                 </span>
                             </div>
@@ -590,24 +590,21 @@ onMounted(async () => {
                     <template #body="{ data }">
                         <span
                             v-if="data.departement"
-                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border"
-                            :style="{
-                                backgroundColor: data.departement.couleur ? `${data.departement.couleur}15` : '#f0fdf4',
-                                color: data.departement.couleur || '#16a34a',
-                                borderColor: data.departement.couleur ? `${data.departement.couleur}40` : '#bbf7d0'
-                            }"
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold text-color bg-emphasis border border-surface"
                         >
                             <span
                                 class="w-2 h-2 rounded-full shrink-0"
-                                :style="{ backgroundColor: data.departement.couleur || '#16a34a' }"
+                                :class="{ 'bg-surface-500': !data.departement.couleur }"
+                                :style="data.departement.couleur ? { backgroundColor: data.departement.couleur } : undefined"
+                                aria-hidden="true"
                             ></span>
                             <span class="truncate max-w-[110px]">{{ data.departement.libelle || `Dpt ${data.departement.id}` }}</span>
                         </span>
                         <span
                             v-else
-                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium text-slate-600 bg-slate-100 dark:bg-slate-800 border border-slate-200"
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium text-muted-color bg-emphasis border border-surface"
                         >
-                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-surface-500"></span>
                             <span>IUT</span>
                         </span>
                     </template>
@@ -616,7 +613,7 @@ onMounted(async () => {
                 <!-- Demandeur -->
                 <Column field="demandeur" header="Demandeur" sortable style="min-width: 9rem">
                     <template #body="{ data }">
-                        <span class="text-xs text-gray-700 dark:text-gray-300">
+                        <span class="text-xs text-color">
                             {{ getDemandeurLabel(data) }}
                         </span>
                     </template>
@@ -626,10 +623,10 @@ onMounted(async () => {
                 <Column field="montantTtc" header="Montant" sortable style="min-width: 8rem; text-align: right">
                     <template #body="{ data }">
                         <div class="flex flex-col items-end">
-                            <span class="font-bold text-xs text-gray-900 dark:text-white">
+                            <span class="font-bold text-xs text-color">
                                 {{ formatCurrency(data.montantTtc || data.montantHt) }}
                             </span>
-                            <span v-if="data.montantHt" class="text-[10px] text-gray-400">
+                            <span v-if="data.montantHt" class="text-[10px] text-muted-color">
                                 {{ formatCurrency(data.montantHt) }} HT
                             </span>
                         </div>
@@ -639,14 +636,7 @@ onMounted(async () => {
                 <!-- Statut / Étape -->
                 <Column field="statut" header="Statut / Avancement" :show-filter-menu="false" style="min-width: 13rem">
                     <template #body="{ data }">
-                        <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shadow-2xs"
-                            :class="getStatusBadge(data.statut).badgeClass"
-                        >
-                            <span class="w-2 h-2 rounded-full shrink-0" :class="getStatusBadge(data.statut).dotClass"></span>
-                            <i :class="getStatusBadge(data.statut).icon" class="text-xs"></i>
-                            <span>{{ getStatusBadge(data.statut).label }}</span>
-                        </span>
+                        <Tag :value="getStatusBadge(data.statut).label" :severity="getStatusBadge(data.statut).severity" :icon="getStatusBadge(data.statut).icon" />
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <Select
@@ -665,7 +655,7 @@ onMounted(async () => {
                 <!-- Date -->
                 <Column field="dateDemande" header="Date" sortable style="min-width: 6.5rem">
                     <template #body="{ data }">
-                        <span class="text-xs text-gray-500">
+                        <span class="text-xs text-muted-color">
                             {{ formatDate(data.dateBonCommande || data.dateDemande) }}
                         </span>
                     </template>
@@ -682,6 +672,7 @@ onMounted(async () => {
                                 rounded
                                 severity="secondary"
                                 title="Voir la synthèse complète"
+                                :aria-label="`Voir la synthèse de la demande ${data.objetDemande ?? data.id}`"
                                 @click="openDetail(data)"
                             />
                             <Button
@@ -691,6 +682,7 @@ onMounted(async () => {
                                 rounded
                                 severity="info"
                                 title="Éditer / Visas"
+                                :aria-label="`Éditer la demande ${data.objetDemande ?? data.id}`"
                                 @click="openEditView(data.id)"
                             />
                             <Button
@@ -700,6 +692,7 @@ onMounted(async () => {
                                 rounded
                                 severity="danger"
                                 title="Aperçu du bon de commande (PDF)"
+                                :aria-label="`Aperçu PDF de la demande ${data.objetDemande ?? data.id}`"
                                 @click="previewPdf(data.id)"
                             />
                         </div>
@@ -708,39 +701,39 @@ onMounted(async () => {
 
                 <!-- Extension de ligne : Affiche la timeline et les 5 blocs d'étapes cohérents -->
                 <template #expansion="{ data }">
-                    <div class="p-4 bg-slate-50/80 dark:bg-slate-900/60 border-y border-slate-200 dark:border-slate-700 space-y-4">
+                    <div class="p-4 bg-emphasis border-y border-surface space-y-4">
                         <!-- Stepper visuel de la commande -->
-                        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs">
+                        <div class="bg-surface-0 dark:bg-surface-900 p-3.5 rounded-xl border border-surface shadow-2xs">
                             <BonCommandeWorkflowTimeline :commande="data" />
                         </div>
 
                         <!-- 5 Blocs d'étapes cohérents (numéro, libellé, icône, couleur) -->
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
                             <!-- Étape 1 : Demande & Avis (Bleu) -->
-                            <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 border-l-4 border-l-blue-600 shadow-2xs flex flex-col justify-between">
+                            <div class="bg-surface-0 dark:bg-surface-900 p-3 rounded-xl border border-surface border-l-4 border-l-primary shadow-2xs flex flex-col justify-between">
                                 <div>
-                                    <div class="text-xs font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                        <i class="pi pi-file-edit text-blue-600"></i>
+                                    <div class="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                        <i aria-hidden="true" class="pi pi-file-edit text-primary"></i>
                                         <span>1. Demande & Avis</span>
                                     </div>
                                     <dl class="text-xs space-y-1">
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Demandeur :</dt>
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Demandeur :</dt>
                                             <dd class="font-medium truncate max-w-[120px]" :title="getDemandeurLabel(data)">{{ getDemandeurLabel(data) }}</dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Date :</dt>
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Date :</dt>
                                             <dd class="font-medium">{{ formatDate(data.dateDemande) }}</dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Avis Dir. :</dt>
-                                            <dd class="font-semibold" :class="data.avisDirecteur === 'FAVORABLE' ? 'text-emerald-600' : (data.avisDirecteur === 'DEFAVORABLE' ? 'text-red-600' : 'text-gray-400')">
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Avis Dir. :</dt>
+                                            <dd class="font-semibold" :class="data.avisDirecteur === 'FAVORABLE' ? 'text-primary' : (data.avisDirecteur === 'DEFAVORABLE' ? 'text-primary' : 'text-muted-color')">
                                                 {{ data.avisDirecteur || 'En attente' }}
                                             </dd>
                                         </div>
                                         <div class="flex justify-between py-0.5">
-                                            <dt class="text-gray-500">PDF signé :</dt>
-                                            <dd class="font-medium" :class="data.pdfFilePath ? 'text-blue-600 font-bold' : 'text-gray-400'">
+                                            <dt class="text-muted-color">PDF signé :</dt>
+                                            <dd class="font-medium" :class="data.pdfFilePath ? 'text-primary font-bold' : 'text-muted-color'">
                                                 {{ data.pdfFilePath ? 'Déposé' : 'Non' }}
                                             </dd>
                                         </div>
@@ -749,31 +742,31 @@ onMounted(async () => {
                             </div>
 
                             <!-- Étape 2 : Vérification SIFAC (Ambre) -->
-                            <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 border-l-4 border-l-amber-600 shadow-2xs flex flex-col justify-between">
+                            <div class="bg-surface-0 dark:bg-surface-900 p-3 rounded-xl border border-surface border-l-4 border-l-primary shadow-2xs flex flex-col justify-between">
                                 <div>
-                                    <div class="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                        <i class="pi pi-search text-amber-600"></i>
+                                    <div class="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                        <i aria-hidden="true" class="pi pi-search text-primary"></i>
                                         <span>2. Vérif. SIFAC</span>
                                     </div>
                                     <dl class="text-xs space-y-1">
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Fournisseur :</dt>
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Fournisseur :</dt>
                                             <dd class="font-medium truncate max-w-[120px]" :title="data.fournisseur?.nomFournisseur || 'Non renseigné'">
                                                 {{ data.fournisseur?.nomFournisseur || 'Non renseigné' }}
                                             </dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">N° BC :</dt>
-                                            <dd class="font-mono font-bold text-amber-700 dark:text-amber-400">
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">N° BC :</dt>
+                                            <dd class="font-mono font-bold text-primary">
                                                 {{ data.numeroBonCommande ? `#${data.numeroBonCommande}` : 'Non saisi' }}
                                             </dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Marché :</dt>
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Marché :</dt>
                                             <dd class="font-medium">{{ data.commandeSurMarche ? 'Oui' : 'Hors marché' }}</dd>
                                         </div>
                                         <div class="flex justify-between py-0.5">
-                                            <dt class="text-gray-500">Vérifié le :</dt>
+                                            <dt class="text-muted-color">Vérifié le :</dt>
                                             <dd class="font-medium">{{ formatDate(data.dateVerificationFinanciere) }}</dd>
                                         </div>
                                     </dl>
@@ -781,31 +774,31 @@ onMounted(async () => {
                             </div>
 
                             <!-- Étape 3 : Visa Engagement (Violet) -->
-                            <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 border-l-4 border-l-purple-600 shadow-2xs flex flex-col justify-between">
+                            <div class="bg-surface-0 dark:bg-surface-900 p-3 rounded-xl border border-surface border-l-4 border-l-primary shadow-2xs flex flex-col justify-between">
                                 <div>
-                                    <div class="text-xs font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                        <i class="pi pi-check-circle text-purple-600"></i>
+                                    <div class="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                        <i aria-hidden="true" class="pi pi-check-circle text-primary"></i>
                                         <span>3. Visa Engagement</span>
                                     </div>
                                     <dl class="text-xs space-y-1">
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Visa CSA :</dt>
-                                            <dd class="font-semibold" :class="data.dateVisaEngagement ? 'text-purple-600 font-bold' : 'text-gray-400'">
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Visa CSA :</dt>
+                                            <dd class="font-semibold" :class="data.dateVisaEngagement ? 'text-primary font-bold' : 'text-muted-color'">
                                                 {{ data.dateVisaEngagement ? 'Accordé' : 'En attente' }}
                                             </dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Date Visa :</dt>
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Date Visa :</dt>
                                             <dd class="font-medium">{{ formatDate(data.dateVisaEngagement) }}</dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">BC transmis :</dt>
-                                            <dd class="font-medium" :class="data.bcTransmis ? 'text-emerald-600 font-bold' : 'text-amber-600'">
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">BC transmis :</dt>
+                                            <dd class="font-medium" :class="data.bcTransmis ? 'text-primary font-bold' : 'text-primary'">
                                                 {{ data.bcTransmis ? 'Transmis' : 'Non' }}
                                             </dd>
                                         </div>
                                         <div class="flex justify-between py-0.5">
-                                            <dt class="text-gray-500">PJ SIFAC :</dt>
+                                            <dt class="text-muted-color">PJ SIFAC :</dt>
                                             <dd class="font-medium">{{ data.pjSurSifac ? 'Oui' : 'Non' }}</dd>
                                         </div>
                                     </dl>
@@ -813,29 +806,29 @@ onMounted(async () => {
                             </div>
 
                             <!-- Étape 4 : Constatation Service Fait (Teal) -->
-                            <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 border-l-4 border-l-teal-600 shadow-2xs flex flex-col justify-between">
+                            <div class="bg-surface-0 dark:bg-surface-900 p-3 rounded-xl border border-surface border-l-4 border-l-primary shadow-2xs flex flex-col justify-between">
                                 <div>
-                                    <div class="text-xs font-bold text-teal-900 dark:text-teal-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                        <i class="pi pi-box text-teal-600"></i>
+                                    <div class="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                        <i aria-hidden="true" class="pi pi-box text-primary"></i>
                                         <span>4. Service Fait</span>
                                     </div>
                                     <dl class="text-xs space-y-1">
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Réceptionné :</dt>
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Réceptionné :</dt>
                                             <dd class="font-medium">{{ formatDate(data.receptions?.[0]?.dateEffectiveReception) }}</dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Conforme :</dt>
-                                            <dd class="font-medium" :class="data.receptions?.[0]?.prestationsConformes ? 'text-teal-600 font-bold' : 'text-gray-400'">
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Conforme :</dt>
+                                            <dd class="font-medium" :class="data.receptions?.[0]?.prestationsConformes ? 'text-primary font-bold' : 'text-muted-color'">
                                                 {{ data.receptions?.[0]?.prestationsConformes ? 'Oui' : (data.receptions?.[0]?.dateEffectiveReception ? 'Non' : '-') }}
                                             </dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">MIGO :</dt>
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">MIGO :</dt>
                                             <dd class="font-medium">{{ data.receptions?.[0]?.numerosMigo?.length ? data.receptions[0].numerosMigo.join(', ') : '-' }}</dd>
                                         </div>
                                         <div class="flex justify-between py-0.5">
-                                            <dt class="text-gray-500">Certifié SF :</dt>
+                                            <dt class="text-muted-color">Certifié SF :</dt>
                                             <dd class="font-medium">{{ formatDate(data.dateCertificationServiceFait) }}</dd>
                                         </div>
                                     </dl>
@@ -843,28 +836,28 @@ onMounted(async () => {
                             </div>
 
                             <!-- Étape 5 : Facture & Paiement (Rose) -->
-                            <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 border-l-4 border-l-rose-600 shadow-2xs flex flex-col justify-between">
+                            <div class="bg-surface-0 dark:bg-surface-900 p-3 rounded-xl border border-surface border-l-4 border-l-primary shadow-2xs flex flex-col justify-between">
                                 <div>
-                                    <div class="text-xs font-bold text-rose-900 dark:text-rose-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                        <i class="pi pi-wallet text-rose-600"></i>
+                                    <div class="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                        <i aria-hidden="true" class="pi pi-wallet text-primary"></i>
                                         <span>5. Facture & Paiement</span>
                                     </div>
                                     <dl class="text-xs space-y-1">
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Arrivée fac. :</dt>
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Arrivée fac. :</dt>
                                             <dd class="font-medium">{{ formatDate(data.dateArriveeFacture) }}</dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Paiement :</dt>
-                                            <dd class="font-bold text-emerald-600">{{ formatDate(data.datePaiement) }}</dd>
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Paiement :</dt>
+                                            <dd class="font-bold text-primary">{{ formatDate(data.datePaiement) }}</dd>
                                         </div>
-                                        <div class="flex justify-between py-0.5 border-b border-slate-100 dark:border-slate-700/50">
-                                            <dt class="text-gray-500">Facture finale :</dt>
-                                            <dd class="font-semibold" :class="data.factureFinale ? 'text-emerald-600 font-bold' : 'text-gray-400'">
+                                        <div class="flex justify-between py-0.5 border-b border-surface">
+                                            <dt class="text-muted-color">Facture finale :</dt>
+                                            <dd class="font-semibold" :class="data.factureFinale ? 'text-primary font-bold' : 'text-muted-color'">
                                                 {{ data.factureFinale ? 'Soldée' : 'Non soldée' }}
                                             </dd>
                                         </div>
-                                        <div v-if="data.rejetFactureMotif" class="flex justify-between py-0.5 text-rose-600">
+                                        <div v-if="data.rejetFactureMotif" class="flex justify-between py-0.5 text-primary">
                                             <dt>Rejet :</dt>
                                             <dd class="font-medium truncate max-w-[100px]" :title="data.rejetFactureMotif">{{ data.rejetFactureMotif }}</dd>
                                         </div>
@@ -893,8 +886,8 @@ onMounted(async () => {
                 <BonCommandeWorkflowTimeline :commande="selectedCommande" />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-4">
-                    <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <div class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Informations Générales</div>
+                    <div class="p-3 bg-emphasis rounded-lg">
+                        <div class="font-semibold text-color mb-2">Informations Générales</div>
                         <p><strong>Objet :</strong> {{ selectedCommande.objetDemande }}</p>
                         <p><strong>Prestation :</strong> {{ selectedCommande.prestation }}</p>
                         <p><strong>Centre Financier :</strong> {{ selectedCommande.centreFinancier || '-' }}</p>
@@ -902,8 +895,8 @@ onMounted(async () => {
                         <p><strong>Montant TTC :</strong> {{ formatCurrency(selectedCommande.montantTtc) }}</p>
                     </div>
 
-                    <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <div class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Visas & Décisions</div>
+                    <div class="p-3 bg-emphasis rounded-lg">
+                        <div class="font-semibold text-color mb-2">Visas & Décisions</div>
                         <p><strong>Avis Direction :</strong> {{ selectedCommande.avisDirecteur || 'En attente' }}</p>
                         <p><strong>Date Visa Engagement :</strong> {{ formatDate(selectedCommande.dateVisaEngagement) }}</p>
                         <p><strong>Date Certification SF :</strong> {{ formatDate(selectedCommande.dateCertificationServiceFait) }}</p>
@@ -911,9 +904,9 @@ onMounted(async () => {
                     </div>
                 </div>
 
-                <div v-if="selectedCommande.noteExplicative" class="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg text-xs">
-                    <strong class="text-blue-900 dark:text-blue-300 block mb-1">Note explicative :</strong>
-                    <p class="text-blue-950 dark:text-blue-200 whitespace-pre-line">{{ selectedCommande.noteExplicative }}</p>
+                <div v-if="selectedCommande.noteExplicative" class="p-3 bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800 rounded-lg text-xs">
+                    <strong class="text-primary block mb-1">Note explicative :</strong>
+                    <p class="text-primary whitespace-pre-line">{{ selectedCommande.noteExplicative }}</p>
                 </div>
             </div>
 
@@ -936,8 +929,8 @@ onMounted(async () => {
             class="w-full max-w-5xl h-[85vh]"
         >
             <div v-if="pdfLoading" class="w-full h-full min-h-[500px] flex flex-col items-center justify-center gap-3">
-                <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
-                <span class="text-sm text-gray-500">Chargement du document PDF...</span>
+                <i aria-hidden="true" class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                <span class="text-sm text-muted-color">Chargement du document PDF...</span>
             </div>
             <div v-else-if="pdfBlobUrl" class="w-full h-full min-h-[500px]">
                 <iframe
@@ -945,7 +938,7 @@ onMounted(async () => {
                     class="w-full h-[70vh] border-0 rounded-lg"
                 ></iframe>
             </div>
-            <div v-else class="w-full h-full min-h-[500px] flex items-center justify-center text-gray-400">
+            <div v-else class="w-full h-full min-h-[500px] flex items-center justify-center text-muted-color">
                 Aucun document disponible
             </div>
             <template #footer>

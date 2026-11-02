@@ -18,11 +18,19 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: FinanceReceptionRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['reception:read']]),
-        new Get(normalizationContext: ['groups' => ['reception:read']]),
-        new Post(denormalizationContext: ['groups' => ['reception:write', 'finance:write']]),
-        new Patch(denormalizationContext: ['groups' => ['reception:write', 'finance:write']]),
-        new Delete()
+        new GetCollection(normalizationContext: ['groups' => ['reception:read']], security: "is_granted('FINANCE_VIEW')"),
+        new Get(normalizationContext: ['groups' => ['reception:read']], security: "is_granted('FINANCE_VIEW', object)"),
+        new Post(
+            denormalizationContext: ['groups' => ['reception:write', 'finance:write']],
+            security: "is_granted('FINANCE_EDIT')",
+            securityPostDenormalize: "is_granted('FINANCE_EDIT', object)"
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['reception:write', 'finance:write']],
+            security: "is_granted('FINANCE_EDIT', object)",
+            securityPostDenormalize: "is_granted('FINANCE_EDIT', object)"
+        ),
+        new Delete(security: "is_granted('FINANCE_DELETE', object)")
     ]
 )]
 class FinanceReception
@@ -59,7 +67,7 @@ class FinanceReception
     #[Groups(['reception:read', 'reception:write', 'finance:read', 'finance:list', 'finance:write'])]
     private ?string $detailsReceptionPartielle = null;
 
-    // Numéros MIGO (SIFAC)
+    /** @var list<string>|null Numéros MIGO (SIFAC) */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['reception:read', 'reception:write', 'finance:read', 'finance:list', 'finance:write'])]
     private ?array $numerosMigo = [];
@@ -160,11 +168,13 @@ class FinanceReception
         return $this;
     }
 
+    /** @return list<string>|null */
     public function getNumerosMigo(): ?array
     {
         return $this->numerosMigo;
     }
 
+    /** @param list<string>|null $numerosMigo */
     public function setNumerosMigo(?array $numerosMigo): static
     {
         $this->numerosMigo = $numerosMigo;

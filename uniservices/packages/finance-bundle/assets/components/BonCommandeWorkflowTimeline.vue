@@ -32,8 +32,8 @@ const steps = computed(() => {
             completed: isStep1Done,
             active: !isStep1Done,
             icon: 'pi pi-file-edit',
-            activeClass: 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-950',
-            activeTextClass: 'text-blue-700 dark:text-blue-400',
+            activeClass: 'bg-primary text-primary-contrast ring-4 ring-primary-100 dark:ring-primary-950',
+            activeTextClass: 'text-primary',
         },
         {
             id: '2',
@@ -44,8 +44,8 @@ const steps = computed(() => {
             active: isStep1Done && !isStep2Done,
             locked: !isStep1Done,
             icon: 'pi pi-search',
-            activeClass: 'bg-amber-600 text-white ring-4 ring-amber-100 dark:ring-amber-950',
-            activeTextClass: 'text-amber-700 dark:text-amber-400',
+            activeClass: 'bg-primary text-primary-contrast ring-4 ring-primary-100 dark:ring-primary-950',
+            activeTextClass: 'text-primary',
         },
         {
             id: '3',
@@ -56,8 +56,8 @@ const steps = computed(() => {
             active: isStep2Done && !isStep3Done,
             locked: !isStep2Done,
             icon: 'pi pi-check-circle',
-            activeClass: 'bg-purple-600 text-white ring-4 ring-purple-100 dark:ring-purple-950',
-            activeTextClass: 'text-purple-700 dark:text-purple-400',
+            activeClass: 'bg-primary text-primary-contrast ring-4 ring-primary-100 dark:ring-primary-950',
+            activeTextClass: 'text-primary',
         },
         {
             id: '4',
@@ -68,8 +68,8 @@ const steps = computed(() => {
             active: isStep3Done && !isStep4Done,
             locked: !isStep3Done,
             icon: 'pi pi-box',
-            activeClass: 'bg-teal-600 text-white ring-4 ring-teal-100 dark:ring-teal-950',
-            activeTextClass: 'text-teal-700 dark:text-teal-400',
+            activeClass: 'bg-primary text-primary-contrast ring-4 ring-primary-100 dark:ring-primary-950',
+            activeTextClass: 'text-primary',
         },
         {
             id: '5',
@@ -80,8 +80,8 @@ const steps = computed(() => {
             active: isStep4Done && !isStep5Done,
             locked: !isStep4Done,
             icon: 'pi pi-wallet',
-            activeClass: 'bg-rose-600 text-white ring-4 ring-rose-100 dark:ring-rose-950',
-            activeTextClass: 'text-rose-700 dark:text-rose-400',
+            activeClass: 'bg-primary text-primary-contrast ring-4 ring-primary-100 dark:ring-primary-950',
+            activeTextClass: 'text-primary',
         },
     ];
 });
@@ -90,7 +90,7 @@ const steps = computed(() => {
 <template>
     <div class="workflow-stepper py-2">
         <div class="flex items-center justify-between relative">
-            <div class="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 -translate-y-1/2 z-0"></div>
+            <div class="absolute top-1/2 left-0 right-0 h-1 bg-emphasis -translate-y-1/2 z-0"></div>
 
             <div
                 v-for="(step, idx) in steps"
@@ -102,27 +102,27 @@ const steps = computed(() => {
                     class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all shadow-sm"
                     :class="[
                         step.completed
-                            ? 'bg-emerald-600 text-white ring-4 ring-emerald-100 dark:ring-emerald-950'
+                            ? 'bg-primary text-primary-contrast ring-4 ring-primary-100 dark:ring-primary-950'
                             : step.active
                             ? (step.activeClass + ' animate-pulse')
                             : step.locked
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border border-gray-300 dark:border-gray-700'
-                            : 'bg-white dark:bg-gray-900 text-gray-500 border-2 border-gray-300 dark:border-gray-600'
+                            ? 'bg-emphasis text-muted-color border border-surface'
+                            : 'bg-surface-0 dark:bg-surface-900 text-muted-color border-2 border-surface'
                     ]"
                 >
-                    <i v-if="step.completed" class="pi pi-check text-base"></i>
-                    <i v-else-if="step.locked" class="pi pi-lock text-sm"></i>
-                    <i v-else :class="step.icon"></i>
+                    <i aria-hidden="true" v-if="step.completed" class="pi pi-check text-base"></i>
+                    <i aria-hidden="true" v-else-if="step.locked" class="pi pi-lock text-sm"></i>
+                    <i aria-hidden="true" v-else :class="step.icon"></i>
                 </div>
 
                 <div class="mt-2">
                     <div
                         class="text-xs font-bold group-hover:underline"
-                        :class="step.completed ? 'text-emerald-700 dark:text-emerald-400' : (step.active ? step.activeTextClass : 'text-gray-400 dark:text-gray-500')"
+                        :class="step.completed ? 'text-primary' : (step.active ? step.activeTextClass : 'text-muted-color')"
                     >
                         {{ step.title }}
                     </div>
-                    <div class="text-[11px] text-gray-500 dark:text-gray-400 max-w-[130px] truncate mx-auto" :title="step.desc">
+                    <div class="text-[11px] text-muted-color max-w-[130px] truncate mx-auto" :title="step.desc">
                         {{ step.desc }}
                     </div>
                 </div>
