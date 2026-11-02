@@ -557,7 +557,7 @@ généré.
 | Lot | Contenu | Commits du client |
 |---|---|---|
 | E26.0 | socle : dépendances (`sensiolabs/gotenberg-bundle`, `xlsx`), `bundles.php`, routes, noms des bundles sans « Bundle », styleguide, commande de génération d'étudiants de dev (sans mot de passe affiché) | `4e18aebd5`, `54adc41ba`, `eb54915d9` (styleguide), `f2e14790f` |
-| E26.1 | filtres API Platform : 18 filtres, `QueryParameter` du client à la place de `#[ApiFilter]` | `cc4590889`, `c3baa69db` |
+| E26.1 · en revue | filtres API Platform : 19 filtres et 19 ressources de `back/src` en `QueryParameter`, filtres natifs gardés en `#[ApiFilter]` | `cc4590889`, `c3baa69db` |
 | E26.2 | droits : responsable de parcours sur plusieurs diplômes, voters, accès des étudiants aux applications (réservé à `CAN_EDIT_ETUDIANT_SCOLARITE`) | `ac4950fd9`, `9090dcd54` |
 | E26.3 | étudiants : import CSV et ZIP, intégration en scolarité, synchronisation des groupes, profil ; nos contrôles E22 et E23 conservés | `a5cacfb08`, `5940864b0`, `b5bb65022`, `adb985cd7`, `4ee69bb15`, `df85c098e` |
 | E26.4 | exports PDF, Excel, CSV et trombinoscope du personnel, routes réservées au personnel du département | `2e37857a0`, `9520dbcd4`, `55a53493a`, `1f76d0b41` |
@@ -572,8 +572,11 @@ généré.
 | E26.13 | messagerie : bundle, widget, purge, tests ; pièces jointes hors de `public/`, cibles limitées au département ; les messages reçus rejoignent le fil de notifications de l'étudiant | `b2d2c639d`, `1d31012d9`, `ab39d0de6`, `d2beffc79`, `39c2fb9f6` |
 
 **Décisions de reprise**
-- Filtres (E26.1) : on adopte les `QueryParameter` du client et on revient sur le choix d'E21.12.
-  Garder `#[ApiFilter]` créerait 18 conflits à chaque reprise, pour un gain nul.
+- Filtres (E26.1) : on adopte les `QueryParameter` du client pour nos filtres et on revient sur le
+  choix d'E21.12. Garder `#[ApiFilter]` créerait 18 conflits à chaque reprise, pour un gain nul.
+  Les filtres natifs restent en `#[ApiFilter]` : en `QueryParameter` par nom de classe, comme le
+  client les déclare, API Platform les ignore. En mode paramètre, un filtre ne reçoit que la
+  valeur du paramètre en cours ; les autres se lisent sur l'opération.
 - Messagerie (E26.13) : on reprend la vraie messagerie du client. La source « messages » du
   centre de notifications lit ses messages. Les copies des e-mails envoyés restent dans le fil.
 
