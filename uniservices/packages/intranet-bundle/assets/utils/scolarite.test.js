@@ -1,16 +1,21 @@
 import {describe, expect, it} from 'vitest';
 import {
+    absencesParEtat,
     creneauAbsence,
-    evolutionNotes,
+    dateHeureLocale,
+    detailPenalite,
+    erreurPiece,
     formatDate,
     formatNote,
     justificationAbsence,
-    libellePenalite,
     libelleSemestre,
-    matieresNotees,
+    periodeAbsence,
+    resumeNotes,
     notesDuSemestre,
     resultatEvaluation,
     semestreParDefaut,
+    semestresParAnnee,
+    statutUe,
     syntheseSemestre,
     tonEvaluation,
 } from './scolarite.js';
@@ -141,20 +146,7 @@ describe('notesDuSemestre', () => {
     });
 });
 
-describe('evolutionNotes', () => {
-    it('suit la moyenne pondérée de toutes les notes publiées jusque-là', () => {
-        expect(evolutionNotes(semestre()).map(note => note.moyenneCumulee)).toEqual([0, 4, 10]);
-    });
-});
 
-describe('matieresNotees', () => {
-    it('classe les matières notées de la meilleure à la plus faible, pénalité comprise', () => {
-        expect(matieresNotees(semestre()).map(matiere => [matiere.code, matiere.ue])).toEqual([
-            ['R1.01', 'UE 1.1'],
-            ['R1.10', 'UE 1.2'],
-        ]);
-    });
-});
 
 describe('syntheseSemestre', () => {
     it('compte les UE validées parmi celles qui ont une moyenne, et les points perdus', () => {
@@ -171,13 +163,6 @@ describe('syntheseSemestre', () => {
     });
 });
 
-describe('libellePenalite', () => {
-    it('dit la pénalité et le nombre d\'absences, rien sans pénalité', () => {
-        expect(libellePenalite({penalite: 1.5, absencesPenalisantes: 3})).toBe('−1,5 pt (3 absences)');
-        expect(libellePenalite({penalite: 0.5, absencesPenalisantes: 1})).toBe('−0,5 pt (1 absence)');
-        expect(libellePenalite({penalite: 0, absencesPenalisantes: 0})).toBeNull();
-    });
-});
 
 describe('tonEvaluation', () => {
     it('teinte une note par seuil, l\'absence qui compte 0 en faible, un statut en atténué', () => {
@@ -193,5 +178,81 @@ describe('syntheseSemestre, pénalité d\'une matière sans note', () => {
         const sansNote = semestre();
         sansNote.ues[0].enseignements[1] = {...sansNote.ues[0].enseignements[1], penalite: 1, absencesPenalisantes: 2};
         expect(syntheseSemestre(sansNote)).toMatchObject({pointsPerdus: 0.5, pointsEnSuspens: 1});
+    });
+});
+
+describe('semestresParAnnee', () => {
+    it('range les semestres sous leur année, dans l\'ordre du relevé', () => {
+        const groupes = semestresParAnnee([
+            semestre({id: 1, anneeUniversitaire: '2025/2026'}),
+            semestre({id: 2, anneeUniversitaire: '2026/2027'}),
+            semestre({id: 3, libelle: 'S2', anneeUniversitaire: '2026/2027'}),
+        ]);
+        expect(groupes.map(groupe => [groupe.annee, groupe.semestres.map(s => s.id)])).toEqual([
+            ['2025-2026', [1]],
+            ['2026-2027', [2, 3]],
+        ]);
+    });
+});
+
+describe('statutUe', () => {
+    it('dit où en est l\'UE par rapport à 10, sans verdict', () => {
+        expect(statutUe({moyenne: 10})).toEqual({texte: 'au-dessus de 10', ton: 'bonne'});
+        expect(statutUe({moyenne: 9.99})).toEqual({texte: 'sous 10', ton: 'faible'});
+        expect(statutUe({moyenne: null})).toEqual({texte: 'pas encore de note', ton: null});
+    });
+});
+
+describe('resumeNotes', () => {
+    it('résume les UE au-dessus de 10, nomme celles en dessous, et dit ce que coûtent les absences', () => {
+        expect(resumeNotes(semestre())).toEqual([
+            '1 UE sur 2 au-dessus de 10.',
+            'Sous 10 : UE 1.2.',
+            'Les absences non justifiées vous retirent 0,5 point.',
+        ]);
+    });
+
+    it('le dit simplement quand rien n\'est publié', () => {
+        expect(resumeNotes(semestre({ues: []}))).toEqual(['Aucune note publiée pour ce semestre.']);
+    });
+});
+
+describe('detailPenalite', () => {
+    it('écrit la moyenne brute, la pénalité et la moyenne retenue', () => {
+        expect(detailPenalite({moyenne: 13, penalite: 0.5, absencesPenalisantes: 1, moyennePenalisee: 12.5})).toBe('13 − 0,5 (1 absence) = 12,5');
+    });
+
+    it('annonce la pénalité d\'une matière sans note, et ne dit rien sans pénalité', () => {
+        expect(detailPenalite({moyenne: null, penalite: 1, absencesPenalisantes: 2, moyennePenalisee: null})).toBe('−1 pt dès la première note (2 absences)');
+        expect(detailPenalite({moyenne: 12, penalite: 0, absencesPenalisantes: 0, moyennePenalisee: 12})).toBeNull();
+    });
+});
+
+describe('absencesParEtat', () => {
+    it('range les absences par ce qu\'elles demandent', () => {
+        const groupes = absencesParEtat(['aucune', 'refusee', 'en_attente', 'validee', 'aucune'].map((justification, rang) => ({rang, justification})));
+        expect(Object.fromEntries(Object.entries(groupes).map(([etat, liste]) => [etat, liste.map(absence => absence.rang)]))).toEqual({
+            aJustifier: [0, 4],
+            refusees: [1],
+            enAttente: [2],
+            justifiees: [3],
+        });
+    });
+});
+
+describe('periodeAbsence et dateHeureLocale', () => {
+    it('reprennent l\'heure murale du créneau, aller et retour', () => {
+        const periode = periodeAbsence({debut: '2026-09-10T13:30:00+00:00', fin: '2026-09-10T15:30:00+00:00'});
+        expect(dateHeureLocale(periode.debut)).toBe('2026-09-10T13:30:00');
+        expect(dateHeureLocale(periode.fin)).toBe('2026-09-10T15:30:00');
+    });
+});
+
+describe('erreurPiece', () => {
+    it('exige une pièce PDF, JPG ou PNG de 5 Mo au plus', () => {
+        expect(erreurPiece(null)).toBe('Joignez la pièce justificative.');
+        expect(erreurPiece({type: 'text/plain', size: 10})).toBe('La pièce doit être un PDF, un JPG ou un PNG.');
+        expect(erreurPiece({type: 'application/pdf', size: 6 * 1024 * 1024})).toBe('La pièce dépasse 5 Mo.');
+        expect(erreurPiece({type: 'image/png', size: 2000})).toBeNull();
     });
 });

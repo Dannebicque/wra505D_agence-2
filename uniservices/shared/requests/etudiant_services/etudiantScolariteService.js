@@ -160,4 +160,16 @@ const getMaScolariteService = async (showToast = false) => {
     }
 }
 
-export { getEtudiantsScolariteService, getEtudiantScolariteService, getEtudiantScolaritesService, getMaScolariteService, updateEtudiantScolariteService, demissionEtudiantScolariteService };
+// donnees : FormData (debut, fin, motif, fichier). Les erreurs de saisie reviennent en 422, champ par
+// champ, et s'affichent dans le formulaire : pas de notification générique.
+const deposerJustificatifService = async (donnees) => {
+    return await apiCall(
+        api.post,
+        ['/api/me/justificatifs', donnees],
+        'Justificatif déposé',
+        'Le justificatif n\'a pas pu être déposé',
+        false
+    );
+}
+
+export { getEtudiantsScolariteService, getEtudiantScolariteService, getEtudiantScolaritesService, getMaScolariteService, updateEtudiantScolariteService, demissionEtudiantScolariteService, deposerJustificatifService };

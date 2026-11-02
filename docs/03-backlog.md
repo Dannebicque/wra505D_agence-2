@@ -1100,6 +1100,11 @@ les priorités 2 et 3. Dépend de B6.
 sous `/api/administration/etudiant_absence_justificatifs`. L'audit ne relevait que le débordement
 du libellé du bouton en mobile ; le problème est plus profond que la mise en page.
 Back et front.
+**Fait** (14/10/2026, avec la refonte « Notes et absences ») : `POST /api/me/justificatifs`
+(période, motif, pièce PDF, JPG ou PNG de 5 Mo au plus, obligatoire), pièce rangée hors de
+`public/` et servie par `/api/justificatifs/{id}/fichier` à son auteur et au personnel habilité ;
+panneau latéral depuis l'onglet Absences. Une absence au justificatif refusé passe au nouveau
+dépôt. Tests : `StudentJustificationControllerTest` (écrit par OpenCode), `scolarite.cy.js`.
 
 ### P3 · Notifications distinctes de la messagerie · M
 Demandé dans l'audit informel. **Aucune API de notification ni de messagerie n'existe** : seul le
