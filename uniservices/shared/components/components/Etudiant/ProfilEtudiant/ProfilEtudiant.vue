@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useToast } from "primevue/usetoast";
 import { formatAdresse } from "@helpers/adresse.js";
 import { formatNaissance } from "@helpers/date.js";
@@ -15,7 +15,7 @@ const userStore = useUsersStore();
 
 const props = defineProps({
   isVisible: Boolean,
-  etudiantId: Number,
+  etudiantId: [Number, String],
 });
 
 const isLoadingEtudiant = ref(false);
@@ -29,8 +29,17 @@ const formValid = ref(true);
 const hasError = ref(false);
 
 onMounted(async () => {
-  await getEtudiantDetails(props.etudiantId);
+  if (props.etudiantId) {
+    await getEtudiantDetails(props.etudiantId);
+  }
 });
+
+watch(() => props.etudiantId, async (newId) => {
+  if (newId) {
+    await getEtudiantDetails(newId);
+  }
+});
+
 
 // mise à jour de la récupération pour stocker la copie originale
 const getEtudiantDetails = async (etudiantId) => {

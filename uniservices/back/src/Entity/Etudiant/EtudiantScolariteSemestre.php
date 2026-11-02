@@ -60,12 +60,12 @@ class EtudiantScolariteSemestre
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['scolarite-semestre:detail', 'etudiant:read', 'scolarite-semestre:manage-groupes', 'scolarite-semestre:absence'])]
+    #[Groups(['scolarite-semestre:detail', 'etudiant:read', 'scolarite-semestre:manage-groupes', 'scolarite-semestre:absence', 'scolarite:light'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'scolariteSemestre')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    #[Groups(['scolarite-semestre:detail', 'etudiant:read', 'scolarite-semestre:absence'])]
+    #[Groups(['scolarite-semestre:detail', 'etudiant:read', 'scolarite-semestre:absence', 'scolarite:light'])]
     private ?StructureSemestre $semestre = null;
 
     /**
@@ -75,7 +75,7 @@ class EtudiantScolariteSemestre
      * @var array<string, mixed>|null
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    #[Groups(['scolarite-semestre:detail', 'etudiant:read'])]
+    #[Groups(['scolarite-semestre:detail', 'etudiant:read', 'scolarite:light'])]
     private ?array $legacyContext = null;
 
     /**
@@ -99,7 +99,7 @@ class EtudiantScolariteSemestre
      * @var Collection<int, StructureGroupe>
      */
     #[ORM\ManyToMany(targetEntity: StructureGroupe::class, inversedBy: 'scolariteSemestres')]
-    #[Groups(['scolarite-semestre:detail', 'scolarite-semestre:manage-groupes', 'scolarite-semestre:write', 'scolarite-semestre:absence'])]
+    #[Groups(['scolarite-semestre:detail', 'scolarite-semestre:manage-groupes', 'scolarite-semestre:write', 'scolarite-semestre:absence', 'scolarite:light'])]
     private Collection $groupes;
 
     #[ORM\Column(nullable: true)]

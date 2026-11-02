@@ -1,97 +1,267 @@
 <script setup lang="ts">
-import type {Personnel, Etudiant} from '@types';
-
-import { getStatutText, getStatutColor } from "@utils"
-import { PhotoUser } from "@components";
+import { computed } from 'vue';
+import type { PersonItem } from '@/types/trombinoscope';
+import { isStudentCard } from '@/types/trombinoscope';
+import { getStatutText, getStatutColor } from '@utils';
+import { PhotoUser } from '@components';
+import Button from 'primevue/button';
+import Tag from 'primevue/tag';
+import GroupBadgeList from './GroupBadgeList.vue';
 
 interface Props {
-  person: Etudiant | Personnel;
+  person: PersonItem;
   mode: 'students' | 'staff';
   viewMode: 'grid' | 'list';
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
-const isStudent = (person: Etudiant | Personnel): person is Etudiant => {
-  return 'scolarites' in person;
+const emit = defineEmits<{
+  (e: 'view-profile', person: PersonItem): void;
+}>();
+
+const fullName = computed(() => {
+  const prenom = props.person?.prenom || '';
+  const nom = props.person?.nom || '';
+  return `${prenom} ${nom}`.trim() || 'Sans nom';
+});
+
+const isStudent = computed(() => {
+  return props.mode === 'students' || isStudentCard(props.person);
+});
+
+const handleProfileClick = () => {
+  emit('view-profile', props.person);
 };
 </script>
 
 <template>
-  <div
-      :class="[
-      'card p-4 hover:scale-105 transition-transform duration-200',
-      viewMode === 'list' ? 'flex items-center space-x-4' : 'text-center'
-    ]"
+  <!-- Grid View Mode -->
+  <article
+    v-if="viewMode === 'grid'"
+    class="bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface hover:border-primary-400 p-5 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between group focus-within:ring-2 focus-within:ring-primary-500"
   >
-    <!-- Photo -->
-    <div :class="viewMode === 'grid' ? 'mb-4' : 'flex-shrink-0'">
-<!--      <img-->
-<!--          :src="person.photoName"-->
-<!--          :alt="`Photo de ${person.prenom} ${person.nom}`"-->
-<!--          :class="[-->
-<!--          'object-cover border-2 border-gray-200',-->
-<!--          viewMode === 'grid' ? 'w-20 h-20 mx-auto rounded-full' : 'w-16 h-16 rounded-full'-->
-<!--        ]"-->
-<!--      />-->
-      <PhotoUser :user-photo="person.photoName" class="rounded-full !w-32 h-auto border-8 border-gray-300 border-opacity-60 mx-auto"/>
+    <!-- Top section: Photo + Identity -->
+    <div class="text-center">
+      <div
+        class="relative inline-block mb-3 cursor-pointer rounded-full"
+        v-tooltip.top="`Voir le profil de ${fullName}`"
+        @click="handleProfileClick"
+      >
+        <PhotoUser
+          :user-photo="person.photoName"
+          :type="isStudent ? 'etudiants' : 'personnels'"
+          class="rounded-full w-24 h-24 object-cover border-4 border-surface group-hover:border-primary-200 group-hover:ring-4 group-hover:ring-primary-50 shadow-sm mx-auto transition-all duration-300"
+        />
+      </div>
+
+      <h3
+        class="text-base font-bold text-color group-hover:text-primary-700 transition-colors leading-snug truncate px-1 cursor-pointer"
+        v-tooltip.top="fullName"
+        @click="handleProfileClick"
+      >
+        {{ fullName }}
+      </h3>
+
+      <div class="mt-1 flex justify-center">
+        <a
+          v-if="person.mailUniv"
+          :href="`mailto:${person.mailUniv}`"
+          @click.stop
+          class="text-xs text-muted-color hover:text-primary-700 inline-flex items-center gap-1.5 truncate max-w-full font-medium transition-colors"
+          v-tooltip.top="person.mailUniv"
+        >
+          <i class="pi pi-envelope text-[11px] text-muted-color group-hover:text-primary-500 flex-shrink-0" />
+          <span class="truncate">{{ person.mailUniv }}</span>
+        </a>
+      </div>
     </div>
 
-    <!-- Info -->
-    <div :class="viewMode === 'list' ? 'flex-1 min-w-0' : ''">
-      <!-- Name -->
-      <div :class="viewMode === 'grid' ? 'mb-2' : 'mb-1'">
-        <h3 :class="viewMode === 'grid' ? 'text-lg font-semibold text-gray-900' : 'text-base font-semibold text-gray-900'">
-          {{ person.prenom }} {{ person.nom }}
+    <!-- Middle section: Metadata -->
+    <div class="mt-4 pt-3 border-t border-surface flex-1 flex flex-col justify-center">
+      <!-- Student Metadata -->
+      <div v-if="isStudent" class="space-y-2.5">
+        <div class="flex items-center justify-center gap-2 flex-wrap">
+          <Tag
+            v-if="'scolarite' in person && person.scolarite"
+            :value="person.scolarite"
+            severity="primary"
+            class="!text-xs font-bold px-2.5 py-0.5 rounded-full truncate max-w-[200px]"
+            v-tooltip.top="person.scolarite"
+          />
+          <span
+            v-if="'numEtudiant' in person && person.numEtudiant"
+            class="inline-flex items-center text-[11px] font-mono font-semibold text-color bg-emphasis px-2 py-0.5 rounded-md border border-surface shadow-2xs cursor-default"
+            v-tooltip.top="`Numéro étudiant : ${person.numEtudiant}`"
+          >
+            N° {{ person.numEtudiant }}
+          </span>
+        </div>
+
+        <GroupBadgeList
+          v-if="'groupes' in person"
+          :groupes="person.groupes"
+          max-badge-width="max-w-[140px]"
+        />
+      </div>
+
+      <!-- Staff Metadata -->
+      <div v-else class="space-y-2 text-center">
+        <div class="flex items-center justify-center">
+          <Tag
+            :value="person.displayStatut || getStatutText(person.statut)"
+            :severity="getStatutColor(person.statut)"
+            class="!text-xs font-bold px-2.5 py-0.5 rounded-full truncate max-w-[200px]"
+            v-tooltip.top="person.displayStatut || getStatutText(person.statut)"
+          />
+        </div>
+
+        <div class="text-xs text-muted-color space-y-1 pt-1 font-medium">
+          <p
+            v-if="person.bureau"
+            class="flex items-center justify-center gap-1.5 text-color cursor-default"
+            v-tooltip.top="`Bureau : ${person.bureau}`"
+          >
+            <i class="pi pi-building text-primary-600 text-xs flex-shrink-0" />
+            <span class="truncate max-w-[180px]">Bureau {{ person.bureau }}</span>
+          </p>
+          <p
+            v-if="person.telBureau"
+            class="flex items-center justify-center gap-1.5 text-color cursor-default"
+            v-tooltip.top="`Téléphone : ${person.telBureau}`"
+          >
+            <i class="pi pi-phone text-primary-600 text-xs flex-shrink-0" />
+            <span class="truncate max-w-[180px]">{{ person.telBureau }}</span>
+          </p>
+          <p
+            v-if="person.domaines"
+            class="text-[11px] text-muted-color line-clamp-2 px-1 cursor-help"
+            v-tooltip.top="person.domaines"
+          >
+            {{ person.domaines }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom section: Action button -->
+    <div class="mt-4 pt-3 border-t border-surface">
+      <Button
+        type="button"
+        icon="pi pi-id-card"
+        label="Voir le profil"
+        :aria-label="`Voir le profil de ${fullName}`"
+        size="small"
+        class="w-full !text-xs !py-2 !px-3.5 !rounded-xl !font-semibold !bg-primary-50 !text-primary-700 !border !border-primary-200 hover:!bg-primary-600 hover:!text-white hover:!border-primary-600 transition-all duration-200 shadow-2xs hover:shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+        @click.stop="handleProfileClick"
+      />
+    </div>
+  </article>
+
+  <!-- List View Mode -->
+  <article
+    v-else
+    class="bg-surface-0 dark:bg-surface-900 rounded-xl border border-surface hover:border-primary-400 p-4 shadow-xs hover:shadow-md transition-all duration-200 flex items-center justify-between gap-4 group focus-within:ring-2 focus-within:ring-primary-500"
+  >
+    <!-- Left: Photo + Name + Mail -->
+    <div class="flex items-center gap-4 min-w-0">
+      <div
+        class="cursor-pointer flex-shrink-0 rounded-full"
+        v-tooltip.top="`Voir le profil de ${fullName}`"
+        @click="handleProfileClick"
+      >
+        <PhotoUser
+          :user-photo="person.photoName"
+          :type="isStudent ? 'etudiants' : 'personnels'"
+          class="rounded-full w-14 h-14 object-cover border-2 border-surface group-hover:border-primary-300 shadow-sm flex-shrink-0 transition-colors"
+        />
+      </div>
+      <div class="min-w-0">
+        <h3
+          class="text-base font-bold text-color group-hover:text-primary-700 transition-colors leading-tight truncate cursor-pointer"
+          v-tooltip.top="fullName"
+          @click="handleProfileClick"
+        >
+          {{ fullName }}
         </h3>
-        <p :class="viewMode === 'grid' ? 'text-sm text-gray-600 break-all' : 'text-xs text-gray-600 truncate'">
-          {{ person.mailUniv }}
-        </p>
-      </div>
-
-      <!-- Student Info -->
-      <div v-if="isStudent(person)" :class="viewMode === 'grid' ? 'space-y-2' : 'space-y-1'">
-        <!-- Groups -->
-        <div :class="viewMode === 'grid' ? 'space-y-1' : 'mt-1'">
-          <div class="flex gap-1">
-            <template v-for="(groups, type) in person.groupes" :key="type">
-              <span
-                  v-for="group in groups"
-                  :key="group"
-                  :class="[
-                  'px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs w-25',
-                  viewMode === 'list' ? 'text-xs' : ''
-                ]"
-              >
-                {{ group }}
-              </span>
-            </template>
-          </div>
-        </div>
-      </div>
-
-      <!-- Staff Info -->
-      <div v-else :class="viewMode === 'grid' ? 'space-y-2' : 'space-y-1'">
-        <div class="flex items-center justify-center gap-2" v-if="viewMode === 'grid'">
-          <Badge :severity="getStatutColor(person.statut)">
-            {{ getStatutText(person.statut) }}
-          </Badge>
-        </div>
-        <div class="flex items-center gap-2" v-else>
-          <Badge :severity="getStatutColor(person.statut)">
-            {{ getStatutText(person.statut) }}
-          </Badge>
-        </div>
-
-        <div :class="viewMode === 'grid' ? 'text-center' : ''">
-          <p :class="viewMode === 'grid' ? 'text-sm text-gray-600' : 'text-xs text-gray-600'">
-            {{ person.position }}
-          </p>
-          <p :class="viewMode === 'grid' ? 'text-sm text-gray-500' : 'text-xs text-gray-500'">
-            {{ person.department }}
-          </p>
-        </div>
+        <a
+          v-if="person.mailUniv"
+          :href="`mailto:${person.mailUniv}`"
+          @click.stop
+          class="text-xs text-muted-color hover:text-primary-700 inline-flex items-center gap-1.5 truncate max-w-full mt-0.5 font-medium transition-colors"
+          v-tooltip.top="person.mailUniv"
+        >
+          <i class="pi pi-envelope text-[11px] text-muted-color group-hover:text-primary-500 flex-shrink-0" />
+          <span class="truncate">{{ person.mailUniv }}</span>
+        </a>
       </div>
     </div>
-  </div>
+
+    <!-- Right: Badges, Details and Action Button -->
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <template v-if="isStudent">
+        <Tag
+          v-if="'scolarite' in person && person.scolarite"
+          :value="person.scolarite"
+          severity="primary"
+          class="!text-xs font-bold px-2.5 py-0.5 rounded-full truncate max-w-[220px]"
+          v-tooltip.top="person.scolarite"
+        />
+
+        <div class="hidden sm:block">
+          <GroupBadgeList
+            v-if="'groupes' in person"
+            :groupes="person.groupes"
+            max-badge-width="max-w-[130px]"
+          />
+        </div>
+
+        <span
+          v-if="'numEtudiant' in person && person.numEtudiant"
+          class="inline-flex items-center text-xs font-mono font-semibold text-color bg-emphasis px-2 py-0.5 rounded-md border border-surface hidden md:inline shadow-2xs cursor-default"
+          v-tooltip.top="`Numéro étudiant : ${person.numEtudiant}`"
+        >
+          N° {{ person.numEtudiant }}
+        </span>
+      </template>
+
+      <template v-else>
+        <Tag
+          :value="person.displayStatut || getStatutText(person.statut)"
+          :severity="getStatutColor(person.statut)"
+          class="!text-xs font-bold px-2.5 py-0.5 rounded-full truncate max-w-[200px]"
+          v-tooltip.top="person.displayStatut || getStatutText(person.statut)"
+        />
+        <span
+          v-if="person.bureau"
+          class="text-xs text-color font-medium hidden sm:inline-flex items-center gap-1 cursor-default"
+          v-tooltip.top="`Bureau : ${person.bureau}`"
+        >
+          <i class="pi pi-building text-primary-600 flex-shrink-0" />
+          <span class="truncate max-w-[150px]">Bureau {{ person.bureau }}</span>
+        </span>
+        <span
+          v-if="person.telBureau"
+          class="text-xs text-color font-medium hidden md:inline-flex items-center gap-1 cursor-default"
+          v-tooltip.top="`Téléphone : ${person.telBureau}`"
+        >
+          <i class="pi pi-phone text-primary-600 flex-shrink-0" />
+          <span class="truncate max-w-[150px]">{{ person.telBureau }}</span>
+        </span>
+      </template>
+
+      <!-- Action button -->
+      <Button
+        type="button"
+        icon="pi pi-id-card"
+        label="Voir le profil"
+        :aria-label="`Voir le profil de ${fullName}`"
+        size="small"
+        class="!text-xs !py-2 !px-3.5 !rounded-xl !font-semibold !bg-primary-50 !text-primary-700 !border !border-primary-200 hover:!bg-primary-600 hover:!text-white hover:!border-primary-600 transition-all duration-200 shadow-2xs hover:shadow-xs flex items-center gap-2 cursor-pointer ml-1"
+        @click.stop="handleProfileClick"
+      />
+    </div>
+  </article>
 </template>
+
+<style scoped></style>

@@ -42,7 +42,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 #[ApiResource(
     operations: [
         new Get(
-            normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']],
+            normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light', 'semestre:light', 'groupe:light', 'annee_univ:light']],
             security: "is_granted('CAN_VIEW_ETUDIANT', object)",
         ),
         new Get(
@@ -51,7 +51,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
             security: "is_granted('CAN_VIEW_ETUDIANT', object)",
         ),
         new GetCollection(
-            normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light']],
+            normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light', 'semestre:light', 'groupe:light', 'annee_univ:light']],
             security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
         // Sans groupe de dénormalisation, un étudiant pouvait écrire tous les champs de sa fiche, rôles compris.
