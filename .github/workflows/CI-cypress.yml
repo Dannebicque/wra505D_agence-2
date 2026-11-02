@@ -105,13 +105,27 @@ jobs:
             exit 1
           }
 
+      # Vite est lancé et attendu ici plutôt que par l'action Cypress : depuis le 02/11/2026, son
+      # attente abandonnait dès la première connexion coupée (« Socket closed before the
+      # connection was established »), avant même que Vite écoute. --strictPort fait échouer
+      # l'étape si le port 3000 est déjà pris, au lieu de servir les tests sur un autre port.
+      - name: Start Vite
+        working-directory: uniservices
+        run: |
+          (ss -ltnp | grep ':3000 ') || true
+          pnpm run dev:shell --strictPort > /tmp/vite.log 2>&1 &
+
+      - name: Wait for Vite
+        run: |
+          timeout 90 bash -c 'until curl -fsS http://localhost:3000/app/ > /dev/null; do sleep 1; done' || {
+            cat /tmp/vite.log
+            exit 1
+          }
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: uniservices
-          # Utilise la commande dev du monorepo qui lance les bundles sur les ports 3000, 3001, 3003
-          start: pnpm run dev
-          wait-on: 'http://localhost:3000/app/'
           record: false
           parallel: false
         env:

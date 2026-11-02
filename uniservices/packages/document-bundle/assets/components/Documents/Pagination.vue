@@ -1,6 +1,6 @@
 <template>
   <nav aria-label="Pagination" class="flex flex-wrap items-center justify-between gap-3 mt-8">
-    <div class="text-sm text-gray-700">
+    <div class="text-sm text-color">
       Affichage de {{ startItem }} à {{ endItem }} sur {{ paginationInfo.totalItems }} documents
     </div>
     
@@ -8,7 +8,7 @@
       <button
         @click="$emit('pageChange', paginationInfo.currentPage - 1)"
         :disabled="paginationInfo.currentPage <= 1"
-        class="min-h-[44px] px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="min-h-[44px] px-3 py-2 text-sm font-medium text-muted-color bg-(--p-content-background) border border-(--p-ui-border-color) rounded-md hover:bg-emphasis disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Précédent
       </button>
@@ -23,8 +23,8 @@
           :class="[
             'min-w-[44px] min-h-[44px] px-3 py-2 text-sm font-medium rounded-md',
             page === paginationInfo.currentPage
-              ? 'bg-primary-600 text-white'
-              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+              ? 'bg-primary text-primary-contrast'
+              : 'text-color bg-(--p-content-background) border border-(--p-ui-border-color) hover:bg-emphasis'
           ]"
         >
           {{ page }}
@@ -34,7 +34,7 @@
       <button
         @click="$emit('pageChange', paginationInfo.currentPage + 1)"
         :disabled="paginationInfo.currentPage >= paginationInfo.totalPages"
-        class="min-h-[44px] px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="min-h-[44px] px-3 py-2 text-sm font-medium text-muted-color bg-(--p-content-background) border border-(--p-ui-border-color) rounded-md hover:bg-emphasis disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Suivant
       </button>

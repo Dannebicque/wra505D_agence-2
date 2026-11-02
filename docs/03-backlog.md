@@ -516,6 +516,67 @@ un worktree, Antigravity en lecture, le reste à la main. Mesure de départ : 97
 236 `cast.int`, 227 `argument.type`, 124 `method.nonObject`, 113 `cast.string`, 54 méthodes ou
 classes absentes chez nous (levées par E21.2 et E21.3).
 
+### E26 · [back + front] Reprise de uniServices 0.2.0 à 0.8.0, à nos normes · L, 14 lots
+**Pourquoi** Examiné le 02/11/2026 : de `2ecfb42fb` à `c8c047b75` (releases 0.2.0 à 0.8.0,
+68 commits, 440 fichiers, +35 000 lignes), le client ajoute une messagerie, la sous-commission,
+les exports de listes et du trombinoscope, la configuration des modules, un tableau de bord des
+enseignements, les relances de questionnaire, la partie stage de l'étudiant et de l'enseignant,
+la refonte du bundle finance et la gestion des accès aux applications. Il est passé lui aussi en
+Symfony 8.1. On reprend tout, comme E21, pour que les reprises suivantes restent possibles.
+On ne peut pas l'appliquer tel quel : `bin/upstream-diff` puis `git apply -3` sur `develop` donne
+107 fichiers en conflit avec nos corrections, et ses nouvelles routes n'ont aucun contrôle
+d'accès alors que `^/api` est public.
+**Failles du client à fermer en reprenant** (vérifiées sur `c8c047b75`) :
+- `/api/intranet/commissions/semestre/{id}` : moyennes, décisions, numéro étudiant et date de
+  naissance de tout un semestre, sans connexion ;
+- `/api/intranet/export/*` : listes d'émargement et trombinoscope, sans connexion ;
+- `POST /api/questionnaires/{uuid}/reminders` : envoi d'e-mails sans connexion ;
+  exports Excel et PDF des questionnaires sans contrôle ;
+- `StagePdfController` : convention et avenants lisibles, avenant validable sans contrôle ;
+  `StageEtudiant` sans `security` (notre E24 le corrige déjà, à préserver) ;
+- `FinancePdfController` : génération, dépôt et téléchargement sans contrôle ;
+- `StructureAnnee` : `Delete` sans contrôle ; `EtudiantScolariteSemestre` : POST de synchronisation
+  des groupes sans contrôle ;
+- messagerie : pièces jointes dans `public/` avec l'extension fournie par l'expéditeur, cibles
+  (étudiants, personnels en copie) non limitées au département ;
+- `DevGenerateStudentsCommand` : mot de passe commun `test`, réaffiché.
+Le client n'a repris aucune de nos corrections E22 à E25 : dans chaque conflit, notre contrôle
+d'accès l'emporte.
+**Règles communes** : celles d'E21. Schéma SQL, URL, champs JSON et commandes `app:` du client
+conservés ; nouvelles classes hors entités en anglais ; PHPStan niveau 10 sans baseline ; toute
+route ajoutée porte son contrôle d'accès ; chaque lot est une PR avec `make check` et CI-Cypress
+verte. Méthode : `bin/upstream-diff 2ecfb42fb c8c047b75`, puis appliquer au lot les seuls
+fichiers qu'il couvre (`git apply --include`). Les fichiers que nous avons déplacés ou renommés
+(`EtudiantMigrator` devenu `StudentMigrator`, `CreateEtudiantController`, tableau de bord
+étudiant) se reportent à la main.
+**Pas repris** : outillage de version du client (`release-please`, `CHANGELOG.md`,
+`.release-please-manifest.json`), fichiers `.idea`, dossier `scratch/`, `back/config/reference.php`
+généré.
+**Lots**, dans l'ordre :
+
+| Lot | Contenu | Commits du client |
+|---|---|---|
+| E26.0 | socle : dépendances (`sensiolabs/gotenberg-bundle`, `xlsx`), `bundles.php`, routes, noms des bundles sans « Bundle », styleguide, commande de génération d'étudiants de dev (sans mot de passe affiché) | `4e18aebd5`, `54adc41ba`, `eb54915d9` (styleguide), `f2e14790f` |
+| E26.1 | filtres API Platform : 18 filtres, `QueryParameter` du client à la place de `#[ApiFilter]` | `cc4590889`, `c3baa69db` |
+| E26.2 | droits : responsable de parcours sur plusieurs diplômes, voters, accès des étudiants aux applications (réservé à `CAN_EDIT_ETUDIANT_SCOLARITE`) | `ac4950fd9`, `9090dcd54` |
+| E26.3 | étudiants : import CSV et ZIP, intégration en scolarité, synchronisation des groupes, profil ; nos contrôles E22 et E23 conservés | `a5cacfb08`, `5940864b0`, `b5bb65022`, `adb985cd7`, `4ee69bb15`, `df85c098e` |
+| E26.4 | exports PDF, Excel, CSV et trombinoscope du personnel, routes réservées au personnel du département | `2e37857a0`, `9520dbcd4`, `55a53493a`, `1f76d0b41` |
+| E26.5 | stage : convention générée, saisie de l'étudiant, partie enseignant, filtres des périodes ; notre `StageVoter` (E24) conservé et appliqué au PDF et aux avenants | `62fb937a5`, `2b9433565`, `a13210c97`, `c973bdd55` |
+| E26.6 | questionnaire : exports, lien accessible, relances et historique, département ; routes réservées au personnel | `eb54915d9`, `f4d7dcf1e`, `159a2404e`, `8e4522f31` |
+| E26.7 | sous-commission classique et APC, réservée au personnel du département | `5b39f062f`, `357499ef6` |
+| E26.8 | finance : bundle de #249, jamais repris, et sa refonte avec PDF, routes sous contrôle d'accès | `f97f829e8` |
+| E26.9 | absences et évaluations côté personnel, indicateurs ; notre dépôt de justificatif par l'étudiant (P2) conservé | `3076e6f07`, `6b12732d0`, `187b207c2`, `0c71cb7fb` |
+| E26.10 | widgets et tableaux de bord : accès aux widgets, widgets limités aux applications de l'utilisateur, tableau de bord des enseignements ; notre accueil étudiant (C18, C19) conservé | `11ff61d2e`, `688feada9`, `aa15909aa`, `7775e5908`, `6a4176191`, `0258d3783` |
+| E26.11 | interface transverse : composants et accessibilité, portail, badge d'application, année active, renommage `unitranet` en `intranet` dans le code ; le nom affiché reste Unitranet, nos jetons de couleur remplacent leurs couleurs en dur | `b79a176b0`, `3a4887acf`, `dc0ee62d9`, `6acb7381b`, `4978af083`, `94e79a0e3`, `5d8af9973` |
+| E26.12 | configuration des modules et ses pages | `cad0a0ab9`, `6a30dbb22` |
+| E26.13 | messagerie : bundle, widget, purge, tests ; pièces jointes hors de `public/`, cibles limitées au département ; les messages reçus rejoignent le fil de notifications de l'étudiant | `b2d2c639d`, `1d31012d9`, `ab39d0de6`, `d2beffc79`, `39c2fb9f6` |
+
+**Décisions de reprise**
+- Filtres (E26.1) : on adopte les `QueryParameter` du client et on revient sur le choix d'E21.12.
+  Garder `#[ApiFilter]` créerait 18 conflits à chaque reprise, pour un gain nul.
+- Messagerie (E26.13) : on reprend la vraie messagerie du client. La source « messages » du
+  centre de notifications lit ses messages. Les copies des e-mails envoyés restent dans le fil.
+
 ---
 
 ## Colonne A — Socle et accessibilité transverse
@@ -1100,6 +1161,11 @@ les priorités 2 et 3. Dépend de B6.
 sous `/api/administration/etudiant_absence_justificatifs`. L'audit ne relevait que le débordement
 du libellé du bouton en mobile ; le problème est plus profond que la mise en page.
 Back et front.
+**Fait** (14/10/2026, avec la refonte « Notes et absences ») : `POST /api/me/justificatifs`
+(période, motif, pièce PDF, JPG ou PNG de 5 Mo au plus, obligatoire), pièce rangée hors de
+`public/` et servie par `/api/justificatifs/{id}/fichier` à son auteur et au personnel habilité ;
+panneau latéral depuis l'onglet Absences. Une absence au justificatif refusé passe au nouveau
+dépôt. Tests : `StudentJustificationControllerTest` (écrit par OpenCode), `scolarite.cy.js`.
 
 ### P3 · Notifications distinctes de la messagerie · M
 Demandé dans l'audit informel. **Aucune API de notification ni de messagerie n'existe** : seul le

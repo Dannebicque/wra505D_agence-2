@@ -35,7 +35,7 @@ const triChoisi = computed({
 
 <template>
   <div class="flex items-center gap-2">
-    <span id="tri-documents" class="text-sm text-gray-700">Trier par</span>
+    <span id="tri-documents" class="text-sm text-color">Trier par</span>
     <Select
         v-model="triChoisi"
         :options="sortOptions"

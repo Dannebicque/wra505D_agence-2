@@ -3,7 +3,7 @@
 État du projet et suite à donner, pour qu'une nouvelle session reparte sans rien redécouvrir.
 À lire après `CLAUDE.md`. À mettre à jour à chaque étape importante.
 
-Dernière mise à jour : 13/10/2026.
+Dernière mise à jour : 02/11/2026.
 
 ---
 
@@ -233,8 +233,8 @@ Le `main` de [IUTTroyes/uniServices](https://github.com/IUTTroyes/uniServices) �
 (Cyndel, David Annebicque). Règle : **on ne reprend un commit amont que s'il est bon et ne casse
 rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs branches.
 
-- Depuis E13, notre back est en Symfony 8.1 et le leur en 7.3 : une modification de leurs
-  `composer.json` se réécrit à la main, elle ne s'applique pas telle quelle.
+- Depuis sa release 0.1.17, le client est lui aussi en Symfony 8.1 : ses `composer.json`
+  s'appliquent de nouveau, à nos versions de paquets près.
 - **Symfony 8.1 n'est maintenu que jusqu'à fin janvier 2027** : passer en 8.2 avant.
 - Depuis le 26/09/2026, `accept_stored_in_the_clear` vaut `false` : au premier déploiement sur une
   base qui garde des jetons en clair, les sessions concernées devront se reconnecter une fois.
@@ -245,6 +245,9 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
   `2ecfb42fb`. Les commits examinés le 12/10 sont repris par la fiche E21 du backlog, lot par
   lot, aux normes du dépôt : ils refondent le modèle pour migrer l'intranet V3. Les 13 lots,
   E21.0 à E21.12, sont faits ; seul le bundle finance (#249, « WIP ») est écarté.
+  Le 02/11/2026, `2ecfb42fb..c8c047b75` (releases 0.2.0 à 0.8.0, 68 commits) est examiné et
+  repris en entier par la fiche E26, en 14 lots, finance compris. Dernier commit examiné :
+  `c8c047b75`.
 - **Plus de migrations Doctrine** : le client a supprimé les 22 siennes (#260, 12/10/2026), le
   schéma se construit depuis le mapping. Nous aussi (#128).
 - Écartés le 26/09/2026, à rouvrir ensemble si le client corrige le premier point :
@@ -277,6 +280,7 @@ Ce que la refonte a mis en place côté étudiant, et où ajouter la suite sans 
 | un type de résultat de recherche | une source `SearchSourceInterface` | `back/src/Service/Search/Source/` |
 | un widget réservé à l'étudiant | `allowedProfiles: [PROFILE_ETUDIANT]`, et la disposition par défaut si tous doivent le voir | `packages/intranet-bundle/src/Services/Dashboard/` |
 | le contenu d'un document | `DocumentFiles` range et retrouve le fichier dans `back/var/documents` (hors de `public/`) ; `DocumentReadAccess` applique la visibilité et le département de la recherche ; seuls PDF, images courantes et xlsx sont servis en ligne, le reste en pièce jointe | `packages/document-bundle/src/Services/DocumentFiles.php`, `back/src/Security/DocumentReadAccess.php`, `back/src/Controller/DocumentFileController.php` |
+| une pièce justificative d'absence | `JustificationFiles` la range sous l'uuid du justificatif dans `back/var/justificatifs` ; `StudentJustificationSubmitter` crée le justificatif et le rattache ; le champ `fichier` porte le lien `/api/justificatifs/{id}/fichier`, ouvert par l'écran du personnel | `packages/intranet-bundle/src/Service/Absence/`, `back/src/Controller/StudentJustificationController.php`, `JustificationFileController.php` |
 | un nouvel aperçu de document | un type dans `typeApercu` et son rendu dans la fenêtre d'aperçu ; la liste des types servis en ligne côté back doit suivre | `packages/document-bundle/assets/service/utils/apercuUtils.ts`, `DocumentPreviewDialog.vue` |
 | ouvrir la fiche d'un document depuis une autre page | un lien vers `/documents?document=<id>` ; la page ouvre la fiche puis retire le paramètre | `shared/helpers/recherche.js`, `DocumentsView.vue` |
 | une couleur | les jetons du preset : palette `VIOLET_IUT`, `--accent-color`, `text-muted-color` ; jamais de couleur en dur, jamais de couleur par module | `packages/shell/assets/main.js` |
@@ -305,6 +309,9 @@ donner l'URL de comparaison.
 
 ## Ce qu'il reste à faire, dans l'ordre
 
+- **E26, reprise de uniServices 0.2.0 à 0.8.0**, priorité depuis le 02/11/2026 : 14 lots, un par
+  PR, dans l'ordre de la fiche du backlog. Chaque nouvelle route du client y reçoit son contrôle
+  d'accès.
 - **C17, emploi du temps de référence**, priorité de l'équipe depuis le 13/10/2026 : C17.0 à C17.3
   faits, C17.4 à C17.6 en partie (détail dans la fiche C17 du backlog). Reste : la journée en liste
   sur téléphone avec bandeau des jours et balayage, la date dans l'URL, « Réessayer » sur erreur,
@@ -368,6 +375,7 @@ on corrige s'il décide autrement. On ne masque pas une erreur en attendant.
 | Import d'étudiants (E23) | `POST /api/etudiants/new` et `/import_apogee` exigent `CAN_EDIT_ETUDIANT_SCOLARITE` (super-admin, administrateur, scolarité, chef de département) : l'import crée des scolarités, et c'est le droit que le client donne pour les écrire. Les autres rôles de l'Administration voient encore l'écran mais reçoivent 403 | nous |
 | Providers qui renvoient un tableau (E15) | `@phpstan-ignore method.childReturnType` justifié sur 12 providers, plutôt qu'un DTO qui changerait le JSON-LD | nous |
 | Pénalité d'absence | règle de l'intranet V3 (`MoyenneMatiere`) : chaque absence non justifiée retire les points du semestre (`penalite_absence`, 0,5 par défaut, activée par `opt_penalite_absence`) à la moyenne de sa matière, sans passer sous 0 ; les UE se calculent sur les moyennes pénalisées. Une absence au justificatif en attente pénalise jusqu'à l'acceptation, signalée « levable ». Une matière sans note n'a rien à perdre : sa pénalité s'appliquera dès la première note. Pas de moyenne générale, que le BUT ne connaît pas | LCS |
+| Justificatif déposé par l'étudiant (P2) | pièce obligatoire (PDF, JPG ou PNG, 5 Mo au plus, type lu dans le contenu), motif obligatoire, période de 31 jours au plus ; rattaché au semestre de ses absences, sinon au dernier semestre de l'année ; une absence au justificatif refusé passe au nouveau dépôt. Le personnel lit la pièce par le lien du champ `fichier` | LCS |
 | Barre latérale | façon GitHub : chaque entrée montre son icône puis son libellé ; repliée, la barre devient une colonne d'icônes, nommées par une infobulle au survol comme au focus, les libellés restant lus par les lecteurs d'écran. Le repli se fait depuis un bouton en bas de la barre, avec une icône de panneau latéral ; le ☰ de la barre haute ne sert plus qu'en mobile, pour ouvrir le tiroir. Icônes, bouton de repli et logo sont centrés sur un même axe. Le nom du module (« INTRANET ») est retiré de la barre haute de l'étudiant. La barre latérale est partagée : elle change aussi pour le personnel | nous |
 
 ## Questions en attente du client

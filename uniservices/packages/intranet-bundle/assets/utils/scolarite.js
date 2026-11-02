@@ -1,4 +1,5 @@
 import {tonNote} from './accueil.js';
+import {parseEdtDate} from './prochainCours.js';
 
 /**
  * Libellés de la page Scolarité, à partir du relevé de /api/me/scolarite.
@@ -104,28 +105,6 @@ export const notesDuSemestre = (semestre) => enseignementsDuSemestre(semestre)
         })))
     .sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''));
 
-/**
- * La moyenne de toutes les notes publiées jusqu'à chacune, pondérée par les coefficients : la
- * courbe dit si l'on progresse, sans se substituer aux moyennes d'UE.
- */
-export const evolutionNotes = (semestre) => {
-    let somme = 0;
-    let poids = 0;
-    return notesDuSemestre(semestre).map(note => {
-        const coefficient = note.coefficient ?? 1;
-        somme += note.valeur * coefficient;
-        poids += coefficient;
-        return {...note, moyenneCumulee: poids > 0 ? Math.round(somme / poids * 100) / 100 : null};
-    });
-};
-
-/**
- * Ressources et SAÉ qui ont une moyenne, de la meilleure à la plus faible, pénalité comprise.
- */
-export const matieresNotees = (semestre) => enseignementsDuSemestre(semestre)
-    .filter(enseignement => enseignement.moyennePenalisee !== null && enseignement.moyennePenalisee !== undefined)
-    .sort((a, b) => b.moyennePenalisee - a.moyennePenalisee);
-
 const sommePenalites = (enseignements) => Math.round(enseignements.reduce((total, enseignement) => total + (enseignement.penalite ?? 0), 0) * 100) / 100;
 
 /**
@@ -149,17 +128,6 @@ export const syntheseSemestre = (semestre) => {
 };
 
 /**
- * « −0,5 pt (1 absence) », ou rien sans pénalité.
- */
-export const libellePenalite = (enseignement) => {
-    if (!enseignement.penalite) {
-        return null;
-    }
-    const absences = enseignement.absencesPenalisantes;
-    return `−${formatNote(enseignement.penalite)} pt (${absences} absence${absences > 1 ? 's' : ''})`;
-};
-
-/**
  * La teinte de la pastille d'une évaluation : par seuil pour une note, « faible » pour l'absence
  * qui compte 0, atténuée pour un statut qui ne compte pas.
  */
@@ -169,4 +137,106 @@ export const tonEvaluation = (evaluation) => {
         return 'faible';
     }
     return resultat.severite ? 'statut' : tonNote(evaluation.note);
+};
+
+/**
+ * Les semestres groupés par année universitaire, dans l'ordre du relevé.
+ */
+export const semestresParAnnee = (semestres) => semestres.reduce((annees, semestre) => {
+    const annee = (semestre.anneeUniversitaire ?? '').replace('/', '-');
+    const groupe = annees.find(candidat => candidat.annee === annee);
+    if (groupe) {
+        groupe.semestres.push(semestre);
+    } else {
+        annees.push({annee, semestres: [semestre]});
+    }
+    return annees;
+}, []);
+
+/**
+ * Où en est une UE, sans verdict : tant que la sous-commission n'a pas siégé, rien n'est acquis
+ * ni perdu.
+ */
+export const statutUe = (ue) => {
+    if (ue.moyenne === null || ue.moyenne === undefined) {
+        return {texte: 'pas encore de note', ton: null};
+    }
+    return ue.moyenne >= 10 ? {texte: 'au-dessus de 10', ton: 'bonne'} : {texte: 'sous 10', ton: 'faible'};
+};
+
+/**
+ * Le résumé du semestre en phrases courtes, à lire avant tout le reste.
+ */
+export const resumeNotes = (semestre) => {
+    const chiffres = syntheseSemestre(semestre);
+    if (chiffres.notesPubliees === 0) {
+        return ['Aucune note publiée pour ce semestre.'];
+    }
+    const phrases = [`${chiffres.uesValidees} UE sur ${chiffres.uesNotees} au-dessus de 10.`];
+    const sous = semestre.ues.filter(ue => ue.moyenne !== null && ue.moyenne !== undefined && ue.moyenne < 10);
+    if (sous.length) {
+        phrases.push(`Sous 10 : ${sous.map(ue => ue.libelle).join(', ')}.`);
+    }
+    if (chiffres.pointsPerdus) {
+        phrases.push(`Les absences non justifiées vous retirent ${formatNote(chiffres.pointsPerdus)} point${chiffres.pointsPerdus > 1 ? 's' : ''}.`);
+    }
+    return phrases;
+};
+
+/**
+ * « 13 − 0,5 (1 absence) = 12,5 » : la moyenne brute, la pénalité et ce qui est retenu, écrits
+ * en clair plutôt qu'une moyenne amputée sans explication. Rien sans pénalité.
+ */
+export const detailPenalite = (enseignement) => {
+    if (!enseignement.penalite) {
+        return null;
+    }
+    const absences = enseignement.absencesPenalisantes;
+    const pluriel = absences > 1 ? 's' : '';
+    if (enseignement.moyenne === null || enseignement.moyenne === undefined) {
+        return `−${formatNote(enseignement.penalite)} pt dès la première note (${absences} absence${pluriel})`;
+    }
+    return `${formatNote(enseignement.moyenne)} − ${formatNote(enseignement.penalite)} (${absences} absence${pluriel}) = ${formatNote(enseignement.moyennePenalisee)}`;
+};
+
+/**
+ * Les absences du semestre rangées par ce qu'elles demandent : à justifier d'abord, puis refusées
+ * (à justifier de nouveau), en attente, justifiées.
+ */
+export const absencesParEtat = (liste) => ({
+    aJustifier: liste.filter(absence => absence.justification === 'aucune'),
+    refusees: liste.filter(absence => absence.justification === 'refusee'),
+    enAttente: liste.filter(absence => absence.justification === 'en_attente'),
+    justifiees: liste.filter(absence => absence.justification === 'validee'),
+});
+
+/**
+ * Début et fin d'une absence en heure locale, pour préremplir le justificatif.
+ */
+export const periodeAbsence = (absence) => ({
+    debut: parseEdtDate(absence.debut),
+    fin: parseEdtDate(absence.fin ?? absence.debut),
+});
+
+/**
+ * « 2026-09-10T13:30:00 » : l'heure murale, sans fuseau, comme le serveur range les créneaux.
+ */
+export const dateHeureLocale = (date) => {
+    const deux = (nombre) => String(nombre).padStart(2, '0');
+    return `${date.getFullYear()}-${deux(date.getMonth() + 1)}-${deux(date.getDate())}T${deux(date.getHours())}:${deux(date.getMinutes())}:00`;
+};
+
+/**
+ * Ce que le serveur accepte, vérifié avant l'envoi pour répondre tout de suite.
+ */
+export const PIECE_JUSTIFICATIVE = {types: ['application/pdf', 'image/jpeg', 'image/png'], tailleMax: 5 * 1024 * 1024};
+
+export const erreurPiece = (fichier) => {
+    if (!fichier) {
+        return 'Joignez la pièce justificative.';
+    }
+    if (!PIECE_JUSTIFICATIVE.types.includes(fichier.type)) {
+        return 'La pièce doit être un PDF, un JPG ou un PNG.';
+    }
+    return fichier.size > PIECE_JUSTIFICATIVE.tailleMax ? 'La pièce dépasse 5 Mo.' : null;
 };

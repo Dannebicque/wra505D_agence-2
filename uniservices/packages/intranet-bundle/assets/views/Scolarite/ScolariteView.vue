@@ -1,13 +1,12 @@
 <script setup>
-import {computed, onMounted, ref, watch} from 'vue';
+import {computed, nextTick, onMounted, ref, watch} from 'vue';
 import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router';
-import {BlocAccueil} from '@components';
 import {getMaScolariteService} from '@requests';
-import {libelleSemestre, semestreParDefaut} from '@/utils/scolarite.js';
-import SyntheseSemestre from '@/components/Etudiant/scolarite/SyntheseSemestre.vue';
-import NotesParUe from '@/components/Etudiant/scolarite/NotesParUe.vue';
-import ToutesLesNotes from '@/components/Etudiant/scolarite/ToutesLesNotes.vue';
+import {absencesParEtat, semestreParDefaut} from '@/utils/scolarite.js';
+import SelecteurSemestre from '@/components/Etudiant/scolarite/SelecteurSemestre.vue';
+import NotesSemestre from '@/components/Etudiant/scolarite/NotesSemestre.vue';
 import AbsencesSemestre from '@/components/Etudiant/scolarite/AbsencesSemestre.vue';
+import JustificatifDrawer from '@/components/Etudiant/scolarite/JustificatifDrawer.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -16,25 +15,24 @@ const releve = ref(null);
 const chargement = ref(true);
 const erreur = ref(false);
 
-// La carte des notes s'ouvre sur la synthèse ; les autres vues se choisissent dans la carte.
-const AFFICHAGES = [
-  {id: 'synthese', libelle: 'Synthèse'},
-  {id: 'ue', libelle: 'Par UE'},
-  {id: 'notes', libelle: 'Chronologie'},
-];
-const affichage = ref(AFFICHAGES.some(({id}) => id === route.query.affichage) ? route.query.affichage : 'synthese');
+const ONGLETS = ['notes', 'absences'];
+const onglet = ref(ONGLETS.includes(route.query.onglet) ? route.query.onglet : 'notes');
 const idSemestre = ref(null);
+const absenceAJustifier = ref(null);
 
 const semestres = computed(() => releve.value?.semestres ?? []);
 const semestre = computed(() => semestres.value.find(candidat => candidat.id === idSemestre.value) ?? null);
-const optionsSemestres = computed(() => semestres.value.map(candidat => ({id: candidat.id, libelle: libelleSemestre(candidat)})));
+const aJustifier = computed(() => {
+  const groupes = absencesParEtat(semestre.value?.absences.liste ?? []);
+  return groupes.aJustifier.length + groupes.refusees.length;
+});
 
 const charger = async () => {
-  chargement.value = true;
+  chargement.value = releve.value === null;
   erreur.value = false;
   try {
     releve.value = await getMaScolariteService();
-    idSemestre.value = semestreParDefaut(semestres.value, route.query.semestre)?.id ?? null;
+    idSemestre.value = semestreParDefaut(semestres.value, idSemestre.value ?? route.query.semestre)?.id ?? null;
   } catch {
     erreur.value = true;
   } finally {
@@ -43,43 +41,39 @@ const charger = async () => {
 };
 onMounted(charger);
 
-// Semestre et vue vivent dans l'adresse, comme la semaine de l'agenda. Une fois la page quittée,
-// réécrire l'adresse annulerait la navigation en cours.
+// Un dépôt fait passer l'absence « en attente » : le relevé se relit, l'onglet reste ouvert, et le
+// focus suit l'absence, son bouton « Justifier » ayant disparu.
+const apresDepot = async () => {
+  absenceAJustifier.value = null;
+  await charger();
+  await nextTick();
+  document.getElementById('absences-enAttente')?.focus();
+};
+
+// Semestre et onglet vivent dans l'adresse, comme la semaine de l'agenda. Une fois la page
+// quittée, réécrire l'adresse annulerait la navigation en cours.
 let quittee = false;
 onBeforeRouteLeave(() => {
   quittee = true;
 });
-watch([idSemestre, affichage], ([semestreChoisi, vue]) => {
+watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
   if (quittee || semestreChoisi === null) {
     return;
   }
-  router.replace({query: {semestre: String(semestreChoisi), ...(vue === 'synthese' ? {} : {affichage: vue})}});
+  router.replace({query: {semestre: String(semestreChoisi), ...(ongletChoisi === 'notes' ? {} : {onglet: ongletChoisi})}});
 });
 </script>
 
 <template>
   <section class="scolarite col-span-12 mt-10 md:mt-0">
     <div class="scolarite__entete">
-      <div>
-        <h1 class="scolarite__titre">Notes et absences</h1>
-        <p class="scolarite__aide">Moyennes provisoires, calculées sur les notes publiées, jusqu'à la sous-commission.</p>
-      </div>
-      <div v-if="optionsSemestres.length" class="scolarite__semestre">
-        <label for="choix-semestre">Semestre</label>
-        <Select
-            v-model="idSemestre"
-            input-id="choix-semestre"
-            :options="optionsSemestres"
-            option-label="libelle"
-            option-value="id"
-            class="min-h-[44px] min-w-[12rem]"
-        />
-      </div>
+      <h1 class="scolarite__titre">Notes et absences</h1>
+      <SelecteurSemestre v-if="semestres.length" v-model="idSemestre" :semestres="semestres"/>
     </div>
 
-    <div v-if="chargement" class="scolarite__grille" aria-hidden="true">
-      <Skeleton height="28rem" border-radius="18px"/>
-      <Skeleton height="18rem" border-radius="18px"/>
+    <div v-if="chargement" class="flex flex-col gap-4" aria-hidden="true">
+      <Skeleton height="3rem" border-radius="14px"/>
+      <Skeleton height="24rem" border-radius="18px"/>
     </div>
 
     <div v-else-if="erreur" class="scolarite__message" role="alert">
@@ -89,26 +83,33 @@ watch([idSemestre, affichage], ([semestreChoisi, vue]) => {
 
     <p v-else-if="!semestre" class="scolarite__message">Aucune inscription n'est enregistrée pour l'instant.</p>
 
-    <div v-else class="scolarite__grille">
-      <BlocAccueil titre="Notes" icone="pi pi-chart-bar" teinte="tp" class="scolarite__notes">
-        <template #actions>
-          <SelectButton
-              v-model="affichage"
-              :options="AFFICHAGES"
-              option-label="libelle"
-              option-value="id"
-              :allow-empty="false"
-              aria-label="Affichage des notes"
-              class="scolarite__affichage"
-          />
-        </template>
-        <SyntheseSemestre v-if="affichage === 'synthese'" :semestre="semestre"/>
-        <NotesParUe v-else-if="affichage === 'ue'" :semestre="semestre"/>
-        <ToutesLesNotes v-else :semestre="semestre"/>
-      </BlocAccueil>
-
-      <AbsencesSemestre :semestre="semestre" class="scolarite__absences"/>
+    <div v-else class="scolarite__carte">
+      <Tabs v-model:value="onglet">
+        <TabList>
+          <Tab value="notes" class="scolarite__onglet">
+            <i class="pi pi-chart-bar" aria-hidden="true"></i> Notes
+          </Tab>
+          <Tab value="absences" class="scolarite__onglet">
+            <i class="pi pi-calendar-times" aria-hidden="true"></i> Absences
+            <span v-if="aJustifier" class="scolarite__compte">{{ aJustifier }}<span class="sr-only"> à justifier</span></span>
+          </Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel value="notes">
+            <Transition name="onglet" appear>
+              <NotesSemestre :key="semestre.id" :semestre="semestre"/>
+            </Transition>
+          </TabPanel>
+          <TabPanel value="absences">
+            <Transition name="onglet" appear>
+              <AbsencesSemestre :key="semestre.id" :semestre="semestre" @justifier="absenceAJustifier = $event"/>
+            </Transition>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </div>
+
+    <JustificatifDrawer :absence="absenceAJustifier" @fermer="absenceAJustifier = null" @depose="apresDepot"/>
   </section>
 </template>
 
@@ -122,7 +123,7 @@ watch([idSemestre, affichage], ([semestreChoisi, vue]) => {
 .scolarite__entete {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
@@ -133,18 +134,6 @@ watch([idSemestre, affichage], ([semestreChoisi, vue]) => {
   font-weight: 700;
 }
 
-.scolarite__aide {
-  margin: 0.25rem 0 0;
-  color: var(--p-text-muted-color);
-}
-
-.scolarite__semestre {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  font-weight: 600;
-}
-
 .scolarite__message {
   display: flex;
   flex-direction: column;
@@ -153,41 +142,54 @@ watch([idSemestre, affichage], ([semestreChoisi, vue]) => {
   margin: 0;
 }
 
-/* Les notes d'abord, les absences en second : à côté en bureau, dessous sur téléphone. */
-.scolarite__grille {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.25rem;
-  align-items: start;
+.scolarite__carte {
+  padding: 0.5rem 1.25rem 1.25rem;
+  border-radius: 18px;
+  background: var(--p-content-background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px -4px rgb(0 0 0 / 0.06);
 }
 
-/* Sur téléphone, le menu prend la largeur de la carte, chaque vue sur une ligne. */
-.scolarite__affichage {
-  display: flex;
-  width: 100%;
+.scolarite__carte :deep(.p-tablist-tab-list) {
+  background: transparent;
 }
 
-.scolarite__affichage :deep(.p-togglebutton) {
-  flex: 1 1 auto;
-  white-space: nowrap;
+.scolarite__carte :deep(.p-tabpanels) {
+  padding: 1.25rem 0 0;
+  background: transparent;
 }
 
-@media (max-width: 639px) {
-  .scolarite__affichage :deep(.p-togglebutton),
-  .scolarite__affichage :deep(.p-togglebutton-content) {
-    padding-inline: 0.375rem;
-  }
+.scolarite__onglet {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  font-size: 1rem;
 }
 
-@media (min-width: 640px) {
-  .scolarite__affichage {
-    width: auto;
-  }
+.scolarite__compte {
+  min-width: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  line-height: 1.5rem;
+  text-align: center;
+  background: var(--p-seance-evaluation-background);
+  color: var(--p-seance-evaluation-color);
 }
 
-@media (min-width: 1200px) {
-  .scolarite__grille {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+/* Changer d'onglet ou de semestre fait entrer le contenu en douceur, sans déplacer la page. */
+.onglet-enter-active {
+  transition: opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onglet-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onglet-enter-active {
+    transition: none;
   }
 }
 </style>

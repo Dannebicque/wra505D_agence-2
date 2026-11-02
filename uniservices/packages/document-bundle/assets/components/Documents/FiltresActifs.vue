@@ -20,7 +20,7 @@ defineProps<{
         <RouterLink
           :to="filtre.retrait"
           :aria-label="`Retirer le filtre ${filtre.libelle}`"
-          class="filtre-actif inline-flex items-center gap-2 min-h-[44px] px-3 rounded-full border border-primary-500 bg-primary-50 text-primary-700 text-sm font-medium hover:bg-primary-100"
+          class="filtre-actif inline-flex items-center gap-2 min-h-[44px] px-3 rounded-full border border-primary bg-highlight text-sm font-medium hover:bg-highlight-emphasis"
         >
           {{ filtre.libelle }}
           <i class="pi pi-times text-xs" aria-hidden="true"></i>
@@ -31,7 +31,7 @@ defineProps<{
     <RouterLink
       v-if="filtres.length > 1"
       :to="toutEffacer"
-      class="filtre-actif inline-flex items-center min-h-[44px] px-2 text-sm font-medium text-primary-700 underline"
+      class="filtre-actif inline-flex items-center min-h-[44px] px-2 text-sm font-medium text-primary underline"
     >
       Tout effacer
     </RouterLink>
