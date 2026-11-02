@@ -22,7 +22,7 @@
           v-bind="panneau"
           @search="handleSearch"
           @openUploadModal="showUploadModal = true"
-          class="w-full! border-r-0!"
+          class="w-full! border-0! rounded-none!"
       />
     </Drawer>
 

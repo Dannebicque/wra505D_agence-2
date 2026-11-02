@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full bg-(--p-content-background) border-r border-surface flex flex-col w-64">
+  <div class="h-full bg-(--p-content-background) border border-surface rounded-md overflow-hidden flex flex-col w-64">
     <!-- Action Header -->
     <div class="p-4 border-b border-surface space-y-3">
       <button
