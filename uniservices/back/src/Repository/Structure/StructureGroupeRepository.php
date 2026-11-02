@@ -33,4 +33,20 @@ class StructureGroupeRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Tous les groupes du semestre, groupes enfants compris.
+     *
+     * @return list<StructureGroupe>
+     */
+    public function findAllBySemestreId(int $semestreId): array
+    {
+        /** @var list<StructureGroupe> */
+        return $this->createQueryBuilder('g')
+            ->join('g.semestres', 's')
+            ->andWhere('s.id = :semestreId')
+            ->setParameter('semestreId', $semestreId)
+            ->getQuery()
+            ->getResult();
+    }
 }
