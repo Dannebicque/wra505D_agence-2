@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import { tools } from '@config/uniServices.js'
+import { ApplicationBadge } from '@components'
+import { IUT_DIRECTION_ROLES, setIutDirectionRole } from '@utils/roleCatalog'
 
 const props = defineProps({
   isVisible: Boolean,
@@ -25,7 +27,16 @@ const packageNames = computed(() => {
   return [...new Set([...realPackages, ...fromDepartments])]
 })
 
-const permissionPackageNames = computed(() => Object.keys(props.permissionCatalog || {}))
+const departmentCatalog = computed(() => Object.fromEntries(Object.entries(props.permissionCatalog ?? {})
+  .map(([pkg, roles]) => [pkg, roles.filter(role => !IUT_DIRECTION_ROLES.includes(role.role))])
+  .filter(([, roles]) => roles.length)))
+const permissionPackageNames = computed(() => Object.keys(departmentCatalog.value))
+const institutionRoles = computed(() => Object.values(props.permissionCatalog ?? {}).flat().filter(role => IUT_DIRECTION_ROLES.includes(role.role)))
+const hasInstitutionRole = (role) => departments.value.length > 0 && departments.value.every(department => (department.permissions ?? []).includes(role))
+const hasPartialInstitutionRole = role => departments.value.some(department => (department.permissions ?? []).includes(role)) && !hasInstitutionRole(role)
+const toggleInstitutionRole = (role, enabled) => {
+  setIutDirectionRole(departments.value, role, enabled)
+}
 const departments = computed(() => props.personnel?.departements ?? [])
 const SUPER_ADMIN_ROLE = 'SUPER_ADMIN'
 const isPersonnelSuperAdmin = computed(() =>
@@ -49,6 +60,7 @@ const togglePermission = (department, permissionName, enabled) => {
   if (enabled) permissions.add(permissionName)
   else permissions.delete(permissionName)
   department.permissions = [...permissions]
+  if (permissionName === 'ROLE_RESP_PARCOURS' && !enabled) department.responsableParcoursDiplomes = []
 }
 
 const becomeSuperAdminAllDepartments = () => {
@@ -59,8 +71,18 @@ const becomeSuperAdminAllDepartments = () => {
   })
 }
 
+const hasValidParcoursDiplomes = (department) => Array.isArray(department.responsableParcoursDiplomes)
+  && department.responsableParcoursDiplomes.length > 0
+  && department.responsableParcoursDiplomes.every(iri => (department.diplomes ?? []).some(diplome => diplome.iri === iri))
+
 const closeDialog = () => emit('update:isVisible', false)
-const save = () => emit('save')
+const hasInvalidParcours = computed(() => departments.value.some((department) =>
+  hasPermission(department, 'ROLE_RESP_PARCOURS')
+  && !hasValidParcoursDiplomes(department)
+))
+const save = () => {
+  if (!hasInvalidParcours.value) emit('save')
+}
 </script>
 
 <template>
@@ -94,6 +116,17 @@ const save = () => emit('save')
             @click="becomeSuperAdminAllDepartments"
         />
       </div>
+
+      <Fieldset v-if="institutionRoles.length" legend="Fonctions de direction de l’IUT">
+        <p class="text-sm text-muted-color mt-0">Chaque fonction sélectionnée est activée sur tous les départements auxquels cette personne est rattachée.</p>
+        <div v-for="role in institutionRoles" :key="role.role" class="flex items-center gap-2">
+          <Checkbox :input-id="`institution-${role.role}`" :binary="true" :disabled="departments.length === 0"
+                    :model-value="hasInstitutionRole(role.role)"
+                    :indeterminate="hasPartialInstitutionRole(role.role)"
+                    @update:model-value="toggleInstitutionRole(role.role, $event)" />
+          <label :for="`institution-${role.role}`">{{ role.label }}</label>
+        </div>
+      </Fieldset>
 
       <Message v-if="departments.length === 0" severity="warn" class="mb-4" icon="pi pi-exclamation-triangle">
         Aucun département affecté.
@@ -148,7 +181,7 @@ const save = () => emit('save')
                     <div
                         v-for="pkg in packageNames"
                         :key="`${departmentKey(department)}-${pkg}`"
-                        class="inline-flex items-center gap-2 rounded-full border border-surface-300 bg-surface-0 px-3 py-1.5"
+                        class="inline-flex items-center gap-2 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-800 px-3 py-1.5"
                     >
                       <Checkbox
                           :input-id="`package-${departmentKey(department)}-${pkg}`"
@@ -156,7 +189,9 @@ const save = () => emit('save')
                           :binary="true"
                           @update:model-value="togglePackage(department, pkg, $event)"
                       />
-                      <label :for="`package-${departmentKey(department)}-${pkg}`">{{ pkg }}</label>
+                      <label :for="`package-${departmentKey(department)}-${pkg}`" class="cursor-pointer">
+                        <ApplicationBadge :app="pkg" size="xs" />
+                      </label>
                     </div>
                   </div>
                 </Fieldset>
@@ -179,7 +214,7 @@ const save = () => emit('save')
                       <p class="mb-2 text-xs font-bold uppercase text-muted-color">{{ pkg }}</p>
                       <div class="flex flex-wrap gap-3">
                         <div
-                            v-for="role in (props.permissionCatalog[pkg] ?? [])"
+                            v-for="role in (departmentCatalog[pkg] ?? [])"
                             :key="`${departmentKey(department)}-${role.role}`"
                             class="inline-flex items-center gap-2 rounded-full border border-surface-300 bg-surface-0 px-3 py-1.5"
                         >
@@ -195,6 +230,26 @@ const save = () => emit('save')
                     </div>
                   </div>
                 </Fieldset>
+                <Fieldset v-if="hasPermission(department, 'ROLE_RESP_PARCOURS')" legend="Diplômes du responsable de parcours">
+                  <label :for="`parcours-diplome-${departmentKey(department)}`" class="block mb-2 text-sm">
+                    Sélectionnez au moins un diplôme de ce département
+                  </label>
+                  <MultiSelect
+                      :input-id="`parcours-diplome-${departmentKey(department)}`"
+                      v-model="department.responsableParcoursDiplomes"
+                      :options="department.diplomes ?? []"
+                      option-label="libelle"
+                      option-value="iri"
+                      placeholder="Sélectionner les diplômes"
+                      display="chip"
+                      class="w-full"
+                      :invalid="!hasValidParcoursDiplomes(department)"
+                      filter
+                  />
+                  <Message v-if="!(department.diplomes ?? []).length" severity="warn" class="mt-2">
+                    Aucun diplôme dans ce département : ce rôle ne peut pas être attribué.
+                  </Message>
+                </Fieldset>
               </div>
             </TabPanel>
           </TabPanels>
@@ -203,7 +258,7 @@ const save = () => emit('save')
 
       <div class="mt-2 flex flex-wrap justify-end gap-2 border-t border-surface-300 pt-4">
         <Button label="Annuler" severity="secondary" text @click="closeDialog" />
-        <Button label="Enregistrer" icon="pi pi-save" @click="save" />
+        <Button label="Enregistrer" icon="pi pi-save" :disabled="hasInvalidParcours" @click="save" />
       </div>
     </div>
   </Dialog>

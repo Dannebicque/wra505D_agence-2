@@ -93,18 +93,18 @@ class QuestionnaireVoter extends Voter
         return match($attribute) {
             // Questionnaire
             self::CAN_VIEW_QUESTIONNAIRE => $this->canViewQuestionnaire($subject, $user),
-            self::CAN_EDIT_QUESTIONNAIRE => $this->canEditQuestionnaire($user),
+            self::CAN_EDIT_QUESTIONNAIRE => $this->canEditQuestionnaire($user, $subject),
             self::CAN_DELETE_QUESTIONNAIRE => $this->canDeleteQuestionnaire($user),
             self::CAN_PUBLISH_QUESTIONNAIRE => $this->canPublishQuestionnaire($user),
 
             // Section
             self::CAN_VIEW_QUESTION_SECTION => $this->canViewSection($user),
-            self::CAN_EDIT_QUESTION_SECTION => $this->canEditSection($user),
+            self::CAN_EDIT_QUESTION_SECTION => $this->canEditSection($user, $subject),
             self::CAN_DELETE_QUESTION_SECTION => $this->canDeleteSection($user),
 
             // Question
             self::CAN_VIEW_QUESTION => $this->canViewQuestion($user),
-            self::CAN_EDIT_QUESTION => $this->canEditQuestion($user),
+            self::CAN_EDIT_QUESTION => $this->canEditQuestion($user, $subject),
             self::CAN_DELETE_QUESTION => $this->canDeleteQuestion($user),
 
             // Invitation
@@ -113,7 +113,7 @@ class QuestionnaireVoter extends Voter
             self::CAN_DELETE_INVITATION => $this->canDeleteInvitation($user),
 
             // Réponses
-            self::CAN_VIEW_ANSWERS => $this->canViewAnswers($user),
+            self::CAN_VIEW_ANSWERS => $this->canViewAnswers($user, $subject),
             self::CAN_SUBMIT_ANSWERS => $this->canSubmitAnswers($subject, $user),
 
             default => false,
@@ -128,9 +128,9 @@ class QuestionnaireVoter extends Voter
     }
 
     /** @param list<string> $roles */
-    private function hasAnyRole(Personnel $user, array $roles): bool
+    private function hasAnyRole(Personnel $user, array $roles, mixed $subject = null): bool
     {
-        return $this->effectivePermissionService->hasAnyPermission($user, $roles);
+        return $this->effectivePermissionService->hasAnyPermission($user, $roles, $subject);
     }
 
     // ========== Questionnaire ==========
@@ -147,7 +147,7 @@ class QuestionnaireVoter extends Voter
                 'ROLE_RESP_PARCOURS',
                 'ROLE_DIRECTEUR_ETUDES',
                 'ROLE_PERMANENT'
-            ]);
+            ], $subject);
         }
 
         // Un étudiant peut voir les questionnaires auxquels il est invité
@@ -155,7 +155,7 @@ class QuestionnaireVoter extends Voter
         return true;
     }
 
-    private function canEditQuestionnaire(Personnel|Etudiant $user): bool
+    private function canEditQuestionnaire(Personnel|Etudiant $user, mixed $subject = null): bool
     {
         return $user instanceof Personnel && $this->hasAnyRole($user, [
             'SUPER_ADMIN',
@@ -163,7 +163,7 @@ class QuestionnaireVoter extends Voter
             'ROLE_CHEF_DEPT',
             'ROLE_QUALITE',
             'ROLE_RESP_PARCOURS'
-        ]);
+        ], $subject);
     }
 
     private function canDeleteQuestionnaire(Personnel|Etudiant $user): bool
@@ -193,14 +193,14 @@ class QuestionnaireVoter extends Voter
         return true;
     }
 
-    private function canEditSection(Personnel|Etudiant $user): bool
+    private function canEditSection(Personnel|Etudiant $user, mixed $subject = null): bool
     {
         return $user instanceof Personnel && $this->hasAnyRole($user, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_QUALITE',
             'ROLE_RESP_PARCOURS'
-        ]);
+        ], $subject);
     }
 
     private function canDeleteSection(Personnel|Etudiant $user): bool
@@ -219,14 +219,14 @@ class QuestionnaireVoter extends Voter
         return true;
     }
 
-    private function canEditQuestion(Personnel|Etudiant $user): bool
+    private function canEditQuestion(Personnel|Etudiant $user, mixed $subject = null): bool
     {
         return $user instanceof Personnel && $this->hasAnyRole($user, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_QUALITE',
             'ROLE_RESP_PARCOURS'
-        ]);
+        ], $subject);
     }
 
     private function canDeleteQuestion(Personnel|Etudiant $user): bool
@@ -276,7 +276,7 @@ class QuestionnaireVoter extends Voter
 
     // ========== Réponses ==========
 
-    private function canViewAnswers(Personnel|Etudiant $user): bool
+    private function canViewAnswers(Personnel|Etudiant $user, mixed $subject = null): bool
     {
         return $user instanceof Personnel && $this->hasAnyRole($user, [
             'SUPER_ADMIN',
@@ -285,7 +285,7 @@ class QuestionnaireVoter extends Voter
             'ROLE_CHEF_DEPT',
             'ROLE_RESP_PARCOURS',
             'ROLE_DIRECTEUR_ETUDES'
-        ]);
+        ], $subject);
     }
 
     private function canSubmitAnswers(mixed $subject, Personnel|Etudiant $user): bool

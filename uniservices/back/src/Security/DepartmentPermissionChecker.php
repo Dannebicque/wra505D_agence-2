@@ -18,6 +18,10 @@ class DepartmentPermissionChecker
 
     public function checkPermission(Personnel|Etudiant $user, StructureDepartement $departement, string $permission): bool
     {
+        if (in_array($permission, ['ROLE_PERSONNEL', 'ROLE_ETUDIANT'], true)) {
+            return false;
+        }
+
         // 1. Super Admins have global access
         if ($user instanceof Personnel) {
             $superAdminInDepartment = $this->departementPersonnelRepository->findOneBy([
@@ -26,10 +30,7 @@ class DepartmentPermissionChecker
             ]);
 
             if ($superAdminInDepartment instanceof StructureDepartementPersonnel) {
-                $resolvedPermissions = $this->resolver->resolve(
-                    $superAdminInDepartment->getPermissions(),
-                    $superAdminInDepartment->getPackages()
-                );
+                $resolvedPermissions = $this->resolver->resolveForDepartment($superAdminInDepartment);
 
                 if (in_array('SUPER_ADMIN', $resolvedPermissions, true)) {
                     return true;
@@ -37,12 +38,8 @@ class DepartmentPermissionChecker
             }
         }
 
-        // 2. Etudiants have a generic role within their active department
+        // Identity is checked by UserTypeVoter; students have no personnel business roles.
         if ($user instanceof Etudiant) {
-            $studentDept = $this->getStudentDepartment($user);
-            if ($studentDept instanceof StructureDepartement && $studentDept->getId() === $departement->getId()) {
-                return $permission === 'ROLE_ETUDIANT';
-            }
             return false;
         }
 
@@ -56,7 +53,7 @@ class DepartmentPermissionChecker
             return false;
         }
 
-        $resolvedPermissions = $this->resolver->resolve($dp->getPermissions(), $dp->getPackages());
+        $resolvedPermissions = $this->resolver->resolveForDepartment($dp);
 
         return in_array($permission, $resolvedPermissions, true);
     }

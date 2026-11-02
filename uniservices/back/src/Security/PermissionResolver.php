@@ -2,6 +2,9 @@
 
 namespace App\Security;
 
+use App\Entity\Structure\StructureDepartementPersonnel;
+use App\Entity\Structure\StructureDiplome;
+
 class PermissionResolver
 {
     public function __construct(
@@ -19,6 +22,14 @@ class PermissionResolver
      */
     public function resolve(array $assignedRoles, array $activePackages): array
     {
+        $activePackages = array_values(array_unique(array_map(
+            static fn (string $package): string => $package === 'stage' ? 'stages' : $package,
+            $activePackages
+        )));
+        // A scoped role must never be granted by a flat role list or inheritance.
+        $assignedRoles = array_values(array_diff($assignedRoles, ['ROLE_RESP_PARCOURS']));
+        $aliases = ['ROLE_NOTE' => 'ROLE_NOTES_MANAGER', 'ROLE_RESP_NOTES' => 'ROLE_NOTES_MANAGER', 'ROLE_STAGE' => 'ROLE_STAGE_MANAGER'];
+        $assignedRoles = array_map(static fn (string $role): string => $aliases[$role] ?? $role, $assignedRoles);
         $allPermissions = $this->registry->getPermissions();
         $resolved = [];
 
@@ -44,7 +55,7 @@ class PermissionResolver
             $definition = $this->registry->getPermissionByRole($currentRole);
             if ($definition instanceof PermissionDefinition) {
                 foreach ($definition->getInheritedRoles() as $inheritedRole) {
-                    if (!isset($resolved[$inheritedRole])) {
+                    if ($inheritedRole !== 'ROLE_RESP_PARCOURS' && !isset($resolved[$inheritedRole])) {
                         $inheritedDef = $this->registry->getPermissionByRole($inheritedRole);
                         if ($inheritedDef instanceof PermissionDefinition && in_array($inheritedDef->getPackage(), $activePackages, true)) {
                             $resolved[$inheritedRole] = true;
@@ -55,6 +66,28 @@ class PermissionResolver
             }
         }
 
+        unset($resolved['ROLE_RESP_PARCOURS']);
         return array_keys($resolved);
     }
+
+    /**
+     * Rôles résolus d'une affectation ; ROLE_RESP_PARCOURS s'y ajoute seulement pour un diplôme
+     * confié au responsable, dans son département.
+     *
+     * @return string[]
+     */
+    public function resolveForDepartment(StructureDepartementPersonnel $assignment, ?StructureDiplome $diplome = null): array
+    {
+        $permissions = $this->resolve($assignment->getPermissions(), $assignment->getPackages());
+        if ($diplome !== null
+            && $assignment->isResponsableParcoursForDiplome($diplome)
+            && in_array('intranet', $assignment->getPackages(), true)
+            && in_array('ROLE_RESP_PARCOURS', $assignment->getPermissions(), true)
+            && $diplome->getDepartement()?->getId() === $assignment->getDepartement()?->getId()
+        ) {
+            $permissions[] = 'ROLE_RESP_PARCOURS';
+        }
+        return $permissions;
+    }
+
 }
