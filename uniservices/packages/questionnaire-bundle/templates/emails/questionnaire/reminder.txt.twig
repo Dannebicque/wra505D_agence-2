@@ -11,6 +11,10 @@ Ceci est un rappel amical concernant l'enquête suivante :
   {{ questionnaire.title }}
   {% if questionnaire.description %}{{ questionnaire.description }}{% endif %}
 
+{% if customMessage is defined and customMessage %}
+{{ customMessage }}
+
+{% endif %}
 Vous n'avez pas encore validé votre réponse. Votre participation est importante pour nous aider à améliorer la qualité de nos formations.
 
 Pour y répondre, cliquez sur le lien ci-dessous :
