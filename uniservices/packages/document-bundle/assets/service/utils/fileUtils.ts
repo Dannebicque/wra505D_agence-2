@@ -24,7 +24,7 @@ export const getFileIconColor = (type: DocumentType): string => {
     image: 'text-purple-500',
     video: 'text-pink-500',
     audio: 'text-yellow-500',
-    text: 'text-gray-500',
+    text: 'text-gray-500 dark:text-gray-400',
     archive: 'text-indigo-500'
   };
   return colors[type];
