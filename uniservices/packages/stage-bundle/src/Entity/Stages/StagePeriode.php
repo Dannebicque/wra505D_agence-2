@@ -8,9 +8,12 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\QueryParameter;
 use App\Entity\Structure\StructureAnneeUniversitaire;
+use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureSemestre;
 use App\Entity\Traits\OldIdTrait;
+use App\Filter\StagePeriodeFilter;
 use StageBundle\Repository\Stages\StagePeriodeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -32,6 +35,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_STAGE_PERIODE')"),
         new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_STAGE_PERIODE')"),
         new Delete(security: "is_granted('CAN_DELETE_STAGE_PERIODE')"),
+    ],
+    parameters: [
+        'departement' => new QueryParameter(filter: StagePeriodeFilter::class),
+        'anneeUniversitaire' => new QueryParameter(filter: StagePeriodeFilter::class),
+        'actif' => new QueryParameter(filter: StagePeriodeFilter::class),
+        'annee' => new QueryParameter(filter: StagePeriodeFilter::class),
+        'semestre' => new QueryParameter(filter: StagePeriodeFilter::class),
     ]
 )]
 class StagePeriode
@@ -320,6 +330,23 @@ class StagePeriode
     {
         return $this->documentsRendre;
     }
+    public function getDocumentRendre(): ?string
+    {
+        return $this->documentsRendre;
+    }
+    public function getModaliteEncadrement(): ?string
+    {
+        return $this->modalitesEncadrement;
+    }
+    /** @return Collection<int, StagePeriodeInterruption> */
+    public function getStagePeriodeInterruptions(): Collection
+    {
+        return $this->periodesInterruption;
+    }
+    public function getNbEcts(): int
+    {
+        return 0;
+    }
     public function setDocumentsRendre(?string $v): static
     {
         $this->documentsRendre = $v;
@@ -391,5 +418,17 @@ class StagePeriode
         if ($this->stageEtudiants->removeElement($v) && $v->getStagePeriode() === $this) {
             $v->setStagePeriode(null);
         } return $this;
+    }
+
+    #[Groups(['stage_periode:read'])]
+    public function getDepartement(): ?StructureDepartement
+    {
+        return $this->semestreProgramme?->getAnnee()?->getDepartement();
+    }
+
+    #[Groups(['stage_periode:read'])]
+    public function getOrdreAnnee(): ?int
+    {
+        return $this->semestreProgramme?->getAnnee()?->getOrdre();
     }
 }
