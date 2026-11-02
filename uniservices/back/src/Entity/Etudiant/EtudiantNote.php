@@ -2,7 +2,7 @@
 
 namespace App\Entity\Etudiant;
 
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -20,7 +20,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: EtudiantNoteRepository::class)]
-#[ApiFilter(EtudiantNoteFilter::class)]
 #[ApiResource(
     operations: [
         // Un étudiant lisait ici les notes de tous les autres, publiées ou non. Il a son propre
@@ -43,6 +42,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
             securityPostDenormalize: "is_granted('CAN_EDIT_NOTES', object)",
             processor: EtudiantNotePersistProcessor::class
         ),
+    ],
+    parameters: [
+        'etudiant' => new QueryParameter(filter: EtudiantNoteFilter::class),
+        'evaluation' => new QueryParameter(filter: EtudiantNoteFilter::class),
     ],
 )]
 class EtudiantNote implements TimestampableInterface

@@ -2,7 +2,7 @@
 
 namespace App\Entity\Scolarite;
 
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -26,7 +26,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ScolEnseignementRepository::class)]
-#[ApiFilter(EnseignementFilter::class)]
 #[ApiResource(
     operations: [
         new Get(normalizationContext: ['groups' => ['enseignement:detail', 'enseignement_ue:read']]),
@@ -38,7 +37,16 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_ENSEIGNEMENT', object)"),
         new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_ENSEIGNEMENT', object)"),
         new Delete(security: "is_granted('CAN_DELETE_ENSEIGNEMENT', object)"),
-    ]
+    ],
+    parameters: [
+        'semestre' => new QueryParameter(filter: EnseignementFilter::class),
+        'personnel' => new QueryParameter(filter: EnseignementFilter::class),
+        'departement' => new QueryParameter(filter: EnseignementFilter::class),
+        'ue' => new QueryParameter(filter: EnseignementFilter::class),
+        'actif' => new QueryParameter(filter: EnseignementFilter::class),
+        'annee' => new QueryParameter(filter: EnseignementFilter::class),
+        'anneeUniversitaire' => new QueryParameter(filter: EnseignementFilter::class),
+    ],
 )]
 class ScolEnseignement
 {

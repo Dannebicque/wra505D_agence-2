@@ -5,6 +5,8 @@ namespace App\Entity\Structure;
 use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
+use App\Filter\AnneeUniversitaireFilter;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -49,7 +51,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
             processor: AnneeUnivInitProcessor::class
         ),
         new Delete(security: "is_granted('CAN_EDIT_ANNEE_UNIV', object)")
-    ]
+    ],
+    parameters: [
+        'since' => new QueryParameter(filter: AnneeUniversitaireFilter::class),
+        'until' => new QueryParameter(filter: AnneeUniversitaireFilter::class)
+    ],
 )]
 class StructureAnneeUniversitaire implements TimestampableInterface
 {

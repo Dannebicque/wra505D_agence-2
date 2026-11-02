@@ -2,14 +2,37 @@
 
 namespace App\Filter;
 
-use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
+use ApiPlatform\Doctrine\Orm\Filter\FilterInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use ApiPlatform\Metadata\BackwardCompatibleFilterDescriptionTrait;
+use ApiPlatform\Metadata\Parameter;
+use App\Utils\LooseValue;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\TypeInfo\TypeIdentifier;
 
-class PnFilter extends AbstractFilter
+class PnFilter implements FilterInterface
 {
+    use BackwardCompatibleFilterDescriptionTrait;
+
+    /**
+     * Appelé une fois par paramètre déclaré sur la ressource (QueryParameter), ou une fois pour
+     * tous les filtres de la requête quand le filtre est déclaré par #[ApiFilter].
+     */
+    public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    {
+        $parameter = $context['parameter'] ?? null;
+        if ($parameter instanceof Parameter) {
+            $property = $parameter->getProperty() ?? $parameter->getKey() ?? '';
+            $this->filterProperty($property, $parameter->getValue(), $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
+
+            return;
+        }
+
+        foreach (LooseValue::row($context['filters'] ?? []) as $property => $value) {
+            $this->filterProperty((string) $property, $value, $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
+        }
+    }
+
     private const FILTERS = [
         'personnel' => 'personnel',
         'anneeUniversitaire' => 'anneeUniversitaire',
@@ -17,6 +40,9 @@ class PnFilter extends AbstractFilter
         'enseignement' => 'enseignement',
         'diplome' => 'diplome',
     ];
+    /**
+     * @param array<string, mixed> $context
+     */
     protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (!in_array($property, self::FILTERS, true) || null === $value) {
@@ -40,23 +66,5 @@ class PnFilter extends AbstractFilter
                 ->setParameter("anneeUniversitaire", $value)
             ;
         }
-    }
-
-    public function getDescription(string $resourceClass): array
-    {
-        return [
-            'diplome' => [
-                'property' => 'diplome',
-                'type' => TypeIdentifier::INT->value,
-                'required' => false,
-                'description' => 'Filter by diplôme',
-            ],
-            'anneeUniversitaire' => [
-                'property' => 'anneeUniversitaire',
-                'type' => TypeIdentifier::INT->value,
-                'required' => false,
-                'description' => 'Filter by année universitaire',
-            ],
-        ];
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Entity\Structure;
 
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -25,9 +25,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(normalizationContext: ['groups' => ['pn:detail']]),
         new GetCollection(normalizationContext: ['groups' => ['pn:detail']]),
         new Delete(),
-    ]
+    ],
+    parameters: [
+        'diplome' => new QueryParameter(filter: PnFilter::class),
+        'anneeUniversitaire' => new QueryParameter(filter: PnFilter::class),
+    ],
 )]
-#[ApiFilter(PnFilter::class)]
 class StructurePn
 {
     #[ORM\Id]

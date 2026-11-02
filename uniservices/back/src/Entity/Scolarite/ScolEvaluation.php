@@ -2,7 +2,7 @@
 
 namespace App\Entity\Scolarite;
 
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -25,7 +25,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ScolEvaluationRepository::class)]
-#[ApiFilter(EvaluationFilter::class)]
 #[ApiResource(
     paginationEnabled: false,
     operations: [
@@ -40,7 +39,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['evaluation:mini', 'evaluation:init']],
         ),
         new Patch(normalizationContext: ['groups' => ['evaluation:write']], securityPostDenormalize: "is_granted('CAN_EDIT_EVAL', object)", processor: ScolEvaluationInitProcessor::class),
-    ]
+    ],
+    parameters: [
+        'enseignement' => new QueryParameter(filter: EvaluationFilter::class),
+        'anneeUniversitaire' => new QueryParameter(filter: EvaluationFilter::class),
+    ],
 )]
 class ScolEvaluation
 {

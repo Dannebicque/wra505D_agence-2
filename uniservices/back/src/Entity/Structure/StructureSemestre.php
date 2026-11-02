@@ -2,8 +2,7 @@
 
 namespace App\Entity\Structure;
 
-use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -28,8 +27,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: StructureSemestreRepository::class)]
-#[ApiFilter(BooleanFilter::class, properties: ['actif'])]
-#[ApiFilter(SemestreFilter::class)]
 #[ApiResource(
     operations: [
         new Get(normalizationContext: ['groups' => ['semestre:detail']]),
@@ -69,7 +66,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_SEMESTRE', object)"),
         new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_SEMESTRE', object)"),
         new Delete(security: "is_granted('CAN_DELETE_SEMESTRE', object)")
-    ]
+    ],
+    parameters: [
+        'departement' => new QueryParameter(filter: SemestreFilter::class),
+        'diplome' => new QueryParameter(filter: SemestreFilter::class),
+        'annee' => new QueryParameter(filter: SemestreFilter::class),
+        'actif' => new QueryParameter(filter: SemestreFilter::class),
+    ],
 )]
 class StructureSemestre implements TimestampableInterface
 {

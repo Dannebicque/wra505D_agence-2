@@ -2,18 +2,41 @@
 
 namespace App\Filter;
 
-use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
+use ApiPlatform\Doctrine\Orm\Filter\FilterInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\BackwardCompatibleFilterDescriptionTrait;
+use ApiPlatform\Metadata\Parameter;
+use App\Utils\LooseValue;
 use ApiPlatform\Metadata\Operation;
 use App\Entity\Structure\StructureAnnee;
-use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Component\TypeInfo\TypeIdentifier;
 
-#[ApiFilter(EdtFilter::class)]
-class EdtFilter extends AbstractFilter
+class EdtFilter implements FilterInterface
 {
+    use BackwardCompatibleFilterDescriptionTrait;
+
+    /**
+     * Appelé une fois par paramètre déclaré sur la ressource (QueryParameter), ou une fois pour
+     * tous les filtres de la requête quand le filtre est déclaré par #[ApiFilter].
+     */
+    public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
+    {
+        $parameter = $context['parameter'] ?? null;
+        if ($parameter instanceof Parameter) {
+            $property = $parameter->getProperty() ?? $parameter->getKey() ?? '';
+            $this->filterProperty($property, $parameter->getValue(), $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
+
+            return;
+        }
+
+        foreach (LooseValue::row($context['filters'] ?? []) as $property => $value) {
+            $this->filterProperty((string) $property, $value, $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
     protected function filterProperty(
         string $property,
         mixed $value,
@@ -64,7 +87,7 @@ class EdtFilter extends AbstractFilter
 
         if ('semestre' === $property) {
             $queryBuilder
-                ->andWhere('semestre.id = :semestre')
+                ->andWhere(sprintf('%s.semestre = :semestre', $alias))
                 ->setParameter('semestre', $value);
         }
 
@@ -130,75 +153,4 @@ class EdtFilter extends AbstractFilter
 
     }
 
-    public function getDescription(string $resourceClass): array
-    {
-        return [
-            'anneeUniversitaire' => [
-                'property' => 'anneeUniversitaire',
-                'type' => TypeIdentifier::INT->value,
-                'required' => false,
-                'description' => 'Filter by année universitaire',
-            ],
-            'semaineFormation' => [
-                'property' => 'semaineFormation',
-                'type' => TypeIdentifier::INT->value,
-                'required' => false,
-                'description' => 'Filter by semaine de formation',
-            ],
-            'personnel' => [
-                'property' => 'personnel',
-                'type' => TypeIdentifier::INT->value,
-                'required' => false,
-                'description' => 'Filter by personnel',
-            ],
-            'departement' => [
-                'property' => 'departement',
-                'type' => TypeIdentifier::INT->value,
-                'required' => false,
-                'description' => 'Filter by department',
-            ],
-            'semestre' => [
-                'property' => 'semestre',
-                'type' => TypeIdentifier::INT->value,
-                'required' => false,
-                'description' => 'Filter by semester',
-            ],
-            'day' => [
-                'property' => 'day',
-                'type' => TypeIdentifier::STRING->value,
-                'required' => false,
-                'description' => 'Filter events to only include events on the specified date (format: YYYY-MM-DD)',
-            ],
-            'debut' => [
-                'property' => 'debut',
-                'type' => TypeIdentifier::STRING->value,
-                'required' => false,
-                'description' => 'Filter events to only include events starting from the specified date (format: YYYY-MM-DD)',
-            ],
-            'fin' => [
-                'property' => 'fin',
-                'type' => TypeIdentifier::STRING->value,
-                'required' => false,
-                'description' => 'Filter events to only include events ending before the specified date (format: YYYY-MM-DD)',
-            ],
-            'enseignement' => [
-                'property' => 'enseignement',
-                'type' => TypeIdentifier::INT->value,
-                'required' => false,
-                'description' => 'Filter by enseignement',
-            ],
-            'salle' => [
-                'property' => 'salle',
-                'type' => TypeIdentifier::STRING->value,
-                'required' => false,
-                'description' => 'Filter by salle (partial match)',
-            ],
-            'annee' => [
-                'property' => 'annee',
-                'type' => TypeIdentifier::INT->value,
-                'required' => false,
-                'description' => 'Filter by annee',
-            ]
-        ];
-    }
 }

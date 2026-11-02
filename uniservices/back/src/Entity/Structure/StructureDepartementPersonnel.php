@@ -2,7 +2,7 @@
 
 namespace App\Entity\Structure;
 
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -10,7 +10,6 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Entity\Users\Personnel;
 use App\Entity\Traits\OldIdTrait;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
@@ -19,11 +18,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: StructureDepartementPersonnelRepository::class)]
-#[ApiFilter(DepartementPersonnelFilter::class, SearchFilter::class, properties: [
-    'personnel.nom' => 'partial',
-    'personnel.prenom' => 'partial',
-    'departement.libelle' => 'partial'
-])]
 #[ApiResource(
     operations: [
         new Get(normalizationContext: ['groups' => ['departement_personnel:read']]),
@@ -53,7 +47,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
         new Delete()
     ],
-    order: ['personnel.nom', 'departement.libelle']
+    order: ['personnel.nom', 'departement.libelle'],
+    parameters: [
+        'departement' => new QueryParameter(filter: DepartementPersonnelFilter::class),
+        'personnel' => new QueryParameter(filter: DepartementPersonnelFilter::class),
+    ],
 )]
 class StructureDepartementPersonnel
 {

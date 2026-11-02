@@ -2,8 +2,7 @@
 
 namespace App\Entity\Etudiant;
 
-use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -52,9 +51,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
 
     ],
+    parameters: [
+        'actif' => new QueryParameter(filter: EtudiantScolariteFilter::class),
+        'departement' => new QueryParameter(filter: EtudiantScolariteFilter::class),
+        'anneeUniversitaire' => new QueryParameter(filter: EtudiantScolariteFilter::class),
+        'etudiant' => new QueryParameter(filter: EtudiantScolariteFilter::class),
+        'annee' => new QueryParameter(filter: EtudiantScolariteFilter::class),
+    ],
 )]
-#[ApiFilter(BooleanFilter::class, properties: ['actif'])]
-#[ApiFilter(EtudiantScolariteFilter::class)]
 class EtudiantScolarite
 {
     use UuidTrait;

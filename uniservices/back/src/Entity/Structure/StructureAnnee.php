@@ -2,8 +2,7 @@
 
 namespace App\Entity\Structure;
 
-use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -34,10 +33,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
             provider: EtudiantAnneesStatsProvider::class,
         ),
         new Delete(),
-    ]
+    ],
+    parameters: [
+        'departement' => new QueryParameter(filter: AnneeFilter::class),
+        'pn' => new QueryParameter(filter: AnneeFilter::class),
+        'anneeUniversitaire' => new QueryParameter(filter: AnneeFilter::class),
+        'diplome' => new QueryParameter(filter: AnneeFilter::class),
+        'actif' => new QueryParameter(filter: AnneeFilter::class),
+    ],
 )]
-#[ApiFilter(AnneeFilter::class)]
-#[ApiFilter(BooleanFilter::class, properties: ['actif'])]
 class StructureAnnee implements TimestampableInterface
 {
     use TimestampableTrait;
