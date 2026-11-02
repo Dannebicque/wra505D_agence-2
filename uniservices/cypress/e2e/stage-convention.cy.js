@@ -11,7 +11,7 @@ describe('Demande de convention de stage', () => {
         cy.visit('/app/stage/demande');
         cy.contains('h1', 'Demande de Convention de Stage', { timeout: 15000 });
         cy.get('ol[aria-label="Étapes de la demande"] li').should('have.length', 4);
-        cy.get('[aria-current="step"]').should('contain', 'Profil & Assurances');
+        cy.get('[aria-current="step"]').should('contain', 'Profil & Sécurité sociale');
     });
 
     it('explique ce qui manque au lieu de bloquer le bouton Suivant', () => {
@@ -21,7 +21,7 @@ describe('Demande de convention de stage', () => {
             .focus();
         cy.press(Cypress.Keyboard.Keys.SPACE);
 
-        cy.contains('Veuillez sélectionner une période de stage.');
-        cy.get('[aria-current="step"]').should('contain', 'Profil & Assurances');
+        cy.contains('Période de stage : Sélectionnez une période');
+        cy.get('[aria-current="step"]').should('contain', 'Profil & Sécurité sociale');
     });
 });
