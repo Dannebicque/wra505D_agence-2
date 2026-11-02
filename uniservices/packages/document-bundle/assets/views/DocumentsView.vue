@@ -31,8 +31,8 @@
       <!-- Loading State with Shared Skeletons -->
       <div v-if="loading" class="flex-1 overflow-y-auto p-4 space-y-4">
         <div class="flex justify-between items-center mb-6">
-          <div class="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
-          <div class="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
+          <div class="h-8 w-48 bg-(--p-content-hover-background) rounded animate-pulse"></div>
+          <div class="h-8 w-32 bg-(--p-content-hover-background) rounded animate-pulse"></div>
         </div>
         <div v-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <CardSkeleton v-for="i in 8" :key="i" />

@@ -30,20 +30,20 @@
       <div class="flex items-center space-x-3">
         <i :class="[getFileIcon(document?.type || 'pdf'), 'text-2xl']" aria-hidden="true"></i>
         <div class="min-w-0">
-          <h3 class="text-lg! leading-snug! m-0! font-bold text-gray-900 break-words">{{ document?.title }}</h3>
-          <p class="text-xs text-gray-600">{{ getFileExtension(document?.type || 'pdf') }}</p>
+          <h3 class="text-lg! leading-snug! m-0! font-bold text-color break-words">{{ document?.title }}</h3>
+          <p class="text-xs text-muted-color">{{ getFileExtension(document?.type || 'pdf') }}</p>
         </div>
       </div>
     </template>
 
     <div v-if="document" class="space-y-6 pt-4">
       <!-- File Preview Box -->
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+      <div class="bg-(--p-content-hover-background) border border-surface rounded-lg p-6 text-center">
         <div :class="['mb-2', getFileIconColor(document.type)]">
           <i :class="[getFileIcon(document.type), 'text-5xl']" aria-hidden="true"></i>
         </div>
-        <p class="font-semibold text-gray-800 text-sm break-words">{{ document.title }}</p>
-        <p class="text-xs text-gray-600 mt-1">{{ formatFileSize(document.size) }}</p>
+        <p class="font-semibold text-color text-sm break-words">{{ document.title }}</p>
+        <p class="text-xs text-muted-color mt-1">{{ formatFileSize(document.size) }}</p>
       </div>
 
       <!-- Quick Actions -->
@@ -59,7 +59,7 @@
 
         <button
           @click="$emit('download', document)"
-          class="flex-1 min-h-[44px] bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm"
+          class="flex-1 min-h-[44px] bg-primary hover:bg-primary-emphasis text-primary-contrast font-medium py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm"
         >
           <i class="pi pi-download" aria-hidden="true"></i>
           <span>Télécharger</span>
@@ -70,8 +70,8 @@
           :class="[
             'min-w-[44px] min-h-[44px] px-3 py-2 border rounded-lg text-sm transition-colors flex items-center justify-center',
             document.isFavorite
-              ? 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              ? 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-700 dark:hover:bg-yellow-900'
+              : 'bg-(--p-content-background) text-color border-(--p-ui-border-color) hover:bg-emphasis'
           ]"
           :title="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
           :aria-label="document.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
@@ -87,56 +87,56 @@
       </div>
 
       <!-- Metadata List -->
-      <div class="space-y-3 pt-2 text-sm border-t border-gray-100">
-        <h4 class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Informations</h4>
+      <div class="space-y-3 pt-2 text-sm border-t border-surface">
+        <h4 class="text-xs font-semibold text-muted-color uppercase tracking-wider">Informations</h4>
 
-        <div class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-600">Auteur</span>
-          <span class="font-medium text-gray-800">{{ document.author }}</span>
+        <div class="flex justify-between py-1 border-b border-surface">
+          <span class="text-muted-color">Auteur</span>
+          <span class="font-medium text-color">{{ document.author }}</span>
         </div>
 
-        <div class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-600">Dernière modification</span>
-          <span class="font-medium text-gray-800">{{ formatDate(document.lastModified) }}</span>
+        <div class="flex justify-between py-1 border-b border-surface">
+          <span class="text-muted-color">Dernière modification</span>
+          <span class="font-medium text-color">{{ formatDate(document.lastModified) }}</span>
         </div>
 
-        <div class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-600">Version</span>
-          <span class="font-medium text-gray-800">{{ document.version }}</span>
+        <div class="flex justify-between py-1 border-b border-surface">
+          <span class="text-muted-color">Version</span>
+          <span class="font-medium text-color">{{ document.version }}</span>
         </div>
 
-        <div class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-600">Taille</span>
-          <span class="font-medium text-gray-800">{{ formatFileSize(document.size) }}</span>
+        <div class="flex justify-between py-1 border-b border-surface">
+          <span class="text-muted-color">Taille</span>
+          <span class="font-medium text-color">{{ formatFileSize(document.size) }}</span>
         </div>
 
-        <div v-if="document.enseignement" class="flex justify-between gap-4 py-1 border-b border-gray-50">
-          <span class="text-gray-600">{{ document.enseignement.type === 'sae' ? 'SAÉ' : 'Matière' }}</span>
-          <span class="font-medium text-gray-800 text-right">{{ libelleEnseignement(document.enseignement) }}</span>
+        <div v-if="document.enseignement" class="flex justify-between gap-4 py-1 border-b border-surface">
+          <span class="text-muted-color">{{ document.enseignement.type === 'sae' ? 'SAÉ' : 'Matière' }}</span>
+          <span class="font-medium text-color text-right">{{ libelleEnseignement(document.enseignement) }}</span>
         </div>
 
-        <div v-if="categoryName" class="flex justify-between py-1 border-b border-gray-50">
-          <span class="text-gray-600">Catégorie</span>
-          <span class="font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded text-xs">{{ categoryName }}</span>
+        <div v-if="categoryName" class="flex justify-between py-1 border-b border-surface">
+          <span class="text-muted-color">Catégorie</span>
+          <span class="font-medium bg-highlight px-2 py-0.5 rounded text-xs">{{ categoryName }}</span>
         </div>
       </div>
 
       <!-- Description -->
-      <div v-if="document.description" class="pt-2 border-t border-gray-100">
-        <h4 class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Description</h4>
-        <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-200">
+      <div v-if="document.description" class="pt-2 border-t border-surface">
+        <h4 class="text-xs font-semibold text-muted-color uppercase tracking-wider mb-2">Description</h4>
+        <p class="text-sm text-color bg-(--p-content-hover-background) p-3 rounded-lg border border-surface">
           {{ document.description }}
         </p>
       </div>
 
       <!-- Tags -->
-      <div v-if="document.tags.length > 0" class="pt-2 border-t border-gray-100">
-        <h4 class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Étiquettes</h4>
+      <div v-if="document.tags.length > 0" class="pt-2 border-t border-surface">
+        <h4 class="text-xs font-semibold text-muted-color uppercase tracking-wider mb-2">Étiquettes</h4>
         <div class="flex flex-wrap gap-1.5">
           <span
             v-for="tag in document.tags"
             :key="tag"
-            class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200"
+            class="px-2.5 py-1 rounded-full text-xs font-medium bg-(--p-content-hover-background) text-color border border-surface"
           >
             #{{ tag }}
           </span>
