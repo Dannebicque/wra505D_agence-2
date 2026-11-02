@@ -12,6 +12,7 @@ services:
       APP_DEBUG: "1"
       DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}?serverVersion=10.8-MariaDB&charset=utf8mb4"
       MAILER_DSN: "smtp://maildev:1025"
+      GOTENBERG_DSN: "http://gotenberg:3000"
     depends_on:
       db:
         condition: service_healthy
@@ -87,6 +88,17 @@ services:
     restart: unless-stopped
     ports:
       - "${MAILDEV_PORT}:1080"
+    networks:
+      - uniservices_net
+
+  # Conversion HTML vers PDF (exports, conventions de stage). Port 3000 dans le réseau Docker,
+  # GOTENBERG_PORT depuis l'hôte : le 3000 de l'hôte est pris par Vite.
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: uniservices-gotenberg
+    restart: unless-stopped
+    ports:
+      - "${GOTENBERG_PORT}:3000"
     networks:
       - uniservices_net
 
