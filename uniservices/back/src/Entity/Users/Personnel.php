@@ -2,9 +2,9 @@
 
 namespace App\Entity\Users;
 
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -40,8 +40,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PersonnelRepository::class)]
-#[ApiFilter(PersonnelFilter::class, SearchFilter::class, properties: ['structureServices' => 'exact'])]
-#[ApiFilter(OrderFilter::class, properties: ['nom', 'prenom', 'mailUniv'])]
+#[ApiFilter(OrderFilter::class, properties: ['nom', 'prenom', 'mailUniv', 'username', 'numeroHarpege'])]
 #[ApiResource(
     operations: [
         new Get(normalizationContext: ['groups' => ['personnel:detail']]),
@@ -65,6 +64,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Delete(security: "is_granted('CAN_DELETE_PERSONNEL', object)"),
     ],
     order: ['nom' => 'ASC'],
+    parameters: [
+        'departement' => new QueryParameter(filter: PersonnelFilter::class),
+        'enseignement' => new QueryParameter(filter: PersonnelFilter::class),
+        'enseignant' => new QueryParameter(filter: PersonnelFilter::class),
+        'biatss' => new QueryParameter(filter: PersonnelFilter::class),
+        'username' => new QueryParameter(filter: PersonnelFilter::class),
+        'numeroHarpege' => new QueryParameter(filter: PersonnelFilter::class),
+    ],
 )]
 class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, TimestampableInterface
 {
