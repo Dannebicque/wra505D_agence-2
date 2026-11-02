@@ -560,7 +560,7 @@ généré.
 | E26.1 · en revue | filtres API Platform : 19 filtres et 19 ressources de `back/src` en `QueryParameter`, filtres natifs gardés en `#[ApiFilter]` | `cc4590889`, `c3baa69db` |
 | E26.2 · en revue | droits : responsable de parcours limité aux diplômes de son affectation, rôles résolus par diplôme, `ROLE_PERSONNEL` et `ROLE_ETUDIANT` vérifiés comme types d'utilisateur, simulation de plusieurs rôles ; écran d'accès du personnel avec `ApplicationBadge` sans couleur par module | `ac4950fd9`, rôles de `7775e5908` |
 | E26.3 · en revue | étudiants : import CSV et ZIP, intégration en scolarité, synchronisation des groupes, profil ; nos contrôles E22 et E23 conservés | `a5cacfb08`, `5940864b0`, `b5bb65022`, `adb985cd7`, `4ee69bb15`, `df85c098e` |
-| E26.4 | exports PDF, Excel, CSV et trombinoscope du personnel, routes réservées au personnel du département | `2e37857a0`, `9520dbcd4`, `55a53493a`, `1f76d0b41` |
+| E26.4 · en revue | exports PDF, Excel, CSV et trombinoscope du personnel, routes réservées au personnel du département | `2e37857a0`, `9520dbcd4`, `55a53493a`, `1f76d0b41` |
 | E26.5 | stage : convention générée, saisie de l'étudiant, partie enseignant, filtres des périodes ; notre `StageVoter` (E24) conservé et appliqué au PDF et aux avenants | `62fb937a5`, `2b9433565`, `a13210c97`, `c973bdd55` |
 | E26.6 | questionnaire : exports, lien accessible, relances et historique, département ; routes réservées au personnel | `eb54915d9`, `f4d7dcf1e`, `159a2404e`, `8e4522f31` |
 | E26.7 | sous-commission classique et APC, réservée au personnel du département | `5b39f062f`, `357499ef6` |
@@ -585,6 +585,13 @@ généré.
   applications par défaut d'un étudiant importé restent `UniTranet` jusqu'au renommage d'E26.11,
   qui reprend aussi la retouche du portail de `b5bb65022`. `4ee69bb15` et `df85c098e` ne touchent
   que le workflow de release du client, que nous n'avons pas.
+- Exports (E26.4) : les listings, trombinoscopes et exports personnalisés, ouverts sans connexion
+  chez le client, passent par `SemestreListingVoter` : personnel affecté au département du
+  semestre, ou super-administrateur. Un groupe demandé hors du semestre n'est pas exporté. Les
+  documents générés ne peuvent pas lire le thème PrimeVue : leurs couleurs viennent de la variable
+  Twig `document_palette` (`config/packages/twig.yaml`), copie des jetons de la DA, et l'en-tête et
+  le pied de page dupliqués du client sont retirés au profit de ceux de `templates/pdf`. Le widget
+  des listings rejoint le tableau de bord du personnel ; le styleguide de `1f76d0b41` part en E26.11.
 - Messagerie (E26.13) : on reprend la vraie messagerie du client. La source « messages » du
   centre de notifications lit ses messages. Les copies des e-mails envoyés restent dans le fil.
 
