@@ -6,7 +6,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             font-size: 7.5pt;
-            color: #64748b;
+            color: {{ document_palette.muted }};
             margin: 0;
             padding: 0 10mm;
             width: 100%;
@@ -17,7 +17,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid #cbd5e1;
+            border-top: 1px solid {{ document_palette.border }};
             padding-top: 4px;
             width: 100%;
         }
@@ -25,33 +25,33 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            color: #64748b;
+            color: {{ document_palette.muted }};
         }
         .badge-auto {
             font-size: 6pt;
             text-transform: uppercase;
             letter-spacing: 0.6px;
-            background: #f1f5f9;
-            color: #475569;
+            background: {{ document_palette.background }};
+            color: {{ document_palette.muted }};
             padding: 1px 4px;
             border-radius: 3px;
             font-weight: 700;
-            border: 1px solid #cbd5e1;
+            border: 1px solid {{ document_palette.border }};
             display: inline-block;
         }
         .footer-mention {
             font-weight: 500;
         }
         .footer-meta {
-            color: #94a3b8;
+            color: {{ document_palette.muted }};
         }
         .sep {
-            color: #cbd5e1;
+            color: {{ document_palette.border }};
             margin: 0 2px;
         }
         .footer-right {
             font-size: 7.5pt;
-            color: #334155;
+            color: {{ document_palette.text }};
             font-weight: 600;
             text-align: right;
             white-space: nowrap;

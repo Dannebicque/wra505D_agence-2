@@ -16,6 +16,7 @@ class IntranetDashboardDefinition implements DashboardDefinitionInterface
     {
         return [
             new DashboardWidgetLayout('intranet.emploi_du_temps', 0, colSpan: 2, rowSpan: 1),
+            new DashboardWidgetLayout('intranet.listings_etudiants', 1, colSpan: 2, rowSpan: 2),
             new DashboardWidgetLayout('intranet.actions_urgentes', 2, colSpan: 1, rowSpan: 2),
         ];
     }
@@ -24,7 +25,8 @@ class IntranetDashboardDefinition implements DashboardDefinitionInterface
     {
         return [
             new DashboardWidgetLayout('intranet.emploi_du_temps', 0, colSpan: 2, rowSpan: 1),
-            new DashboardWidgetLayout('intranet.actions_urgentes', 1, colSpan: 1, rowSpan: 2),
+            new DashboardWidgetLayout('intranet.listings_etudiants', 1, colSpan: 2, rowSpan: 2),
+            new DashboardWidgetLayout('intranet.actions_urgentes', 2, colSpan: 1, rowSpan: 2),
         ];
     }
 }

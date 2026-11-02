@@ -11,10 +11,10 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 10px;
     line-height: 1.4;
-    color: #1e293b;
+    color: {{ document_palette.text }};
     margin: 0;
     padding: 0;
-    background: #ffffff;
+    background: {{ document_palette.surface }};
     -webkit-font-smoothing: antialiased;
 }
 
@@ -40,7 +40,7 @@ tr,
 
 /* --- TYPOGRAPHIE --- */
 h1, h2, h3, h4, h5, h6 {
-    color: #0f172a;
+    color: {{ document_palette.text }};
     margin-top: 0;
     font-weight: 700;
 }
@@ -49,15 +49,15 @@ h1 { font-size: 16px; margin-bottom: 4px; }
 h2 { font-size: 14px; margin-bottom: 4px; }
 h3 { font-size: 12px; margin-bottom: 3px; }
 
-.text-muted { color: #64748b; }
-.text-subtle { color: #94a3b8; }
+.text-muted { color: {{ document_palette.muted }}; }
+.text-subtle { color: {{ document_palette.muted }}; }
 .text-bold { font-weight: 700; }
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 .text-left { text-align: left; }
 
 .sep {
-    color: #cbd5e1;
+    color: {{ document_palette.border }};
     margin: 0 4px;
 }
 
@@ -70,26 +70,26 @@ h3 { font-size: 12px; margin-bottom: 3px; }
 }
 
 .pdf-table th {
-    background-color: #f1f5f9;
-    color: #334155;
+    background-color: {{ document_palette.background }};
+    color: {{ document_palette.text }};
     font-weight: 700;
     font-size: 8.5px;
     text-transform: uppercase;
     letter-spacing: 0.4px;
     padding: 6px 8px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid {{ document_palette.border }};
     vertical-align: middle;
 }
 
 .pdf-table td {
     padding: 5px 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid {{ document_palette.border }};
     vertical-align: middle;
-    color: #1e293b;
+    color: {{ document_palette.text }};
 }
 
 .pdf-table tbody tr:nth-child(even) {
-    background-color: #f8fafc;
+    background-color: {{ document_palette.background }};
 }
 
 .pdf-table-compact th {
@@ -114,26 +114,26 @@ h3 { font-size: 12px; margin-bottom: 3px; }
     line-height: 1.2;
 }
 
-.badge-primary { background: #0284c7; color: #ffffff; }
-.badge-secondary { background: #e2e8f0; color: #334155; }
-.badge-purple { background: #7c3aed; color: #ffffff; }
-.badge-success { background: #16a34a; color: #ffffff; }
-.badge-warning { background: #ea580c; color: #ffffff; }
+.badge-primary { background: {{ document_palette.primary }}; color: {{ document_palette.on_primary }}; }
+.badge-secondary { background: {{ document_palette.border }}; color: {{ document_palette.text }}; }
+.badge-purple { background: {{ document_palette.primary }}; color: {{ document_palette.on_primary }}; }
+.badge-success { background: {{ document_palette.success }}; color: {{ document_palette.on_success }}; }
+.badge-warning { background: {{ document_palette.accent }}; color: {{ document_palette.on_accent }}; }
 .badge-auto {
     font-size: 6.5pt;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    background: #f1f5f9;
-    color: #475569;
+    background: {{ document_palette.background }};
+    color: {{ document_palette.muted }};
     padding: 1px 4px;
     border-radius: 3px;
     font-weight: 700;
-    border: 1px solid #cbd5e1;
+    border: 1px solid {{ document_palette.border }};
 }
 
 /* --- BLOCS & BANDEAUX D'EN-TÊTE DE PAGE --- */
 .page-header-box {
-    border-bottom: 2px solid #0284c7;
+    border-bottom: 2px solid {{ document_palette.primary }};
     padding-bottom: 6px;
     margin-bottom: 10px;
     display: flex;
@@ -141,8 +141,8 @@ h3 { font-size: 12px; margin-bottom: 3px; }
     align-items: flex-end;
 }
 
-.page-header-box.purple { border-bottom-color: #7c3aed; }
-.page-header-box.slate { border-bottom-color: #475569; }
+.page-header-box.purple { border-bottom-color: {{ document_palette.primary }}; }
+.page-header-box.slate { border-bottom-color: {{ document_palette.muted }}; }
 
 /* --- GRILLES (TROMBINOSCOPES, CARTES) --- */
 .pdf-grid-4 {
@@ -158,10 +158,10 @@ h3 { font-size: 12px; margin-bottom: 3px; }
 }
 
 .pdf-card {
-    border: 1px solid #cbd5e1;
+    border: 1px solid {{ document_palette.border }};
     border-radius: 6px;
     padding: 8px;
-    background: #ffffff;
+    background: {{ document_palette.surface }};
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
@@ -169,16 +169,16 @@ h3 { font-size: 12px; margin-bottom: 3px; }
 .checkbox-cell {
     width: 26px;
     height: 22px;
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
+    border: 1px solid {{ document_palette.border }};
+    background: {{ document_palette.surface }};
 }
 
 .signature-box {
     display: inline-block;
     width: 140px;
     height: 40px;
-    border: 1px dashed #94a3b8;
-    background: #fafafa;
+    border: 1px dashed {{ document_palette.muted }};
+    background: {{ document_palette.background }};
     border-radius: 4px;
     vertical-align: middle;
 }
