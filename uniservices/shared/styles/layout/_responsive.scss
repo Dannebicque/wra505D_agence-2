@@ -117,9 +117,16 @@
                     transition: transform var(--logo-nom-duree) ease-out calc(var(--rang) * var(--logo-nom-pas));
                 }
 
+                .layout-topbar-logo-texte {
+                    transition:
+                        opacity var(--layout-section-transition-duration) ease-out,
+                        visibility var(--layout-section-transition-duration);
+                }
+
                 @media (prefers-reduced-motion: reduce) {
                     .logo-nom-trait,
-                    .logo-nom-point {
+                    .logo-nom-point,
+                    .layout-topbar-logo-texte {
                         transition: none;
                     }
                 }
@@ -135,6 +142,11 @@
                 .logo-nom-point {
                     transform: scale(0);
                     transition-delay: calc((var(--formes) - var(--rang)) * var(--logo-nom-pas));
+                }
+
+                .layout-topbar-logo-texte {
+                    opacity: 0;
+                    visibility: hidden;
                 }
             }
 
