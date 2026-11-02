@@ -4,6 +4,7 @@
     position="right"
     class="w-full! md:w-(--largeur-panneau)! p-sidebar-md"
     :style="{ '--largeur-panneau': `min(${largeur}px, 100vw - 320px)` }"
+    :pt="{ header: { class: 'p-6!' }, content: { class: 'px-6! pb-6!' } }"
     @update:visible="$emit('update:visible', $event)"
   >
     <template #header>
