@@ -21,4 +21,5 @@ return [
     QuestionnaireBundle\QuestionnaireBundle::class => ['all' => true],
     StageBundle\StageBundle::class => ['all' => true],
     DocumentBundle\DocumentBundle::class => ['all' => true],
+    Sensiolabs\GotenbergBundle\SensiolabsGotenbergBundle::class => ['all' => true],
 ];

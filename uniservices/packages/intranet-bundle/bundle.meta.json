@@ -1,6 +1,6 @@
 {
-  "name": "UniTranet",
-  "description": "Gestion de la structure des formations et des étudiants.",
+  "name": "Intranet",
+  "description": "Gestion des formations et étudiants.",
   "urlSlug": "intranet",
   "url": "http://localhost:3001/intranet/"
 }

@@ -51,6 +51,7 @@ WEB_PORT=8080
 DB_PORT=3307
 PHPMYADMIN_PORT=8081
 MAILDEV_PORT=1080
+GOTENBERG_PORT=3010
 VITE_BASE_URL="http://127.0.0.1:8000"
 VITE_API_URL="http://127.0.0.1:8000"
 ```
@@ -60,12 +61,13 @@ et `uniservices/back/.env.local` :
 ```bash
 DATABASE_URL="mysql://uniservices:uniservices@127.0.0.1:3307/uniservices?serverVersion=10.8.0-MariaDB&charset=utf8mb4"
 MAILER_DSN=smtp://127.0.0.1:1025
+GOTENBERG_DSN=http://127.0.0.1:3010
 ```
 
 Ces deux fichiers ne sont pas versionnés, chacun les crée chez soi. Puis :
 
 ```bash
-docker compose -f docker/docker-compose.yml --env-file .env.local up -d db maildev && pnpm install
+docker compose -f docker/docker-compose.yml --env-file .env.local up -d db maildev gotenberg && pnpm install
 cd back && composer install && php bin/console lexik:jwt:generate-keypair --skip-if-exists && php bin/console doctrine:schema:create && php bin/console doctrine:fixtures:load --no-interaction
 ```
 

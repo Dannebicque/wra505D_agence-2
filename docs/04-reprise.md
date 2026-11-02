@@ -42,7 +42,7 @@ La procédure complète est dans le `README.md`. En résumé, depuis `uniservice
 
 | Service | Commande | Adresse |
 |---|---|---|
-| Base et mail | `docker compose -f docker/docker-compose.yml --env-file .env.local up -d db maildev` | MariaDB sur 3307, maildev sur 1080 |
+| Base, mail et PDF | `docker compose -f docker/docker-compose.yml --env-file .env.local up -d db maildev gotenberg` | MariaDB sur 3307, maildev sur 1080, Gotenberg sur 3010 |
 | API | `cd back && symfony server:start -d --port=8000` | <http://127.0.0.1:8000/api> |
 | Front | `pnpm run dev` | <http://localhost:3000/app/> |
 

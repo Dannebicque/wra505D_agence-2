@@ -162,6 +162,9 @@
             "bin/phpunit"
         ]
     },
+    "sensiolabs/gotenberg-bundle": {
+        "version": "v1.4.0"
+    },
     "symfony/console": {
         "version": "7.1",
         "recipe": {

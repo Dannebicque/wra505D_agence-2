@@ -1,6 +1,6 @@
 {
     "name": "Questionnaires",
-    "description": "Enquêtes et questionnaires",
+    "description": "Création et gestion des questionnaires",
     "urlSlug": "questionnaire",
     "url": "http://localhost:3005/questionnaire/"
 }
