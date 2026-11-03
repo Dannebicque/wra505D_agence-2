@@ -182,15 +182,15 @@ class StructureDiplome implements TimestampableInterface
     #[Groups(['diplome:detail'])]
     private Collection $enseignantHrs;
 
-    /**@deprecated */
-    //todo: utiliser le lien diplome->pn->anneeUniversitaire
     /**
+     * Côté propriétaire que le client a retiré tout en gardant `StructureAnneeUniversitaire::$legacyDiplomes` :
+     * sans lui, le mapping est invalide et la table de jointure historique disparaîtrait du schéma.
+     *
      * @var Collection<int, StructureAnneeUniversitaire>
      */
-    #[ORM\ManyToMany(targetEntity: StructureAnneeUniversitaire::class, inversedBy: 'diplomes', cascade: ['persist'])]
+    #[ORM\ManyToMany(targetEntity: StructureAnneeUniversitaire::class, inversedBy: 'legacyDiplomes')]
     #[ORM\JoinTable(name: 'structure_diplome_annee_universitaire')]
-    #[Groups(['diplome:detail'])]
-    private Collection $anneesUniversitaires;
+    private Collection $legacyAnneesUniversitaires;
 
     public function __construct()
     {
@@ -198,7 +198,7 @@ class StructureDiplome implements TimestampableInterface
         $this->pns = new ArrayCollection();
         $this->setOpt([]);
         $this->enseignantHrs = new ArrayCollection();
-        $this->anneesUniversitaires = new ArrayCollection();
+        $this->legacyAnneesUniversitaires = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -539,25 +539,18 @@ class StructureDiplome implements TimestampableInterface
     /**
      * @return Collection<int, StructureAnneeUniversitaire>
      */
+    #[Groups(['diplome:detail'])]
     public function getAnneesUniversitaires(): Collection
     {
-        return $this->anneesUniversitaires;
-    }
-
-    public function addAnneeUniversitaire(StructureAnneeUniversitaire $anneeUniversitaire): static
-    {
-        if (!$this->anneesUniversitaires->contains($anneeUniversitaire)) {
-            $this->anneesUniversitaires->add($anneeUniversitaire);
+        $annees = [];
+        foreach ($this->pns as $pn) {
+            $annee = $pn->getAnneeUniversitaire();
+            if ($annee !== null) {
+                $annees[spl_object_id($annee)] = $annee;
+            }
         }
 
-        return $this;
-    }
-
-    public function removeAnneeUniversitaire(StructureAnneeUniversitaire $anneeUniversitaire): static
-    {
-        $this->anneesUniversitaires->removeElement($anneeUniversitaire);
-
-        return $this;
+        return new ArrayCollection(array_values($annees));
     }
 
     public function getLogoPartenaireName(): ?string
