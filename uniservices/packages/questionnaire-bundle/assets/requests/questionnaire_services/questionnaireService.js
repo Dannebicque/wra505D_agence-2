@@ -360,11 +360,16 @@ const getAllStatuses = async (showToast = false) => {
     }
 }
 
-const getAllPersonnels = async (showToast = false) => {
+const getAllPersonnels = async (departement = null, showToast = false) => {
     try {
+        const params = { pagination: false };
+        const deptId = typeof departement === 'object' && departement !== null ? departement.id : departement;
+        if (deptId) {
+            params.departement = deptId;
+        }
         return await apiCall(
             api.get,
-            [`/api/personnels`, { params: { pagination: false } }],
+            [`/api/personnels`, { params }],
             'Personnels récupérés avec succès',
             'Erreur lors de la récupération des personnels',
             showToast
@@ -473,6 +478,21 @@ const getQuestionnaireInvitations = async (surveyUuid, showToast = false) => {
     }
 }
 
+const sendQuestionnaireReminders = async (surveyUuid, tokens, subject, message, showToast = false) => {
+    try {
+        return await apiCall(
+            api.post,
+            [`/api/questionnaires/${surveyUuid}/reminders`, { tokens, subject, message }],
+            'Relances envoyées avec succès',
+            'Erreur lors de l\'envoi des relances',
+            showToast
+        );
+    } catch (error) {
+        console.error('Erreur dans sendQuestionnaireReminders:', error);
+        throw error;
+    }
+}
+
 const getQuestionnaireAnalytics = async (surveyUuid, showToast = false) => {
     try {
         return await apiCall(
@@ -503,6 +523,25 @@ const exportQuestionnaireExcel = async (surveyUuid) => {
         window.URL.revokeObjectURL(url);
     } catch (error) {
         console.error('Erreur lors de l\'export Excel:', error);
+        throw error;
+    }
+}
+
+const exportQuestionnairePdf = async (surveyUuid, charts = {}) => {
+    try {
+        const response = await api.post(`/api/questionnaires/${surveyUuid}/export-pdf`, { charts }, {
+            responseType: 'blob'
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Statistiques_${surveyUuid}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Erreur lors de l\'export PDF:', error);
         throw error;
     }
 }
@@ -541,6 +580,8 @@ export {
     saveInvitationAnswers,
     submitInvitation,
     getQuestionnaireInvitations,
+    sendQuestionnaireReminders,
     getQuestionnaireAnalytics,
-    exportQuestionnaireExcel
+    exportQuestionnaireExcel,
+    exportQuestionnairePdf
 };

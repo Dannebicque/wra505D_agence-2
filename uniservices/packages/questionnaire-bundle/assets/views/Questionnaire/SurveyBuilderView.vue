@@ -28,11 +28,15 @@ import SurveyPublishModal from '@/components/Questionnaire/SurveyPublishModal.vu
 import DuplicateSectionModal from '@/components/Questionnaire/DuplicateSectionModal.vue';
 import DuplicateQuestionModal from '@/components/Questionnaire/DuplicateQuestionModal.vue';
 import { FormField } from '@/components/Form';
+import { calculateEstimatedTime, formatEstimatedTime } from '@/utils/survey';
+import { getAllDepartementsService } from '@requests';
+import { useUsersStore } from '@stores';
 
 const route = useRoute();
 const router = useRouter();
 const surveyStore = useSurveyStore();
 const uiStore = useUIStore();
+const userStore = useUsersStore();
 
 const showSettings = ref(false);
 const showPreview = ref(false);
@@ -43,6 +47,23 @@ const showDuplicateQuestionModal = ref(false);
 const editingSection = ref<Section | null>(null);
 const duplicatingSection = ref<Section | null>(null);
 const duplicatingQuestion = ref<Question | null>(null);
+
+const departements = ref<{ id: number; libelle: string }[]>([]);
+const surveyDepartementId = ref<number | null>(null);
+
+const departementOptions = computed(() => [
+  { label: 'IUT (Global)', value: null },
+  ...departements.value.map(d => ({
+    label: d.libelle || `Département ${d.id}`,
+    value: d.id
+  }))
+]);
+
+function getDeptLabel(deptId: number | null) {
+  if (!deptId) return 'IUT (Global)';
+  const found = departements.value.find(d => d.id === deptId);
+  return found?.libelle || `Département ${deptId}`;
+}
 
 const questionTypes = [
   { value: 'single_choice', label: 'Choix unique', icon: 'pi pi-comment', command: () => addQuestion('single_choice') },
@@ -64,62 +85,7 @@ const currentSurvey = computed(() => surveyStore.currentSurvey);
 const currentSection = computed(() => surveyStore.currentSection);
 const sections = computed(() => surveyStore.currentSections);
 
-const estimatedTime = computed(() => {
-  if (!sections.value) return 0;
-
-  let totalSeconds = 0;
-  for (const section of sections.value) {
-    let sectionSeconds = 0;
-
-    // Check if section is configurable and get elements count
-    const numElements = section.typeSection === 'configurable' && section.opt?.elements
-      ? section.opt.elements.length
-      : 1;
-
-    for (const question of section.questions) {
-      switch (question.typeQuestion) {
-        case 'single_choice':
-          sectionSeconds += 15;
-          break;
-        case 'multiple_choice':
-          sectionSeconds += 25;
-          break;
-        case 'text_short':
-          sectionSeconds += 30;
-          break;
-        case 'text_long':
-          sectionSeconds += 60;
-          break;
-        case 'scale':
-          sectionSeconds += 15;
-          break;
-        case 'matrix':
-          sectionSeconds += 30;
-          break;
-        case 'ranking':
-          sectionSeconds += 30;
-          break;
-        default:
-          sectionSeconds += 15;
-          break;
-      }
-    }
-    totalSeconds += sectionSeconds * numElements;
-  }
-  return totalSeconds;
-});
-
-function formatEstimatedTime(seconds: number): string {
-  if (seconds < 60) {
-    return "moins d'une minute";
-  }
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  if (remainingSeconds === 0) {
-    return `${minutes} min`;
-  }
-  return `${minutes} min ${remainingSeconds} s`;
-}
+const estimatedTime = computed(() => calculateEstimatedTime(sections.value));
 
 // Watch for changes in estimatedTime and save it to the database
 watch(estimatedTime, (newValue) => {
@@ -151,6 +117,11 @@ watch(currentSurvey, (survey) => {
   if (survey) {
     surveyTitle.value = survey.title;
     surveyDescription.value = survey.description || '';
+    if (survey.departement) {
+      surveyDepartementId.value = typeof survey.departement === 'object' ? survey.departement.id : survey.departement;
+    } else {
+      surveyDepartementId.value = null;
+    }
   }
 }, { immediate: true });
 
@@ -164,6 +135,13 @@ function updateSurveyTitle() {
 function updateSurveyDescription() {
   if (currentSurvey.value) {
     surveyStore.updateSurvey({ description: surveyDescription.value.trim() });
+  }
+}
+
+function updateSurveyDepartement() {
+  if (currentSurvey.value) {
+    const deptIri = surveyDepartementId.value ? `/api/structure_departements/${surveyDepartementId.value}` : null;
+    surveyStore.updateSurvey({ departement: deptIri as any });
   }
 }
 
@@ -287,10 +265,21 @@ function publishSurvey() {
   showPublishModal.value = true;
 }
 
-async function confirmPublish(recipients: string[]) {
+async function confirmPublish(payload: string[] | { recipients: string[]; openingDate?: string | null; closingDate?: string | null }) {
   if (!currentSurvey.value) return;
 
   try {
+    const recipients = Array.isArray(payload) ? payload : payload.recipients;
+    const openingDate = !Array.isArray(payload) ? payload.openingDate : undefined;
+    const closingDate = !Array.isArray(payload) ? payload.closingDate : undefined;
+
+    if (!Array.isArray(payload) && (openingDate !== undefined || closingDate !== undefined)) {
+      await surveyStore.updateSurvey({
+        openingDate: openingDate ? new Date(openingDate) : null,
+        closingDate: closingDate ? new Date(closingDate) : null
+      });
+    }
+
     await surveyStore.publishSurvey(currentSurvey.value.uuid, recipients);
     showPublishModal.value = false;
     uiStore.addNotification('success', 'Questionnaire publié', 'Le questionnaire a été publié avec succès.');
@@ -308,6 +297,20 @@ async function confirmPublish(recipients: string[]) {
 
 // Initialize
 onMounted(async () => {
+  try {
+    const list = await getAllDepartementsService();
+    if (Array.isArray(list) && list.length > 0) {
+      departements.value = list;
+    } else if (userStore.departements && userStore.departements.length > 0) {
+      departements.value = userStore.departements;
+    }
+  } catch (error) {
+    console.warn('Could not fetch all departements, fallback to userStore:', error);
+    if (userStore.departements && userStore.departements.length > 0) {
+      departements.value = userStore.departements;
+    }
+  }
+
   const surveyId = route.params.id as string;
 
   if (surveyId && surveyId !== 'new') {
@@ -366,6 +369,41 @@ onMounted(async () => {
               placeholder="Description ou consignes (optionnelle)..."
               rows="2"
             />
+          </FormField>
+
+          <FormField label="Département ou portée" hint="Associez un département ou laissez global pour tout l'IUT">
+            <Select
+              v-model="surveyDepartementId"
+              :options="departementOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Sélectionner..."
+              class="w-full text-xs"
+              @change="updateSurveyDepartement"
+            >
+              <template #value="slotProps">
+                <div v-if="slotProps.value !== null && slotProps.value !== undefined" class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0 bg-primary-500" aria-hidden="true"></span>
+                  <span class="truncate text-xs font-semibold">{{ getDeptLabel(slotProps.value) }}</span>
+                </div>
+                <div v-else class="flex items-center gap-2 text-xs font-semibold text-color">
+                  <span class="w-2.5 h-2.5 rounded-full bg-surface-400 shrink-0" aria-hidden="true"></span>
+                  <span>IUT (Global)</span>
+                </div>
+              </template>
+              <template #option="slotProps">
+                <div class="flex items-center gap-2 text-xs py-0.5">
+                  <span
+                    class="w-2.5 h-2.5 rounded-full shrink-0"
+                    :class="slotProps.option.value === null ? 'bg-surface-400' : 'bg-primary-500'"
+                    aria-hidden="true"
+                  ></span>
+                  <span :class="slotProps.option.value === null ? 'font-medium text-muted-color' : 'font-semibold text-color'">
+                    {{ slotProps.option.label }}
+                  </span>
+                </div>
+              </template>
+            </Select>
           </FormField>
         </div>
 
@@ -518,12 +556,18 @@ onMounted(async () => {
   <SurveyPreviewModal v-if="showPreview" :uuid="currentSurvey.uuid" :sections="sections" @close="showPreview = false" />
 
   <!-- Section Configuration Modal -->
-  <SectionConfigModal v-if="showSectionModal" :section="editingSection" @close="closeSectionModal"
+  <SectionConfigModal v-if="showSectionModal" :section="editingSection" :departement="currentSurvey?.departement" @close="closeSectionModal"
     @save="saveSection" />
 
   <!-- Publish Confirmation Modal -->
-  <SurveyPublishModal v-if="showPublishModal" :survey="currentSurvey" @close="showPublishModal = false"
-    @confirm="confirmPublish" />
+  <SurveyPublishModal
+    v-if="showPublishModal"
+    :survey="currentSurvey"
+    :sections="sections"
+    :estimated-time="estimatedTime"
+    @close="showPublishModal = false"
+    @confirm="confirmPublish"
+  />
 
   <!-- Duplicate Section Modal -->
   <DuplicateSectionModal

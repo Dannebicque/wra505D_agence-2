@@ -5,6 +5,7 @@ namespace QuestionnaireBundle\Entity\Questionnaires;
 use App\Entity\Contracts\TimestampableInterface;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireInvitationRepository;
+use QuestionnaireBundle\State\Provider\QuestionnaireInvitationCollectionProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -20,8 +21,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Index(name: 'idx_invitation_questionnaire', columns: ['questionnaire_id'])]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['invitation:read']]),
-        new GetCollection(normalizationContext: ['groups' => ['invitation:read']]),
+        new Get(
+            normalizationContext: ['groups' => ['invitation:read']],
+            security: "is_granted('CAN_EXPORT_QUESTIONNAIRE', object.getQuestionnaire())",
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['invitation:read']],
+            security: "is_granted('IS_PERSONNEL')",
+            provider: QuestionnaireInvitationCollectionProvider::class,
+        ),
     ],
     normalizationContext: ['groups' => ['invitation:read']],
 )]
@@ -73,6 +81,13 @@ class QuestionnaireInvitation implements TimestampableInterface
     #[ORM\Column(options: ['default' => 0])]
     #[Groups(['invitation:read'])]
     private int $remindersCount = 0;
+
+    /**
+     * @var array<int, array{id: string, sentAt: string, subject?: string, message?: string|null, type?: string}>|null
+     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups(['invitation:read'])]
+    private ?array $remindersHistory = [];
 
     /**
      * @var Collection<int, QuestionnaireAnswer>
@@ -261,8 +276,43 @@ class QuestionnaireInvitation implements TimestampableInterface
 
     public function incrementRemindersCount(): static
     {
-        $this->remindersCount++;
+        return $this->addReminder(
+            subject: 'Rappel automatique de questionnaire',
+            type: 'automatic'
+        );
+    }
+
+    /**
+     * @return array<int, array{id: string, sentAt: string, subject?: string, message?: string|null, type?: string}>
+     */
+    public function getRemindersHistory(): array
+    {
+        return $this->remindersHistory ?? [];
+    }
+
+    /**
+     * @param array<int, array{id: string, sentAt: string, subject?: string, message?: string|null, type?: string}>|null $remindersHistory
+     */
+    public function setRemindersHistory(?array $remindersHistory): static
+    {
+        $this->remindersHistory = $remindersHistory ?? [];
+        return $this;
+    }
+
+    public function addReminder(string $subject, ?string $message = null, string $type = 'manual'): static
+    {
+        $history = $this->remindersHistory ?? [];
+        $history[] = [
+            'id' => bin2hex(random_bytes(8)),
+            'sentAt' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+            'subject' => $subject,
+            'message' => $message,
+            'type' => $type,
+        ];
+        $this->remindersHistory = $history;
+        $this->remindersCount = count($history);
         $this->remindedAt = new \DateTimeImmutable();
+
         return $this;
     }
 }

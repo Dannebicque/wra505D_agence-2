@@ -17,3 +17,10 @@ intranet_controllers:
         path: '../../packages/intranet-bundle/src/Controller/'
         namespace: IntranetBundle\Controller
     type: attribute
+
+# Exports et relances des questionnaires, ajoutés par le client dans le bundle questionnaire.
+questionnaire_controllers:
+    resource:
+        path: '../../packages/questionnaire-bundle/src/Controller/'
+        namespace: QuestionnaireBundle\Controller
+    type: attribute
