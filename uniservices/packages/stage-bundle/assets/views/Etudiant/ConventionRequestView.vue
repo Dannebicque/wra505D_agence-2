@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { getStagePeriodesService } from '../../requests/stage_service';
-import { useUsersStore } from '@stores';
+import { getStageEtudiantsService, createStageEtudiantService, updateStageEtudiantService } from '../../requests/stage_etudiant';
+import { useUsersStore, useEtablissementStore } from '@stores';
 import api from '@helpers/axios';
 import { ValidatedInput, validationRules } from '@components';
 import { FormSection, ToggleCard } from '../../components/Form';
@@ -19,10 +20,13 @@ const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 const userStore = useUsersStore();
+const etablissementStore = useEtablissementStore();
 
 const currentStep = ref(1);
 const totalSteps = 4;
 const stagePeriodes = ref([]);
+const existingStageId = ref(null);
+const allStudentStages = ref([]);
 const loading = ref(false);
 
 // Validation errors tracking
@@ -31,22 +35,134 @@ const handleValidation = (fieldName, result) => {
   formErrors.value[fieldName] = result.isValid ? null : result.errorMessage;
 };
 
-// Check if current step has active validation errors
-const stepHasErrors = computed(() => {
+// Expressions régulières de validation en temps réel
+const phoneRegex = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/;
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+// Détection en direct des champs bloquants pour l'étape courante
+const currentStepBlockers = computed(() => {
+  const blockers = [];
   if (currentStep.value === 1) {
-    return !!formErrors.value.stagePeriodeIri || !!formErrors.value.phone || !!formErrors.value.emailPerso;
-  } else if (currentStep.value === 2) {
-    const companyErrors = !!formErrors.value.companyName || !!formErrors.value.companySiret || !!formErrors.value.companyPhone || !!formErrors.value.companyAddress;
-    const signatoryErrors = !!formErrors.value.signatoryPrenom || !!formErrors.value.signatoryNom || !!formErrors.value.signatoryTitle || !!formErrors.value.signatoryEmail || !!formErrors.value.signatoryPhone;
-    let tutorErrors = false;
-    if (!form.value.tuteurSameAsSignatory) {
-      tutorErrors = !!formErrors.value.supervisorPrenom || !!formErrors.value.supervisorNom || !!formErrors.value.supervisorFunction || !!formErrors.value.supervisorEmail || !!formErrors.value.supervisorPhone;
+    if (!form.value.stagePeriodeIri) {
+      blockers.push({ field: 'stagePeriodeIri', label: 'Période de stage', message: 'Sélectionnez une période' });
     }
-    return companyErrors || signatoryErrors || tutorErrors;
+    if (!form.value.phone?.trim()) {
+      blockers.push({ field: 'phone', label: 'Téléphone personnel', message: 'Numéro requis' });
+    } else if (!phoneRegex.test(form.value.phone.trim())) {
+      blockers.push({ field: 'phone', label: 'Téléphone personnel', message: 'Format invalide (ex: 06 12 34 56 78 ou +33612345678)' });
+    }
+    if (!form.value.emailPerso?.trim()) {
+      blockers.push({ field: 'emailPerso', label: 'E-mail personnel', message: 'Adresse e-mail requise' });
+    } else if (!emailRegex.test(form.value.emailPerso.trim())) {
+      blockers.push({ field: 'emailPerso', label: 'E-mail personnel', message: 'Format d\'e-mail invalide (ex: etudiant@gmail.com)' });
+    }
+  } else if (currentStep.value === 2) {
+    if (!form.value.companyName?.trim()) {
+      blockers.push({ field: 'companyName', label: 'Raison sociale', message: 'Nom de l\'entreprise requis' });
+    }
+    const cleanSiret = (form.value.companySiret || '').replace(/\s+/g, '');
+    if (!cleanSiret) {
+      blockers.push({ field: 'companySiret', label: 'Numéro SIRET', message: 'Numéro SIRET requis (14 chiffres)' });
+    } else if (!/^[0-9]{14}$/.test(cleanSiret)) {
+      blockers.push({ field: 'companySiret', label: 'Numéro SIRET', message: 'Le SIRET doit comporter exactement 14 chiffres' });
+    }
+    if (!form.value.companyPhone?.trim()) {
+      blockers.push({ field: 'companyPhone', label: 'Téléphone standard', message: 'Téléphone standard requis' });
+    } else if (!phoneRegex.test(form.value.companyPhone.trim())) {
+      blockers.push({ field: 'companyPhone', label: 'Téléphone standard', message: 'Format de téléphone invalide' });
+    }
+    const addr = form.value.companyAddress;
+    let hasAddr = false;
+    if (typeof addr === 'string') {
+      hasAddr = !!addr.trim();
+    } else if (addr && typeof addr === 'object') {
+      const hasStreet = !!addr.adresse?.trim();
+      const hasCp = !!addr.codePostal?.trim() || /\b\d{5}\b/.test(addr.adresse || '');
+      const hasCity = !!addr.ville?.trim();
+      hasAddr = hasStreet && (hasCp || hasCity || addr.adresse.length > 3);
+    }
+    if (!hasAddr) {
+      blockers.push({ field: 'companyAddress', label: 'Adresse de l\'entreprise', message: 'Adresse de l\'entreprise requise' });
+    }
+    if (!form.value.signatoryCivilite) {
+      blockers.push({ field: 'signatoryCivilite', label: 'Civilité du signataire', message: 'Civilité requise' });
+    }
+    if (!form.value.signatoryPrenom?.trim()) {
+      blockers.push({ field: 'signatoryPrenom', label: 'Prénom signataire', message: 'Prénom du représentant légal requis' });
+    }
+    if (!form.value.signatoryNom?.trim()) {
+      blockers.push({ field: 'signatoryNom', label: 'Nom signataire', message: 'Nom du représentant légal requis' });
+    }
+    if (!form.value.signatoryTitle?.trim()) {
+      blockers.push({ field: 'signatoryTitle', label: 'Fonction signataire', message: 'Fonction ou titre requis' });
+    }
+    if (!form.value.signatoryEmail?.trim()) {
+      blockers.push({ field: 'signatoryEmail', label: 'E-mail signataire', message: 'E-mail valide requis' });
+    } else if (!emailRegex.test(form.value.signatoryEmail.trim())) {
+      blockers.push({ field: 'signatoryEmail', label: 'E-mail signataire', message: 'Format d\'e-mail invalide' });
+    }
+    if (!form.value.signatoryPhone?.trim()) {
+      blockers.push({ field: 'signatoryPhone', label: 'Téléphone direct signataire', message: 'Numéro de téléphone requis' });
+    } else if (!phoneRegex.test(form.value.signatoryPhone.trim())) {
+      blockers.push({ field: 'signatoryPhone', label: 'Téléphone direct signataire', message: 'Format de téléphone invalide' });
+    }
+    if (!form.value.tuteurSameAsSignatory) {
+      if (!form.value.supervisorCivilite) {
+        blockers.push({ field: 'supervisorCivilite', label: 'Civilité maître de stage', message: 'Civilité requise' });
+      }
+      if (!form.value.supervisorPrenom?.trim()) {
+        blockers.push({ field: 'supervisorPrenom', label: 'Prénom maître de stage', message: 'Prénom requis' });
+      }
+      if (!form.value.supervisorNom?.trim()) {
+        blockers.push({ field: 'supervisorNom', label: 'Nom maître de stage', message: 'Nom requis' });
+      }
+      if (!form.value.supervisorFunction?.trim()) {
+        blockers.push({ field: 'supervisorFunction', label: 'Fonction maître de stage', message: 'Fonction ou poste requis' });
+      }
+      if (!form.value.supervisorEmail?.trim()) {
+        blockers.push({ field: 'supervisorEmail', label: 'E-mail maître de stage', message: 'E-mail valide requis' });
+      } else if (!emailRegex.test(form.value.supervisorEmail.trim())) {
+        blockers.push({ field: 'supervisorEmail', label: 'E-mail maître de stage', message: 'Format d\'e-mail invalide' });
+      }
+      if (!form.value.supervisorPhone?.trim()) {
+        blockers.push({ field: 'supervisorPhone', label: 'Téléphone maître de stage', message: 'Numéro de téléphone requis' });
+      } else if (!phoneRegex.test(form.value.supervisorPhone.trim())) {
+        blockers.push({ field: 'supervisorPhone', label: 'Téléphone maître de stage', message: 'Format de téléphone invalide' });
+      }
+    }
   } else if (currentStep.value === 3) {
-    return !!formErrors.value.startDate || !!formErrors.value.endDate || !!formErrors.value.weeklyHours || !!formErrors.value.salaryAmount || !!formErrors.value.subject || !!formErrors.value.activities;
+    if (!form.value.startDate) {
+      blockers.push({ field: 'startDate', label: 'Date de début', message: 'Date de début de stage requise' });
+    }
+    if (!form.value.endDate) {
+      blockers.push({ field: 'endDate', label: 'Date de fin', message: 'Date de fin de stage requise' });
+    }
+    if (form.value.startDate && form.value.endDate && new Date(form.value.startDate) > new Date(form.value.endDate)) {
+      blockers.push({ field: 'datesOrder', label: 'Dates de stage', message: 'Le début doit précéder la fin' });
+    }
+    if (form.value.weeklyHours === null || form.value.weeklyHours === undefined || Number(form.value.weeklyHours) <= 0) {
+      blockers.push({ field: 'weeklyHours', label: 'Volume horaire', message: 'Nombre d\'heures requis (ex: 35)' });
+    }
+    if (form.value.salaryAmount === null || form.value.salaryAmount === undefined || form.value.salaryAmount === '' || Number(form.value.salaryAmount) < minGratification.value) {
+      blockers.push({
+        field: 'salaryAmount',
+        label: 'Gratification horaire',
+        message: `Montant minimum requis : ${minGratification.value} €/h`
+      });
+    }
+    if (!form.value.subject?.trim()) {
+      blockers.push({ field: 'subject', label: 'Sujet du stage', message: 'Sujet du stage requis' });
+    }
+    if (!form.value.activities?.trim()) {
+      blockers.push({ field: 'activities', label: 'Missions / Activités', message: 'Activités requises' });
+    }
   }
-  return false;
+  return blockers;
+});
+
+// L'étape a des erreurs / champs manquants s'il reste des éléments bloquants
+const stepHasErrors = computed(() => {
+  return currentStepBlockers.value.length > 0;
 });
 
 // ─── Form state ─────────────────────────────────────────────────────────────
@@ -110,9 +226,46 @@ const syncTuteurFromSignatory = () => {
   }
 };
 
+watch(() => form.value.tuteurSameAsSignatory, (val) => {
+  if (val) {
+    syncTuteurFromSignatory();
+  }
+});
+
+watch([
+  () => form.value.signatoryCivilite,
+  () => form.value.signatoryPrenom,
+  () => form.value.signatoryNom,
+  () => form.value.signatoryTitle,
+  () => form.value.signatoryEmail,
+  () => form.value.signatoryPhone,
+], () => {
+  if (form.value.tuteurSameAsSignatory) {
+    syncTuteurFromSignatory();
+  }
+});
+
+// Auto-correction / extraction du code postal et de la ville si inclus dans l'adresse
+watch(() => form.value.companyAddress, (val) => {
+  if (val && typeof val === 'object') {
+    if (!val.codePostal?.trim() && val.adresse) {
+      const match = val.adresse.match(/\b(\d{5})\b/);
+      if (match) {
+        val.codePostal = match[1];
+      }
+    }
+    if (!val.ville?.trim() && val.adresse && val.codePostal) {
+      const parts = val.adresse.split(val.codePostal);
+      if (parts[1]?.trim()) {
+        val.ville = parts[1].replace(/^[,\s-]+|[,\s-]+$/g, '').trim();
+      }
+    }
+  }
+}, { deep: true, immediate: true });
+
 // Steps labels
 const steps = [
-  { id: 1, label: 'Profil & Assurances', icon: 'pi pi-user' },
+  { id: 1, label: 'Profil & Sécurité sociale', icon: 'pi pi-user' },
   { id: 2, label: "Entreprise d'accueil", icon: 'pi pi-briefcase' },
   { id: 3, label: 'Dates & Mission',       icon: 'pi pi-file-edit' },
   { id: 4, label: 'Vérification',           icon: 'pi pi-check-circle' }
@@ -122,20 +275,51 @@ const steps = [
 onMounted(async () => {
   loading.value = true;
   try {
-    await userStore.initAuth();
+    await Promise.all([
+      userStore.initAuth(),
+      etablissementStore.getEtablissement()
+    ]);
     const user = await userStore.getUser();
     if (user) {
-      form.value.phone      = user.tel1     || '';
+      form.value.phone      = user.tel1 || user.tel2 || '';
       form.value.emailPerso = user.mailPerso || '';
+      form.value.insuranceCompany = user.opt?.intitule_securite_sociale || user.intituleSecuriteSociale || 'CPAM';
+      form.value.insurancePolicyNumber = user.opt?.adresse_securite_sociale || user.adresseSecuriteSociale || '';
     }
-    const response = await getStagePeriodesService();
-    stagePeriodes.value = response || [];
+
+    const studentDeptId = userStore.departementDefaut?.id 
+      || userStore.scolariteActif?.departement?.id 
+      || user?.scolarites?.find(s => s.actif)?.departement?.id;
+
+    const params = { actif: true };
+    if (studentDeptId) {
+      params.departement = studentDeptId;
+    }
+    const response = await getStagePeriodesService(params);
+    let periods = Array.isArray(response) ? response : [];
+    if (studentDeptId) {
+      periods = periods.filter(p => {
+        const pDeptId = p.departement?.id || p.semestreProgramme?.annee?.pn?.diplome?.departement?.id;
+        return !pDeptId || pDeptId === studentDeptId;
+      });
+    }
+    stagePeriodes.value = periods;
     if (route.query.periodId) {
       const exists = stagePeriodes.value.find(p => p.id == route.query.periodId);
       if (exists) {
         form.value.stagePeriodeIri = `/api/stage_periodes/${exists.id}`;
       }
+    } else if (stagePeriodes.value.length === 1) {
+      form.value.stagePeriodeIri = `/api/stage_periodes/${stagePeriodes.value[0].id}`;
     }
+    // Charger les déclarations de stage existantes pour l'étudiant
+    const stagesParams = {};
+    if (userStore.userId) {
+      stagesParams.etudiant = `/api/etudiants/${userStore.userId}`;
+    }
+    const studentStages = await getStageEtudiantsService(stagesParams, false);
+    allStudentStages.value = Array.isArray(studentStages) ? studentStages : [];
+    populateFromExistingStage();
   } catch (error) {
     console.error('Erreur de chargement:', error);
     toast.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors du chargement des données initiales.', life: 3000 });
@@ -145,14 +329,130 @@ onMounted(async () => {
 });
 
 // ─── Computed ────────────────────────────────────────────────────────────────
+const selectedPeriod = computed(() => {
+  return stagePeriodes.value.find(p => `/api/stage_periodes/${p.id}` === form.value.stagePeriodeIri || p.id == form.value.stagePeriodeIri);
+});
+
+const populateFromExistingStage = () => {
+  const curPeriodId = selectedPeriod.value?.id;
+  if (!curPeriodId || !allStudentStages.value.length) return;
+
+  const found = allStudentStages.value.find(s => {
+    const sPid = typeof s.stagePeriode === 'object' && s.stagePeriode !== null
+      ? s.stagePeriode.id
+      : (typeof s.stagePeriode === 'string' ? parseInt(s.stagePeriode.split('/').pop(), 10) : s.stagePeriode);
+    return sPid === curPeriodId;
+  });
+
+  if (found) {
+    existingStageId.value = found.id;
+    if (found.sujetStage) form.value.subject = found.sujetStage;
+    if (found.activites) form.value.activities = found.activites;
+    if (found.amenagementStage) form.value.amenagementStage = found.amenagementStage;
+    if (found.dateDebutStage) form.value.startDate = new Date(found.dateDebutStage);
+    if (found.dateFinStage) form.value.endDate = new Date(found.dateFinStage);
+    if (found.dureeHebdomadaire) form.value.weeklyHours = found.dureeHebdomadaire;
+    if (found.gratificationMontant) form.value.salaryAmount = found.gratificationMontant;
+    if (found.assuranceCompagnie) form.value.insuranceCompany = found.assuranceCompagnie;
+    if (found.assuranceNumero) form.value.insurancePolicyNumber = found.assuranceNumero;
+
+    if (found.entreprise) {
+      if (found.entreprise.raisonSociale) form.value.companyName = found.entreprise.raisonSociale;
+      if (found.entreprise.siret) form.value.companySiret = found.entreprise.siret;
+      if (found.entreprise.adresse) {
+        form.value.companyAddress = {
+          adresse: found.entreprise.adresse.adresse || '',
+          complement1: found.entreprise.adresse.complement1 || '',
+          complement2: found.entreprise.adresse.complement2 || '',
+          ville: found.entreprise.adresse.ville || '',
+          codePostal: found.entreprise.adresse.codePostal || '',
+          pays: found.entreprise.adresse.pays || 'France',
+        };
+      }
+      if (found.entreprise.responsable) {
+        const resp = found.entreprise.responsable;
+        if (resp.civilite) form.value.signatoryCivilite = resp.civilite;
+        if (resp.prenom) form.value.signatoryPrenom = resp.prenom;
+        if (resp.nom) form.value.signatoryNom = resp.nom;
+        if (resp.fonction) form.value.signatoryTitle = resp.fonction;
+        if (resp.telephone) form.value.signatoryPhone = resp.telephone;
+        if (resp.email) form.value.signatoryEmail = resp.email;
+      }
+    }
+
+    if (found.tuteur) {
+      const tut = found.tuteur;
+      if (tut.civilite) form.value.supervisorCivilite = tut.civilite;
+      if (tut.prenom) form.value.supervisorPrenom = tut.prenom;
+      if (tut.nom) form.value.supervisorNom = tut.nom;
+      if (tut.fonction) form.value.supervisorFunction = tut.fonction;
+      if (tut.telephone) form.value.supervisorPhone = tut.telephone;
+      if (tut.email) form.value.supervisorEmail = tut.email;
+    }
+  } else {
+    existingStageId.value = null;
+  }
+};
+
+const areDatesEditable = computed(() => {
+  return !!selectedPeriod.value?.datesFlexibles;
+});
+
+const minGratification = computed(() => {
+  const val = Number(etablissementStore.etablissement?.gratificationMinimale);
+  return !isNaN(val) && val > 0 ? val : 4.35;
+});
+
+const formatDate = (val) => {
+  if (!val) return '-';
+  const d = typeof val === 'string' ? new Date(val) : val;
+  return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('fr-FR');
+};
+
+const formatDateForApi = (val) => {
+  if (!val) return null;
+  const d = typeof val === 'string' ? new Date(val) : val;
+  if (isNaN(d.getTime())) return null;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Pré-remplir les dates depuis la période choisie (et verrouiller si non flexibles)
+watch(selectedPeriod, (period) => {
+  if (period) {
+    if (period.dateDebut) {
+      const dDebut = new Date(period.dateDebut);
+      if (!form.value.startDate || !period.datesFlexibles) {
+        form.value.startDate = dDebut;
+      }
+    }
+    if (period.dateFin) {
+      const dFin = new Date(period.dateFin);
+      if (!form.value.endDate || !period.datesFlexibles) {
+        form.value.endDate = dFin;
+      }
+    }
+    populateFromExistingStage();
+  }
+}, { immediate: true });
+
+// Garantir que la gratification ne descende pas sous le minimum établissement
+watch(minGratification, (minVal) => {
+  if (form.value.salaryAmount === null || form.value.salaryAmount === undefined || form.value.salaryAmount === '' || Number(form.value.salaryAmount) < minVal) {
+    form.value.salaryAmount = minVal;
+  }
+}, { immediate: true });
+
 const selectedPeriodLabel = computed(() => {
-  const selected = stagePeriodes.value.find(p => `/api/stage_periodes/${p.id}` === form.value.stagePeriodeIri);
+  const selected = selectedPeriod.value;
   return selected ? `${selected.libelle} (${selected.nbSemaines} sem.)` : '';
 });
 
 const periodOptions = computed(() => {
   return stagePeriodes.value.map(p => ({
-    label: `${p.libelle} (${p.nbSemaines} sem.)`,
+    label: `${p.libelle} (${p.nbSemaines} sem.)${p.anneeUniversitaire?.libelle ? ' - ' + p.anneeUniversitaire.libelle : ''}`,
     value: `/api/stage_periodes/${p.id}`
   }));
 });
@@ -166,44 +466,21 @@ const supervisorDisplay = computed(() => {
 
 // ─── Navigation ──────────────────────────────────────────────────────────────
 const nextStep = () => {
-  // Step 1 check
-  if (currentStep.value === 1) {
-    if (!form.value.stagePeriodeIri) {
-      toast.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez sélectionner une période de stage.', life: 3000 });
-      return;
-    }
-  }
-  
-  // Step 2 check
-  if (currentStep.value === 2) {
-    if (!form.value.companyName || !form.value.companyAddress || !form.value.signatoryPrenom || !form.value.signatoryNom || !form.value.signatoryTitle || !form.value.signatoryEmail || !form.value.signatoryPhone) {
-      toast.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir toutes les informations de l\'entreprise et du représentant.', life: 3000 });
-      return;
-    }
-    if (!form.value.tuteurSameAsSignatory) {
-      if (!form.value.supervisorPrenom || !form.value.supervisorNom || !form.value.supervisorFunction || !form.value.supervisorEmail || !form.value.supervisorPhone) {
-        toast.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir toutes les informations du maître de stage.', life: 3000 });
-        return;
-      }
-    }
-  }
-
-  // Step 3 check
-  if (currentStep.value === 3) {
-    if (!form.value.startDate || !form.value.endDate || !form.value.subject || !form.value.activities) {
-      toast.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir les informations obligatoires de votre stage.', life: 3000 });
-      return;
-    }
-  }
-
-  if (stepHasErrors.value) {
-    toast.add({ severity: 'warn', summary: 'Champs invalides', detail: 'Veuillez corriger les erreurs de saisie avant de continuer.', life: 3000 });
+  if (currentStepBlockers.value.length > 0) {
+    const first = currentStepBlockers.value[0];
+    toast.add({
+      severity: 'warn',
+      summary: 'Champ requis manquant',
+      detail: `${first.label} : ${first.message}`,
+      life: 3500
+    });
     return;
   }
 
   if (currentStep.value < totalSteps) {
     if (currentStep.value === 2) syncTuteurFromSignatory();
     currentStep.value++;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 };
 const prevStep = () => { if (currentStep.value > 1) currentStep.value--; };
@@ -253,8 +530,8 @@ const submitRequest = async () => {
       sujetStage:            form.value.subject,
       activites:             form.value.activities,
       amenagementStage:      form.value.amenagementStage,
-      dateDebutStage:        form.value.startDate   || null,
-      dateFinStage:          form.value.endDate     || null,
+      dateDebutStage:        formatDateForApi(form.value.startDate),
+      dateFinStage:          formatDateForApi(form.value.endDate),
       dureeHebdomadaire:     Number(form.value.weeklyHours),
       dureeJoursStage:       calcDureeJours(),
       gratification:         Number(form.value.salaryAmount) > 0,
@@ -263,7 +540,7 @@ const submitRequest = async () => {
       assuranceCompagnie:    form.value.insuranceCompany       || null,
       assuranceNumero:       form.value.insurancePolicyNumber  || null,
       dateDepotFormulaire:   new Date().toISOString(),
-      etatStage:             'ETAT_STAGE_AUTORISE',
+      etatStage:             'ETAT_STAGE_DEPOSE',
       entreprise: {
         raisonSociale: form.value.companyName,
         siret:         form.value.companySiret,
@@ -287,11 +564,18 @@ const submitRequest = async () => {
       tuteur,
     };
 
-    await api.post('/api/stage_etudiants', payload, {
-      headers: { 'Content-Type': 'application/ld+json' }
-    });
+    if (existingStageId.value) {
+      await updateStageEtudiantService(existingStageId.value, payload);
+    } else {
+      await createStageEtudiantService(payload);
+    }
 
-    toast.add({ severity: 'success', summary: 'Demande soumise', detail: 'Votre demande de convention a été enregistrée avec succès.', life: 5000 });
+    toast.add({
+      severity: 'success',
+      summary: 'Demande déposée',
+      detail: 'Votre convention de stage a été déposée avec succès. Elle est désormais transmise au responsable pour validation pédagogique.',
+      life: 5000
+    });
     router.push({ name: 'EtudiantDashboard' });
 
   } catch (error) {
@@ -314,10 +598,10 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
       <div>
         <h1 class="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
           <i class="pi pi-file-edit text-primary-500 dark:text-primary-400" aria-hidden="true"></i>
-          <span>Demande de Convention de Stage</span>
+          <span>{{ existingStageId ? 'Compléter / Modifier ma convention' : 'Demande de Convention de Stage' }}</span>
         </h1>
         <p class="text-xs text-muted-color mt-1">
-          Remplissez les informations nécessaires pour la validation et l'édition de votre convention de stage.
+          {{ existingStageId ? 'Modifiez et déposez à nouveau votre convention de stage auprès du responsable pédagogique.' : 'Remplissez les informations nécessaires pour la validation et l\'édition de votre convention de stage.' }}
         </p>
       </div>
       <button
@@ -370,8 +654,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
         <FormSection
           :icon="UserIcon"
           tone="teal"
-          title="Coordonnées de l'étudiant & Assurances"
-          description="Vérifiez vos coordonnées personnelles et précisez votre assurance responsabilité civile obligatoire."
+          title="Coordonnées de l'étudiant & Sécurité sociale"
+          description="Vérifiez vos coordonnées personnelles et précisez votre caisse de sécurité sociale obligatoire."
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <!-- Période de stage -->
@@ -383,9 +667,10 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               placeholder="Sélectionnez une période de stage"
               :options="periodOptions"
               :rules="validationRules.required"
+              :validate-on-input="true"
               @validation="res => handleValidation('stagePeriodeIri', res)"
               :disabled="!!route.query.periodId"
-              :help-text="route.query.periodId ? 'La période est pré-remplie à partir de votre tableau de bord et n\'est pas modifiable.' : ''"
+              :help-text="route.query.periodId ? 'La période est pré-remplie à partir de votre tableau de bord.' : ''"
               class="md:col-span-2"
             />
 
@@ -394,9 +679,10 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               v-model="form.phone"
               name="phone"
               label="Téléphone personnel"
-              placeholder="Ex: 06 12 34 56 78"
+              placeholder="Ex: 06 12 34 56 78 ou +33612345678"
               type="text"
               :rules="[validationRules.phone, validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('phone', res)"
             />
 
@@ -408,23 +694,28 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               placeholder="Ex: etudiant@gmail.com"
               type="text"
               :rules="[validationRules.email, validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('emailPerso', res)"
             />
 
-            <!-- Assurance -->
+            <!-- Organisme de sécurité sociale -->
             <ValidatedInput
               v-model="form.insuranceCompany"
               name="insuranceCompany"
-              label="Compagnie d'assurance RC"
-              placeholder="Ex: MAIF, MACIF, MAAF…"
+              label="Organisme de sécurité sociale"
+              placeholder="Ex: CPAM de l'Aube, MSA, etc."
               type="text"
+              :validate-on-input="true"
+              help-text="Caisse d'assurance maladie de rattachement du stagiaire (lieu de résidence)"
             />
             <ValidatedInput
               v-model="form.insurancePolicyNumber"
               name="insurancePolicyNumber"
-              label="Numéro de police d'assurance"
-              placeholder="Ex: 9876543-A"
+              label="Adresse de l'organisme"
+              placeholder="Ex: 113 rue Roger Salengro, 10000 Troyes"
               type="text"
+              :validate-on-input="true"
+              help-text="Adresse de la caisse à contacter en cas d'accident du travail"
             />
           </div>
         </FormSection>
@@ -439,7 +730,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
           :icon="BuildingOffice2Icon"
           tone="teal"
           title="Identification de l'entreprise"
-          description="Coordonnées et adresse de la structure qui vous accueille pour votre stage."
+          description="Tous les champs sont obligatoires. Coordonnées et adresse de la structure qui vous accueille pour votre stage."
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <ValidatedInput
@@ -448,7 +739,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Raison sociale"
               placeholder="Ex: Google France"
               type="text"
-              :rules="validationRules.required"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('companyName', res)"
             />
             <ValidatedInput
@@ -457,7 +749,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Numéro SIRET"
               placeholder="Ex: 12345678900010"
               type="text"
-              :rules="[validationRules.numeric, validationRules.minLength(14), validationRules.maxLength(14)]"
+              :rules="[validationRules.required, validationRules.numeric, validationRules.minLength(14), validationRules.maxLength(14)]"
+              :validate-on-input="true"
               @validation="res => handleValidation('companySiret', res)"
             />
             <ValidatedInput
@@ -466,7 +759,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Téléphone standard"
               placeholder="Ex: 01 02 03 04 05"
               type="text"
-              :rules="[validationRules.phone]"
+              :rules="[validationRules.required, validationRules.phone]"
+              :validate-on-input="true"
               @validation="res => handleValidation('companyPhone', res)"
               class="md:col-span-2"
             />
@@ -477,7 +771,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
                 label="Adresse de l'entreprise"
                 type="address"
                 placeholder="Cherchez l'adresse de l'entreprise…"
-                :rules="validationRules.required"
+                :rules="[validationRules.required]"
+                :validate-on-input="true"
                 @validation="res => handleValidation('companyAddress', res)"
               />
             </div>
@@ -489,7 +784,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
           :icon="UserIcon"
           tone="indigo"
           title="Représentant légal (signataire de la convention)"
-          description="Personne habilitée à signer les conventions au nom de l'entreprise (Directeur, DRH...)."
+          description="Tous les champs sont obligatoires. Personne habilitée à signer les conventions au nom de l'entreprise (Directeur, DRH...)."
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <ValidatedInput
@@ -498,7 +793,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Civilité"
               type="select"
               :options="[{ label: 'Monsieur (M.)', value: 'M' }, { label: 'Madame (Mme)', value: 'Mme' }]"
-              :rules="validationRules.required"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('signatoryCivilite', res)"
             />
             <ValidatedInput
@@ -507,7 +803,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Prénom"
               placeholder="Ex: Sylvie"
               type="text"
-              :rules="validationRules.required"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('signatoryPrenom', res)"
             />
             <ValidatedInput
@@ -516,7 +813,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Nom"
               placeholder="Ex: MARTIN"
               type="text"
-              :rules="validationRules.required"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('signatoryNom', res)"
             />
             <ValidatedInput
@@ -525,7 +823,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Fonction / Titre"
               placeholder="Ex: Directrice RH"
               type="text"
-              :rules="validationRules.required"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('signatoryTitle', res)"
             />
             <ValidatedInput
@@ -535,6 +834,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               placeholder="Ex: s.martin@entreprise.com"
               type="text"
               :rules="[validationRules.required, validationRules.email]"
+              :validate-on-input="true"
               @validation="res => handleValidation('signatoryEmail', res)"
             />
             <ValidatedInput
@@ -544,6 +844,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               placeholder="Ex: 01 02 03 04 05"
               type="text"
               :rules="[validationRules.required, validationRules.phone]"
+              :validate-on-input="true"
               @validation="res => handleValidation('signatoryPhone', res)"
             />
           </div>
@@ -554,7 +855,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
           :icon="UserIcon"
           tone="purple"
           title="Maître de stage (encadrant en entreprise)"
-          description="Votre responsable opérationnel au quotidien au sein de l'entreprise."
+          description="Tous les champs sont obligatoires. Votre responsable opérationnel au quotidien au sein de l'entreprise."
         >
           <!-- Toggle "même personne" avec ToggleCard -->
           <ToggleCard
@@ -572,7 +873,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Civilité"
               type="select"
               :options="[{ label: 'Monsieur (M.)', value: 'M' }, { label: 'Madame (Mme)', value: 'Mme' }]"
-              :rules="validationRules.required"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('supervisorCivilite', res)"
             />
             <ValidatedInput
@@ -581,7 +883,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Prénom"
               placeholder="Ex: Robert"
               type="text"
-              :rules="validationRules.required"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('supervisorPrenom', res)"
             />
             <ValidatedInput
@@ -590,7 +893,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Nom"
               placeholder="Ex: LEGRAND"
               type="text"
-              :rules="validationRules.required"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('supervisorNom', res)"
             />
             <ValidatedInput
@@ -599,7 +903,8 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               label="Fonction"
               placeholder="Ex: Chef de Projet"
               type="text"
-              :rules="validationRules.required"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('supervisorFunction', res)"
             />
             <ValidatedInput
@@ -609,6 +914,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               placeholder="Ex: r.legrand@entreprise.com"
               type="text"
               :rules="[validationRules.required, validationRules.email]"
+              :validate-on-input="true"
               @validation="res => handleValidation('supervisorEmail', res)"
             />
             <ValidatedInput
@@ -618,16 +924,17 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               placeholder="Ex: 06 99 88 77 66"
               type="text"
               :rules="[validationRules.required, validationRules.phone]"
+              :validate-on-input="true"
               @validation="res => handleValidation('supervisorPhone', res)"
             />
           </div>
 
           <!-- Récap quand même personne -->
           <div v-else class="q-callout q-callout-info">
-            <i class="pi pi-info-circle text-base text-blue-600 dark:text-blue-400 mt-0.5"></i>
+            <i class="pi pi-info-circle text-base mt-0.5" aria-hidden="true"></i>
             <div>
               <p class="font-semibold">Coordonnées synchronisées avec le représentant légal</p>
-              <p class="text-2xs text-blue-700 dark:text-blue-300 mt-0.5">
+              <p class="text-2xs mt-0.5">
                 {{ form.signatoryCivilite }} {{ form.signatoryPrenom }} {{ form.signatoryNom }}
                 <span v-if="form.signatoryTitle"> — {{ form.signatoryTitle }}</span>
               </p>
@@ -647,12 +954,67 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
           description="Période effective de réalisation, indemnisation légale et descriptif du projet confié."
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Statut de flexibilité des dates -->
+            <div v-if="!areDatesEditable" class="md:col-span-2 q-callout q-callout-info">
+              <i class="pi pi-lock text-base mt-0.5" aria-hidden="true"></i>
+              <div>
+                <p class="font-semibold">Dates fixes de la période de stage</p>
+                <p class="text-2xs mt-0.5">
+                  Les dates de début et de fin sont imposées par la maquette pédagogique : du {{ formatDate(selectedPeriod?.dateDebut) }} au {{ formatDate(selectedPeriod?.dateFin) }}. Elles ne sont pas modifiables.
+                </p>
+              </div>
+            </div>
+            <div v-else class="md:col-span-2 q-callout q-callout-success">
+              <i class="pi pi-calendar-plus text-base mt-0.5" aria-hidden="true"></i>
+              <div>
+                <p class="font-semibold">Dates flexibles autorisées</p>
+                <p class="text-2xs mt-0.5">
+                  Les dates ont été pré-remplies selon le calendrier standard (du {{ formatDate(selectedPeriod?.dateDebut) }} au {{ formatDate(selectedPeriod?.dateFin) }}). Vous pouvez les ajuster en fonction des dates réelles convenues avec l'entreprise d'accueil.
+                </p>
+              </div>
+            </div>
+
+            <!-- Rappel des interruptions programmées de la période -->
+            <div
+              v-if="selectedPeriod?.periodesInterruption && selectedPeriod.periodesInterruption.length > 0"
+              class="md:col-span-2 q-callout q-callout-warning flex-col text-xs space-y-2.5"
+            >
+              <div class="flex items-center gap-2 font-bold">
+                <i class="pi pi-exclamation-circle text-sm" aria-hidden="true"></i>
+                <span>Rappel des interruptions programmées sur cette période :</span>
+              </div>
+              <p class="text-[11px] leading-relaxed">
+                Pendant ces périodes (ex: congés pédagogiques, examens ou fermeture), l'activité en entreprise est suspendue.
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <div
+                  v-for="inter in selectedPeriod.periodesInterruption"
+                  :key="inter.id"
+                  class="bg-surface-0 dark:bg-surface-900 border border-surface rounded-xl p-3 flex items-start justify-between gap-2 shadow-2xs"
+                >
+                  <div>
+                    <span class="font-bold text-color block text-xs">
+                      {{ inter.motif || 'Interruption de stage' }}
+                    </span>
+                    <span class="text-muted-color text-[11px] mt-0.5 block">
+                      Du {{ formatDate(inter.dateDebut) }} au {{ formatDate(inter.dateFin) }}
+                    </span>
+                  </div>
+                  <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-emphasis text-color shrink-0">
+                    Interruption
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <ValidatedInput
               v-model="form.startDate"
               name="startDate"
               label="Date de début"
               type="date"
-              :rules="validationRules.required"
+              :disabled="!areDatesEditable"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('startDate', res)"
             />
             <ValidatedInput
@@ -660,7 +1022,9 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               name="endDate"
               label="Date de fin"
               type="date"
-              :rules="validationRules.required"
+              :disabled="!areDatesEditable"
+              :rules="[validationRules.required]"
+              :validate-on-input="true"
               @validation="res => handleValidation('endDate', res)"
             />
             <ValidatedInput
@@ -671,6 +1035,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               :min="1"
               :max="48"
               :rules="[validationRules.required, validationRules.numeric, validationRules.minValue(1), validationRules.maxValue(48)]"
+              :validate-on-input="true"
               @validation="res => handleValidation('weeklyHours', res)"
             />
             <ValidatedInput
@@ -678,7 +1043,12 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
               name="salaryAmount"
               label="Gratification horaire nette (€/h)"
               type="number"
-              :rules="[validationRules.required, validationRules.minValue(0)]"
+              :min="minGratification"
+              :minfractiondigits="2"
+              :maxfractiondigits="2"
+              :rules="[validationRules.required, validationRules.minValue(minGratification)]"
+              :help-text="`Minimum obligatoire fixé par l'établissement : ${minGratification} €/h`"
+              :validate-on-input="true"
               @validation="res => handleValidation('salaryAmount', res)"
             />
             <ValidatedInput
@@ -727,62 +1097,69 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <!-- Période & contact -->
               <div>
-                <span class="text-slate-400 block font-medium">Période du stage :</span>
+                <span class="text-muted-color block font-medium">Période du stage :</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedPeriodLabel || '-' }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block font-medium">Téléphone / e-mail étudiant :</span>
+                <span class="text-muted-color block font-medium">Téléphone / e-mail étudiant :</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ form.phone || '-' }} — {{ form.emailPerso || '-' }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block font-medium">Assurance RC :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ form.insuranceCompany || '-' }} ({{ form.insurancePolicyNumber || 'n° non renseigné' }})</span>
+                <span class="text-muted-color block font-medium">Sécurité sociale :</span>
+                <span class="font-bold text-slate-800 dark:text-slate-200">
+                  {{ form.insuranceCompany || 'Non renseigné' }}
+                  <span v-if="form.insurancePolicyNumber" class="text-xs text-slate-500 font-normal block mt-0.5">
+                    {{ form.insurancePolicyNumber }}
+                  </span>
+                </span>
               </div>
 
               <div class="md:col-span-2 border-t border-slate-200 dark:border-slate-700/60 pt-3 mt-1">
-                <span class="text-2xs font-bold uppercase tracking-wider text-slate-400 block mb-2">Entreprise</span>
+                <span class="text-2xs font-bold uppercase tracking-wider text-muted-color block mb-2">Entreprise</span>
               </div>
               <div class="md:col-span-2">
-                <span class="text-slate-400 block font-medium">Raison sociale &amp; SIRET :</span>
+                <span class="text-muted-color block font-medium">Raison sociale &amp; SIRET :</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ form.companyName || '-' }} <span class="font-normal">({{ form.companySiret || 'SIRET non renseigné' }})</span></span>
               </div>
               <div class="md:col-span-2">
-                <span class="text-slate-400 block font-medium">Adresse :</span>
+                <span class="text-muted-color block font-medium">Adresse :</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">
                   {{ form.companyAddress.adresse || '-' }}, {{ form.companyAddress.codePostal }} {{ form.companyAddress.ville }}
                 </span>
               </div>
               <div>
-                <span class="text-slate-400 block font-medium">Représentant légal :</span>
+                <span class="text-muted-color block font-medium">Représentant légal :</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ form.signatoryCivilite }} {{ form.signatoryPrenom }} {{ form.signatoryNom || '-' }}</span>
                 <span class="text-slate-500 block">{{ form.signatoryTitle }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block font-medium">Maître de stage :</span>
+                <span class="text-muted-color block font-medium">Maître de stage :</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ supervisorDisplay }}</span>
                 <span v-if="form.tuteurSameAsSignatory" class="text-2xs text-primary-600 dark:text-primary-400 block">(idem représentant légal)</span>
               </div>
 
               <div class="md:col-span-2 border-t border-slate-200 dark:border-slate-700/60 pt-3 mt-1">
-                <span class="text-2xs font-bold uppercase tracking-wider text-slate-400 block mb-2">Mission</span>
+                <span class="text-2xs font-bold uppercase tracking-wider text-muted-color block mb-2">Mission</span>
               </div>
               <div>
-                <span class="text-slate-400 block font-medium">Dates :</span>
+                <span class="text-muted-color block font-medium">Dates :</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">
-                  {{ form.startDate ? new Date(form.startDate).toLocaleDateString('fr-FR') : '-' }}
-                  au {{ form.endDate ? new Date(form.endDate).toLocaleDateString('fr-FR') : '-' }}
+                  Du {{ formatDate(form.startDate) }} au {{ formatDate(form.endDate) }}
                 </span>
+                <span v-if="!areDatesEditable" class="text-2xs text-slate-500 block mt-0.5">(dates fixes de la période)</span>
+                <span v-else class="text-2xs text-primary-600 dark:text-primary-400 block mt-0.5">(dates flexibles adaptées)</span>
               </div>
               <div>
-                <span class="text-slate-400 block font-medium">Gratification :</span>
+                <span class="text-muted-color block font-medium">Gratification :</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ form.salaryAmount }} €/h — {{ form.weeklyHours }}h/semaine</span>
+                <span class="text-2xs text-slate-500 block mt-0.5">(min. établissement : {{ minGratification }} €/h)</span>
               </div>
               <div class="md:col-span-2">
-                <span class="text-slate-400 block font-medium">Sujet :</span>
+                <span class="text-muted-color block font-medium">Sujet :</span>
                 <p class="font-bold text-slate-800 dark:text-slate-200 mt-1">{{ form.subject || '-' }}</p>
               </div>
               <div class="md:col-span-2">
-                <span class="text-slate-400 block font-medium">Activités :</span>
+                <span class="text-muted-color block font-medium">Activités :</span>
                 <p class="font-medium text-slate-700 dark:text-slate-300 mt-1 leading-relaxed whitespace-pre-line">{{ form.activities || '-' }}</p>
               </div>
             </div>
@@ -790,15 +1167,55 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
 
           <!-- Déclaration sur l'honneur -->
           <div class="q-callout q-callout-warning">
-            <ExclamationTriangleIcon class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <ExclamationTriangleIcon class="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" />
             <div>
               <h5 class="font-bold text-xs">Déclaration sur l'honneur</h5>
               <p class="text-[11px] mt-0.5">
-                En soumettant cette demande, vous certifiez l'exactitude des informations relatives à l'entreprise d'accueil et à vos garanties d'assurance responsabilité civile. Des informations inexactes retarderont l'édition et la signature de la convention.
+                En soumettant cette demande, vous certifiez l'exactitude des informations relatives à l'entreprise d'accueil, à votre organisme de sécurité sociale et aux modalités de stage.
               </p>
             </div>
           </div>
         </FormSection>
+      </div>
+
+      <!-- ── Bannière de statut de validation en "Live" ─────────────────────── -->
+      <div v-if="currentStep < totalSteps" class="pt-2" role="status">
+        <!-- Si bloquant : alerte claire avec la liste des champs manquants -->
+        <div
+          v-if="currentStepBlockers.length > 0"
+          class="q-callout q-callout-warning flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+        >
+          <div class="flex items-start gap-2.5">
+            <ExclamationTriangleIcon class="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" />
+            <div>
+              <span class="font-bold">
+                Informations requises pour passer à l'étape suivante :
+              </span>
+              <div class="flex flex-wrap gap-1.5 mt-1.5">
+                <span
+                  v-for="b in currentStepBlockers"
+                  :key="b.field"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-0 dark:bg-surface-900 text-color font-semibold text-[11px]"
+                >
+                  <span class="font-bold">{{ b.label }}</span>
+                  <span>({{ b.message }})</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <span class="text-[11px] font-medium shrink-0 self-end sm:self-center">
+            {{ currentStepBlockers.length }} champ{{ currentStepBlockers.length > 1 ? 's' : '' }} à compléter
+          </span>
+        </div>
+
+        <!-- Si tout est valide pour l'étape : message positif et rassurant -->
+        <div
+          v-else
+          class="q-callout q-callout-success items-center gap-2.5 text-xs font-semibold"
+        >
+          <i class="pi pi-check-circle text-base shrink-0" aria-hidden="true"></i>
+          <span>Toutes les informations requises pour cette étape sont complètes. Vous pouvez passer à l'étape suivante.</span>
+        </div>
       </div>
 
       <!-- ── Boutons de navigation ──────────────────────────────────────── -->
@@ -816,8 +1233,9 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
         <div class="flex items-center gap-2">
           <button
             v-if="currentStep < totalSteps"
+            type="button"
             @click="nextStep"
-            class="min-h-[44px] text-xs font-bold px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+            class="min-h-[44px] text-xs font-bold px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <span>Suivant</span>
             <i class="pi pi-arrow-right text-[10px]" aria-hidden="true"></i>
@@ -826,11 +1244,11 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
             v-else
             @click="submitRequest"
             :disabled="isSubmitting || stepHasErrors"
-            class="min-h-[44px] text-xs font-bold px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+            class="min-h-[44px] text-xs font-bold px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <i v-if="isSubmitting" class="pi pi-spin pi-spinner" aria-hidden="true"></i>
             <i v-else class="pi pi-check" aria-hidden="true"></i>
-            <span>{{ isSubmitting ? 'Soumission…' : 'Soumettre ma demande' }}</span>
+            <span>{{ isSubmitting ? 'Dépôt en cours…' : (existingStageId ? 'Mettre à jour et déposer ma convention' : 'Déposer ma demande de convention') }}</span>
           </button>
         </div>
       </div>

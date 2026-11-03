@@ -54,6 +54,15 @@
             color: var(--primary-color);
         }
 
+        // Les services autres qu'Unitranet n'ont pas de nom tracé : le texte reprend sa taille et sa couleur.
+        .layout-topbar-logo-texte {
+            font-size: 1.25rem;
+            line-height: 1.25rem;
+            font-weight: 700;
+            text-transform: none;
+            white-space: nowrap;
+        }
+
         .logo-nom {
             height: 1.25rem;
             width: auto;

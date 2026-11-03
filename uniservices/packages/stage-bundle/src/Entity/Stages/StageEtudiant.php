@@ -22,11 +22,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\QueryParameter;
+use App\Filter\StageEtudiantFilter;
 
 #[ORM\Entity(repositoryClass: StageEtudiantRepository::class)]
-#[ApiFilter(SearchFilter::class, properties: ['stagePeriode' => 'exact', 'tuteurUniversitaire' => 'exact'])]
 #[ApiResource(
     operations: [
         new Get(
@@ -49,6 +48,13 @@ use ApiPlatform\Metadata\ApiFilter;
             securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object)"
         ),
         new Delete(security: "is_granted('CAN_DELETE_STAGE', object)")
+    ],
+    parameters: [
+        'stagePeriode' => new QueryParameter(filter: StageEtudiantFilter::class),
+        'tuteurUniversitaire' => new QueryParameter(filter: StageEtudiantFilter::class),
+        'etudiant' => new QueryParameter(filter: StageEtudiantFilter::class),
+        'anneeUniversitaire' => new QueryParameter(filter: StageEtudiantFilter::class),
+        'departement' => new QueryParameter(filter: StageEtudiantFilter::class),
     ]
 )]
 class StageEtudiant implements TimestampableInterface
@@ -376,6 +382,11 @@ class StageEtudiant implements TimestampableInterface
     }
 
     public function getGratification(): bool
+    {
+        return $this->gratification;
+    }
+
+    public function isGratification(): bool
     {
         return $this->gratification;
     }

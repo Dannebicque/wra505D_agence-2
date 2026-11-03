@@ -101,6 +101,8 @@ class Etablissement
 
     private const INTEGRATIONS = ['edusign', 'orebut'];
 
+    private const GRATIFICATION_MINIMALE = 4.35;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -179,7 +181,7 @@ class Etablissement
     }
 
     /**
-     * @return array{integrations: array<string, array{enabled: bool, scope: list<string>, apiKey: ?string, apiUrl: ?string}>}
+     * @return array{integrations: array<string, array{enabled: bool, scope: list<string>, apiKey: ?string, apiUrl: ?string}>, stage: array{gratification_minimale: float}}
      */
     public function getSettings(): array
     {
@@ -210,7 +212,7 @@ class Etablissement
      * Réglages lisibles par l'administration : chaque clé d'API remplacée par l'indication qu'elle
      * existe.
      *
-     * @return array{integrations: array<string, array{enabled: bool, scope: list<string>, apiKey: null, apiKeySet: bool, apiUrl: ?string}>}
+     * @return array{integrations: array<string, array{enabled: bool, scope: list<string>, apiKey: null, apiKeySet: bool, apiUrl: ?string}>, stage: array{gratification_minimale: float}}
      */
     #[Groups(['etablissement:settings'])]
     #[SerializedName('settings')]
@@ -221,7 +223,16 @@ class Etablissement
             $integrations[$name] = [...$integration, 'apiKey' => null, 'apiKeySet' => $integration['apiKey'] !== null];
         }
 
-        return ['integrations' => $integrations];
+        return ['integrations' => $integrations, 'stage' => $this->getSettings()['stage']];
+    }
+
+    /**
+     * Gratification horaire minimale d'un stage, proposée à l'étudiant qui demande sa convention.
+     */
+    #[Groups(['etablissement:read'])]
+    public function getGratificationMinimale(): float
+    {
+        return $this->getSettings()['stage']['gratification_minimale'];
     }
 
     /**
@@ -244,7 +255,7 @@ class Etablissement
     /**
      * @param array<array-key, mixed> $settings
      *
-     * @return array{integrations: array<string, array{enabled: bool, scope: list<string>, apiKey: ?string, apiUrl: ?string}>}
+     * @return array{integrations: array<string, array{enabled: bool, scope: list<string>, apiKey: ?string, apiUrl: ?string}>, stage: array{gratification_minimale: float}}
      */
     private static function normalizeSettings(array $settings): array
     {
@@ -261,7 +272,16 @@ class Etablissement
             ];
         }
 
-        return ['integrations' => $integrations];
+        $stage = is_array($settings['stage'] ?? null) ? $settings['stage'] : [];
+        $gratification = $stage['gratification_minimale'] ?? null;
+
+        return [
+            'integrations' => $integrations,
+            'stage' => [
+                // Taux légal horaire en vigueur, faute de réglage de l'établissement.
+                'gratification_minimale' => (is_int($gratification) || is_float($gratification)) && $gratification > 0 ? (float) $gratification : self::GRATIFICATION_MINIMALE,
+            ],
+        ];
     }
 
     private static function nonEmptyString(mixed $value): ?string

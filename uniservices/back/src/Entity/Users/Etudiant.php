@@ -22,6 +22,7 @@ use App\Entity\Traits\OptionTrait;
 use App\Filter\EtudiantFilter;
 use App\Repository\EtudiantRepository;
 use App\State\Provider\Etudiant\EtudiantTrombinoscopeProvider;
+use App\Utils\LooseValue;
 use App\ValueObject\Adresse;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -642,6 +643,32 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
     public function getDisplay(): string
     {
         return $this->getPrenom() . ' ' . $this->getNom();
+    }
+
+    public function getDisplayPr(): string
+    {
+        return mb_strtoupper($this->getNom() ?? '') . ' ' . ucfirst($this->getPrenom() ?? '');
+    }
+
+    public function getAdresse(): ?Adresse
+    {
+        return $this->getAdresseEtudiante() ?? $this->getAdresseParentale();
+    }
+
+
+    public function getIntituleSecuriteSociale(): ?string
+    {
+        return LooseValue::nullableString($this->getOpt()['intitule_securite_sociale'] ?? null);
+    }
+
+    public function getAdresseSecuriteSociale(): ?string
+    {
+        return LooseValue::nullableString($this->getOpt()['adresse_securite_sociale'] ?? null);
+    }
+
+    public function getCivilite(): ?string
+    {
+        return LooseValue::nullableString($this->getOpt()['civilite'] ?? 'M.');
     }
 
     /**

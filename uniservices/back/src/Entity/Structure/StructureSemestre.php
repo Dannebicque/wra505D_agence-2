@@ -84,15 +84,15 @@ class StructureSemestre implements TimestampableInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'enseignement:read', 'annee:read', 'stage_periode:read'])]
+    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'enseignement:read', 'annee:read', 'stage_periode:read', 'scolarite:user'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'etudiant:read', 'pn:read', 'enseignant_hrs:read', 'edt_event:read:agenda', 'annee:read', 'stage_periode:read'])]
+    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'etudiant:read', 'pn:read', 'enseignant_hrs:read', 'edt_event:read:agenda', 'annee:read', 'stage_periode:read', 'scolarite:user'])]
     private string $libelle;
 
     #[ORM\Column]
-    #[Groups(['semestre:detail', 'maquette:detail'])]
+    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:user'])]
     private int $ordreAnnee = 0;
 
     #[ORM\Column]
@@ -127,7 +127,7 @@ class StructureSemestre implements TimestampableInterface
     private Collection $groupes;
 
     #[ORM\ManyToOne(inversedBy: 'semestres')]
-    #[Groups(['semestre:detail', 'semestre:light', 'annee:light', 'scolarite:read', 'enseignement:read', 'etudiant:read', 'stage_periode:read'])]
+    #[Groups(['semestre:detail', 'semestre:light', 'annee:light', 'scolarite:read', 'enseignement:read', 'etudiant:read', 'stage_periode:read', 'scolarite:user'])]
     private ?StructureAnnee $annee = null;
 
     /**
@@ -320,6 +320,11 @@ class StructureSemestre implements TimestampableInterface
         $this->annee = $annee;
 
         return $this;
+    }
+
+    public function getDepartement(): ?StructureDepartement
+    {
+        return $this->getDiplome()?->getDepartement();
     }
 
     public function configureOptions(OptionsResolver $resolver): void

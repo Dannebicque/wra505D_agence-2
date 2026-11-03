@@ -1,4 +1,7 @@
 <script setup>
+// vue-router garde la page précédente de l'application dans l'état de l'historique : absente,
+// l'arrivée est directe (lien, nouvel onglet) et « Retour » ne mènerait nulle part.
+const peutRevenir = Boolean(window.history.state?.back);
 </script>
 
 <template>
@@ -12,9 +15,14 @@
           <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">Page Introuvable</h1>
           <span class="text-muted-color text-center">La page que vous recherchez n'existe pas.</span>
 
-          <Button @click="$router.push('/intranet/')" class="mt-4" severity="primary">
-            <span class="p-button-label">Accueil</span>
-          </Button>
+          <div class="mt-4 flex flex-wrap justify-center gap-3">
+            <Button v-if="peutRevenir" @click="$router.go(-1)" severity="primary" outlined>
+              <span class="p-button-label">Retour</span>
+            </Button>
+            <Button @click="$router.push('/')" severity="primary">
+              <span class="p-button-label">Accueil Uniservices</span>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
