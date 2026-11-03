@@ -564,7 +564,7 @@ généré.
 | E26.5 · en revue | stage : convention générée, saisie de l'étudiant, partie enseignant, filtres des périodes ; notre `StageVoter` (E24) conservé et appliqué au PDF et aux avenants | `62fb937a5`, `2b9433565`, `a13210c97`, `c973bdd55` |
 | E26.6 · en revue | questionnaire : exports, lien accessible, relances et historique, département ; routes réservées au personnel | `eb54915d9`, `f4d7dcf1e`, `159a2404e`, `8e4522f31` |
 | E26.7 | sous-commission classique et APC, réservée au personnel du département | `5b39f062f`, `357499ef6` |
-| E26.8 | finance : bundle de #249, jamais repris, et sa refonte avec PDF, routes sous contrôle d'accès | `f97f829e8` |
+| E26.8 · en revue | finance : bundle de #249, jamais repris, et sa refonte avec PDF, routes sous contrôle d'accès | `f97f829e8` |
 | E26.9 | absences et évaluations côté personnel, indicateurs ; notre dépôt de justificatif par l'étudiant (P2) conservé | `3076e6f07`, `6b12732d0`, `187b207c2`, `0c71cb7fb` |
 | E26.10 | widgets et tableaux de bord : accès aux widgets, widgets limités aux applications de l'utilisateur, tableau de bord des enseignements ; notre accueil étudiant (C18, C19) conservé | `11ff61d2e`, `688feada9`, `aa15909aa`, `7775e5908`, `6a4176191`, `0258d3783` |
 | E26.11 | interface transverse : composants et accessibilité, portail, badge d'application, année active, renommage `unitranet` en `intranet` dans le code, accès des étudiants aux applications (`9090dcd54`, couleurs par module à adapter) ; le nom affiché reste Unitranet, nos jetons de couleur remplacent leurs couleurs en dur | `b79a176b0`, `3a4887acf`, `dc0ee62d9`, `6acb7381b`, `4978af083`, `94e79a0e3`, `5d8af9973`, `9090dcd54` |
@@ -611,6 +611,18 @@ généré.
   plus accepté. Le badge de département prend la primaire, jamais la couleur du département,
   qui n'est donc pas exposée. Bug du client corrigé : l'objet et le message saisis pour une
   relance n'apparaissaient pas dans l'e-mail.
+- Finance (E26.8) : les demandes d'achat, réceptions et fournisseurs, ouverts sans connexion chez
+  le client, passent par `FinanceVoter` avec les rôles du client : consulter (`ROLE_FINANCE_VIEW`,
+  accordé par défaut avec le module), modifier ou déposer le PDF signé (`ROLE_FINANCE_DEMANDEUR`),
+  supprimer (`ROLE_FINANCE_MANAGER`), chacun dans le département de la demande ; le
+  super-administrateur passe partout. Les listes sont restreintes aux départements de l'utilisateur
+  et le PDF comme sa version HTML vérifient le même droit. Failles du client fermées : PDF signé
+  rangé dans `public/uploads`, accepté sur la seule extension annoncée, et chemin `pdfFilePath`
+  modifiable par l'API puis lu sur le disque ; le fichier va dans `var/finance`, son type est lu
+  dans son contenu et le chemin n'est plus écrit que par le dépôt. `FinancePdfService`, appelé
+  nulle part, est retiré. Couleurs : une seule primaire pour les cinq étapes, les statuts en `Tag`
+  PrimeVue selon leur `severity`, le PDF sur `document_palette`. La page de configuration du module
+  attend `ConfigOptionItem` et part en E26.12.
 - Messagerie (E26.13) : on reprend la vraie messagerie du client. La source « messages » du
   centre de notifications lit ses messages. Les copies des e-mails envoyés restent dans le fil.
 

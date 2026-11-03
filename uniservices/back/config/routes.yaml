@@ -18,6 +18,13 @@ intranet_controllers:
         namespace: IntranetBundle\Controller
     type: attribute
 
+# Génération, dépôt et lecture des PDF des demandes d'achat, ajoutés par le client.
+finance_controllers:
+    resource:
+        path: '../../packages/finance-bundle/src/Controller/'
+        namespace: FinanceBundle\Controller
+    type: attribute
+
 # Exports et relances des questionnaires, ajoutés par le client dans le bundle questionnaire.
 questionnaire_controllers:
     resource:

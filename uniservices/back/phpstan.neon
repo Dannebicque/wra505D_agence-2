@@ -20,3 +20,4 @@ parameters:
         - ../packages/helpdesk-bundle/src
         - ../packages/questionnaire-bundle/src
         - ../packages/stage-bundle/src
+        - ../packages/finance-bundle/src

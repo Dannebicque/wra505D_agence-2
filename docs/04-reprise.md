@@ -241,6 +241,10 @@ rien**, leur base ayant beaucoup de défauts. Seul leur `main` compte, pas leurs
 - **Schéma** : E26.2 ajoute la table `departement_personnel_parcours_diplome` (diplômes d'un
   responsable de parcours). Base locale existante : `php bin/console doctrine:schema:update --force`.
   Un responsable de parcours sans diplôme rattaché perd ce rôle tant qu'on ne lui en confie pas.
+- **Schéma** : E26.8 ajoute les tables `finance_bon_commande`, `finance_fournisseur` et
+  `finance_reception` (demandes d'achat), sans toucher aux tables existantes. Base locale existante :
+  `php bin/console doctrine:schema:update --force`, puis `doctrine:fixtures:load` pour les demandes
+  de démonstration. Les PDF signés se rangent dans `back/var/finance`, hors de `public/`.
 - **Au déploiement**, vider aussi les pools de cache :
   `php bin/console cache:pool:clear cache.global_clearer`. Le cache de métadonnées d'API Platform
   survit à `cache:clear` et garde des groupes de sérialisation périmés.
