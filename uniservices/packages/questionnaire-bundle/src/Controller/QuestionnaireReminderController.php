@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Controller;
 
+use App\Security\UserTypeVoter;
 use App\Service\Email\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
@@ -33,6 +34,7 @@ class QuestionnaireReminderController extends AbstractController
     #[Route('/api/questionnaires/{uuid}/reminders', name: 'api_questionnaire_send_reminders', methods: ['POST'])]
     public function sendReminders(string $uuid, Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted(UserTypeVoter::IS_PERSONNEL);
         $questionnaire = $this->questionnaireRepository->findOneBy(['uuid' => $uuid]);
         if (!$questionnaire instanceof Questionnaire) {
             throw new NotFoundHttpException('Questionnaire introuvable.');

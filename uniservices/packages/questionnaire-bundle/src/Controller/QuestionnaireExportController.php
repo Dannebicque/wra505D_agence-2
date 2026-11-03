@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Controller;
 
+use App\Security\UserTypeVoter;
 use App\Service\Pdf\PdfExportOptions;
 use App\Service\Pdf\PdfExportService;
 use Davidannebicque\HtmlToSpreadsheetBundle\Spreadsheet\SpreadsheetRenderer;
@@ -83,6 +84,7 @@ class QuestionnaireExportController extends AbstractController
 
     private function findQuestionnaire(string $uuid): Questionnaire
     {
+        $this->denyAccessUnlessGranted(UserTypeVoter::IS_PERSONNEL);
         $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $uuid]);
         if (!$q instanceof Questionnaire) {
             throw new NotFoundHttpException('Questionnaire not found');
