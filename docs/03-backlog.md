@@ -561,8 +561,8 @@ généré.
 | E26.2 · en revue | droits : responsable de parcours limité aux diplômes de son affectation, rôles résolus par diplôme, `ROLE_PERSONNEL` et `ROLE_ETUDIANT` vérifiés comme types d'utilisateur, simulation de plusieurs rôles ; écran d'accès du personnel avec `ApplicationBadge` sans couleur par module | `ac4950fd9`, rôles de `7775e5908` |
 | E26.3 · en revue | étudiants : import CSV et ZIP, intégration en scolarité, synchronisation des groupes, profil ; nos contrôles E22 et E23 conservés | `a5cacfb08`, `5940864b0`, `b5bb65022`, `adb985cd7`, `4ee69bb15`, `df85c098e` |
 | E26.4 · en revue | exports PDF, Excel, CSV et trombinoscope du personnel, routes réservées au personnel du département | `2e37857a0`, `9520dbcd4`, `55a53493a`, `1f76d0b41` |
-| E26.5 | stage : convention générée, saisie de l'étudiant, partie enseignant, filtres des périodes ; notre `StageVoter` (E24) conservé et appliqué au PDF et aux avenants | `62fb937a5`, `2b9433565`, `a13210c97`, `c973bdd55` |
-| E26.6 | questionnaire : exports, lien accessible, relances et historique, département ; routes réservées au personnel | `eb54915d9`, `f4d7dcf1e`, `159a2404e`, `8e4522f31` |
+| E26.5 · en revue | stage : convention générée, saisie de l'étudiant, partie enseignant, filtres des périodes ; notre `StageVoter` (E24) conservé et appliqué au PDF et aux avenants | `62fb937a5`, `2b9433565`, `a13210c97`, `c973bdd55` |
+| E26.6 · en revue | questionnaire : exports, lien accessible, relances et historique, département ; routes réservées au personnel | `eb54915d9`, `f4d7dcf1e`, `159a2404e`, `8e4522f31` |
 | E26.7 | sous-commission classique et APC, réservée au personnel du département | `5b39f062f`, `357499ef6` |
 | E26.8 · en revue | finance : bundle de #249, jamais repris, et sa refonte avec PDF, routes sous contrôle d'accès | `f97f829e8` |
 | E26.9 | absences et évaluations côté personnel, indicateurs ; notre dépôt de justificatif par l'étudiant (P2) conservé | `3076e6f07`, `6b12732d0`, `187b207c2`, `0c71cb7fb` |
@@ -592,6 +592,25 @@ généré.
   Twig `document_palette` (`config/packages/twig.yaml`), copie des jetons de la DA, et l'en-tête et
   le pied de page dupliqués du client sont retirés au profit de ceux de `templates/pdf`. Le widget
   des listings rejoint le tableau de bord du personnel ; le styleguide de `1f76d0b41` part en E26.11.
+- Stage (E26.5) : la convention générée par Gotenberg et la saisie de l'étudiant reprises du client,
+  derrière notre `StageVoter` (E24) pour le PDF et les avenants. Les périodes et les stages se
+  filtrent par `QueryParameter` (`StagePeriodeFilter`, `StageEtudiantFilter`), comme en E26.1. La
+  gratification minimale reste dans les réglages de l'établissement, réservés à l'administration :
+  l'étudiant n'en lit que le montant (`gratificationMinimale`). Le bouton Suivant de la demande de
+  convention reste actif, comme décidé avec la mise au RGAA. Les tableaux de bord stage de
+  l'étudiant, de l'enseignant et du responsable gardent les couleurs Tailwind du client, comme avant
+  ce lot : leur mise aux jetons est une tâche à part. Le gabarit de convention du client rogne le
+  bord droit de ses cadres en première page ; les messages d'erreur PDF ne renvoient plus
+  l'exception au navigateur.
+- Questionnaire (E26.6) : les exports Excel et PDF, les relances et la liste des invitations
+  (jeton de réponse, adresse, historique des relances), ouverts sans connexion chez le client,
+  passent par `QuestionnaireFollowUpVoter` : rôle de lecture des réponses (relance : rôle de
+  publication) détenu dans le département du questionnaire ; un questionnaire sans département
+  relève du département actif. La liste des invitations exige le paramètre `questionnaire`.
+  L'import de destinataires lit les classeurs avec `exceljs`, pas `xlsx` ; l'ancien `.xls` n'est
+  plus accepté. Le badge de département prend la primaire, jamais la couleur du département,
+  qui n'est donc pas exposée. Bug du client corrigé : l'objet et le message saisis pour une
+  relance n'apparaissaient pas dans l'e-mail.
 - Finance (E26.8) : les demandes d'achat, réceptions et fournisseurs, ouverts sans connexion chez
   le client, passent par `FinanceVoter` avec les rôles du client : consulter (`ROLE_FINANCE_VIEW`,
   accordé par défaut avec le module), modifier ou déposer le PDF signé (`ROLE_FINANCE_DEMANDEUR`),

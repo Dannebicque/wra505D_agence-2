@@ -19,8 +19,8 @@
 
     <div v-if="response && survey" class="space-y-6 pt-1">
       <!-- Response Info KPI Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 flex items-center gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="p-3 rounded-xl border border-surface bg-emphasis flex items-center gap-3">
           <div
             :class="[
               'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-xs',
@@ -31,29 +31,74 @@
           </div>
           <div class="min-w-0">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400 block">Statut</span>
-            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <span class="text-sm font-semibold text-color">
               {{ response.completed ? 'Terminé' : 'En cours' }}
             </span>
           </div>
         </div>
 
-        <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 flex items-center gap-3">
+        <div class="p-3 rounded-xl border border-surface bg-emphasis flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-primary-600 text-white shadow-xs">
             <ChartBarIcon class="w-5 h-5" />
           </div>
           <div class="min-w-0">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400 block">Progression</span>
-            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ getProgress() }}%</span>
+            <span class="text-sm font-semibold text-color">{{ getProgress() }}%</span>
           </div>
         </div>
 
-        <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 flex items-center gap-3">
+        <div class="p-3 rounded-xl border border-surface bg-emphasis flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-purple-600 text-white shadow-xs">
             <ClockIcon class="w-5 h-5" />
           </div>
           <div class="min-w-0">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400 block">Temps passé</span>
-            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ getTimeSpent() }}</span>
+            <span class="text-sm font-semibold text-color">{{ getTimeSpent() }}</span>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl border border-surface bg-emphasis flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-primary text-primary-contrast shadow-xs">
+            <BellIcon aria-hidden="true" class="w-5 h-5" />
+          </div>
+          <div class="min-w-0">
+            <span class="text-xs font-medium text-muted-color block">Relances</span>
+            <span class="text-sm font-semibold text-color">
+              {{ remindersCount }} envoyé{{ remindersCount > 1 ? 's' : '' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reminder History Section -->
+      <div v-if="response.remindersHistory && response.remindersHistory.length > 0" class="space-y-3 p-4 rounded-xl border border-primary-200 dark:border-primary-900/50 bg-primary-50/40 dark:bg-primary-950/20">
+        <div class="flex items-center justify-between pb-1">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-primary-900 dark:text-primary-300 flex items-center gap-1.5">
+            <BellIcon aria-hidden="true" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+            <span>Historique des relances ({{ response.remindersHistory.length }})</span>
+          </h3>
+          <span class="text-[11px] text-primary-700/80 dark:text-primary-400/80">
+            Dernière : {{ formatDate(response.remindedAt) }}
+          </span>
+        </div>
+
+        <div class="space-y-2">
+          <div
+            v-for="(rem, index) in sortedReminders"
+            :key="rem.id || index"
+            class="p-3 rounded-lg bg-surface-0 dark:bg-surface-900 border border-primary-200/60 dark:border-primary-900/40 flex flex-col gap-1 text-xs"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-semibold text-color">
+                Relance #{{ response.remindersHistory.length - index }} - {{ rem.subject || 'Rappel' }}
+              </span>
+              <span class="text-[11px] text-muted-color">
+                {{ formatDate(rem.sentAt) }}
+              </span>
+            </div>
+            <p v-if="rem.message" class="text-[11px] text-muted-color whitespace-pre-line font-mono bg-emphasis dark:bg-surface-900 p-2 rounded">
+              {{ rem.message }}
+            </p>
           </div>
         </div>
       </div>
@@ -194,10 +239,11 @@ import {
   DocumentTextIcon,
   CheckCircleIcon,
   ClockIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  BellIcon
 } from '@heroicons/vue/24/outline';
 import DialogHeader from '@/components/Form/DialogHeader.vue';
-import type { Survey, Response } from '@types';
+import type { Survey, Response } from '@/types/survey';
 import { useResponseStore } from '@/stores/responses';
 import { useUIStore } from '@/stores/ui';
 import { format } from 'date-fns';
@@ -263,7 +309,30 @@ function formatDate(date?: Date | string): string {
   return format(parsed, 'dd/MM/yyyy à HH:mm', { locale: fr });
 }
 
-function sendReminder() {
+const remindersCount = computed(() => {
+  return props.response?.remindersCount ?? props.response?.remindersHistory?.length ?? 0;
+});
+
+const sortedReminders = computed(() => {
+  if (!props.response?.remindersHistory) return [];
+  return [...props.response.remindersHistory].sort((a, b) => {
+    return new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime();
+  });
+});
+
+async function sendReminder() {
+  if (props.response?.id && props.survey?.uuid) {
+    await responseStore.sendReminders(
+      props.survey.uuid,
+      [props.response.id],
+      `Rappel : questionnaire "${props.survey.title || ''}"`
+    );
+  } else if (props.response?.id) {
+    responseStore.recordReminders([props.response.id], {
+      subject: `Rappel : questionnaire "${props.survey?.title || ''}"`,
+      type: 'manual',
+    });
+  }
   uiStore.addNotification(
     'success',
     'Rappel envoyé',

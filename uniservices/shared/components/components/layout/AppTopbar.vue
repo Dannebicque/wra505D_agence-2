@@ -152,6 +152,11 @@ const props = defineProps({
     type: String,
     required: false
   },
+  appName: {
+    type: String,
+    required: false,
+    default: 'Unitranet'
+  },
 });
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme, layoutState } = useLayout();
@@ -367,10 +372,10 @@ const selectAnneeUniversitaire = (annee) => {
       </button>
 
       <!-- Le nom du module ne dit rien de plus que le menu : le logo et le nom de l'application mènent à l'accueil. -->
-      <router-link to="/" class="layout-topbar-logo" aria-label="Unitranet, accueil">
+      <router-link to="/" class="layout-topbar-logo" :aria-label="`${appName}, accueil`">
         <LogoIut v-if="logoUrl === logoIutUrl" class="rounded-xl p-2" />
         <Logo v-else :logo-url="logoUrl" alt="" class="rounded-xl p-2" />
-        <span class="layout-topbar-logo-nom"><LogoNom /></span>
+        <span class="layout-topbar-logo-nom"><LogoNom v-if="appName === 'Unitranet'" /><span v-else class="layout-topbar-logo-texte">{{ appName }}</span></span>
       </router-link>
     </div>
 

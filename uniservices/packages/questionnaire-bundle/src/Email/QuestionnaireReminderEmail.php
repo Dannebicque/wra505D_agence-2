@@ -21,7 +21,7 @@ final class QuestionnaireReminderEmail extends AbstractEmailDefinition
 
     public function getDefaultSubject(): string
     {
-        return 'Rappel : Répondre au questionnaire : {{ questionnaire.title }}';
+        return '{% if customSubject is defined and customSubject %}{{ customSubject }}{% else %}Rappel : Répondre au questionnaire : {{ questionnaire.title }}{% endif %}';
     }
 
     public function getHtmlTemplatePath(): string
@@ -41,6 +41,8 @@ final class QuestionnaireReminderEmail extends AbstractEmailDefinition
             'questionnaire' => 'Objet Questionnaire (titre, description)',
             'surveyUrl'     => 'URL directe pour accéder au questionnaire',
             'expiresAt'     => 'Date de fermeture du questionnaire (si définie)',
+            'customSubject' => 'Objet saisi lors d\'une relance manuelle',
+            'customMessage' => 'Message saisi lors d\'une relance manuelle',
         ];
     }
 

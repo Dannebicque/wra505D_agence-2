@@ -16,6 +16,9 @@ use App\ValueObject\Adresse;
 use Doctrine\ORM\EntityManagerInterface;
 use StageBundle\Entity\Stages\StageContact;
 use StageBundle\Entity\Stages\StageEntreprise;
+use App\Service\Pdf\PdfExportOptions;
+use App\Service\Pdf\PdfExportService;
+use StageBundle\Adapter\StageConventionAdapter;
 use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StageAvenant;
 use StageBundle\Entity\Stages\StageConventionTemplate;
@@ -28,13 +31,11 @@ use Symfony\Component\Routing\Attribute\Route;
 //todo: a déplacer dans le bundle stage
 class StagePdfController extends AbstractController
 {
-    private EntityManagerInterface $em;
-    private GotenbergService $gotenbergService;
-
-    public function __construct(EntityManagerInterface $em, GotenbergService $gotenbergService)
-    {
-        $this->em = $em;
-        $this->gotenbergService = $gotenbergService;
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly GotenbergService $gotenbergService,
+        private readonly PdfExportService $pdfExportService,
+    ) {
     }
 
     #[Route('/api/stage_etudiants/{id}/pdf', name: 'api_stage_etudiants_pdf', methods: ['GET'])]
@@ -47,26 +48,75 @@ class StagePdfController extends AbstractController
 
         $this->denyAccessUnlessGranted('CAN_VIEW_STAGE', $stage);
 
-        $template = $this->em->getRepository(StageConventionTemplate::class)->findOneBy(['code' => 'default_convention']);
-        $templateText = $template?->getTexte() ?? "CONVENTION DE STAGE\n(Modèle par défaut non configuré en base)";
+        // Get main establishment
+        $etab = $this->em->getRepository(Etablissement::class)->findOneBy(['isMain' => true])
+            ?? $this->em->getRepository(Etablissement::class)->findOneBy([]);
 
-        // Replace placeholders
-        $text = $this->replacePlaceholders($templateText, $stage);
+        $periode = $stage->getStagePeriode();
+        $semestre = $periode?->getSemestreProgramme();
+        $annee = $semestre?->getAnnee();
+        $diplome = $annee?->getDiplome();
+        $dept = $diplome?->getDepartement() ?? $periode?->getDepartement();
 
-        // Convert to nice HTML page
-        $html = $this->renderConventionHtml($text, $stage);
+        // Année universitaire
+        $anneeUnivStr = $periode?->getAnneeUniversitaire()?->getLibelle()
+            ?? (date('Y') . '/' . ((int) date('Y') + 1));
 
-        // Call Gotenberg
+        $deptTel = $dept?->getTelContact() ?? ($etab?->getTelephone() ?? '03.26.91.34.68');
+        $directeurNom = 'Martial Martin';
+
+        $userData = [
+            'displayAnneeUniversitaire' => $anneeUnivStr,
+            'departement' => [
+                'telcontact' => $deptTel,
+                'ufr' => [
+                    'sitePrincipal' => [
+                        'adresse' => Adresse::fromArray($etab?->getAdresse()),
+                    ],
+                    'responsable' => [
+                        'display' => $directeurNom,
+                    ],
+                ],
+            ],
+        ];
+
+        $adaptedStage = new StageConventionAdapter($stage, $semestre, $diplome);
+
+        $nomFichier = 'convention_stage_' . mb_strtolower(LooseValue::truthyString($stage->getEtudiant()?->getNom()) ?? 'etudiant') . '.pdf';
+
+        $options = PdfExportOptions::create()
+            ->setWithHeader(false)
+            ->setWithFooter(false)
+            ->setMargins(0.8, 0.8, 0.8, 0.8)
+            ->setInline(true)
+            ->setTitle('Convention de stage - ' . ($stage->getEtudiant()?->getDisplay() ?? 'Étudiant'));
+
         try {
-            $pdfBytes = $this->gotenbergService->convertHtmlToPdf($html);
+            return $this->pdfExportService->generateStreamedResponse(
+                '@Stage/pdf/conventionStagePDF.html.twig',
+                [
+                    'proposition' => $adaptedStage,
+                    'user_data' => $userData,
+                ],
+                $nomFichier,
+                $options
+            );
         } catch (\Exception $e) {
-            return new Response('Erreur lors de la génération PDF : ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+            // En cas d'erreur de rendu Gotenberg, fallback avec template texte brut
+            $template = $this->em->getRepository(StageConventionTemplate::class)->findOneBy(['code' => 'default_convention']);
+            $templateText = $template?->getTexte() ?? "CONVENTION DE STAGE\n(Modèle par défaut non configuré en base)";
+            $text = $this->replacePlaceholders($templateText, $stage);
+            $html = $this->renderConventionHtml($text, $stage);
+            try {
+                $pdfBytes = $this->gotenbergService->convertHtmlToPdf($html);
+                return new Response($pdfBytes, Response::HTTP_OK, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $nomFichier . '"',
+                ]);
+            } catch (\Exception) {
+                return new Response('Erreur lors de la génération PDF de la convention.', Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
         }
-
-        return new Response($pdfBytes, Response::HTTP_OK, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="convention_stage_' . ($stage->getEtudiant()?->getNom() ?? 'etudiant') . '.pdf"',
-        ]);
     }
 
     #[Route('/api/stage_avenants/{id}/pdf', name: 'api_stage_avenants_pdf', methods: ['GET'])]
@@ -96,8 +146,8 @@ class StagePdfController extends AbstractController
         // Call Gotenberg
         try {
             $pdfBytes = $this->gotenbergService->convertHtmlToPdf($html);
-        } catch (\Exception $e) {
-            return new Response('Erreur lors de la génération PDF de l\'avenant : ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (\Exception) {
+            return new Response('Erreur lors de la génération PDF de l\'avenant.', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return new Response($pdfBytes, Response::HTTP_OK, [
@@ -217,15 +267,15 @@ class StagePdfController extends AbstractController
             '{annee_universitaire}' => $anneeUnivStr,
             '{etudiant.nom}' => $etu instanceof Etudiant ? mb_strtoupper($etu->getNom() ?? '') : '',
             '{etudiant.prenom}' => $etu instanceof Etudiant ? $etu->getPrenom() : '',
-            '{etudiant.sexe}' => $etu instanceof Etudiant && method_exists($etu, 'getCivilite') && $etu->getCivilite() === 'Mme' ? 'Femme' : 'Homme',
+            '{etudiant.sexe}' => $etu instanceof Etudiant && $etu->getCivilite() === 'Mme' ? 'Femme' : 'Homme',
             '{etudiant.date_naissance}' => $etu instanceof Etudiant && $etu->getDateNaissance() instanceof \DateTimeInterface ? $fmtDate($etu->getDateNaissance()) : '',
             '{etudiant.adresse}' => $etu instanceof Etudiant ? (string) ($etu->getAdresseEtudiante() ?? '') : '',
             '{etudiant.telephones}' => $telephones,
             '{etudiant.email}' => $etu instanceof Etudiant ? $etu->getMailUniv() : '',
             '{etudiant.formation}' => $formationLibelle,
             '{formation.volume_horaire}' => $volumeHoraire,
-            '{etudiant.secu}' => ($etu instanceof Etudiant ? LooseValue::truthyString($etu->getOpt()['intitule_securite_sociale'] ?? null) : null) ?? 'CPAM de l\'Aube',
-            '{etudiant.secu_adresse}' => ($etu instanceof Etudiant ? LooseValue::truthyString($etu->getOpt()['adresse_securite_sociale'] ?? null) : null) ?? '',
+            '{etudiant.secu}' => LooseValue::truthyString($stage->getAssuranceCompagnie()) ?? ($etu instanceof Etudiant ? LooseValue::truthyString($etu->getOpt()['intitule_securite_sociale'] ?? null) : null) ?? 'CPAM de l\'Aube',
+            '{etudiant.secu_adresse}' => LooseValue::truthyString($stage->getAssuranceNumero()) ?? ($etu instanceof Etudiant ? LooseValue::truthyString($etu->getOpt()['adresse_securite_sociale'] ?? null) : null) ?? '',
 
             '{entreprise.nom}' => $ent instanceof StageEntreprise ? $ent->getRaisonSociale() : '',
             '{entreprise.adresse}' => (string) ($stage->getAdresseStage() ?? ($ent instanceof StageEntreprise ? $ent->getAdresse() : null) ?? ''),

@@ -72,9 +72,10 @@ describe('Notes et absences de l\'étudiant', () => {
         cy.focused().should('have.id', 'absences-enAttente');
     });
 
-    it('change de semestre en un clic, et le garde dans l\'adresse', () => {
+    it('change de semestre depuis la liste, et le garde dans l\'adresse', () => {
         cy.location('search').invoke('match', /semestre=(\d+)/).its(1).then((courant) => {
-            cy.get('.selecteur button[aria-pressed="false"]').first().click();
+            cy.get('.selecteur__liste').click();
+            cy.get('[role="option"][aria-selected="false"]').first().click();
             cy.location('search').should('match', /semestre=\d+/).and('not.contain', `semestre=${courant}`);
             cy.contains('Aucune note publiée pour ce semestre.');
         });

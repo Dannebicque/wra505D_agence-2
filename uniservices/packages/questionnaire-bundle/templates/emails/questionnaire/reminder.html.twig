@@ -19,6 +19,10 @@
     <p style="color:#718096;font-style:italic;">{{ questionnaire.description }}</p>
     {% endif %}
 
+    {% if customMessage is defined and customMessage %}
+    <p>{{ customMessage|nl2br }}</p>
+    {% endif %}
+
     <p>
         Vous n'avez pas encore validé votre réponse. Votre participation est importante pour nous aider à améliorer la qualité de nos formations.
     </p>
