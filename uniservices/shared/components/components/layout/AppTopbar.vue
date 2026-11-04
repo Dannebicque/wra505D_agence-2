@@ -30,7 +30,11 @@ const anneeItems = ref([
     items: []
   }
 ]);
-const rolesItems = ref([]);
+const selectableRoles = AVAILABLE_ROLES.filter(role => !['SUPER_ADMIN', 'ROLE_SUPER_ADMIN'].includes(role.role));
+const selectedRoles = computed({
+  get: () => userStore.temporaryRoles ?? [],
+  set: roles => userStore.setTemporaryRoles(roles),
+});
 
 const selectedAnneeUniversitaire = ref(null);
 
@@ -41,24 +45,6 @@ onMounted(async () => {
 
 watch(() => userStore.user, async () => {
   await fetchData();
-});
-
-// Surveiller les changements du rôle temporaire pour mettre à jour l'interface utilisateur
-watch(() => userStore.temporaryRole, () => {
-  const hasTemporaryRole = typeof userStore.temporaryRole === 'string' && userStore.temporaryRole.length > 0;
-  // Mettre à jour l'état actif des éléments de rôle lorsque le rôle temporaire change
-  if (rolesItems.value.length > 0) {
-    AVAILABLE_ROLES.forEach((role, index) => {
-      if (rolesItems.value[index]) {
-        rolesItems.value[index].active = hasTemporaryRole ?
-          (userStore.temporaryRole === role.role) :
-          userStore[role.property];
-      }
-    });
-  }
-
-  // afficher le role impersonnalisé dans la console pour le développement
-  console.log('Rôle temporaire actuel:', userStore.temporaryRole);
 });
 
 const fetchData = async () => {
@@ -95,30 +81,6 @@ const fetchData = async () => {
       if (selectedAnneeUniversitaire.value && selectedAnneeUniversitaire.value.libelle) {
         selectedAnneeUniversitaire.value.label = selectedAnneeUniversitaire.value.libelle;
       }
-    }
-
-    if (userStore.user) {
-      // Mapper les rôles aux éléments du menu avec l'état actif et la fonction de commande
-      rolesItems.value = AVAILABLE_ROLES.map(role => ({
-        label: role.label,
-        command: () => {
-          if (userStore.temporaryRole === role.role) {
-            userStore.clearTemporaryRole();
-          } else {
-            userStore.setTemporaryRole(role.role);
-          }
-        },
-        active: (typeof userStore.temporaryRole === 'string' && userStore.temporaryRole.length > 0)
-          ? (userStore.temporaryRole === role.role)
-          : userStore[role.property]
-      }));
-
-      // Ajouter une option "Réinitialiser le rôle" à la fin
-      rolesItems.value.push({
-        label: 'Réinitialiser le rôle',
-        command: () => userStore.clearTemporaryRole(),
-        icon: 'pi pi-refresh'
-      });
     }
 
     // Gérer les données des départements pour l'interface utilisateur
@@ -337,12 +299,8 @@ const isEnabled = (item) => {
   return item.urlSlug === 'intranet' || userStore.applications.includes(item.urlSlug);
 };
 
-// Propriété calculée pour déterminer si le menu des rôles doit être affiché
-const showRolesMenu = computed(() => {
-  // Afficher le menu si l'utilisateur est un superAdmin ou a un rôle temporaire défini
-  const hasTemporaryRole = typeof userStore.temporaryRole === 'string' && userStore.temporaryRole.length > 0;
-  return userStore.isSuperAdmin || hasTemporaryRole;
-});
+// L'accès au simulateur dépend des droits réels, même pendant une simulation vide.
+const showRolesMenu = computed(() => userStore.isPersonnel && userStore.rolesActifs.includes('SUPER_ADMIN'));
 
 const selectAnneeUniversitaire = (annee) => {
   // Passer l'objet annee original au store

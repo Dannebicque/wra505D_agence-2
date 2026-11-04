@@ -3,6 +3,7 @@
 namespace IntranetBundle\Services\Dashboard\Provider;
 
 use App\Domain\Dashboard\WidgetDataProviderInterface;
+use App\Domain\Dashboard\DashboardContext;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Repository\Edt\EdtEventRepository;

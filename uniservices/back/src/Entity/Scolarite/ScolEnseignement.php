@@ -31,6 +31,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(normalizationContext: ['groups' => ['enseignement:detail', 'enseignement_ue:read']]),
         new GetCollection(normalizationContext: ['groups' => ['enseignement:detail']]),
         new GetCollection(
+            normalizationContext: ['groups' => ['enseignement:dashboard']],
+            uriTemplate: 'dashboard/scol_enseignements',
+        ),
+        new GetCollection(
             normalizationContext: ['groups' => ['enseignement:light']],
             uriTemplate: 'mini/scol_enseignements',
         ),
@@ -172,7 +176,7 @@ class ScolEnseignement
      * @var Collection<int, Previsionnel>
      */
     #[ORM\OneToMany(targetEntity: Previsionnel::class, mappedBy: 'enseignement', cascade: ['remove'], orphanRemoval: true)]
-    #[Groups(['enseignement:detail', 'edt_event:read:agenda'])]
+    #[Groups(['enseignement:detail', 'edt_event:read:agenda', 'enseignement:dashboard'])]
     private Collection $previsionnels;
 
     public function __construct()
@@ -633,5 +637,25 @@ class ScolEnseignement
     public function setSae(?ScolEnseignement $sae): void
     {
         $this->sae = $sae;
+    }
+
+    #[Groups(['enseignement:dashboard'])]
+    public function getDiplome(): ?StructureDiplome
+    {
+        $enseignementUe = $this->enseignementUes->first();
+        if ($enseignementUe) {
+            return $enseignementUe->getUe()->getSemestre()->getDiplome();
+        }
+        return null;
+    }
+
+    #[Groups(['enseignement:dashboard'])]
+    public function getSemestre()
+    {
+        $enseignementUe = $this->enseignementUes->first();
+        if ($enseignementUe) {
+            return $enseignementUe->getUe()->getSemestre();
+        }
+        return null;
     }
 }

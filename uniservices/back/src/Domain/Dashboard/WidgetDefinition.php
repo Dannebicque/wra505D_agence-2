@@ -54,9 +54,10 @@ class WidgetDefinition
             'icon' => $this->icon,
             'component' => $this->component,
             'size' => $this->size,
-            'enabled' => $this->enabled,
             'defaultConfig' => $this->defaultConfig,
             'allowedProfiles' => $this->allowedProfiles,
+            'requiredPermissions' => $this->requiredPermissions,
+            'requireAllPermissions' => $this->requireAllPermissions,
         ];
     }
 }

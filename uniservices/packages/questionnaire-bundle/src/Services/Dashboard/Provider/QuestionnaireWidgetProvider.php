@@ -20,9 +20,9 @@ class QuestionnaireWidgetProvider implements WidgetProviderInterface
     public function getWidgets(): array
     {
         return [
-            new WidgetDefinition('questionnaire.pending', 'questionnaire', 'Questionnaires en attente', 'pi pi-inbox', 'QuestionnairePendingWidget', 'medium', true),
-            new WidgetDefinition('questionnaire.stats', 'questionnaire', 'Statistiques questionnaires', 'pi pi-chart-bar', 'QuestionnaireStatsWidget', 'small', true),
-            new WidgetDefinition('questionnaire.last_answers', 'questionnaire', 'Dernières réponses', 'pi pi-history', 'QuestionnaireLastAnswersWidget', 'large', false),
+            new WidgetDefinition('questionnaire.pending', 'questionnaire', 'Questionnaires en attente', 'pi pi-inbox', 'QuestionnairePendingWidget', 'medium'),
+            new WidgetDefinition('questionnaire.stats', 'questionnaire', 'Statistiques questionnaires', 'pi pi-chart-bar', 'QuestionnaireStatsWidget', 'small', allowedProfiles: [WidgetDefinition::PROFILE_PERSONNEL], requiredPermissions: ['ROLE_QUESTIONNAIRE_MANAGER', 'ROLE_QUALITE']),
+            new WidgetDefinition('questionnaire.last_answers', 'questionnaire', 'Dernières réponses', 'pi pi-history', 'QuestionnaireLastAnswersWidget', 'large', allowedProfiles: [WidgetDefinition::PROFILE_PERSONNEL], requiredPermissions: ['ROLE_QUESTIONNAIRE_MANAGER', 'ROLE_QUALITE']),
         ];
     }
 }

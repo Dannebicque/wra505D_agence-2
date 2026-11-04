@@ -7,20 +7,7 @@ import {getWidgetsAvailableService, updateDashboardWidgetLayoutService } from '@
 const router = useRouter();
 const userStore = useUsersStore();
 const widgets = ref([]);
-const bundle = computed(() => {
-  if (router.currentRoute.value.params.bundle) {
-    return router.currentRoute.value.params.bundle;
-  }
-  const routeName = router.currentRoute.value.name;
-  if (routeName && routeName.toLowerCase().includes('intranet')) {
-    return 'intranet';
-  }
-  const routePath = router.currentRoute.value.path;
-  if (routePath && routePath.toLowerCase().includes('intranet')) {
-    return 'intranet';
-  }
-  return 'portail';
-});
+const dashboardCode = 'portail';
 const structureDepartementPersonnelId = computed(() => {
   return userStore.departementDefaut?.departementPersonnel?.id || null;
 });
@@ -37,9 +24,8 @@ const getBundleWidgets = async () => {
   const params = {
     structureDepartementPersonnelId: structureDepartementPersonnelId.value
   };
-  const response = await getWidgetsAvailableService(bundle.value, params);
+  const response = await getWidgetsAvailableService(dashboardCode, params);
   widgets.value = response.widgets || [];
-  console.log(widgets.value)
   loading.value = false;
 
 }
@@ -49,7 +35,7 @@ const updateWidget = async (widget) => {
 
   const payload = { enabled: !widget.enabled };
   const params = {
-    dashboardCode: bundle.value,
+    dashboardCode,
     structureDepartementPersonnelId: structureDepartementPersonnelId.value
   };
 

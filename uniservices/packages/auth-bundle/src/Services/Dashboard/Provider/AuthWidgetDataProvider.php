@@ -3,6 +3,7 @@
 namespace AuthBundle\Services\Dashboard\Provider;
 
 use App\Domain\Dashboard\WidgetDataProviderInterface;
+use App\Domain\Dashboard\DashboardContext;
 use App\Entity\Structure\StructureDepartementPersonnel;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;

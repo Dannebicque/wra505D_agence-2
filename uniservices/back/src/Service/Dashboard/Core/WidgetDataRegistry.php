@@ -3,6 +3,9 @@
 namespace App\Service\Dashboard\Core;
 
 use App\Domain\Dashboard\WidgetDataProviderInterface;
+use App\Domain\Dashboard\DashboardContext;
+use App\Security\UserEffectivePermissionService;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
