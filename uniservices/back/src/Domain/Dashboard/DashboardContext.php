@@ -9,11 +9,13 @@ final class DashboardContext
     public function __construct(
         private readonly ?int $departementId,
         private readonly ?StructureDepartementPersonnel $structureDepartementPersonnel = null,
+        /** @var ?list<int|null> $diplomeIds */
         private readonly ?array $diplomeIds = null,
     ) {
     }
 
     /** null means no diploma restriction; otherwise providers must filter to these ids. */
+    /** @return ?list<int|null> */
     public function getDiplomeIds(): ?array
     {
         return $this->diplomeIds;

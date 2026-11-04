@@ -22,7 +22,7 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
     }
 
     /** @return array<string, mixed> */
-    public function getData(string $code, Personnel|Etudiant $user): array
+    public function getData(string $code, Personnel|Etudiant $user, ?DashboardContext $context = null): array
     {
         return match ($code) {
             'questionnaire.pending' => [

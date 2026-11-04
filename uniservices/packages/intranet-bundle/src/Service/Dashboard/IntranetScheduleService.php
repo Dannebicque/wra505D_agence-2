@@ -12,6 +12,7 @@ class IntranetScheduleService
     {
     }
 
+    /** @return array{todayLabel: string|false, items: list<array<string, mixed>>} */
     public function getToday(Personnel|Etudiant $user): array
     {
         if (!$user instanceof Personnel) {
@@ -23,7 +24,7 @@ class IntranetScheduleService
 
         $today = new \DateTimeImmutable('today');
         $tomorrow = $today->modify('+1 day');
-        $events = $this->edtEventRepository->findByPersonnelAndRange($user->getId(), $today, $tomorrow);
+        $events = $this->edtEventRepository->findByPersonnelAndRange($user->getId() ?? throw new \LogicException('Personnel ID is required'), $today, $tomorrow);
         $formatter = new \IntlDateFormatter('fr_FR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, \IntlDateFormatter::GREGORIAN, 'EEEE d MMMM yyyy');
         return [
             'todayLabel' => $formatter->format($today),

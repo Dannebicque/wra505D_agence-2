@@ -41,7 +41,7 @@ final class WidgetAccessChecker
         $results = array_map(function (string $permission) use ($user, $scopedPermissions): bool {
             if ($permission === 'ROLE_RESP_PARCOURS') {
                 // Grants widget discovery only, never a department-wide resource permission.
-                return !empty($scopedPermissions[$permission]['diplomeIds']);
+                return ($scopedPermissions[$permission]['diplomeIds'] ?? []) !== [];
             }
             return $this->permissions->hasPermission($user, $permission);
         }, $required);
@@ -51,6 +51,7 @@ final class WidgetAccessChecker
     }
 
     /** Scope for widgets granted solely through a responsibility of parcours. */
+    /** @return ?list<int|null> */
     public function getDiplomeIds(WidgetDefinition $widget, Personnel|Etudiant $user): ?array
     {
         if (!in_array('ROLE_RESP_PARCOURS', $widget->getRequiredPermissions(), true)

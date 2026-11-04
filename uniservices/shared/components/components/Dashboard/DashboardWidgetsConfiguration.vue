@@ -50,10 +50,10 @@ const updateWidget = async (widget) => {
   <div class="space-y-4">
     <div class="flex items-center justify-between card card-body">
       <div>
-        <h1 class="text-xl! font-semibold! m-0!">Configuration du dashboard</h1>
-        <div class="text-sm text-color-secondary">Choisissez les widgets à afficher pour votre structure active.</div>
+        <h1 class="text-xl! font-semibold! m-0!">Personnaliser mon Portail</h1>
+        <div class="text-sm text-color-secondary">Choisissez les widgets de votre Portail pour le département actif.</div>
       </div>
-      <Button icon="pi pi-chevron-left" label="Retour au dashboard" severity="secondary" size="small" @click="router.back()"/>
+      <Button icon="pi pi-chevron-left" label="Retour au Portail" severity="secondary" size="small" @click="router.push({ name: 'portail' })"/>
     </div>
 
     <div v-if="loading" class="card">

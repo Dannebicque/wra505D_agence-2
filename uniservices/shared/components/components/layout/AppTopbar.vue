@@ -404,9 +404,25 @@ const selectAnneeUniversitaire = (annee) => {
           <button v-if="showRolesMenu" type="button" class="layout-topbar-action layout-topbar-action-text"
             @click="toggleRolesMenu" aria-haspopup="true" aria-controls="roles_menu">
             <i class="pi pi-shield text-primary" aria-hidden="true"></i>
-            <span>Rôles</span>
+            <span>{{ userStore.isSimulatingRoles ? `Rôles (${selectedRoles.length})` : 'Rôles' }}</span>
           </button>
-          <Menu ref="rolesMenu" id="roles_menu" :model="rolesItems" :popup="true" />
+          <Popover v-if="showRolesMenu" ref="rolesMenu" id="roles_menu">
+            <div class="w-80 max-w-[calc(100vw-3rem)] flex flex-col gap-3">
+              <div>
+                <p class="m-0! font-semibold">Simuler des rôles</p>
+                <p class="mt-1! mb-0! text-sm text-muted-color">Cumulez les fonctions pour vérifier les accès affichés. Les droits enregistrés restent inchangés.</p>
+              </div>
+              <p class="m-0! text-xs text-muted-color" aria-live="polite">{{ userStore.isSimulatingRoles ? `${selectedRoles.length} rôle(s) simulé(s)` : 'Droits réels du compte actifs' }}</p>
+              <div class="max-h-80 overflow-y-auto flex flex-col gap-1" role="group" aria-label="Rôles à simuler">
+                <label v-for="role in selectableRoles" :key="role.role" :for="`simulate-${role.role}`" class="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 cursor-pointer">
+                  <Checkbox v-model="selectedRoles" :input-id="`simulate-${role.role}`" :value="role.role" />
+                  <span class="text-sm">{{ role.label }}</span>
+                </label>
+              </div>
+              <p v-if="userStore.isSimulatingRoles && !selectedRoles.length" class="m-0! text-xs text-muted-color">Aucun rôle métier simulé. Le type de compte reste inchangé.</p>
+              <Button label="Rétablir mes droits réels" icon="pi pi-refresh" severity="secondary" size="small" :disabled="!userStore.isSimulatingRoles" @click="userStore.clearTemporaryRole()" />
+            </div>
+          </Popover>
 
           <PermissionGuard permission="isPersonnel">
             <button type="button" class="layout-topbar-action layout-topbar-action-text" @click="toggleAnneeMenu"

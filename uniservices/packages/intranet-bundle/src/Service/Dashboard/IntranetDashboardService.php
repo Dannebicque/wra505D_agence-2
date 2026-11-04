@@ -15,10 +15,14 @@ final class IntranetDashboardService
     ) {
     }
 
+    /** @return array<string, mixed> */
     public function getSection(Personnel|Etudiant $user, string $section): array
     {
         $assignment = $user instanceof Personnel ? $this->permissions->getActiveDepartementPersonnel($user) : null;
-        if (!$user instanceof Personnel || !in_array('intranet', $assignment?->getPackages() ?? [], true)) {
+        if (!$user instanceof Personnel || $assignment === null) {
+            throw new AccessDeniedHttpException('Accès Intranet non autorisé.');
+        }
+        if (!in_array('intranet', $assignment->getPackages(), true)) {
             throw new AccessDeniedHttpException('Accès Intranet non autorisé.');
         }
         $roles = match ($section) {
@@ -30,7 +34,7 @@ final class IntranetDashboardService
         };
         $scope = $this->permissions->getScopedPermissions($user)['ROLE_RESP_PARCOURS']['diplomeIds'] ?? [];
         $allowed = $section === 'parcours' ? $scope !== [] : array_intersect($roles, $this->permissions->getEffectivePermissions($user)) !== [];
-        if (!$allowed && !$this->permissions->isSuperAdmin($user)) {
+        if ($allowed !== true && $this->permissions->isSuperAdmin($user) !== true) {
             throw new AccessDeniedHttpException('Section non autorisée.');
         }
 
@@ -46,7 +50,7 @@ final class IntranetDashboardService
         $departements = [];
         foreach ($user->getDepartementsPersonnel() as $departmentAssignment) {
             $department = $departmentAssignment->getDepartement();
-            if ($department === null || !$department->isActif()
+            if ($department === null || $department->isActif() !== true
                 || !in_array('intranet', $departmentAssignment->getPackages(), true)
                 || array_intersect(UserEffectivePermissionService::IUT_DIRECTION_ROLES, $departmentAssignment->getPermissions()) === []) {
                 continue;
@@ -59,6 +63,10 @@ final class IntranetDashboardService
         return ['departements' => array_values($departements)];
     }
 
+    /**
+     * @param ?list<int|null> $ids
+     * @return list<array{id: int|null, libelle: string|null, sigle: string|null}>
+     */
     private function departmentDiplomes(Personnel $user, ?array $ids = null): array
     {
         $assignment = $this->permissions->getActiveDepartementPersonnel($user);

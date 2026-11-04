@@ -13,6 +13,8 @@ use App\Repository\Structure\StructureDepartementPersonnelRepository;
 use App\Service\Dashboard\Core\DashboardRegistry;
 use App\Service\Dashboard\Core\WidgetDataRegistry;
 use App\Service\Dashboard\Core\WidgetRegistry as CoreWidgetRegistry;
+use App\Service\Dashboard\Core\WidgetAccessChecker;
+use App\Security\UserEffectivePermissionService;
 use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -38,6 +40,7 @@ class DashboardController extends AbstractController
         private readonly DashboardRegistry $dashboardRegistry,
         private readonly WidgetAccessChecker $widgetAccessChecker,
         private readonly UserEffectivePermissionService $permissions,
+        private readonly StructureDepartementPersonnelRepository $structureDepartementPersonnelRepository,
     ) {
     }
 
@@ -52,7 +55,11 @@ class DashboardController extends AbstractController
 
         // on recupere le code du dashboard depuis la requete, par defaut 'portail'
         $dashboardCode = $request->query->get('dashboardCode', 'portail');
+        if ($dashboardCode !== 'portail') {
+            return new JsonResponse(['message' => 'La personnalisation des widgets est réservée au Portail'], JsonResponse::HTTP_NOT_FOUND);
+        }
         $structureDepartementPersonnelId = $request->query->get('structureDepartementPersonnelId');
+        $this->getActiveAssignment($user, $structureDepartementPersonnelId);
 
         $structureDepartementPersonnel = null;
         if ($structureDepartementPersonnelId !== null && $structureDepartementPersonnelId !== '' && $structureDepartementPersonnelId !== '0') {
@@ -71,7 +78,7 @@ class DashboardController extends AbstractController
             // Si aucune préférence n'existe, on charge le layout par défaut
             foreach ($dashboard->getDefaultLayout() as $layout) {
                 $widgetDefinition = $this->coreWidgetRegistry->get($layout->widgetCode);
-                if (!$this->isWidgetAccessibleForUser($widgetDefinition, $user, $accessibleBundles)) {
+                if (!$widgetDefinition instanceof WidgetDefinition || !$this->widgetAccessChecker->isGranted($widgetDefinition, $user)) {
                     continue;
                 }
                 $definition = $widgetDefinition->toArray();
@@ -91,7 +98,7 @@ class DashboardController extends AbstractController
                     continue;
                 }
                 $widgetDefinition = $this->coreWidgetRegistry->get($preference->getWidgetKey());
-                if (!$this->widgetAccessChecker->isGranted($widgetDefinition, $user)) {
+                if (!$widgetDefinition instanceof WidgetDefinition || !$this->widgetAccessChecker->isGranted($widgetDefinition, $user)) {
                     continue;
                 }
                 $definition = $widgetDefinition->toArray();
@@ -127,8 +134,12 @@ class DashboardController extends AbstractController
         if (null === $user) {
             return new JsonResponse(['message' => 'Utilisateur non autorisé'], JsonResponse::HTTP_FORBIDDEN);
         }
+        if ($dashboardCode !== 'portail') {
+            return new JsonResponse(['message' => 'La personnalisation des widgets est réservée au Portail'], JsonResponse::HTTP_NOT_FOUND);
+        }
 
         $structureDepartementPersonnelId = $request->query->get('structureDepartementPersonnelId');
+        $this->getActiveAssignment($user, $structureDepartementPersonnelId);
         $structureDepartementPersonnel = null;
         if ($structureDepartementPersonnelId !== null && $structureDepartementPersonnelId !== '' && $structureDepartementPersonnelId !== '0') {
             $structureDepartementPersonnel = $this->structureDepartementPersonnelRepository->find($structureDepartementPersonnelId);
@@ -156,7 +167,7 @@ class DashboardController extends AbstractController
             // On commence par les widgets du layout par défaut
             foreach ($dashboard->getDefaultLayout() as $layout) {
                 $widgetDefinition = $this->coreWidgetRegistry->get($layout->widgetCode);
-                if (!$this->widgetAccessChecker->isGranted($widgetDefinition, $user)) {
+                if (!$widgetDefinition instanceof WidgetDefinition || !$this->widgetAccessChecker->isGranted($widgetDefinition, $user)) {
                     continue;
                 }
 
@@ -236,8 +247,12 @@ class DashboardController extends AbstractController
             return new JsonResponse(['message' => 'Utilisateur non autorisé'], JsonResponse::HTTP_FORBIDDEN);
         }
 
-        $dashboardCode = $request->query->get('dashboardCode', 'intranet');
+        $dashboardCode = $request->query->get('dashboardCode', 'portail');
+        if ($dashboardCode !== 'portail') {
+            return new JsonResponse(['message' => 'La personnalisation des widgets est réservée au Portail'], JsonResponse::HTTP_NOT_FOUND);
+        }
         $structureDepartementPersonnelId = $request->query->get('structureDepartementPersonnelId');
+        $this->getActiveAssignment($user, $structureDepartementPersonnelId);
 
         $structureDepartementPersonnel = null;
         if ($structureDepartementPersonnelId !== null && $structureDepartementPersonnelId !== '' && $structureDepartementPersonnelId !== '0') {
@@ -462,7 +477,8 @@ class DashboardController extends AbstractController
     private function getActiveAssignment(Personnel|Etudiant $user, mixed $requestedId): ?StructureDepartementPersonnel
     {
         $assignment = $user instanceof Personnel ? $this->permissions->getActiveDepartementPersonnel($user) : null;
-        if ($requestedId !== null && $requestedId !== '' && (string) $assignment?->getId() !== (string) $requestedId) {
+        $requestedIdString = is_string($requestedId) || is_int($requestedId) ? (string) $requestedId : null;
+        if ($requestedIdString !== null && $requestedIdString !== '' && (string) $assignment?->getId() !== $requestedIdString) {
             throw $this->createAccessDeniedException('Le contexte demandé ne correspond pas à votre affectation active.');
         }
         return $assignment;
