@@ -568,7 +568,7 @@ généré.
 | E26.9 · en revue | absences et évaluations côté personnel, indicateurs ; notre dépôt de justificatif par l'étudiant (P2) conservé | `3076e6f07`, `6b12732d0`, `187b207c2`, `0c71cb7fb` |
 | E26.10 · en revue | widgets et tableaux de bord : accès aux widgets, widgets limités aux applications de l'utilisateur, tableau de bord des enseignements ; notre accueil étudiant (C18, C19) conservé | `11ff61d2e`, `688feada9`, `aa15909aa`, `7775e5908`, `6a4176191`, `0258d3783` |
 | E26.11 | interface transverse : composants et accessibilité, portail, badge d'application, année active, renommage `unitranet` en `intranet` dans le code, accès des étudiants aux applications (`9090dcd54`, couleurs par module à adapter) ; le nom affiché reste Unitranet, nos jetons de couleur remplacent leurs couleurs en dur | `b79a176b0`, `3a4887acf`, `dc0ee62d9`, `6acb7381b`, `4978af083`, `94e79a0e3`, `5d8af9973`, `9090dcd54` |
-| E26.12 | configuration des modules et ses pages | `cad0a0ab9`, `6a30dbb22` |
+| E26.12 · en revue | configuration des modules et ses pages | `cad0a0ab9`, `6a30dbb22` |
 | E26.13 | messagerie : bundle, widget, purge, tests ; pièces jointes hors de `public/`, cibles limitées au département ; les messages reçus rejoignent le fil de notifications de l'étudiant | `b2d2c639d`, `1d31012d9`, `ab39d0de6`, `d2beffc79`, `39c2fb9f6` |
 
 **Décisions de reprise**
@@ -637,6 +637,11 @@ généré.
   notre accueil (C18, C19). Écarté : le retrait de `ROLE_ETUDIANT` des étudiants. Nos routes des
   notes, de l'emploi du temps complet et de la liste des étudiants s'appuient sur
   `not is_granted('ROLE_ETUDIANT')`, un étudiant les aurait toutes lues ; un test le garde.
+- Configuration (E26.12) : la configuration de l'intranet (département, années, diplômes,
+  semestres) est reprise ; ses options passent par de nouvelles opérations PATCH qui vérifient le
+  droit d'édition avant et après dénormalisation, pour qu'un élément ne puisse pas être rattaché au
+  département de l'éditeur afin de passer le contrôle. Écartées : les pages de configuration des
+  autres modules (`6a30dbb22`), que le client annonce fictives et qui n'enregistrent rien.
 - Messagerie (E26.13) : on reprend la vraie messagerie du client. La source « messages » du
   centre de notifications lit ses messages. Les copies des e-mails envoyés restent dans le fil.
 
