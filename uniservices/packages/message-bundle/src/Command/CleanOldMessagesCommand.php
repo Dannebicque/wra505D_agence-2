@@ -2,6 +2,7 @@
 
 namespace MessageBundle\Command;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use MessageBundle\Entity\Message;
 use MessageBundle\Repository\MessageRepository;
@@ -63,7 +64,7 @@ class CleanOldMessagesCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $isDryRun = (bool) $input->getOption('dry-run');
-        $batchSize = max(10, min(1000, (int) $input->getOption('batch-size')));
+        $batchSize = max(10, min(1000, LooseValue::castInt($input->getOption('batch-size'))));
 
         $days = $input->getOption('days');
         if (null !== $days && is_numeric($days) && (int) $days >= 0) {
@@ -73,7 +74,7 @@ class CleanOldMessagesCommand extends Command
                 : (new \DateTimeImmutable())->modify(sprintf('-%d days', $daysVal));
             $periodLabel = sprintf('%d jour(s)', $daysVal);
         } else {
-            $monthsVal = max(1, (int) $input->getOption('months'));
+            $monthsVal = max(1, LooseValue::castInt($input->getOption('months')));
             $cutoffDate = (new \DateTimeImmutable())->modify(sprintf('-%d months', $monthsVal));
             $periodLabel = sprintf('%d mois', $monthsVal);
         }

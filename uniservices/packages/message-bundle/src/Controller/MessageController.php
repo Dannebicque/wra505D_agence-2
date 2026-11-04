@@ -14,6 +14,7 @@ use App\Repository\Structure\StructureGroupeRepository;
 use App\Repository\Structure\StructureSemestreRepository;
 use App\Security\UserEffectivePermissionService;
 use App\Service\Email\EmailService;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use MessageBundle\Entity\Message;
 use MessageBundle\Entity\MessageDestinataire;
@@ -457,7 +458,7 @@ class MessageController extends AbstractController
             // Groupes rattachés aux semestres actifs
             foreach ($s->getGroupes() as $g) {
                 $gId = $g->getId();
-                $typeStr = $g->getType()->value ?? (string) $g->getType();
+                $typeStr = $g->getType()->value ?? LooseValue::castString($g->getType());
                 if (!isset($groupeIdsMap[$gId])) {
                     $groupeIdsMap[$gId] = [
                         'id' => $gId,
@@ -634,9 +635,9 @@ class MessageController extends AbstractController
             $payload = json_decode($request->getContent(), true) ?: [];
         }
 
-        $sujet = trim((string) ($payload['sujet'] ?? ''));
-        $contenu = trim((string) ($payload['contenu'] ?? ''));
-        $destinataireType = (string) ($payload['destinataireType'] ?? $payload['typeCible'] ?? 'SEMESTRES');
+        $sujet = trim(LooseValue::castString($payload['sujet'] ?? ''));
+        $contenu = trim(LooseValue::castString($payload['contenu'] ?? ''));
+        $destinataireType = LooseValue::castString($payload['destinataireType'] ?? $payload['typeCible'] ?? 'SEMESTRES');
         $prioritaire = (bool) ($payload['prioritaire'] ?? false);
         $copieEmail = (bool) ($payload['copieEmail'] ?? false);
 
@@ -757,7 +758,7 @@ class MessageController extends AbstractController
                 $cibleLibelle = sprintf('%d étudiants', $count);
             }
         } elseif ($destinataireType === 'ENSEIGNANTS') {
-            $enseignantsType = (string) ($payload['enseignantsType'] ?? 'ALL'); // ALL, PERMANENT, VACATAIRE, NOMINATIF
+            $enseignantsType = LooseValue::castString($payload['enseignantsType'] ?? 'ALL'); // ALL, PERMANENT, VACATAIRE, NOMINATIF
             $departementPersonnels = $departement !== null ? $this->em->getRepository(StructureDepartementPersonnel::class)->findBy([
                 'departement' => $departement,
             ]) : [];
@@ -812,7 +813,7 @@ class MessageController extends AbstractController
         }
 
         if (empty($cibleLibelle)) {
-            $cibleLibelle = (string) ($payload['cibleLibelle'] ?? $destinataireType);
+            $cibleLibelle = LooseValue::castString($payload['cibleLibelle'] ?? $destinataireType);
         }
 
         $message = new Message();

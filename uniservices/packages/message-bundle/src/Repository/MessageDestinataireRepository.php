@@ -4,6 +4,7 @@ namespace MessageBundle\Repository;
 
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use MessageBundle\Entity\Message;
@@ -102,7 +103,7 @@ class MessageDestinataireRepository extends ServiceEntityRepository
         }
         $qb->setParameter('user', $user);
 
-        return (int) $qb->getQuery()->execute();
+        return LooseValue::castInt($qb->getQuery()->execute());
     }
 
     /**
