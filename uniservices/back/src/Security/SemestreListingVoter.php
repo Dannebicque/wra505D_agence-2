@@ -14,14 +14,15 @@ use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
- * Listings, trombinoscopes et exports d'un semestre : données personnelles de tous ses étudiants,
- * réservées au personnel affecté au département du semestre.
+ * Listings, trombinoscopes, exports et sous-commission d'un semestre : données personnelles et notes
+ * de tous ses étudiants, réservées au personnel affecté au département du semestre.
  *
  * @extends Voter<string, StructureSemestre>
  */
 final class SemestreListingVoter extends Voter
 {
     public const CAN_EXPORT_LISTING = 'CAN_EXPORT_LISTING';
+    public const CAN_VIEW_COMMISSION = 'CAN_VIEW_COMMISSION';
 
     public function __construct(
         private readonly StructureDepartementPersonnelRepository $departementPersonnelRepository,
@@ -31,7 +32,8 @@ final class SemestreListingVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === self::CAN_EXPORT_LISTING && $subject instanceof StructureSemestre;
+        return in_array($attribute, [self::CAN_EXPORT_LISTING, self::CAN_VIEW_COMMISSION], true)
+            && $subject instanceof StructureSemestre;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
