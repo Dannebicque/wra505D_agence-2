@@ -83,12 +83,12 @@ const formatDate = (isoString) => {
 
       <Column field="sujet" header="Sujet" sortable>
         <template #body="{ data }">
-          <div class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <div class="font-semibold text-color flex items-center gap-2">
             <span>{{ data.sujet }}</span>
             <Tag v-if="data.prioritaire" severity="danger" value="Urgent" size="small" />
-            <i v-if="data.hasAttachments" class="pi pi-paperclip text-xs text-surface-400" title="Contient des pièces jointes" />
+            <i v-if="data.hasAttachments" class="pi pi-paperclip text-xs text-muted-color" title="Contient des pièces jointes" aria-hidden="true" />
           </div>
-          <p class="text-xs text-gray-500 m-0 line-clamp-1">{{ data.contenu }}</p>
+          <p class="text-xs text-muted-color m-0 line-clamp-1">{{ data.contenu }}</p>
         </template>
       </Column>
 
@@ -100,14 +100,14 @@ const formatDate = (isoString) => {
 
       <Column field="createdAt" header="Date d'envoi" sortable>
         <template #body="{ data }">
-          <span class="text-xs text-gray-600 dark:text-gray-400">{{ formatDate(data.createdAt) }}</span>
+          <span class="text-xs text-muted-color">{{ formatDate(data.createdAt) }}</span>
         </template>
       </Column>
 
       <Column header="Taux d'ouverture" sortable field="percent" style="min-width: 180px;">
         <template #body="{ data }">
           <div class="space-y-1">
-            <div class="flex justify-between text-xs text-gray-600 dark:text-gray-400 font-medium">
+            <div class="flex justify-between text-xs text-muted-color font-medium">
               <span>{{ data.readCount }} / {{ data.totalDestinataires }}</span>
               <span>{{ data.percent }}%</span>
             </div>
@@ -143,4 +143,3 @@ const formatDate = (isoString) => {
     </DataTable>
   </div>
 </template>
-

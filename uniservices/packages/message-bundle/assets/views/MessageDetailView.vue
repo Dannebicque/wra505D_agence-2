@@ -79,12 +79,12 @@ const formatFileSize = (bytes) => {
 const getFileIcon = (mimeType, filename) => {
   const f = (filename || '').toLowerCase();
   const m = (mimeType || '').toLowerCase();
-  if (m.includes('pdf') || f.endsWith('.pdf')) return 'pi pi-file-pdf text-red-500';
-  if (m.includes('word') || f.match(/\.(doc|docx)$/)) return 'pi pi-file-word text-blue-500';
-  if (m.includes('excel') || m.includes('spreadsheet') || f.match(/\.(xls|xlsx|csv)$/)) return 'pi pi-file-excel text-emerald-500';
-  if (m.includes('image') || f.match(/\.(jpg|jpeg|png|gif|webp)$/)) return 'pi pi-image text-purple-500';
-  if (m.includes('zip') || f.match(/\.(zip|tar|gz|rar)$/)) return 'pi pi-folder text-amber-500';
-  return 'pi pi-file text-surface-500';
+  if (m.includes('pdf') || f.endsWith('.pdf')) return 'pi pi-file-pdf text-primary';
+  if (m.includes('word') || f.match(/\.(doc|docx)$/)) return 'pi pi-file-word text-primary';
+  if (m.includes('excel') || m.includes('spreadsheet') || f.match(/\.(xls|xlsx|csv)$/)) return 'pi pi-file-excel text-primary';
+  if (m.includes('image') || f.match(/\.(jpg|jpeg|png|gif|webp)$/)) return 'pi pi-image text-primary';
+  if (m.includes('zip') || f.match(/\.(zip|tar|gz|rar)$/)) return 'pi pi-folder text-primary';
+  return 'pi pi-file text-muted-color';
 };
 </script>
 
@@ -170,7 +170,7 @@ const getFileIcon = (mimeType, filename) => {
       <!-- Informations Expéditeur & Date -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-surface-200 dark:border-surface-800 gap-4">
         <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-full bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 flex items-center justify-center font-bold text-base shadow-xs">
+          <div class="w-11 h-11 rounded-full bg-primary text-primary-contrast flex items-center justify-center font-bold text-base shadow-xs">
             {{ (message.expediteur?.prenom?.charAt(0) || '') + (message.expediteur?.nom?.charAt(0) || '') }}
           </div>
           <div>
@@ -194,8 +194,8 @@ const getFileIcon = (mimeType, filename) => {
       </div>
 
       <!-- Alerte si prioritaire -->
-      <div v-if="message.prioritaire" class="p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-300 flex items-center gap-2 text-sm">
-        <i class="pi pi-exclamation-triangle text-base shrink-0" />
+      <div v-if="message.prioritaire" class="p-3 rounded-lg bg-highlight border border-surface text-color flex items-center gap-2 text-sm">
+        <i class="pi pi-exclamation-triangle text-base shrink-0" aria-hidden="true" />
         <span>Ce message a été marqué comme prioritaire / urgent par l'expéditeur.</span>
       </div>
 
@@ -207,7 +207,7 @@ const getFileIcon = (mimeType, filename) => {
       <!-- Pièces jointes attachées -->
       <div v-if="message.piecesJointes && message.piecesJointes.length > 0" class="pt-4 border-t border-surface-200 dark:border-surface-800 space-y-3">
         <h4 class="text-sm font-semibold text-surface-900 dark:text-surface-50 flex items-center gap-2 m-0">
-          <i class="pi pi-paperclip text-teal-600 dark:text-teal-400" />
+          <i class="pi pi-paperclip text-primary" aria-hidden="true" />
           Pièce(s) jointe(s) ({{ message.piecesJointes.length }})
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -217,7 +217,7 @@ const getFileIcon = (mimeType, filename) => {
             class="flex items-center justify-between p-3 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
           >
             <div class="flex items-center gap-2.5 min-w-0">
-              <i :class="getFileIcon(pj.mimeType, pj.nomOriginal)" class="text-xl shrink-0" />
+              <i :class="getFileIcon(pj.mimeType, pj.nomOriginal)" class="text-xl shrink-0" aria-hidden="true" />
               <div class="min-w-0">
                 <p class="text-xs font-semibold text-surface-900 dark:text-surface-50 truncate m-0" :title="pj.nomOriginal">
                   {{ pj.nomOriginal }}
@@ -234,7 +234,7 @@ const getFileIcon = (mimeType, filename) => {
               class="p-button p-component p-button-sm p-button-secondary p-button-text p-button-icon-only shrink-0"
               title="Télécharger / Ouvrir la pièce jointe"
             >
-              <i class="pi pi-download" />
+              <i class="pi pi-download" aria-hidden="true" />
             </a>
           </div>
         </div>
@@ -242,7 +242,7 @@ const getFileIcon = (mimeType, filename) => {
 
       <!-- Note informative -->
       <div class="pt-4 border-t border-surface-200 dark:border-surface-800 text-xs text-surface-500 flex items-center gap-2">
-        <i class="pi pi-info-circle text-xs shrink-0" />
+        <i class="pi pi-info-circle text-xs shrink-0" aria-hidden="true" />
         <span>
           Ce canal officiel est à communication descendante. Pour échanger avec l'expéditeur, utilisez votre messagerie universitaire ou le HelpDesk.
         </span>
@@ -254,7 +254,7 @@ const getFileIcon = (mimeType, filename) => {
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 class="text-base font-bold text-surface-900 dark:text-surface-50 mb-1 flex items-center gap-2">
-            <i class="pi pi-chart-pie text-teal-600 dark:text-teal-400" />
+            <i class="pi pi-chart-pie text-primary" aria-hidden="true" />
             Accusés de lecture ({{ stats.readCount }} / {{ stats.total }})
           </h3>
           <p class="text-xs text-surface-500 m-0">Suivez l'ouverture de votre message par les destinataires.</p>

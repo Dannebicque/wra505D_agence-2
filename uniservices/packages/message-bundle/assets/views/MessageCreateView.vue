@@ -154,12 +154,12 @@ const formatFileSize = (bytes) => {
 const getFileIcon = (mimeType, filename) => {
   const f = (filename || '').toLowerCase();
   const m = (mimeType || '').toLowerCase();
-  if (m.includes('pdf') || f.endsWith('.pdf')) return 'pi pi-file-pdf text-red-500';
-  if (m.includes('word') || f.match(/\.(doc|docx)$/)) return 'pi pi-file-word text-blue-500';
-  if (m.includes('excel') || m.includes('spreadsheet') || f.match(/\.(xls|xlsx|csv)$/)) return 'pi pi-file-excel text-emerald-500';
-  if (m.includes('image') || f.match(/\.(jpg|jpeg|png|gif|webp)$/)) return 'pi pi-image text-purple-500';
-  if (m.includes('zip') || f.match(/\.(zip|tar|gz|rar)$/)) return 'pi pi-folder text-amber-500';
-  return 'pi pi-file text-surface-500';
+  if (m.includes('pdf') || f.endsWith('.pdf')) return 'pi pi-file-pdf text-primary';
+  if (m.includes('word') || f.match(/\.(doc|docx)$/)) return 'pi pi-file-word text-primary';
+  if (m.includes('excel') || m.includes('spreadsheet') || f.match(/\.(xls|xlsx|csv)$/)) return 'pi pi-file-excel text-primary';
+  if (m.includes('image') || f.match(/\.(jpg|jpeg|png|gif|webp)$/)) return 'pi pi-image text-primary';
+  if (m.includes('zip') || f.match(/\.(zip|tar|gz|rar)$/)) return 'pi pi-folder text-primary';
+  return 'pi pi-file text-muted-color';
 };
 
 // Helpers groupes
@@ -186,13 +186,13 @@ const clearGroupes = () => {
 const getGroupeTypeBadgeClass = (type) => {
   switch (type) {
     case 'CM':
-      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800';
+      return 'bg-primary text-primary-contrast border-surface';
     case 'TD':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+      return 'bg-primary text-primary-contrast border-surface';
     case 'TP':
-      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
+      return 'bg-primary text-primary-contrast border-surface';
     default:
-      return 'bg-surface-100 text-surface-800 dark:bg-surface-800 dark:text-surface-200';
+      return 'bg-emphasis text-color';
   }
 };
 
@@ -331,7 +331,7 @@ const submitMessage = async () => {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 class="text-base font-semibold text-surface-900 dark:text-surface-50 flex items-center gap-2">
-              <i class="pi pi-send text-teal-600 dark:text-teal-400" />
+              <i class="pi pi-send text-primary" aria-hidden="true" />
               Destinataires principaux
             </h3>
             <p class="text-xs text-surface-500">
@@ -353,7 +353,7 @@ const submitMessage = async () => {
         >
           <template #option="slotProps">
             <div class="flex items-center gap-2 py-1 px-2">
-              <i :class="slotProps.option.icon" class="text-sm" />
+              <i :class="slotProps.option.icon" class="text-sm" aria-hidden="true" />
               <span class="text-xs sm:text-sm font-medium">{{ slotProps.option.label }}</span>
             </div>
           </template>
@@ -375,7 +375,7 @@ const submitMessage = async () => {
               <div class="flex items-center gap-2">
                 <button
                   type="button"
-                  class="text-teal-600 dark:text-teal-400 hover:underline font-medium"
+                  class="text-primary hover:underline font-medium"
                   @click="selectAllSemestres"
                 >
                   Tous
@@ -432,21 +432,21 @@ const submitMessage = async () => {
               <div class="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  class="px-2 py-0.5 rounded border border-purple-200 text-purple-700 dark:border-purple-800 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-xs font-medium"
+                  class="px-2 py-0.5 rounded border border-surface text-primary hover:bg-highlight text-xs font-medium"
                   @click="selectAllGroupesByType('CM')"
                 >
                   + Tous les CM
                 </button>
                 <button
                   type="button"
-                  class="px-2 py-0.5 rounded border border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-xs font-medium"
+                  class="px-2 py-0.5 rounded border border-surface text-primary hover:bg-highlight text-xs font-medium"
                   @click="selectAllGroupesByType('TD')"
                 >
                   + Tous les TD
                 </button>
                 <button
                   type="button"
-                  class="px-2 py-0.5 rounded border border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs font-medium"
+                  class="px-2 py-0.5 rounded border border-surface text-primary hover:bg-highlight text-xs font-medium"
                   @click="selectAllGroupesByType('TP')"
                 >
                   + Tous les TP
@@ -565,8 +565,8 @@ const submitMessage = async () => {
                 class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
                 :class="[
                   enseignantsType === opt.value
-                    ? 'border-teal-500 bg-teal-50/60 dark:bg-teal-950/30'
-                    : 'border-surface-200 dark:border-surface-700 hover:bg-surface-100/50 dark:hover:bg-surface-800/50'
+                    ? 'border-primary bg-highlight'
+                    : 'border-surface hover:bg-emphasis'
                 ]"
                 @click="enseignantsType = opt.value"
               >
@@ -621,10 +621,10 @@ const submitMessage = async () => {
       <div class="p-4 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50/30 dark:bg-surface-900/30 space-y-2">
         <div class="flex items-center justify-between">
           <label class="text-sm font-semibold text-surface-900 dark:text-surface-50 flex items-center gap-2">
-            <i class="pi pi-copy text-surface-500" />
+            <i class="pi pi-copy text-muted-color" aria-hidden="true" />
             En copie (CC) : membres du personnel
           </label>
-          <span v-if="selectedCopiePersonnels.length > 0" class="text-xs font-semibold text-teal-600 dark:text-teal-400">
+          <span v-if="selectedCopiePersonnels.length > 0" class="text-xs font-semibold text-primary">
             {{ selectedCopiePersonnels.length }} en copie
           </span>
         </div>
@@ -673,7 +673,7 @@ const submitMessage = async () => {
       <div class="space-y-4">
         <div>
           <label for="sujet" class="block text-sm font-semibold mb-1 text-surface-900 dark:text-surface-50">
-            Objet / Sujet du message <span class="text-red-500">*</span>
+            Objet / Sujet du message <span class="text-primary">*</span>
           </label>
           <InputText
             id="sujet"
@@ -686,7 +686,7 @@ const submitMessage = async () => {
 
         <div>
           <label for="contenu" class="block text-sm font-semibold mb-1 text-surface-900 dark:text-surface-50">
-            Contenu du message <span class="text-red-500">*</span>
+            Contenu du message <span class="text-primary">*</span>
           </label>
           <Textarea
             id="contenu"
@@ -712,12 +712,12 @@ const submitMessage = async () => {
           />
 
           <div
-            class="border-2 border-dashed border-surface-300 dark:border-surface-700 hover:border-teal-500 rounded-xl p-4 text-center cursor-pointer transition-colors bg-surface-50/50 dark:bg-surface-900/30"
+            class="border-2 border-dashed border-surface hover:border-primary rounded-xl p-4 text-center cursor-pointer transition-colors bg-surface-0"
             @click="triggerFileInput"
             @dragover.prevent
             @drop.prevent="handleFilesDropped"
           >
-            <i class="pi pi-upload text-2xl text-teal-600 mb-1" />
+            <i class="pi pi-upload text-2xl text-primary mb-1" aria-hidden="true" />
             <p class="text-xs font-semibold text-surface-800 dark:text-surface-200 m-0">
               Cliquez ou glissez-déposez des fichiers ici pour les joindre
             </p>
@@ -732,7 +732,7 @@ const submitMessage = async () => {
               class="flex items-center justify-between p-2.5 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 text-xs"
             >
               <div class="flex items-center gap-2 min-w-0">
-                <i :class="getFileIcon(f.type, f.name)" class="text-base shrink-0" />
+                <i :class="getFileIcon(f.type, f.name)" class="text-base shrink-0" aria-hidden="true" />
                 <span class="font-medium truncate text-surface-800 dark:text-surface-200">{{ f.name }}</span>
                 <span class="text-[10px] text-surface-400 shrink-0">({{ formatFileSize(f.size) }})</span>
               </div>
@@ -853,9 +853,9 @@ const submitMessage = async () => {
       <!-- Alerte sur l'envoi email -->
       <div
         v-if="copieEmail"
-        class="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5"
+        class="p-3 rounded-lg bg-highlight border border-surface text-color text-xs flex items-start gap-2.5"
       >
-        <i class="pi pi-exclamation-circle text-base text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+        <i class="pi pi-exclamation-circle text-base text-primary shrink-0 mt-0.5" aria-hidden="true" />
         <div>
           <strong class="block mb-0.5">Notification immédiate par email activée</strong>
           <span>Une copie de ce message et de ses pièces jointes sera distribuée instantanément sur les boîtes institutionnelles des destinataires.</span>

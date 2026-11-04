@@ -175,7 +175,7 @@ const getInitiales = (nom, prenom) => {
       </div>
 
       <div class="relative w-full sm:w-72">
-        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-muted-color" aria-hidden="true" />
         <InputText
           v-model="searchInput"
           placeholder="Rechercher un message ou un enseignant..."
@@ -205,8 +205,8 @@ const getInitiales = (nom, prenom) => {
       :key="msg.id"
       class="card p-4 transition-all duration-150 cursor-pointer hover:shadow-md border-l-4"
       :class="[
-        !msg.isLu ? 'border-l-primary bg-primary-50/20 dark:bg-primary-950/20 font-medium' : 'border-l-transparent bg-surface-0 dark:bg-surface-900',
-        msg.prioritaire ? 'border-l-red-500!' : ''
+        !msg.isLu ? 'border-l-primary bg-highlight font-medium' : 'border-l-transparent bg-surface-0',
+        msg.prioritaire ? 'border-l-primary!' : ''
       ]"
       @click="router.push(`/message/${msg.id}`)"
     >
@@ -215,14 +215,14 @@ const getInitiales = (nom, prenom) => {
         <div class="flex items-start gap-3 flex-1 min-w-0">
           <div
             class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0"
-            :class="!msg.isLu ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300' : 'bg-surface-200 text-surface-600 dark:bg-surface-800 dark:text-surface-400'"
+            :class="!msg.isLu ? 'bg-primary text-primary-contrast' : 'bg-emphasis text-muted-color'"
           >
             {{ getInitiales(msg.expediteur?.nom, msg.expediteur?.prenom) }}
           </div>
 
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap mb-1">
-              <span class="text-sm font-semibold text-gray-900 dark:text-white">
+              <span class="text-sm font-semibold text-color">
                 {{ msg.expediteur?.display || 'Personnel' }}
               </span>
 
@@ -242,9 +242,9 @@ const getInitiales = (nom, prenom) => {
 
               <span
                 v-if="msg.prioritaire"
-                class="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 font-semibold flex items-center gap-1"
+                class="text-xs px-2 py-0.5 rounded bg-highlight text-color font-semibold flex items-center gap-1"
               >
-                <i class="pi pi-exclamation-circle text-[10px]" /> Prioritaire
+                <i class="pi pi-exclamation-circle text-[10px]" aria-hidden="true" /> Prioritaire
               </span>
 
               <span
@@ -252,7 +252,7 @@ const getInitiales = (nom, prenom) => {
                 class="text-xs px-2 py-0.5 rounded bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300 flex items-center gap-1"
                 title="Pièce(s) jointe(s)"
               >
-                <i class="pi pi-paperclip text-[10px]" /> PJ
+                <i class="pi pi-paperclip text-[10px]" aria-hidden="true" /> PJ
               </span>
 
               <span
@@ -262,11 +262,11 @@ const getInitiales = (nom, prenom) => {
               />
             </div>
 
-            <h4 class="text-base text-gray-900 dark:text-white mb-1 truncate" :class="{ 'font-bold': !msg.isLu }">
+            <h4 class="text-base text-color mb-1 truncate" :class="{ 'font-bold': !msg.isLu }">
               {{ msg.sujet }}
             </h4>
 
-            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            <p class="text-sm text-muted-color line-clamp-2">
               {{ msg.contenu?.replace(/<[^>]*>?/gm, '') }}
             </p>
           </div>
@@ -274,7 +274,7 @@ const getInitiales = (nom, prenom) => {
 
         <!-- Date et Actions rapides -->
         <div class="flex flex-col items-end gap-2 shrink-0">
-          <span class="text-xs text-gray-400">
+          <span class="text-xs text-muted-color">
             {{ formatDate(msg.createdAt) }}
           </span>
 
@@ -306,4 +306,3 @@ const getInitiales = (nom, prenom) => {
 
 <style scoped>
 </style>
-

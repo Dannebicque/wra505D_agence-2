@@ -32,15 +32,15 @@ const goToMessage = (id) => {
     <div>
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <i class="pi pi-inbox text-teal-600 text-lg" />
-          <span class="font-bold text-gray-900 dark:text-white text-sm">Messagerie interne</span>
+          <i class="pi pi-inbox text-primary text-lg" aria-hidden="true" />
+          <span class="font-bold text-color text-sm">Messagerie interne</span>
         </div>
         <Badge
           v-if="props.data?.unreadCount > 0"
           :value="`${props.data.unreadCount} non lu${props.data.unreadCount > 1 ? 's' : ''}`"
           severity="danger"
         />
-        <span v-else class="text-xs text-gray-400">À jour</span>
+        <span v-else class="text-xs text-muted-color">À jour</span>
       </div>
 
       <div v-if="!props.data?.messages || props.data.messages.length === 0" class="py-2">
@@ -64,26 +64,26 @@ const goToMessage = (id) => {
             <div class="flex items-center gap-1.5">
               <span
                 v-if="!msg.isLu"
-                class="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0"
+                class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"
               />
               <span
                 v-if="msg.prioritaire"
-                class="text-[10px] font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/50 px-1 rounded shrink-0"
+                class="text-[10px] font-bold text-color bg-highlight px-1 rounded shrink-0"
               >
                 Urgent
               </span>
               <p
-                class="text-xs text-gray-900 dark:text-white truncate m-0"
+                class="text-xs text-color truncate m-0"
                 :class="{ 'font-bold': !msg.isLu, 'font-medium': msg.isLu }"
               >
                 {{ msg.sujet }}
               </p>
             </div>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 m-0 truncate">
+            <p class="text-[11px] text-muted-color m-0 truncate">
               {{ msg.expediteur }}
             </p>
           </div>
-          <span class="text-[10px] text-gray-400 shrink-0 pt-0.5">
+          <span class="text-[10px] text-muted-color shrink-0 pt-0.5">
             {{ msg.createdAt }}
           </span>
         </li>
@@ -104,4 +104,3 @@ const goToMessage = (id) => {
     </div>
   </div>
 </template>
-
