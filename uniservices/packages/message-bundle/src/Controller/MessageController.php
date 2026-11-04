@@ -8,9 +8,6 @@ use App\Entity\Structure\StructureGroupe;
 use App\Entity\Structure\StructureSemestre;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
-use App\Repository\EtudiantRepository;
-use App\Repository\PersonnelRepository;
-use App\Repository\Structure\StructureGroupeRepository;
 use App\Repository\Structure\StructureSemestreRepository;
 use App\Security\UserEffectivePermissionService;
 use App\Service\Email\EmailService;
@@ -62,9 +59,6 @@ class MessageController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly MessageRepository $messageRepository,
         private readonly MessageDestinataireRepository $destinataireRepository,
-        private readonly EtudiantRepository $etudiantRepository,
-        private readonly PersonnelRepository $personnelRepository,
-        private readonly StructureGroupeRepository $groupeRepository,
         private readonly StructureSemestreRepository $semestreRepository,
         private readonly UserEffectivePermissionService $permissions,
         private readonly ?EmailService $emailService = null,
@@ -110,10 +104,10 @@ class MessageController extends AbstractController
                 'createdAt' => $msg?->getCreatedAt()?->format('c'),
                 'isLu' => $d->isLu(),
                 'isCopie' => $d->isCopie(),
-                'hasAttachments' => $msg ? !$msg->getPiecesJointes()->isEmpty() : false,
+                'hasAttachments' => null !== $msg && !$msg->getPiecesJointes()->isEmpty(),
                 'dateLecture' => $d->getDateLecture()?->format('c'),
                 'isArchive' => $d->isArchive(),
-                'expediteur' => $exp ? [
+                'expediteur' => null !== $exp ? [
                     'id' => $exp->getId(),
                     'nom' => $exp->getNom(),
                     'prenom' => $exp->getPrenom(),
@@ -226,7 +220,7 @@ class MessageController extends AbstractController
             'dateLecture' => $destinataire?->getDateLecture()?->format('c'),
             'isArchive' => $destinataire?->isArchive() ?? false,
             'piecesJointes' => $piecesJointes,
-            'expediteur' => $exp ? [
+            'expediteur' => null !== $exp ? [
                 'id' => $exp->getId(),
                 'nom' => $exp->getNom(),
                 'prenom' => $exp->getPrenom(),
@@ -279,10 +273,10 @@ class MessageController extends AbstractController
         $response = new BinaryFileResponse($filePath);
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-            $pieceJointe->getNomOriginal()
+            LooseValue::string($pieceJointe->getNomOriginal())
         );
         $response->headers->set('X-Content-Type-Options', 'nosniff');
-        if ($pieceJointe->getMimeType()) {
+        if ($pieceJointe->getMimeType() !== null && $pieceJointe->getMimeType() !== '') {
             $response->headers->set('Content-Type', $pieceJointe->getMimeType());
         }
 
@@ -305,7 +299,7 @@ class MessageController extends AbstractController
             return new JsonResponse(['message' => 'Message introuvable pour cet utilisateur'], Response::HTTP_NOT_FOUND);
         }
 
-        $body = json_decode($request->getContent(), true) ?: [];
+        $body = LooseValue::assoc(json_decode($request->getContent(), true));
         $isLu = isset($body['isLu']) ? (bool) $body['isLu'] : !$destinataire->isLu();
 
         $destinataire->setIsLu($isLu);
@@ -335,7 +329,7 @@ class MessageController extends AbstractController
             return new JsonResponse(['message' => 'Message introuvable pour cet utilisateur'], Response::HTTP_NOT_FOUND);
         }
 
-        $body = json_decode($request->getContent(), true) ?: [];
+        $body = LooseValue::assoc(json_decode($request->getContent(), true));
         $isArchive = isset($body['isArchive']) ? (bool) $body['isArchive'] : !$destinataire->isArchive();
 
         $destinataire->setIsArchive($isArchive);
@@ -451,7 +445,7 @@ class MessageController extends AbstractController
             $semestres[] = [
                 'id' => $s->getId(),
                 'libelle' => $s->getLibelle(),
-                'code' => $s->getCodeElement() ?: ('S' . $s->getOrdreLmd()),
+                'code' => ($s->getCodeElement() ?? '') !== '' ? $s->getCodeElement() : ('S' . $s->getOrdreLmd()),
                 'ordreLmd' => $s->getOrdreLmd(),
             ];
 
@@ -478,7 +472,7 @@ class MessageController extends AbstractController
             // Étudiants inscrits dans ces semestres
             foreach ($s->getScolariteSemestre() as $scolSem) {
                 $etudiant = $scolSem->getScolarite()?->getEtudiant();
-                if ($etudiant && !isset($etudiantIdsMap[$etudiant->getId()])) {
+                if (null !== $etudiant && !isset($etudiantIdsMap[$etudiant->getId()])) {
                     $etudiantIdsMap[$etudiant->getId()] = true;
                     $etudiants[] = [
                         'id' => $etudiant->getId(),
@@ -511,7 +505,7 @@ class MessageController extends AbstractController
         ]);
         foreach ($scols as $sc) {
             $etudiant = $sc->getEtudiant();
-            if ($etudiant && !isset($etudiantIdsMap[$etudiant->getId()])) {
+            if (null !== $etudiant && !isset($etudiantIdsMap[$etudiant->getId()])) {
                 $etudiantIdsMap[$etudiant->getId()] = true;
                 $etudiants[] = [
                     'id' => $etudiant->getId(),
@@ -526,8 +520,10 @@ class MessageController extends AbstractController
         }
 
         usort($etudiants, function ($a, $b) {
-            $c = strcasecmp((string) $a['nom'], (string) $b['nom']);
-            return 0 !== $c ? $c : strcasecmp((string) $a['prenom'], (string) $b['prenom']);
+            $aRow = LooseValue::assoc($a);
+            $bRow = LooseValue::assoc($b);
+            $c = strcasecmp(LooseValue::castString($aRow['nom'] ?? ''), LooseValue::castString($bRow['nom'] ?? ''));
+            return 0 !== $c ? $c : strcasecmp(LooseValue::castString($aRow['prenom'] ?? ''), LooseValue::castString($bRow['prenom'] ?? ''));
         });
 
         // 2. Enseignants et Personnels du département
@@ -548,7 +544,7 @@ class MessageController extends AbstractController
 
             $permissions = $dp->getPermissions();
             $statutVal = $p->getStatut()?->value;
-            $isNonTeacher = in_array(mb_strtoupper(trim((string) $statutVal)), ['ADM', 'TEC', 'ASS', 'BIATSS'], true);
+            $isNonTeacher = in_array(mb_strtoupper(trim(LooseValue::castString($statutVal))), ['ADM', 'TEC', 'ASS', 'BIATSS'], true);
             $isTeacher = !$isNonTeacher && (
                 in_array('ROLE_TEACHER', $permissions, true)
                 || in_array('ROLE_PERMANENT', $permissions, true)
@@ -581,8 +577,10 @@ class MessageController extends AbstractController
         }
 
         $sortPersonnels = function ($a, $b) {
-            $c = strcasecmp((string) $a['nom'], (string) $b['nom']);
-            return 0 !== $c ? $c : strcasecmp((string) $a['prenom'], (string) $b['prenom']);
+            $aRow = LooseValue::assoc($a);
+            $bRow = LooseValue::assoc($b);
+            $c = strcasecmp(LooseValue::castString($aRow['nom'] ?? ''), LooseValue::castString($bRow['nom'] ?? ''));
+            return 0 !== $c ? $c : strcasecmp(LooseValue::castString($aRow['prenom'] ?? ''), LooseValue::castString($bRow['prenom'] ?? ''));
         };
         usort($enseignants, $sortPersonnels);
         usort($personnels, $sortPersonnels);
@@ -614,12 +612,12 @@ class MessageController extends AbstractController
         }
 
         $payload = [];
-        if (str_starts_with((string) $request->headers->get('content-type', ''), 'multipart/form-data')) {
-            $payload = $request->request->all();
+        if (str_starts_with($request->headers->get('content-type', ''), 'multipart/form-data')) {
+            $payload = LooseValue::assoc($request->request->all());
             if (isset($payload['payload']) && is_string($payload['payload'])) {
                 $decoded = json_decode($payload['payload'], true);
                 if (is_array($decoded)) {
-                    $payload = array_merge($payload, $decoded);
+                    $payload = array_merge($payload, LooseValue::assoc($decoded));
                 }
             } else {
                 foreach (['semestreIds', 'groupeIds', 'etudiantIds', 'enseignantIds', 'copiePersonnelIds'] as $arrKey) {
@@ -632,7 +630,7 @@ class MessageController extends AbstractController
                 }
             }
         } else {
-            $payload = json_decode($request->getContent(), true) ?: [];
+            $payload = LooseValue::assoc(json_decode($request->getContent(), true));
         }
 
         $sujet = trim(LooseValue::castString($payload['sujet'] ?? ''));
@@ -641,7 +639,7 @@ class MessageController extends AbstractController
         $prioritaire = (bool) ($payload['prioritaire'] ?? false);
         $copieEmail = (bool) ($payload['copieEmail'] ?? false);
 
-        if (empty($sujet) || empty($contenu)) {
+        if ($sujet === '' || $contenu === '') {
             return new JsonResponse(['message' => 'Le sujet et le contenu sont requis.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -660,11 +658,9 @@ class MessageController extends AbstractController
             }
         }
 
-        /** @var Etudiant[] $primaryEtudiants */
         $primaryEtudiants = [];
         $primaryEtudiantIds = [];
 
-        /** @var Personnel[] $primaryPersonnels */
         $primaryPersonnels = [];
         $primaryPersonnelIds = [];
 
@@ -672,17 +668,18 @@ class MessageController extends AbstractController
 
         // 1. Résolution des destinataires principaux
         if (in_array($destinataireType, ['SEMESTRES', 'PROMO'], true)) {
-            $semestreIds = (array) ($payload['semestreIds'] ?? ($payload['semestreId'] ? [$payload['semestreId']] : []));
-            $semestreIds = array_map('intval', array_filter($semestreIds));
+            $semestreValue = $payload['semestreIds'] ?? null;
+            $semestreIds = null !== $semestreValue ? LooseValue::row($semestreValue) : (isset($payload['semestreId']) ? [$payload['semestreId']] : []);
+            $semestreIds = array_map(LooseValue::castInt(...), array_filter($semestreIds, static fn (mixed $value): bool => $value !== null && $value !== ''));
             $nomsSemestres = [];
 
-            if (!empty($semestreIds)) {
+            if (count($semestreIds) > 0) {
                 $semestres = array_values(array_intersect_key($deptSemestres, array_flip($semestreIds)));
                 foreach ($semestres as $semestre) {
                     $nomsSemestres[] = $semestre->getLibelle();
                     foreach ($semestre->getScolariteSemestre() as $scol) {
                         $etudiant = $scol->getScolarite()?->getEtudiant();
-                        if ($etudiant && !isset($primaryEtudiantIds[$etudiant->getId()])) {
+                        if (null !== $etudiant && !isset($primaryEtudiantIds[$etudiant->getId()])) {
                             $primaryEtudiantIds[$etudiant->getId()] = true;
                             $primaryEtudiants[] = $etudiant;
                         }
@@ -690,13 +687,13 @@ class MessageController extends AbstractController
                     foreach ($semestre->getGroupes() as $g) {
                         foreach ($g->getScolariteSemestres() as $scolSem) {
                             $etudiant = $scolSem->getScolarite()?->getEtudiant();
-                            if ($etudiant && !isset($primaryEtudiantIds[$etudiant->getId()])) {
+                            if (null !== $etudiant && !isset($primaryEtudiantIds[$etudiant->getId()])) {
                                 $primaryEtudiantIds[$etudiant->getId()] = true;
                                 $primaryEtudiants[] = $etudiant;
                             }
                         }
                         foreach ($g->getEtudiants() as $etudiant) {
-                            if ($etudiant && !isset($primaryEtudiantIds[$etudiant->getId()])) {
+                            if (!isset($primaryEtudiantIds[$etudiant->getId()])) {
                                 $primaryEtudiantIds[$etudiant->getId()] = true;
                                 $primaryEtudiants[] = $etudiant;
                             }
@@ -706,23 +703,24 @@ class MessageController extends AbstractController
             }
             $cibleLibelle = 'Semestre(s) ' . implode(', ', $nomsSemestres);
         } elseif (in_array($destinataireType, ['GROUPES', 'GROUPE'], true)) {
-            $groupeIds = (array) ($payload['groupeIds'] ?? ($payload['groupeId'] ? [$payload['groupeId']] : []));
-            $groupeIds = array_map('intval', array_filter($groupeIds));
+            $groupeValue = $payload['groupeIds'] ?? null;
+            $groupeIds = null !== $groupeValue ? LooseValue::row($groupeValue) : (isset($payload['groupeId']) ? [$payload['groupeId']] : []);
+            $groupeIds = array_map(LooseValue::castInt(...), array_filter($groupeIds, static fn (mixed $value): bool => $value !== null && $value !== ''));
             $nomsGroupes = [];
 
-            if (!empty($groupeIds)) {
+            if (count($groupeIds) > 0) {
                 $groupes = array_values(array_intersect_key($deptGroupes, array_flip($groupeIds)));
                 foreach ($groupes as $groupe) {
                     $nomsGroupes[] = $groupe->getLibelle();
                     foreach ($groupe->getScolariteSemestres() as $scolSem) {
                         $etudiant = $scolSem->getScolarite()?->getEtudiant();
-                        if ($etudiant && !isset($primaryEtudiantIds[$etudiant->getId()])) {
+                        if (null !== $etudiant && !isset($primaryEtudiantIds[$etudiant->getId()])) {
                             $primaryEtudiantIds[$etudiant->getId()] = true;
                             $primaryEtudiants[] = $etudiant;
                         }
                     }
                     foreach ($groupe->getEtudiants() as $etudiant) {
-                        if ($etudiant && !isset($primaryEtudiantIds[$etudiant->getId()])) {
+                        if (!isset($primaryEtudiantIds[$etudiant->getId()])) {
                             $primaryEtudiantIds[$etudiant->getId()] = true;
                             $primaryEtudiants[] = $etudiant;
                         }
@@ -731,8 +729,8 @@ class MessageController extends AbstractController
             }
             $cibleLibelle = 'Groupe(s) ' . implode(', ', $nomsGroupes);
         } elseif (in_array($destinataireType, ['ETUDIANTS', 'INDIVIDUEL'], true)) {
-            $etudiantIds = array_map('intval', (array) ($payload['etudiantIds'] ?? []));
-            if (!empty($etudiantIds)) {
+            $etudiantIds = array_map(LooseValue::castInt(...), LooseValue::row($payload['etudiantIds'] ?? []));
+            if (count($etudiantIds) > 0) {
                 $primaryEtudiants = $this->em->createQueryBuilder()
                     ->select('DISTINCT e')
                     ->from(Etudiant::class, 'e')
@@ -759,9 +757,9 @@ class MessageController extends AbstractController
             }
         } elseif ($destinataireType === 'ENSEIGNANTS') {
             $enseignantsType = LooseValue::castString($payload['enseignantsType'] ?? 'ALL'); // ALL, PERMANENT, VACATAIRE, NOMINATIF
-            $departementPersonnels = $departement !== null ? $this->em->getRepository(StructureDepartementPersonnel::class)->findBy([
+            $departementPersonnels = $this->em->getRepository(StructureDepartementPersonnel::class)->findBy([
                 'departement' => $departement,
-            ]) : [];
+            ]);
 
             $deptTeachers = [];
             foreach ($departementPersonnels as $dp) {
@@ -793,7 +791,7 @@ class MessageController extends AbstractController
                 }
                 $cibleLibelle = 'Enseignants vacataires';
             } elseif ($enseignantsType === 'NOMINATIF') {
-                $teacherIds = array_map('intval', (array) ($payload['enseignantIds'] ?? []));
+                $teacherIds = array_map(LooseValue::castInt(...), LooseValue::row($payload['enseignantIds'] ?? []));
                 foreach ($teacherIds as $tId) {
                     if (isset($deptTeachers[$tId])) {
                         $primaryPersonnels[] = $deptTeachers[$tId];
@@ -812,7 +810,7 @@ class MessageController extends AbstractController
             }
         }
 
-        if (empty($cibleLibelle)) {
+        if ($cibleLibelle === '') {
             $cibleLibelle = LooseValue::castString($payload['cibleLibelle'] ?? $destinataireType);
         }
 
@@ -842,7 +840,7 @@ class MessageController extends AbstractController
         }
 
         // 2. Destinataires en copie (CC) : membres du personnel toutes catégories
-        $copiePersonnelIds = array_map('intval', (array) ($payload['copiePersonnelIds'] ?? []));
+        $copiePersonnelIds = array_map(LooseValue::castInt(...), LooseValue::row($payload['copiePersonnelIds'] ?? []));
         $copiePersonnelIds = array_unique($copiePersonnelIds);
 
         foreach ($copiePersonnelIds as $pId) {
@@ -875,7 +873,7 @@ class MessageController extends AbstractController
         }
 
         $uploadDir = $this->uploadDir();
-        if (!empty($uploadedFiles) && !is_dir($uploadDir)) {
+        if (count($uploadedFiles) > 0 && !is_dir($uploadDir)) {
             mkdir($uploadDir, 0775, true);
         }
 
@@ -941,7 +939,7 @@ class MessageController extends AbstractController
         }
 
         $exp = $message->getExpediteur();
-        $expName = $exp ? sprintf('%s %s', $exp->getPrenom(), $exp->getNom()) : 'Expéditeur';
+        $expName = null !== $exp ? sprintf('%s %s', $exp->getPrenom(), $exp->getNom()) : 'Expéditeur';
 
         foreach ($message->getDestinataires() as $dest) {
             $email = null;
@@ -955,7 +953,7 @@ class MessageController extends AbstractController
                 $destName = sprintf('%s %s', $dest->getPersonnel()->getPrenom(), $dest->getPersonnel()->getNom());
             }
 
-            if (empty($email)) {
+            if ($email === null || $email === '') {
                 continue;
             }
 

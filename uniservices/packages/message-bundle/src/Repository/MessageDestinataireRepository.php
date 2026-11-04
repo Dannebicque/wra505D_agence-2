@@ -54,9 +54,9 @@ class MessageDestinataireRepository extends ServiceEntityRepository
             $qb->andWhere('d.isArchive = false');
         }
 
-        if (!empty($filters['search'])) {
+        if (($filters['search'] ?? '') !== '') {
             $qb->andWhere('LOWER(m.sujet) LIKE :search OR LOWER(m.contenu) LIKE :search OR LOWER(e.nom) LIKE :search OR LOWER(e.prenom) LIKE :search')
-               ->setParameter('search', '%' . mb_strtolower((string) $filters['search']) . '%');
+               ->setParameter('search', '%' . mb_strtolower(LooseValue::castString($filters['search'])) . '%');
         }
 
         return $qb->orderBy('m.prioritaire', 'DESC')
@@ -90,7 +90,7 @@ class MessageDestinataireRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('d')
             ->update()
             ->set('d.isLu', ':true')
-            ->set('d.luAt', ':now')
+            ->set('d.dateLecture', ':now')
             ->where('d.isLu = false')
             ->andWhere('d.isArchive = false')
             ->setParameter('true', true)
@@ -141,10 +141,10 @@ class MessageDestinataireRepository extends ServiceEntityRepository
             $qb->andWhere('d.personnel = :user');
         }
 
-        return $qb->setParameter('user', $user)
+        return LooseValue::nullableInstance($qb->setParameter('user', $user)
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getOneOrNullResult(), MessageDestinataire::class);
     }
 
     /**
@@ -172,13 +172,12 @@ class MessageDestinataireRepository extends ServiceEntityRepository
                 $readCount++;
             }
             $targetUser = $d->getEtudiant() ?? $d->getPersonnel();
-            if ($targetUser) {
+            if (null !== $targetUser) {
                 $readers[] = [
-                    'id' => $targetUser->getId(),
+                    'id' => LooseValue::int($targetUser->getId()),
                     'type' => $d->getEtudiant() !== null ? 'etudiant' : 'personnel',
-                    'nom' => method_exists($targetUser, 'getNom') ? $targetUser->getNom() : '',
-                    'prenom' => method_exists($targetUser, 'getPrenom') ? $targetUser->getPrenom() : '',
-                    'email' => method_exists($targetUser, 'getEmail') ? $targetUser->getEmail() : '',
+                    'nom' => LooseValue::string($targetUser->getNom()),
+                    'prenom' => LooseValue::string($targetUser->getPrenom()),
                     'isLu' => $d->isLu(),
                     'isCopie' => $d->isCopie(),
                     'dateLecture' => $d->getDateLecture()?->format('c'),

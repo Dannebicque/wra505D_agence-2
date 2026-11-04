@@ -132,7 +132,7 @@ class CleanOldMessagesCommand extends Command
 
         while (true) {
             $batch = $this->messageRepository->findMessagesOlderThan($cutoffDate, $batchSize);
-            if (empty($batch)) {
+            if (count($batch) === 0) {
                 break;
             }
 
@@ -142,10 +142,13 @@ class CleanOldMessagesCommand extends Command
                 // Suppression physique des pièces jointes associées sur le disque
                 foreach ($message->getPiecesJointes() as $pj) {
                     $fileName = $pj->getFichier();
-                    if (!empty($fileName)) {
+                    if ($fileName !== null && $fileName !== '') {
                         $filePath = $uploadDir . '/' . $fileName;
                         if (file_exists($filePath) && is_file($filePath)) {
-                            $size = filesize($filePath) ?: $pj->getTaille();
+                            $size = filesize($filePath);
+                            if ($size === false) {
+                                $size = $pj->getTaille();
+                            }
                             if (@unlink($filePath)) {
                                 $deletedFilesCount++;
                                 $freedBytes += $size;

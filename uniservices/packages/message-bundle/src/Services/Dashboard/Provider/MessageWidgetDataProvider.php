@@ -42,7 +42,7 @@ class MessageWidgetDataProvider implements WidgetDataProviderInterface
             return [
                 'id' => $msg?->getId(),
                 'sujet' => $msg?->getSujet(),
-                'expediteur' => $exp ? sprintf('%s %s', $exp->getPrenom(), $exp->getNom()) : 'Expéditeur inconnu',
+                'expediteur' => null !== $exp ? sprintf('%s %s', $exp->getPrenom(), $exp->getNom()) : 'Expéditeur inconnu',
                 'prioritaire' => $msg?->isPrioritaire() ?? false,
                 'createdAt' => $msg?->getCreatedAt()?->format('d/m H:i'),
                 'isLu' => $d->isLu(),
