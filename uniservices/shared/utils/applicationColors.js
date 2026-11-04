@@ -47,6 +47,13 @@ export const APPLICATION_REGISTRY = {
     icon: 'pi pi-book',
     isDefault: false,
   },
+  message: {
+    slug: 'message',
+    name: 'Messagerie',
+    shortLabel: 'Messages',
+    icon: 'pi pi-inbox',
+    isDefault: false,
+  },
   finance: {
     slug: 'finance',
     name: 'Finances & Achats',
@@ -98,6 +105,8 @@ export function normalizeAppSlug(appInput) {
     'help-desk': 'helpdesk',
     portfolio: 'unifolio',
     portfolios: 'unifolio',
+    messages: 'message',
+    messagerie: 'message',
     messages: 'message',
     messagerie: 'message',
   };

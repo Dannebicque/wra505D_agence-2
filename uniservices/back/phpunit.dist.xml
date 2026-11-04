@@ -20,6 +20,7 @@
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
+            <directory>../packages/message-bundle/tests</directory>
         </testsuite>
     </testsuites>
 
