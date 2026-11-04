@@ -32,10 +32,38 @@ class MoyenneUeRepository extends ServiceEntityRepository
 
         $result = [];
         foreach ($rows as $row) {
-            $result[(int) $row['scolId']][(int) $row['ueId']] = (float) $row['value'];
+            $normalizedRow = self::normalizeRow($row);
+            if (null === $normalizedRow) {
+                continue;
+            }
+            $result[$normalizedRow['scolId']][$normalizedRow['ueId']] = $normalizedRow['value'];
         }
 
         return $result;
+    }
+
+    /**
+     * @return array{scolId: int, ueId: int, value: float}|null
+     */
+    private static function normalizeRow(mixed $row): ?array
+    {
+        if (
+            !is_array($row)
+            || !array_key_exists('scolId', $row)
+            || !array_key_exists('ueId', $row)
+            || !array_key_exists('value', $row)
+            || !is_numeric($row['scolId'])
+            || !is_numeric($row['ueId'])
+            || !is_numeric($row['value'])
+        ) {
+            return null;
+        }
+
+        return [
+            'scolId' => intval($row['scolId']),
+            'ueId' => intval($row['ueId']),
+            'value' => floatval($row['value']),
+        ];
     }
 
     //    /**

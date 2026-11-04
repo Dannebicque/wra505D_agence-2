@@ -32,6 +32,6 @@ final class ClassiqueCommissionStrategy extends AbstractCommissionStrategy
 
     protected function getUeWeight(StructureUe $ue): float
     {
-        return (float) $ue->getCoefficient();
+        return $ue->getCoefficient();
     }
 }

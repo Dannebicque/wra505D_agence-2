@@ -3,7 +3,6 @@
 namespace IntranetBundle\Commission\Strategy;
 
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
-use App\Entity\Scolarite\ScolEnseignementUe;
 use App\Entity\Structure\StructureSemestre;
 use App\Entity\Structure\StructureUe;
 use IntranetBundle\Commission\Contract\CommissionDecisionRuleInterface;
@@ -34,7 +33,11 @@ abstract class AbstractCommissionStrategy implements CommissionStrategyInterface
         $ues = $this->getUes($semestre);
         $weights = [];
         foreach ($ues as $ue) {
-            $weights[$ue->getId()] = $this->getUeWeight($ue);
+            $ueId = $ue->getId();
+            if (null === $ueId) {
+                continue;
+            }
+            $weights[$ueId] = $this->getUeWeight($ue);
         }
 
         $rows = [];
@@ -67,12 +70,15 @@ abstract class AbstractCommissionStrategy implements CommissionStrategyInterface
         $moyennesUe = [];
 
         foreach ($ues as $ue) {
-            $moyenne = $dataset->moyennesUe[$scolId][$ue->getId()] ?? null;
-            $moyennesUe[$ue->getId()] = $moyenne;
+            $ueId = $ue->getId();
+            if (null === $ueId) {
+                continue;
+            }
+            $moyenne = $dataset->moyennesUe[$scolId][$ueId] ?? null;
+            $moyennesUe[$ueId] = $moyenne;
             $cells['ue_'.$ue->getId()] = $moyenne;
 
             foreach ($ue->getEnseignementUes() as $enseignementUe) {
-                /** @var ScolEnseignementUe $enseignementUe */
                 $enseignementId = $enseignementUe->getEnseignement()?->getId();
                 $note = $dataset->moyennesEnseignement[$scolId][$enseignementId] ?? null;
                 $cells['ens_'.$ue->getId().'_'.$enseignementId] = $note;
@@ -175,6 +181,7 @@ abstract class AbstractCommissionStrategy implements CommissionStrategyInterface
     }
 
     /** Colonnes UE + enseignements de chaque UE (utilitaire pour les stratégies concrètes). */
+    /** @return CommissionColumn[] */
     protected function buildColumnsForUes(StructureSemestre $semestre, bool $withEcts): array
     {
         $columns = [];
@@ -198,7 +205,7 @@ abstract class AbstractCommissionStrategy implements CommissionStrategyInterface
 
             foreach ($ue->getEnseignementUes() as $enseignementUe) {
                 $enseignement = $enseignementUe->getEnseignement();
-                $nature = $enseignement?->getType()?->value ?? 'matiere';
+                $nature = $enseignement?->getType()->value ?? 'matiere';
                 $columns[] = new CommissionColumn(
                     'ens_'.$ue->getId().'_'.$enseignement?->getId(),
                     $enseignement?->getCodeEnseignement() ?? $enseignement?->getLibelleCourt() ?? '',

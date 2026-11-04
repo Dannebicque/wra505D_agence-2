@@ -26,6 +26,7 @@ final class ApcCommissionStrategy extends AbstractCommissionStrategy
         return true === $semestre->getAnnee()?->getTypeDiplome()?->isApc();
     }
 
+    /** @return CommissionColumn[] */
     protected function buildColumns(StructureSemestre $semestre): array
     {
         $columns = [];
@@ -55,7 +56,7 @@ final class ApcCommissionStrategy extends AbstractCommissionStrategy
 
             foreach ($ue->getEnseignementUes() as $enseignementUe) {
                 $enseignement = $enseignementUe->getEnseignement();
-                $nature = $enseignement?->getType()?->value ?? 'ressource';
+                $nature = $enseignement?->getType()->value ?? 'ressource';
                 $columns[] = new CommissionColumn(
                     'ens_'.$ue->getId().'_'.$enseignement?->getId(),
                     $enseignement?->getCodeEnseignement() ?? $enseignement?->getLibelleCourt() ?? '',
@@ -91,7 +92,6 @@ final class ApcCommissionStrategy extends AbstractCommissionStrategy
     {
         $ues = $this->getUes($semestre);
 
-        /** @var array<int, array{ens: \App\Entity\Scolarite\ScolEnseignement, ues: array<int, array<string, mixed>>}> $itemsMap */
         $itemsMap = [];
 
         foreach ($ues as $ue) {
@@ -107,7 +107,7 @@ final class ApcCommissionStrategy extends AbstractCommissionStrategy
                     continue;
                 }
 
-                $ensId = (int) $ens->getId();
+                $ensId = $ens->getId();
                 if (!isset($itemsMap[$ensId])) {
                     $itemsMap[$ensId] = [
                         'ens' => $ens,
@@ -135,8 +135,8 @@ final class ApcCommissionStrategy extends AbstractCommissionStrategy
             $ensA = $a['ens'];
             $ensB = $b['ens'];
 
-            $natureA = $ensA->getType()?->value ?? 'ressource';
-            $natureB = $ensB->getType()?->value ?? 'ressource';
+            $natureA = $ensA->getType()->value;
+            $natureB = $ensB->getType()->value;
 
             if ($natureA !== $natureB) {
                 // 'ressource' ('r') avant 'sae' ('s')
@@ -151,7 +151,7 @@ final class ApcCommissionStrategy extends AbstractCommissionStrategy
         // 1. Colonnes des Ressources & SAÉ
         foreach ($items as $item) {
             $ens = $item['ens'];
-            $nature = $ens->getType()?->value ?? 'ressource';
+            $nature = $ens->getType()->value;
 
             $columns[] = new CommissionColumn(
                 'ens_'.$ens->getId(),

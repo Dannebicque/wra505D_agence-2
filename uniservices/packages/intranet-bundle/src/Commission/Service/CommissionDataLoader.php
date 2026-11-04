@@ -21,7 +21,6 @@ final readonly class CommissionDataLoader implements CommissionDataLoaderInterfa
 
     public function loadDataset(StructureSemestre $semestre): CommissionDataset
     {
-        /** @var EtudiantScolariteSemestre[] $scolarites */
         $scolarites = $this->scolariteSemestreRepository->createQueryBuilder('ess')
             ->leftJoin('ess.scolarite', 'scol')
             ->leftJoin('scol.etudiant', 'e')

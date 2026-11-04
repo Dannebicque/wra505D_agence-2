@@ -27,8 +27,39 @@ final readonly class CommissionColumn implements \JsonSerializable
     ) {
     }
 
+    /**
+     * @return array{
+     *     key: string,
+     *     label: string,
+     *     type: string,
+     *     parentKey: string|null,
+     *     coefficient: float|null,
+     *     ects: float|null,
+     *     sublabel: string|null,
+     *     nature: string|null,
+     *     enseignementId: int|null,
+     *     ues: array<array<string, mixed>>|null,
+     *     color: string|null,
+     *     competenceNomCourt: string|null,
+     *     competenceCouleur: string|null
+     * }
+     */
     public function jsonSerialize(): array
     {
-        return get_object_vars($this);
+        return [
+            'key' => $this->key,
+            'label' => $this->label,
+            'type' => $this->type,
+            'parentKey' => $this->parentKey,
+            'coefficient' => $this->coefficient,
+            'ects' => $this->ects,
+            'sublabel' => $this->sublabel,
+            'nature' => $this->nature,
+            'enseignementId' => $this->enseignementId,
+            'ues' => $this->ues,
+            'color' => $this->color,
+            'competenceNomCourt' => $this->competenceNomCourt,
+            'competenceCouleur' => $this->competenceCouleur,
+        ];
     }
 }

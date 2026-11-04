@@ -333,7 +333,7 @@ watch(anneeId, async () => {
     </div>
 
     <!-- Message d'erreur -->
-    <div v-if="errorMessage" class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm flex items-center gap-3">
+    <div v-if="errorMessage" class="p-4 rounded-xl bg-emphasis border border-surface text-color text-sm flex items-center gap-3">
       <i class="pi pi-exclamation-circle text-lg"></i>
       <span>{{ errorMessage }}</span>
     </div>

@@ -43,10 +43,10 @@ const formatNote = (val: number | null | undefined): string => {
 };
 
 const getNoteClass = (val: number | null | undefined): string => {
-  if (val === null || val === undefined) return 'text-slate-400';
-  if (val >= 10) return 'text-emerald-600 dark:text-emerald-400 font-semibold';
-  if (val >= 8) return 'text-amber-600 dark:text-amber-400 font-medium';
-  return 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 rounded px-1';
+  if (val === null || val === undefined) return 'text-muted-color';
+  if (val >= 10) return 'text-primary font-semibold';
+  if (val >= 8) return 'text-primary font-medium';
+  return 'text-color font-bold bg-emphasis rounded px-1';
 };
 
 const getUeStatut = (val: number | null | undefined): { label: string; severity: string } => {
@@ -82,112 +82,112 @@ const getCompetenceStyle = (colorName: string | undefined | null) => {
     footBg: string;
   }> = {
     c1: {
-      headerBg: 'bg-blue-100/90 dark:bg-blue-950/60 border-blue-300 dark:border-blue-700',
-      headerText: 'text-blue-900 dark:text-blue-200',
-      subHeaderBg: 'bg-blue-100/60 dark:bg-blue-950/50 text-blue-900 dark:text-blue-200',
-      badgeBg: 'bg-blue-600 text-white',
-      squareBg: 'bg-blue-600 text-white',
-      cellBg: 'bg-blue-50/30 dark:bg-blue-950/20',
-      footBg: 'bg-blue-100/50 dark:bg-blue-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     blue: {
-      headerBg: 'bg-blue-100/90 dark:bg-blue-950/60 border-blue-300 dark:border-blue-700',
-      headerText: 'text-blue-900 dark:text-blue-200',
-      subHeaderBg: 'bg-blue-100/60 dark:bg-blue-950/50 text-blue-900 dark:text-blue-200',
-      badgeBg: 'bg-blue-600 text-white',
-      squareBg: 'bg-blue-600 text-white',
-      cellBg: 'bg-blue-50/30 dark:bg-blue-950/20',
-      footBg: 'bg-blue-100/50 dark:bg-blue-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     c2: {
-      headerBg: 'bg-emerald-100/90 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700',
-      headerText: 'text-emerald-900 dark:text-emerald-200',
-      subHeaderBg: 'bg-emerald-100/60 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-200',
-      badgeBg: 'bg-emerald-600 text-white',
-      squareBg: 'bg-emerald-600 text-white',
-      cellBg: 'bg-emerald-50/30 dark:bg-emerald-950/20',
-      footBg: 'bg-emerald-100/50 dark:bg-emerald-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     emerald: {
-      headerBg: 'bg-emerald-100/90 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700',
-      headerText: 'text-emerald-900 dark:text-emerald-200',
-      subHeaderBg: 'bg-emerald-100/60 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-200',
-      badgeBg: 'bg-emerald-600 text-white',
-      squareBg: 'bg-emerald-600 text-white',
-      cellBg: 'bg-emerald-50/30 dark:bg-emerald-950/20',
-      footBg: 'bg-emerald-100/50 dark:bg-emerald-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     c3: {
-      headerBg: 'bg-amber-100/90 dark:bg-amber-950/60 border-amber-300 dark:border-amber-700',
-      headerText: 'text-amber-900 dark:text-amber-200',
-      subHeaderBg: 'bg-amber-100/60 dark:bg-amber-950/50 text-amber-900 dark:text-amber-200',
-      badgeBg: 'bg-amber-600 text-white',
-      squareBg: 'bg-amber-600 text-white',
-      cellBg: 'bg-amber-50/30 dark:bg-amber-950/20',
-      footBg: 'bg-amber-100/50 dark:bg-amber-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     amber: {
-      headerBg: 'bg-amber-100/90 dark:bg-amber-950/60 border-amber-300 dark:border-amber-700',
-      headerText: 'text-amber-900 dark:text-amber-200',
-      subHeaderBg: 'bg-amber-100/60 dark:bg-amber-950/50 text-amber-900 dark:text-amber-200',
-      badgeBg: 'bg-amber-600 text-white',
-      squareBg: 'bg-amber-600 text-white',
-      cellBg: 'bg-amber-50/30 dark:bg-amber-950/20',
-      footBg: 'bg-amber-100/50 dark:bg-amber-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     c4: {
-      headerBg: 'bg-rose-100/90 dark:bg-rose-950/60 border-rose-300 dark:border-rose-700',
-      headerText: 'text-rose-900 dark:text-rose-200',
-      subHeaderBg: 'bg-rose-100/60 dark:bg-rose-950/50 text-rose-900 dark:text-rose-200',
-      badgeBg: 'bg-rose-600 text-white',
-      squareBg: 'bg-rose-600 text-white',
-      cellBg: 'bg-rose-50/30 dark:bg-rose-950/20',
-      footBg: 'bg-rose-100/50 dark:bg-rose-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     rose: {
-      headerBg: 'bg-rose-100/90 dark:bg-rose-950/60 border-rose-300 dark:border-rose-700',
-      headerText: 'text-rose-900 dark:text-rose-200',
-      subHeaderBg: 'bg-rose-100/60 dark:bg-rose-950/50 text-rose-900 dark:text-rose-200',
-      badgeBg: 'bg-rose-600 text-white',
-      squareBg: 'bg-rose-600 text-white',
-      cellBg: 'bg-rose-50/30 dark:bg-rose-950/20',
-      footBg: 'bg-rose-100/50 dark:bg-rose-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     c5: {
-      headerBg: 'bg-purple-100/90 dark:bg-purple-950/60 border-purple-300 dark:border-purple-700',
-      headerText: 'text-purple-900 dark:text-purple-200',
-      subHeaderBg: 'bg-purple-100/60 dark:bg-purple-950/50 text-purple-900 dark:text-purple-200',
-      badgeBg: 'bg-purple-600 text-white',
-      squareBg: 'bg-purple-600 text-white',
-      cellBg: 'bg-purple-50/30 dark:bg-purple-950/20',
-      footBg: 'bg-purple-100/50 dark:bg-purple-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     purple: {
-      headerBg: 'bg-purple-100/90 dark:bg-purple-950/60 border-purple-300 dark:border-purple-700',
-      headerText: 'text-purple-900 dark:text-purple-200',
-      subHeaderBg: 'bg-purple-100/60 dark:bg-purple-950/50 text-purple-900 dark:text-purple-200',
-      badgeBg: 'bg-purple-600 text-white',
-      squareBg: 'bg-purple-600 text-white',
-      cellBg: 'bg-purple-50/30 dark:bg-purple-950/20',
-      footBg: 'bg-purple-100/50 dark:bg-purple-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     c6: {
-      headerBg: 'bg-cyan-100/90 dark:bg-cyan-950/60 border-cyan-300 dark:border-cyan-700',
-      headerText: 'text-cyan-900 dark:text-cyan-200',
-      subHeaderBg: 'bg-cyan-100/60 dark:bg-cyan-950/50 text-cyan-900 dark:text-cyan-200',
-      badgeBg: 'bg-cyan-600 text-white',
-      squareBg: 'bg-cyan-600 text-white',
-      cellBg: 'bg-cyan-50/30 dark:bg-cyan-950/20',
-      footBg: 'bg-cyan-100/50 dark:bg-cyan-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
     cyan: {
-      headerBg: 'bg-cyan-100/90 dark:bg-cyan-950/60 border-cyan-300 dark:border-cyan-700',
-      headerText: 'text-cyan-900 dark:text-cyan-200',
-      subHeaderBg: 'bg-cyan-100/60 dark:bg-cyan-950/50 text-cyan-900 dark:text-cyan-200',
-      badgeBg: 'bg-cyan-600 text-white',
-      squareBg: 'bg-cyan-600 text-white',
-      cellBg: 'bg-cyan-50/30 dark:bg-cyan-950/20',
-      footBg: 'bg-cyan-100/50 dark:bg-cyan-950/30',
+      headerBg: 'bg-emphasis border-surface',
+      headerText: 'text-color',
+      subHeaderBg: 'bg-emphasis text-color',
+      badgeBg: 'bg-primary text-color',
+      squareBg: 'bg-primary text-color',
+      cellBg: 'bg-emphasis',
+      footBg: 'bg-emphasis',
     },
   };
 
@@ -322,8 +322,7 @@ const getTauxReussiteSemestre = (): number | null => {
                 <div class="flex items-center justify-center gap-1">
                   <span
                     v-if="ens.nature"
-                    class="px-1 py-0.1 rounded text-[8px] font-black uppercase"
-                    :class="ens.nature === 'sae' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/50' : 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-300/50'"
+                    class="px-1 py-0.1 rounded text-[8px] font-black uppercase bg-emphasis text-color border border-surface"
                   >
                     {{ ens.nature === 'sae' ? 'SAÉ' : 'Ress' }}
                   </span>
@@ -390,7 +389,7 @@ const getTauxReussiteSemestre = (): number | null => {
                   <span v-if="row.dateNaissance" class="text-[9px] text-surface-500 whitespace-nowrap" :title="'Date de naissance : ' + row.dateNaissance">
                     {{ row.dateNaissance }}
                   </span>
-                  <span v-if="row.bac" class="px-1 py-0.2 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[9px] border border-amber-200/60 dark:border-amber-800/40 whitespace-nowrap" :title="'Baccalauréat : ' + row.bac">
+                  <span v-if="row.bac" class="px-1 py-0.2 rounded bg-emphasis text-color font-semibold text-[9px] border border-surface whitespace-nowrap" :title="'Baccalauréat : ' + row.bac">
                     {{ row.bac }}
                   </span>
                 </div>
@@ -444,7 +443,7 @@ const getTauxReussiteSemestre = (): number | null => {
 
           <!-- Bilan : UE validées -->
           <td class="px-3 py-2 text-center font-semibold border-r border-surface-200 dark:border-surface-700">
-            <span :class="row.uesValidees === ueColumns.length ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-surface-700 dark:text-surface-300'">
+            <span :class="row.uesValidees === ueColumns.length ? 'text-primary font-bold' : 'text-muted-color'">
               {{ row.uesValidees }} / {{ ueColumns.length }}
             </span>
           </td>
@@ -516,7 +515,7 @@ const getTauxReussiteSemestre = (): number | null => {
             <span v-else>-</span>
           </td>
 
-          <td class="px-4 py-2 text-center text-xs font-black text-emerald-600 dark:text-emerald-400">
+          <td class="px-4 py-2 text-center text-xs font-black text-primary">
             <span v-if="getTauxReussiteSemestre() !== null">
               {{ getTauxReussiteSemestre() }}% admis
             </span>
@@ -552,16 +551,16 @@ const getTauxReussiteSemestre = (): number | null => {
           <th
             scope="col"
             :colspan="singleEnseignementColumns.length"
-            class="px-3 py-2 text-center font-extrabold border-r-2 border-surface-300 dark:border-surface-600 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+            class="px-3 py-2 text-center font-extrabold border-r-2 border-surface bg-emphasis text-color"
           >
             <div class="flex items-center justify-center gap-3">
               <span>Ressources & SAÉ ({{ singleEnseignementColumns.length }})</span>
               <div class="flex items-center gap-2 text-[10px] font-normal">
                 <span class="inline-flex items-center gap-1">
-                  <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Ressource
+                  <span class="w-2.5 h-2.5 rounded-full bg-primary"></span> Ressource
                 </span>
                 <span class="inline-flex items-center gap-1">
-                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> SAÉ
+                  <span class="w-2.5 h-2.5 rounded-full bg-primary"></span> SAÉ
                 </span>
               </div>
             </div>
@@ -595,8 +594,7 @@ const getTauxReussiteSemestre = (): number | null => {
             <!-- Badge Ressource / SAÉ + Code -->
             <div class="flex items-center justify-center gap-1 mb-1">
               <span
-                class="px-1 py-0.1 rounded text-[8px] font-black uppercase"
-                :class="col.nature === 'sae' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/50' : 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-300/50'"
+                class="px-1 py-0.1 rounded text-[8px] font-black uppercase bg-emphasis text-color border border-surface"
               >
                 {{ col.nature === 'sae' ? 'SAÉ' : 'Ress.' }}
               </span>
@@ -689,7 +687,7 @@ const getTauxReussiteSemestre = (): number | null => {
                   <span v-if="row.dateNaissance" class="text-[9px] text-surface-500 whitespace-nowrap" :title="'Date de naissance : ' + row.dateNaissance">
                     {{ row.dateNaissance }}
                   </span>
-                  <span v-if="row.bac" class="px-1 py-0.2 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[9px] border border-amber-200/60 dark:border-amber-800/40 whitespace-nowrap" :title="'Baccalauréat : ' + row.bac">
+                  <span v-if="row.bac" class="px-1 py-0.2 rounded bg-emphasis text-color font-semibold text-[9px] border border-surface whitespace-nowrap" :title="'Baccalauréat : ' + row.bac">
                     {{ row.bac }}
                   </span>
                 </div>
@@ -739,7 +737,7 @@ const getTauxReussiteSemestre = (): number | null => {
 
           <!-- Bilan : UE Validées -->
           <td class="px-3 py-2 text-center font-semibold border-r border-surface-200 dark:border-surface-700">
-            <span :class="row.uesValidees === singleUeColumns.length ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-surface-700 dark:text-surface-300'">
+            <span :class="row.uesValidees === singleUeColumns.length ? 'text-primary font-bold' : 'text-muted-color'">
               {{ row.uesValidees }} / {{ singleUeColumns.length }}
             </span>
           </td>
@@ -810,7 +808,7 @@ const getTauxReussiteSemestre = (): number | null => {
             <span v-else>-</span>
           </td>
 
-          <td class="px-4 py-2 text-center text-xs font-black text-emerald-600 dark:text-emerald-400">
+          <td class="px-4 py-2 text-center text-xs font-black text-primary">
             <span v-if="getTauxReussiteSemestre() !== null">
               {{ getTauxReussiteSemestre() }}% admis
             </span>

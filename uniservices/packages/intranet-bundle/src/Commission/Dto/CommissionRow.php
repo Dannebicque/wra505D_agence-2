@@ -24,8 +24,39 @@ final class CommissionRow implements \JsonSerializable
     ) {
     }
 
+    /**
+     * @return array{
+     *     scolariteSemestreId: int,
+     *     etudiantId: int|null,
+     *     nom: string,
+     *     prenom: string,
+     *     cells: array<string, float|null>,
+     *     moyenne: float|null,
+     *     rang: int|null,
+     *     decision: bool|null,
+     *     decisionLibelle: string,
+     *     uesValidees: int,
+     *     numeroEtudiant: string|null,
+     *     dateNaissance: string|null,
+     *     bac: string|null
+     * }
+     */
     public function jsonSerialize(): array
     {
-        return get_object_vars($this);
+        return [
+            'scolariteSemestreId' => $this->scolariteSemestreId,
+            'etudiantId' => $this->etudiantId,
+            'nom' => $this->nom,
+            'prenom' => $this->prenom,
+            'cells' => $this->cells,
+            'moyenne' => $this->moyenne,
+            'rang' => $this->rang,
+            'decision' => $this->decision,
+            'decisionLibelle' => $this->decisionLibelle,
+            'uesValidees' => $this->uesValidees,
+            'numeroEtudiant' => $this->numeroEtudiant,
+            'dateNaissance' => $this->dateNaissance,
+            'bac' => $this->bac,
+        ];
     }
 }

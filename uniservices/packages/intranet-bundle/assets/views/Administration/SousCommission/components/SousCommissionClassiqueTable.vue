@@ -28,10 +28,10 @@ const formatNote = (val: number | null | undefined): string => {
 };
 
 const getNoteClass = (val: number | null | undefined): string => {
-  if (val === null || val === undefined) return 'text-slate-400';
-  if (val >= 10) return 'text-emerald-600 dark:text-emerald-400 font-semibold';
-  if (val >= 8) return 'text-amber-600 dark:text-amber-400 font-medium';
-  return 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 rounded px-1';
+  if (val === null || val === undefined) return 'text-muted-color';
+  if (val >= 10) return 'text-primary font-semibold';
+  if (val >= 8) return 'text-primary font-medium';
+  return 'text-color font-bold bg-emphasis rounded px-1';
 };
 
 const getDecisionBadge = (decision: boolean | null | undefined, libelle: string) => {
@@ -101,7 +101,7 @@ const getTauxReussiteSemestre = (): number | null => {
           <th
             scope="col"
             rowspan="2"
-            class="px-3 py-3 text-center font-bold uppercase tracking-wider min-w-[90px] border-r-2 border-surface-300 dark:border-surface-600 bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300"
+            class="px-3 py-3 text-center font-bold uppercase tracking-wider min-w-[90px] border-r-2 border-surface bg-emphasis text-color"
           >
             Moy. Gén.
           </th>
@@ -172,7 +172,7 @@ const getTauxReussiteSemestre = (): number | null => {
             class="px-3.5 py-2 text-surface-900 dark:text-surface-100 border-r border-surface-200 dark:border-surface-700 bg-inherit col-sticky-etudiant"
           >
             <div class="flex items-center gap-2.5">
-              <span class="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center text-[10px] shrink-0">
+              <span class="w-7 h-7 rounded-full bg-emphasis text-color font-bold flex items-center justify-center text-[10px] shrink-0">
                 {{ row.nom.charAt(0) }}{{ row.prenom.charAt(0) }}
               </span>
               <div class="min-w-0 flex-1">
@@ -186,7 +186,7 @@ const getTauxReussiteSemestre = (): number | null => {
                   <span v-if="row.dateNaissance" class="text-[9px] text-surface-500 whitespace-nowrap" :title="'Date de naissance : ' + row.dateNaissance">
                     {{ row.dateNaissance }}
                   </span>
-                  <span v-if="row.bac" class="px-1 py-0.2 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold text-[9px] border border-amber-200/60 dark:border-amber-800/40 whitespace-nowrap" :title="'Baccalauréat : ' + row.bac">
+                  <span v-if="row.bac" class="px-1 py-0.2 rounded bg-emphasis text-color font-semibold text-[9px] border border-surface whitespace-nowrap" :title="'Baccalauréat : ' + row.bac">
                     {{ row.bac }}
                   </span>
                 </div>
@@ -201,7 +201,7 @@ const getTauxReussiteSemestre = (): number | null => {
 
           <!-- Moyenne générale mise en valeur -->
           <td
-            class="px-3 py-2 text-center font-mono font-extrabold text-sm border-r-2 border-surface-300 dark:border-surface-600 bg-emerald-50/30 dark:bg-emerald-950/20"
+            class="px-3 py-2 text-center font-mono font-extrabold text-sm border-r-2 border-surface bg-emphasis"
             :class="getNoteClass(row.moyenne)"
           >
             {{ formatNote(row.moyenne) }}
@@ -259,7 +259,7 @@ const getTauxReussiteSemestre = (): number | null => {
 
           <!-- Moyenne générale promo -->
           <td
-            class="px-3 py-2 text-center font-mono font-black text-sm border-r-2 border-surface-300 dark:border-surface-600 bg-emerald-100/50 dark:bg-emerald-950/40"
+            class="px-3 py-2 text-center font-mono font-black text-sm border-r-2 border-surface bg-emphasis"
             :class="getNoteClass(getMoyenneGeneraleAverage())"
           >
             {{ formatNote(getMoyenneGeneraleAverage()) }}
@@ -288,7 +288,7 @@ const getTauxReussiteSemestre = (): number | null => {
           </template>
 
           <!-- Taux de réussite semestre -->
-          <td class="px-4 py-2 text-center text-xs font-black text-emerald-600 dark:text-emerald-400">
+          <td class="px-4 py-2 text-center text-xs font-black text-primary">
             <span v-if="getTauxReussiteSemestre() !== null">
               {{ getTauxReussiteSemestre() }}% admis
             </span>
