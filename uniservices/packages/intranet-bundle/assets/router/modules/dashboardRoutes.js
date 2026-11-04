@@ -2,7 +2,7 @@ export default [
     {
         path: '',
         alias: '/',
-        component: () => import('@/views/DashboardView.vue'),
+        component: () => import('@/views/IntranetDashboardView.vue'),
         name: 'IntranetDashboard',
         meta: { breadcrumb: [{ label: 'Dashboard', route: '/intranet' }] },
     },

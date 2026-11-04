@@ -1,23 +1,15 @@
 <script setup>
-import {HeaderComponent, PermissionGuard} from "@components";
+import { PermissionGuard } from "@components";
 import { useUsersStore } from "@stores";
-import DashboardPersonnel from "@/components/Personnel/Dashboard.vue";
+import DashboardPersonnel from "@/views/DashboardView.vue";
 import DashboardEtudiant from "@/components/Etudiant/Dashboard.vue";
-import {useRoute} from 'vue-router';
 
 const userStore = useUsersStore();
-const route = useRoute();
 </script>
 
 <template>
   <div>
-    <!-- L'accueil de l'étudiant porte son propre titre, sur une ligne : le haut de page va à sa journée. -->
-    <HeaderComponent
-        v-if="!userStore.isEtudiant"
-        icon="pi pi-home"
-        titre="Dashboard"
-        description="Retrouvez vos informations clés et vos accès rapides"
-    />
+    <!-- Le tableau de bord du personnel est celui du client ; l'accueil de l'étudiant reste le nôtre (C18, C19). -->
     <PermissionGuard permission="isPersonnel">
       <DashboardPersonnel v-if="userStore.isPersonnel"/>
     </PermissionGuard>
