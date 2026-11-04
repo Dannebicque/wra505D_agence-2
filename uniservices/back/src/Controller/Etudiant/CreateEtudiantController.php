@@ -260,7 +260,7 @@ class CreateEtudiantController extends AbstractController
         $etudiant->setPhotoName('noimage.png');
 
         // Définir les applications par défaut
-        $etudiant->setApplications(['UniTranet']);
+        $etudiant->setApplications(['intranet']);
 
         // Définir les autres propriétés si elles existent dans les données
         if (isset($data['numero_etudiant']) && ($data['numero_etudiant'] !== '' && $data['numero_etudiant'] !== '0')) {

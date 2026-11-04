@@ -304,7 +304,8 @@ class SecurityController extends AbstractController
                 $departmentsData[] = $currentDepartment;
             }
 
-            $activePackages = ['intranet', 'documents'];
+            // The intranet and the documents stay open to every student; the staff grants the rest.
+            $activePackages = array_values(array_unique(['intranet', 'documents', ...$user->getPackageCodes()]));
             $resolvedPermissions = [];
         }
 
