@@ -53,7 +53,7 @@
 
             // La zone du logo prend la largeur du menu et la suit quand il se replie : le logo
             // (4rem de large, marge intérieure comprise) reste centré sur l'axe des icônes, et la
-            // recherche qui la suit s'aligne sur le bord du contenu, 2rem après le menu.
+            // recherche qui la suit s'aligne sur le bord du contenu, à la marge intérieure de celui-ci.
             .layout-topbar {
                 padding-left: 0;
                 gap: 0;
@@ -67,7 +67,7 @@
                 }
 
                 .layout-topbar-logo-container + .layout-topbar-search {
-                    margin-left: 2rem;
+                    margin-left: var(--ui-space-3);
                 }
             }
 
