@@ -45,6 +45,8 @@ class EnseignementFilter implements FilterInterface
 
         $alias = $queryBuilder->getRootAliases()[0];
 
+        $queryBuilder->distinct();
+
         if ('semestre' === $property) {
             $enseignementUeAlias = $queryNameGenerator->generateJoinAlias('enseignementUe');
             $ueAlias = $queryNameGenerator->generateJoinAlias('ue');
@@ -117,11 +119,7 @@ class EnseignementFilter implements FilterInterface
 
             $anneeUniversitaireId = $this->otherFilterValue('anneeUniversitaire', $operation, $context);
             if ((bool) $anneeUniversitaireId) {
-                $diplomeAnneeUnivAlias = $queryNameGenerator->generateJoinAlias('diplomeAnneeUniv');
-
                 $queryBuilder
-                    ->join("$diplomeAlias.anneesUniversitaires", $diplomeAnneeUnivAlias)
-                    ->andWhere("$diplomeAnneeUnivAlias.id = :anneeUniversitaireId")
                     ->andWhere("$anneeUniversitaireAlias.id = :anneeUniversitaireId")
                     ->setParameter("anneeUniversitaireId", $anneeUniversitaireId);
             } else {

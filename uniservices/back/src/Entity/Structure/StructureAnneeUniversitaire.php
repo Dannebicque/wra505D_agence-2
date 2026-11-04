@@ -135,9 +135,18 @@ class StructureAnneeUniversitaire implements TimestampableInterface
     /**
      * @var Collection<int, StructureDiplome>
      */
-    #[ORM\ManyToMany(targetEntity: StructureDiplome::class, mappedBy: 'anneesUniversitaires')]
-    #[Groups(['annee_universitaire:detail', 'annee_universitaire:write'])]
-    private Collection $diplomes;
+    #[ORM\ManyToMany(targetEntity: StructureDiplome::class, mappedBy: 'legacyAnneesUniversitaires')]
+    // Stockage historique conservé sans lecture/écriture métier. La liste publique est calculée via les PN.
+    private Collection $legacyDiplomes;
+
+    /**
+     * Sélection explicite du formulaire d'initialisation ; null signifie « ne pas modifier les PN ».
+     * Non typée : la saisie est validée par `AnneeUnivInitProcessor`.
+     *
+     * @var array<mixed>|null
+     */
+    #[Groups(['annee_universitaire:write'])]
+    private ?array $diplomeIds = null;
 
     public function __construct()
     {
@@ -151,7 +160,7 @@ class StructureAnneeUniversitaire implements TimestampableInterface
         $this->calendriers = new ArrayCollection();
         $this->previsionnels = new ArrayCollection();
         $this->enseignantHrs = new ArrayCollection();
-        $this->diplomes = new ArrayCollection();
+        $this->legacyDiplomes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -451,26 +460,34 @@ class StructureAnneeUniversitaire implements TimestampableInterface
     /**
      * @return Collection<int, StructureDiplome>
      */
+    #[Groups(['annee_universitaire:detail'])]
     public function getDiplomes(): Collection
     {
-        return $this->diplomes;
-    }
-
-    public function addDiplome(StructureDiplome $diplome): static
-    {
-        if (!$this->diplomes->contains($diplome)) {
-            $this->diplomes->add($diplome);
-            $diplome->addAnneeUniversitaire($this);
+        $diplomes = [];
+        foreach ($this->pns as $pn) {
+            $diplome = $pn->getDiplome();
+            if ($diplome !== null) {
+                $diplomes[spl_object_id($diplome)] = $diplome;
+            }
         }
 
-        return $this;
+        return new ArrayCollection(array_values($diplomes));
     }
 
-    public function removeDiplome(StructureDiplome $diplome): static
+    /**
+     * @return array<mixed>|null
+     */
+    public function getDiplomeIds(): ?array
     {
-        if ($this->diplomes->removeElement($diplome)) {
-            $diplome->removeAnneeUniversitaire($this);
-        }
+        return $this->diplomeIds;
+    }
+
+    /**
+     * @param array<mixed>|null $ids
+     */
+    public function setDiplomeIds(?array $ids): static
+    {
+        $this->diplomeIds = $ids;
 
         return $this;
     }
