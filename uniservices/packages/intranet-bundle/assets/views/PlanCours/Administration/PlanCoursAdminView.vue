@@ -157,7 +157,7 @@ const openShowDialog = async (item) => {
 
 const openEditOrCreate = async (item) => {
   if (item.planCours?.id) {
-    router.push(`/intranet/plan-de-cours/edit/${item.planCours.id}`)
+    router.push(`/intranet/pedagogie/plans-de-cours/edit/${item.planCours.id}`)
   } else {
     try {
       isLoadingTable.value = true
@@ -166,7 +166,7 @@ const openEditOrCreate = async (item) => {
         enseignementId: item.enseignement.id,
         anneeUniversitaireId: activeAnneeId,
       }, '/init_module')
-      router.push(`/intranet/plan-de-cours/edit/${res.id}`)
+      router.push(`/intranet/pedagogie/plans-de-cours/edit/${res.id}`)
     } catch (e) {
       showDanger('Erreur lors de l\'initialisation du plan de cours.')
       isLoadingTable.value = false
@@ -391,7 +391,7 @@ const getBadgeSeverity = (etat) => {
       v-model:visible="showDialogVisible"
       :planCours="selectedPlanCoursDetail"
       :enseignement="selectedEnseignementDetail"
-      @edit="(id) => router.push(`/intranet/plan-de-cours/edit/${id}`)"
+      @edit="(id) => router.push(`/intranet/pedagogie/plans-de-cours/edit/${id}`)"
     />
   </div>
 </template>
