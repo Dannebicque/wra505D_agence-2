@@ -22,7 +22,7 @@ import { useUIStore } from '@/stores/ui';
 import SurveyPreviewModal from '@/components/Questionnaire/SurveyPreviewModal.vue';
 import DuplicateSurveyModal from '@/components/Questionnaire/DuplicateSurveyModal.vue';
 import { formatDate } from '@/utils/date';
-import { HeaderComponent, Kpi, Card } from '@components';
+import { HeaderComponent, Kpi, Card, EmptyState } from '@components';
 import ActionButtonVertical from '@components/components/ActionButtonVertical.vue';
 import { getAllDepartementsService } from '@requests';
 import { useUsersStore } from '@stores';
@@ -212,17 +212,17 @@ const exportSurvey = (survey: any) => {
 </script>
 
 <template>
-  <div class="min-h-screen">
+  <div class="space-y-6">
     <HeaderComponent icon="pi pi-list" titre="Liste des questionnaires"
       description="Gérez l'ensemble des enquêtes, consultez les taux de réponse et exportez les rapports">
       <template #actions>
         <ActionButtonVertical :to="{ name: 'questionnaire_builder', params: { id: 'new' } }" :icon="PlusIcon"
-          label="Créer un questionnaire" severity="success" />
+          label="Créer un questionnaire" severity="primary" />
       </template>
     </HeaderComponent>
 
     <!-- Summary KPI cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
       <Kpi label="Total" :value="nbQuestionnaires || 0" :icon="DocumentTextIcon" color="blue" />
       <Kpi label="Publiés" :value="countByStatus('published')" :icon="RocketLaunchIcon" color="green" />
       <Kpi label="Brouillons" :value="countByStatus('draft')" :icon="PencilIcon" color="yellow" />
@@ -234,29 +234,26 @@ const exportSurvey = (survey: any) => {
       <DataTable v-model:filters="filters" :value="questionnaires" lazy stripedRows paginator :first="offset"
         :rows="limit" :rowsPerPageOptions="rowOptions" :totalRecords="nbQuestionnaires" dataKey="id" filterDisplay="row"
         :loading="loading" @page="onPageChange($event)" @update:rows="limit = $event" :globalFilterFields="['titre']"
-        class="p-datatable-responsive p-datatable-sm">
+        class="p-datatable-responsive ui-table-compact">
         <template #header>
           <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-            <h3 class="text-lg font-bold text-gray-800 dark:text-white">Registre des Enquêtes</h3>
+            <h3 class="text-lg font-bold text-color">Registre des Enquêtes</h3>
             <IconField>
               <InputIcon>
                 <i class="pi pi-search" />
               </InputIcon>
               <InputText v-model="filters['global'].value" placeholder="Rechercher un titre..."
-                class="py-2 px-3 rounded-lg shadow-sm border border-gray-300 dark:border-gray-700" />
+                class="py-2 px-3 rounded-lg shadow-sm border border-surface" />
             </IconField>
           </div>
         </template>
 
         <template #empty>
-          <div class="text-center py-8">
-            <DocumentTextIcon class="w-12 h-12 text-gray-400 mx-auto mb-2" />
-            <p class="text-gray-655 dark:text-gray-400">Aucun questionnaire trouvé.</p>
-          </div>
+          <EmptyState title="Aucun questionnaire trouvé" description="Modifiez vos filtres ou créez un questionnaire." icon="pi pi-search" compact />
         </template>
 
         <template #loading>
-          <div class="text-center py-8 text-gray-655 dark:text-gray-400">
+          <div class="text-center py-8 text-muted-color">
             Chargement des données... Veuillez patienter.
           </div>
         </template>
@@ -264,14 +261,14 @@ const exportSurvey = (survey: any) => {
         <!-- Titre -->
         <Column field="titre" :showFilterMenu="false" header="Titre" style="min-width: 15rem">
           <template #body="{ data }">
-            <span class="font-bold text-gray-900 dark:text-white block">{{ data.title }}</span>
+            <span class="font-bold text-color block">{{ data.title }}</span>
             <span v-if="data.description"
-              class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1 max-w-xs">{{ data.description
+              class="text-xs text-muted-color mt-0.5 line-clamp-1 max-w-xs">{{ data.description
               }}</span>
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Filtrer par titre"
-              class="w-full text-sm border border-gray-300 dark:border-gray-700 rounded p-1 px-2 focus:ring-1 focus:ring-primary-500" />
+              class="w-full text-sm border border-surface rounded p-1 px-2 focus:ring-1 focus:ring-primary" />
           </template>
         </Column>
 
@@ -282,12 +279,12 @@ const exportSurvey = (survey: any) => {
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <Select v-model="filterModel.value" @change="filterCallback()" :options="statuts" placeholder="Filtrer"
-              style="min-width: 10rem" :showClear="true" class="border border-gray-300 dark:border-gray-700">
+              style="min-width: 10rem" :showClear="true" class="border border-surface">
               <template #value="slotProps">
                 <div v-if="slotProps.value" class="flex items-center">
                   <Tag :value="slotProps.value.label" :severity="slotProps.value.severity" />
                 </div>
-                <span v-else class="text-gray-500 text-sm">Choisir</span>
+                <span v-else class="text-muted-color text-sm">Choisir</span>
               </template>
               <template #option="slotProps">
                 <Tag :value="slotProps.option.label" :severity="slotProps.option.severity" />
@@ -339,8 +336,8 @@ const exportSurvey = (survey: any) => {
         <!-- Date de création -->
         <Column header="Date de création" style="min-width: 10rem">
           <template #body="{ data }">
-            <div class="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300">
-              <CalendarIcon class="w-4 h-4 text-gray-450 shrink-0" />
+            <div class="flex items-center gap-1.5 text-sm text-color">
+              <CalendarIcon class="w-4 h-4 text-muted-color shrink-0" aria-hidden="true" />
               {{ data.createdAt ? formatDate(data.createdAt) : '-' }}
             </div>
           </template>
@@ -351,18 +348,18 @@ const exportSurvey = (survey: any) => {
           <template #body="{ data }">
             <div v-if="data.status === 'published' || data.published" class="space-y-1">
               <div class="flex justify-between text-xs font-semibold">
-                <span class="text-gray-500 dark:text-gray-400">
+                <span class="text-muted-color">
                   {{ getSurveyStats(data.uuid).responded }} / {{ getSurveyStats(data.uuid).invited }}
                 </span>
-                <span class="text-gray-900 dark:text-white">{{ getSurveyStats(data.uuid).rate }}%</span>
+                <span class="text-color">{{ getSurveyStats(data.uuid).rate }}%</span>
               </div>
-              <div class="w-full bg-gray-200 dark:bg-gray-750 rounded-full h-1.5">
+              <div class="w-full bg-emphasis rounded-full h-1.5">
                 <div
                   class="bg-gradient-to-r from-primary-500 to-primary-600 h-1.5 rounded-full transition-all duration-500"
                   :style="{ width: `${getSurveyStats(data.uuid).rate}%` }"></div>
               </div>
             </div>
-            <span v-else class="text-xs text-gray-500 dark:text-gray-400 italic">
+            <span v-else class="text-xs text-muted-color italic">
               Non publié (Brouillon)
             </span>
           </template>
@@ -372,52 +369,21 @@ const exportSurvey = (survey: any) => {
         <Column :showFilterMenu="false" header="Actions" style="min-width: 15rem" headerClass="text-right"
           bodyClass="text-right">
           <template #body="{ data }">
-            <div class="flex items-center justify-end space-x-2">
-              <!-- Aperçu -->
-              <Button v-tooltip="'Aperçu rapide'" @click="viewQuestionnaire(data)" severity="secondary" outlined rounded
-                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shrink-0">
-                <EyeIcon class="w-4 h-4 text-gray-600 dark:text-gray-300" />
-              </Button>
-
-              <!-- Dupliquer -->
-              <Button v-tooltip="'Dupliquer le questionnaire'" @click="openDuplicateModal(data)" severity="secondary" outlined rounded
-                class="p-2 hover:bg-blue-50 dark:hover:bg-blue-950/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 rounded-lg transition-colors shrink-0">
-                <DocumentDuplicateIcon class="w-4 h-4" />
-              </Button>
-
-              <!-- Modifier -->
-              <router-link :to="{ name: 'questionnaire_builder', params: { id: data.uuid } }" v-tooltip="'Modifier'"
-                class="p-2 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 border border-orange-200 dark:border-orange-900/50 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-sm">
-                <PencilIcon class="w-4 h-4" />
-              </router-link>
-
+            <div class="flex flex-wrap items-center justify-end gap-1">
+              <Button v-tooltip="'Aperçu rapide'" aria-label="Aperçu rapide" icon="pi pi-eye" severity="secondary" text size="small" @click="viewQuestionnaire(data)" />
+              <Button v-tooltip="'Dupliquer le questionnaire'" aria-label="Dupliquer le questionnaire" icon="pi pi-copy" severity="secondary" text size="small" @click="openDuplicateModal(data)" />
+              <Button as="router-link" :to="{ name: 'questionnaire_builder', params: { id: data.uuid } }" v-tooltip="'Modifier'" aria-label="Modifier le questionnaire" icon="pi pi-pencil" severity="secondary" text size="small" />
               <template v-if="data.status === 'published' || data.published">
-                <!-- Réponses -->
-                <router-link :to="{ name: 'questionnaire_responses', params: { id: data.uuid } }"
-                  v-tooltip="'Voir les réponses'"
-                  class="p-2 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-900/50 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-sm">
-                  <ChatBubbleLeftRightIcon class="w-4 h-4" />
-                </router-link>
-
-                <!-- Statistiques -->
-                <router-link :to="{ name: 'questionnaire_analytics', params: { id: data.uuid } }"
-                  v-tooltip="'Statistiques & Analyses'"
-                  class="p-2 text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 border border-purple-200 dark:border-purple-900/50 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-sm">
-                  <ChartBarIcon class="w-4 h-4" />
-                </router-link>
-
-                <!-- Exporter -->
-                <Button @click="exportSurvey(data)" v-tooltip="'Exporter'" severity="success" outlined rounded
-                  class="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-colors shrink-0">
-                  <ArrowDownTrayIcon class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                </Button>
+                <Button as="router-link" :to="{ name: 'questionnaire_responses', params: { id: data.uuid } }" v-tooltip="'Voir les réponses'" aria-label="Voir les réponses" icon="pi pi-comments" severity="secondary" text size="small" />
+                <Button as="router-link" :to="{ name: 'questionnaire_analytics', params: { id: data.uuid } }" v-tooltip="'Statistiques et analyses'" aria-label="Statistiques et analyses" icon="pi pi-chart-bar" severity="secondary" text size="small" />
+                <Button v-tooltip="'Exporter'" aria-label="Exporter le questionnaire" icon="pi pi-download" severity="secondary" text size="small" @click="exportSurvey(data)" />
               </template>
             </div>
           </template>
         </Column>
 
         <template #footer>
-          <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <div class="text-sm font-semibold text-color">
             {{ nbQuestionnaires }} résultat(s).
           </div>
         </template>

@@ -1,0 +1,109 @@
+@reference "../../packages/shell/assets/assets/tailwind.css";
+
+/* ---------- Structure ---------- */
+.q-form {
+  @apply space-y-5 py-2;
+}
+
+.q-section {
+  @apply bg-surface-0 rounded-2xl border border-surface p-4 md:p-5 space-y-4;
+}
+
+.q-actions {
+  @apply flex items-center justify-end gap-3 pt-3 border-t border-surface;
+}
+
+/* ---------- Libellés & aides ---------- */
+.q-label {
+  @apply block text-sm font-semibold text-color mb-1.5;
+}
+
+.q-label-required::after {
+  content: ' *';
+  @apply text-primary;
+}
+
+.q-hint {
+  @apply text-sm text-muted-color mt-1;
+}
+
+.q-error {
+  @apply text-sm text-primary mt-1;
+}
+
+/* ---------- Champs ---------- */
+.q-input {
+  @apply w-full px-3 py-2 text-sm rounded-lg border border-surface bg-surface-0 text-color placeholder:text-muted-color shadow-2xs transition-colors;
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500;
+  @apply disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
+textarea.q-input {
+  @apply px-3.5 py-2.5 resize-y;
+}
+
+.q-input-invalid {
+  @apply border-primary focus:ring-primary/20 focus:border-primary;
+}
+
+.q-input-sm {
+  @apply px-2.5 py-1.5 text-xs rounded-lg;
+}
+
+/* Cases à cocher / boutons radio natifs */
+.q-check {
+  @apply w-4 h-4 shrink-0 cursor-pointer accent-primary rounded border-surface;
+}
+
+/* ---------- Carte de choix (checkbox / radio / toggle) ---------- */
+.q-choice {
+  @apply p-3 rounded-xl border border-surface bg-surface-0 shadow-2xs transition-all cursor-pointer select-none flex items-start gap-3;
+  @apply hover:border-primary;
+}
+
+.q-choice-active {
+  @apply border-primary-300 dark:border-primary-700/80 bg-primary-50/60 dark:bg-primary-950/30;
+}
+
+.q-choice-title {
+  @apply text-xs font-bold text-color block leading-tight;
+}
+
+.q-choice-desc {
+  @apply text-sm text-muted-color mt-0.5 leading-relaxed;
+}
+
+/* ---------- Onglets segmentés ---------- */
+.q-tabs {
+  @apply flex gap-1 p-1 rounded-xl bg-emphasis border border-surface;
+}
+
+.q-tab {
+  @apply flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all border-0 cursor-pointer bg-transparent text-muted-color;
+  @apply hover:text-color;
+}
+
+.q-tab-active {
+  @apply bg-surface-0 text-primary shadow-xs;
+}
+
+/* ---------- Encarts ---------- */
+.q-callout {
+  @apply p-3.5 rounded-xl border text-xs leading-relaxed flex items-start gap-2.5;
+}
+
+.q-callout-info {
+  @apply bg-emphasis border-surface text-color;
+}
+
+.q-callout-warning {
+  @apply bg-emphasis border-surface text-color;
+}
+
+.q-callout-danger {
+  @apply bg-emphasis border-surface text-color;
+}
+
+.q-callout-success {
+  @apply bg-emphasis border-surface text-color;
+}

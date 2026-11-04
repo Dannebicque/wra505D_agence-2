@@ -13,6 +13,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { tools } from '@config/uniServices.js';
 import noImage from "@images/photos_etudiants/noimage.png";
 import { PermissionGuard } from "@components";
+import ApplicationBadge from '../Application/ApplicationBadge.vue';
+import api from '@helpers/axios';
 
 const anneeUnivStore = useAnneeUnivStore();
 const userStore = useUsersStore();
@@ -37,14 +39,31 @@ const selectedRoles = computed({
 });
 
 const selectedAnneeUniversitaire = ref(null);
+const unreadMessagesCount = ref(0);
+
+const fetchUnreadMessages = async () => {
+  if (!userStore.user) return;
+  try {
+    const res = await api.get('/api/messages/unread-count');
+    unreadMessagesCount.value = res.data?.unreadCount ?? 0;
+  } catch (_) {
+    // Ignore silensieusement si non authentifié ou indisponible
+  }
+};
+
+const goToMessages = () => {
+  router.push('/message');
+};
 
 onMounted(async () => {
   selectedAnneeUniversitaire.value = localStorage.getItem('selectedAnneeUniv');
   await fetchData();
+  await fetchUnreadMessages();
 });
 
 watch(() => userStore.user, async () => {
   await fetchData();
+  await fetchUnreadMessages();
 });
 
 const fetchData = async () => {
@@ -299,6 +318,10 @@ const isEnabled = (item) => {
   return item.urlSlug === 'intranet' || userStore.applications.includes(item.urlSlug);
 };
 
+const activeTools = computed(() => {
+  return (tools || []).filter(item => isEnabled(item));
+});
+
 // L'accès au simulateur dépend des droits réels, même pendant une simulation vide.
 const showRolesMenu = computed(() => userStore.isPersonnel && userStore.rolesActifs.includes('SUPER_ADMIN'));
 
@@ -384,11 +407,10 @@ const selectAnneeUniversitaire = (annee) => {
             <i class="pi pi-box text-primary" aria-hidden="true"></i>
             <span>Applications</span>
           </button>
-          <Menu ref="toolsMenu" id="tools_menu" :model="tools" :popup="true">
+          <Menu ref="toolsMenu" id="tools_menu" :model="activeTools" :popup="true">
             <template #item="{ item, props }">
-              <a v-if="item.url && isEnabled(item)" :href="item.url" v-ripple v-bind="props.action">
-                <Logo :logo-url="item.logo" class="logo_menu" />
-                <span class="ml-2">{{ item.name }}</span>
+              <a v-if="item.url && isEnabled(item)" :href="item.url" v-ripple v-bind="props.action" class="flex items-center w-full">
+                <ApplicationBadge :app="item.urlSlug || item" show-icon full-width />
               </a>
             </template>
           </Menu>
@@ -433,8 +455,21 @@ const selectAnneeUniversitaire = (annee) => {
             <Menu ref="anneeMenu" id="annee_menu" :model="anneeItems" :popup="true" />
           </PermissionGuard>
 
-          <button v-if="!estEtudiant" type="button" class="layout-topbar-action">
+          <button
+            v-if="!estEtudiant"
+            type="button"
+            class="layout-topbar-action relative"
+            :aria-label="unreadMessagesCount > 0 ? `Messagerie interne, ${unreadMessagesCount} non lus` : 'Messagerie interne'"
+            @click="goToMessages"
+          >
             <i class="pi pi-inbox" aria-hidden="true"></i>
+            <span
+              v-if="unreadMessagesCount > 0"
+              class="absolute -top-1 -right-1 bg-primary text-primary-contrast text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center pointer-events-none"
+              aria-hidden="true"
+            >
+              {{ unreadMessagesCount > 99 ? '99+' : unreadMessagesCount }}
+            </span>
             <span>Messages</span>
           </button>
           <NotificationsCloche v-if="estEtudiant" />
@@ -453,7 +488,7 @@ const selectAnneeUniversitaire = (annee) => {
               <img :src="userStore.userPhoto" alt="photo de profil" class="rounded-full max-w-12 mx-auto">
             </template>
             <template v-else>
-              <span class="text-gray-700 text-xl">{{ initiales }}</span>
+              <span class="text-color text-xl">{{ initiales }}</span>
             </template>
           </Button>
           <Menu ref="profileMenu" id="profile_menu" :model="profileItems" :popup="true" />

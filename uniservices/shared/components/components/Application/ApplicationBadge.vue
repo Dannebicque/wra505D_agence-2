@@ -16,6 +16,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showDot: {
+    type: Boolean,
+    default: false,
+  },
   rounded: {
     type: Boolean,
     default: false,
@@ -73,6 +77,7 @@ const iconSizeClasses = computed(() => {
   >
     <template #icon>
       <i v-if="props.showIcon && meta.icon" :class="[meta.icon, iconSizeClasses, 'shrink-0']" aria-hidden="true" />
+      <span v-if="props.showDot" class="w-1.5 h-1.5 rounded-full bg-primary shrink-0" aria-hidden="true" />
     </template>
   </Chip>
 </template>

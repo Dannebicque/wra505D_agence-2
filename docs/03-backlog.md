@@ -567,9 +567,9 @@ généré.
 | E26.8 · en revue | finance : bundle de #249, jamais repris, et sa refonte avec PDF, routes sous contrôle d'accès | `f97f829e8` |
 | E26.9 · en revue | absences et évaluations côté personnel, indicateurs ; notre dépôt de justificatif par l'étudiant (P2) conservé | `3076e6f07`, `6b12732d0`, `187b207c2`, `0c71cb7fb` |
 | E26.10 · en revue | widgets et tableaux de bord : accès aux widgets, widgets limités aux applications de l'utilisateur, tableau de bord des enseignements ; notre accueil étudiant (C18, C19) conservé | `11ff61d2e`, `688feada9`, `aa15909aa`, `7775e5908`, `6a4176191`, `0258d3783` |
-| E26.11 | interface transverse : composants et accessibilité, portail, badge d'application, année active, renommage `unitranet` en `intranet` dans le code, accès des étudiants aux applications (`9090dcd54`, couleurs par module à adapter) ; le nom affiché reste Unitranet, nos jetons de couleur remplacent leurs couleurs en dur | `b79a176b0`, `3a4887acf`, `dc0ee62d9`, `6acb7381b`, `4978af083`, `94e79a0e3`, `5d8af9973`, `9090dcd54` |
+| E26.11 · en revue | interface transverse : composants et accessibilité, portail, badge d'application, année active, renommage `unitranet` en `intranet` dans le code, accès des étudiants aux applications (`9090dcd54`, couleurs par module à adapter) ; le nom affiché reste Unitranet, nos jetons de couleur remplacent leurs couleurs en dur | `b79a176b0`, `3a4887acf`, `dc0ee62d9`, `6acb7381b`, `4978af083`, `94e79a0e3`, `5d8af9973`, `9090dcd54` |
 | E26.12 · en revue | configuration des modules et ses pages | `cad0a0ab9`, `6a30dbb22` |
-| E26.13 | messagerie : bundle, widget, purge, tests ; pièces jointes hors de `public/`, cibles limitées au département ; les messages reçus rejoignent le fil de notifications de l'étudiant | `b2d2c639d`, `1d31012d9`, `ab39d0de6`, `d2beffc79`, `39c2fb9f6` |
+| E26.13 · en revue | messagerie : bundle, widget, purge, tests ; pièces jointes hors de `public/`, cibles limitées au département ; les messages reçus rejoignent le fil de notifications de l'étudiant | `b2d2c639d`, `1d31012d9`, `ab39d0de6`, `d2beffc79`, `39c2fb9f6` |
 
 **Décisions de reprise**
 - Filtres (E26.1) : on adopte les `QueryParameter` du client pour nos filtres et on revient sur le
@@ -642,8 +642,24 @@ généré.
   droit d'édition avant et après dénormalisation, pour qu'un élément ne puisse pas être rattaché au
   département de l'éditeur afin de passer le contrôle. Écartées : les pages de configuration des
   autres modules (`6a30dbb22`), que le client annonce fictives et qui n'enregistrent rien.
+- Interface transverse (E26.11) : l'attribution des applications aux étudiants du client laissait
+  tout membre du personnel modifier n'importe quel étudiant ; elle exige désormais le droit de
+  scolarité, ne vise que les étudiants du département actif, valide l'action et les codes
+  d'application et ne retire jamais l'intranet. Sa requête ne pouvait pas sélectionner l'étudiant
+  depuis la scolarité, elle repart de l'étudiant. Le code stocké devient `intranet`, l'ancienne
+  valeur `UniTranet` reste lue comme l'intranet ; le libellé affiché reste Unitranet. L'étudiant
+  garde l'intranet et les documents, le personnel lui ouvre les autres applications. Une seule
+  primaire pour tous les badges d'application. Écartés : les retouches de style du module
+  documents et de la page de connexion, déjà refaits chez nous aux jetons du thème.
 - Messagerie (E26.13) : on reprend la vraie messagerie du client. La source « messages » du
   centre de notifications lit ses messages. Les copies des e-mails envoyés restent dans le fil.
+  Corrigé chez le client : les pièces jointes étaient rangées dans `public/` sous l'extension
+  fournie, donc un PHP déposé pouvait s'exécuter ; elles vont dans `var/uploads/messages`, avec
+  une liste de types MIME détectés, 10 Mo au plus, et sont servies en téléchargement. Les cibles
+  (semestres, groupes, étudiants, copies) sont limitées au département actif de l'expéditeur. Le
+  contenu s'affiche en texte, sans `v-html` ni `|raw`. Le marquage « tout lu » visait une colonne
+  inexistante. Reste chez le client : le modèle d'e-mail garde des couleurs hexadécimales en ligne,
+  les clients mail ne lisant pas nos variables CSS.
 
 ---
 

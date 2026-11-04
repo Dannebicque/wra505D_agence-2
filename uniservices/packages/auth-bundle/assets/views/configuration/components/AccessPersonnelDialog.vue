@@ -104,7 +104,7 @@ const save = () => {
       <div class="card-header flex flex-row justify-between items-center">
         <div>
           <p class="m-0 text-xs font-bold uppercase tracking-wider text-muted-color">Gestion des accès</p>
-          <h2 class="my-1 text-2xl font-semibold"><i v-if="isPersonnelSuperAdmin" class="pi pi-crown text-yellow-500 bg-yellow-500/10 border-2 p-2 rounded-full font-bold! mr-2" />{{ props.personnel.prenom }} {{ props.personnel.nom }}</h2>
+          <h2 class="my-1 text-2xl font-semibold"><i v-if="isPersonnelSuperAdmin" class="pi pi-crown text-primary bg-primary-50 border-2 border-primary p-2 rounded-full font-bold! mr-2" aria-hidden="true" />{{ props.personnel.prenom }} {{ props.personnel.nom }}</h2>
           <p class="m-0 text-xs font-semibold uppercase text-muted-color">{{ props.personnel.numeroHarpege }}</p>
         </div>
         <Button
@@ -190,7 +190,7 @@ const save = () => {
                           @update:model-value="togglePackage(department, pkg, $event)"
                       />
                       <label :for="`package-${departmentKey(department)}-${pkg}`" class="cursor-pointer">
-                        <ApplicationBadge :app="pkg" size="xs" />
+                        <ApplicationBadge :app="pkg" size="xs" show-dot />
                       </label>
                     </div>
                   </div>

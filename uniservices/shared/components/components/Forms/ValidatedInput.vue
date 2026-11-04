@@ -194,9 +194,9 @@ const isRequired = computed(() => {
 
 <template>
   <div class="validated-input">
-    <label v-if="label" :for="name" class="block mb-1">
+    <label v-if="label" :for="name" class="q-label">
       {{ label }}
-      <span v-if="isRequired" class="text-red-700 dark:text-red-400 ml-0.5" title="Champ obligatoire" aria-hidden="true">*</span>
+      <span v-if="isRequired" class="text-danger ml-0.5" title="Champ obligatoire" aria-hidden="true">*</span>
     </label>
     <FormValidator
         :model-value="modelValue"

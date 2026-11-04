@@ -73,7 +73,7 @@ class StructureUserFixtures extends Fixture implements OrderedFixtureInterface
             ->setPrenom('Jane')
             ->setNom('Doe')
             ->setBoursier(false)
-            ->setApplications(['UniTranet'])
+            ->setApplications(['intranet'])
             ->setPhotoName('noimage.png')
             ->setDateNaissance(new \DateTimeImmutable(($entree - 18).'-03-21'))
             ->setLieuNaissance('Reims')

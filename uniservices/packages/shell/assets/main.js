@@ -20,6 +20,7 @@ import fr from '@config/fr.json';
 
 import './assets/styles.scss';
 import './assets/tailwind.css';
+import '@styles/forms.css';
 
 // Une seule primaire pour tous les modules : le violet de la DA, #4D3677, en 500. Les autres
 // nuances en sont dérivées en OKLab. En clair, Aura pose du blanc dessus (9,95:1) ; en sombre, il
@@ -40,6 +41,7 @@ const VIOLET_IUT = {
 
 const MyPreset = definePreset(Aura, {
     semantic: {
+        formField: { borderRadius: 'var(--ui-radius-control)' },
         primary: VIOLET_IUT,
         // Texte atténué de CLAUDE.md : le gris d'Aura tombait à 4,34:1 sur le fond des pages.
         colorScheme: {

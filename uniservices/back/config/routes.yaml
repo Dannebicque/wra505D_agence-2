@@ -31,3 +31,9 @@ questionnaire_controllers:
         path: '../../packages/questionnaire-bundle/src/Controller/'
         namespace: QuestionnaireBundle\Controller
     type: attribute
+
+message_controllers:
+    resource:
+        path: '../../packages/message-bundle/src/Controller/'
+        namespace: MessageBundle\Controller
+    type: attribute

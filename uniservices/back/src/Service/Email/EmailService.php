@@ -52,6 +52,7 @@ final class EmailService
      * @param array<string, mixed> $context     Variables disponibles dans le template
      * @param string|null          $replyTo     Adresse de réponse optionnelle
      * @param string               $locale      Locale pour la résolution BDD
+     * @param list<string|array{path: string, name?: string|null, contentType?: string|null}> $attachments Chemins ou fichiers décrits
      */
     public function send(
         string $emailKey,
@@ -60,6 +61,7 @@ final class EmailService
         ?StructureDepartement $departement = null,
         ?string $replyTo = null,
         string $locale = 'fr',
+        array $attachments = [],
     ): void {
         $resolved = $this->resolver->resolve($emailKey, $departement, $locale);
 
@@ -93,6 +95,14 @@ final class EmailService
 
         foreach ((array) $to as $address) {
             $email->addTo($address);
+        }
+
+        foreach ($attachments as $att) {
+            if (is_array($att)) {
+                $email->attachFromPath($att['path'], $att['name'] ?? null, $att['contentType'] ?? null);
+            } elseif (file_exists($att)) {
+                $email->attachFromPath($att);
+            }
         }
 
         $this->mailer->send($email);

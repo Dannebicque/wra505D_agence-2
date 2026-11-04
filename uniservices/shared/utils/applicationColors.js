@@ -7,8 +7,8 @@
 export const APPLICATION_REGISTRY = {
   intranet: {
     slug: 'intranet',
-    name: 'Intranet',
-    shortLabel: 'Intranet',
+    name: 'Unitranet',
+    shortLabel: 'Unitranet',
     icon: 'pi pi-desktop',
     isDefault: true,
   },
@@ -45,6 +45,13 @@ export const APPLICATION_REGISTRY = {
     name: 'UniFolio',
     shortLabel: 'UniFolio',
     icon: 'pi pi-book',
+    isDefault: false,
+  },
+  message: {
+    slug: 'message',
+    name: 'Messagerie',
+    shortLabel: 'Messages',
+    icon: 'pi pi-inbox',
     isDefault: false,
   },
   finance: {
@@ -89,7 +96,7 @@ export function normalizeAppSlug(appInput) {
   const clean = raw.trim().toLowerCase();
 
   const aliases = {
-    intranet: 'intranet',
+    unitranet: 'intranet',
     stages: 'stage',
     questionnaires: 'questionnaire',
     document: 'documents',
@@ -98,6 +105,8 @@ export function normalizeAppSlug(appInput) {
     'help-desk': 'helpdesk',
     portfolio: 'unifolio',
     portfolios: 'unifolio',
+    messages: 'message',
+    messagerie: 'message',
     messages: 'message',
     messagerie: 'message',
   };

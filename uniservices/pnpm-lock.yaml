@@ -155,6 +155,8 @@ importers:
 
   packages/intranet-bundle: {}
 
+  packages/message-bundle: {}
+
   packages/questionnaire-bundle: {}
 
   packages/shell:

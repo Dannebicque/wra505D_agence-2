@@ -82,6 +82,7 @@ class StructureAnnee implements TimestampableInterface
 
     /** @var Collection<int, StructureSemestre> */
     #[ORM\OneToMany(targetEntity: StructureSemestre::class, mappedBy: 'annee', orphanRemoval: true, cascade: ['remove'])]
+    #[ORM\OrderBy(['ordreAnnee' => 'ASC'])]
     #[Groups(['maquette:detail', 'annee:read'])]
     private Collection $semestres;
 

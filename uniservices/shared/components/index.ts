@@ -13,6 +13,7 @@ import ErrorView from './components/ErrorView.vue';
 import PhotoUser from './components/PhotoUser.vue';
 import ProfilEtudiant from "./components/Etudiant/ProfilEtudiant/ProfilEtudiant.vue";
 import ScolariteEtudiant from "./components/Etudiant/ProfilEtudiant/ScolariteEtudiant.vue";
+import EtudiantApplicationsDialog from "./components/Etudiant/EtudiantApplicationsDialog.vue";
 import MonProfil from "./components/Etudiant/MonProfil/MonProfil.vue";
 import ProfilPersonnel from "./components/Personnel/ProfilPersonnel.vue";
 import PermissionGuard from "./components/Permission/PermissionGuard.vue";
@@ -31,6 +32,7 @@ import HeaderComponent from './Header.vue'
 import Kpi from './Kpi.vue'
 import Card from './components/Card.vue'
 import EmptyState from './components/EmptyState.vue'
+import Alert from './components/Alert.vue'
 import QuickActionCard from './components/QuickActionCard.vue'
 import ActionButtonVertical from './components/ActionButtonVertical.vue'
 import UserCard from "./components/User/UserCard.vue";
@@ -52,6 +54,7 @@ import ConfigOptionItem from './components/Configuration/ConfigOptionItem.vue';
 export {
   // Composants utilitaires
   PermissionGuard,
+  ApplicationBadge,
 
 
   // Composants mineurs
@@ -61,7 +64,6 @@ export {
   CardSkeleton,
   ApcCompetenceBadge,
   ApcAcBadge,
-  ApplicationBadge,
   ErrorView,
   PhotoUser,
   SimpleSkeleton,
@@ -82,6 +84,7 @@ export {
   PersonnelsListe,
   ProfilEtudiant,
   ScolariteEtudiant,
+  EtudiantApplicationsDialog,
   MonProfil,
   ProfilPersonnel,
   WidgetCard,
@@ -105,6 +108,7 @@ export {
   Kpi,
   Card,
   EmptyState,
+  Alert,
   QuickActionCard,
   ActionButtonVertical,
   ConfigOptionItem

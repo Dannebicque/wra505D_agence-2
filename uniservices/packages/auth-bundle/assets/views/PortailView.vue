@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { TopbarComponent, WidgetCard, GlobalLoader, HeaderComponent, PermissionGuard } from '@components';
+import { getApplicationMeta } from '@utils';
 import { tools } from '@config/uniServices.js';
 import { getWidgetDataByCodeService, getWidgetsCatalogService, updateDashboardWidgetLayoutService, getActualitesService } from '@requests';
 import { useUsersStore, useAnneeUnivStore, useEtablissementStore } from "@stores";
@@ -26,8 +27,11 @@ defineProps({
   },
 });
 
-const activatedBundles = ref([]);
-const unactivatedBundles = ref([]);
+const activatedBundles = computed(() => tools
+    .filter((bundle) => userStore.applications.includes(bundle.urlSlug))
+    .map((bundle) => ({ ...bundle, meta: getApplicationMeta(bundle.urlSlug) }))
+    .sort((a, b) => Number(b.urlSlug === 'intranet') - Number(a.urlSlug === 'intranet'))
+);
 const isLoadingBundles = ref(false);
 const widgets = ref([]);
 const isLoadingWidgets = ref(false);
@@ -44,26 +48,11 @@ onMounted(async () => {
   isLoadingBundles.value = true;
   try {
     etablissement.value = await etablissementStore.etablissement;
-    activatedBundles.value = tools.filter((bundle) => isBundleActivated(bundle));
-    unactivatedBundles.value = tools.filter((bundle) => !isBundleActivated(bundle));
-    // si on a le bundle "intranet" on le place en premier dans le tableau
-    if (activatedBundles.value.some((bundle) => bundle.urlSlug === 'intranet')) {
-      const intranetBundle = activatedBundles.value.find((bundle) => bundle.urlSlug === 'intranet');
-      activatedBundles.value = [intranetBundle, ...activatedBundles.value.filter((bundle) => bundle.urlSlug !== 'intranet')];
-    }
     await getWidgets();
   } finally {
     isLoadingBundles.value = false;
   }
 });
-
-const onBundleClick = (bundleUrl) => {
-  window.location.href = bundleUrl;
-};
-
-const isBundleActivated = (bundle) => {
-  return userStore.applications.includes(bundle.urlSlug);
-};
 
 const structureDepartementPersonnelId = computed(() => userStore.departementDefaut?.departementPersonnel?.id || null);
 
@@ -199,61 +188,32 @@ watch(() => route.path, async (newPath, oldPath) => {
     <div v-else class="px-4 lg:px-10">
       <div class="grid grid-cols-12 gap-4">
         <aside class="col-span-12 lg:col-span-2 pt-28 pb-14 lg:h-screen lg:sticky lg:top-0 lg:self-start">
-          <div class="card card-body h-full overflow-y-auto flex flex-col gap-6">
+          <div class="card card-body h-full overflow-y-auto flex flex-col">
             <div class="flex flex-col gap-4">
-              <div class="text-md font-semibold text-color-secondary uppercase">Applications</div>
+              <div class="flex items-center justify-between gap-3">
+                <h2 id="portail-applications-title" class="m-0! text-base! font-semibold">Mes applications</h2>
+              </div>
+              <p class="m-0! text-sm text-muted-color">Retrouvez les outils de votre espace de travail.</p>
               <GlobalLoader v-if="isLoadingBundles" text="Chargement des applications..."/>
-              <div v-else class="flex flex-col">
-                <template v-if="activatedBundles.length > 0">
-                  <Button
+              <nav v-else-if="activatedBundles.length" aria-labelledby="portail-applications-title" class="flex flex-col gap-3">
+                  <a
                       v-for="bundle in activatedBundles"
                       :key="bundle.urlSlug"
-                      type="button"
-                      text
-                      rounded
-                      class="justify-start! text-left font-semibold"
-                      @click="onBundleClick(bundle.url)"
+                      :href="bundle.url"
+                      class="flex items-center gap-3 p-1.5 border border-surface rounded-md transition-colors duration-200 hover:bg-emphasis"
                   >
-                    {{ bundle.name }}
-                  </Button>
-                </template>
-                <Message v-else severity="warn" class="flex! flex-col! items-center! justify-center! text-center!">
-                  <i class="pi pi-exclamation-triangle text-2xl! font-bold" />
-                  <p class="font-bold">Vos accès aux applications n'ont pas été configurés. Veuillez contacter votre administrateur pour plus d'informations.</p>
-                </Message>
-              </div>
-            </div>
-            <div v-if="userStore.isSuperAdmin" class="flex flex-col gap-4">
-              <div class="text-md font-semibold text-color-secondary uppercase">Administration</div>
-              <div class="flex flex-col">
-                <Button
-                    type="button"
-                    text
-                    rounded
-                    class="justify-start! text-left font-semibold"
-                    @click="router.push('/configuration')"
-                >
-                  Configuration
-                </Button>
-              </div>
-            </div>
-            <div v-if="unactivatedBundles.length > 0" class="flex flex-col gap-4">
-              <div class="text-ms font-semibold text-color-secondary uppercase">Non activé</div>
-              <GlobalLoader v-if="isLoadingBundles" text="Chargement des applications..."/>
-              <div v-else class="flex flex-col">
-                <Button
-                    v-for="bundle in unactivatedBundles"
-                    :key="bundle.urlSlug"
-                    type="button"
-                    text
-                    rounded
-                    severity="secondary"
-                    disabled
-                    class="justify-start! text-left font-semibold"
-                >
-                  {{ bundle.name }}
-                </Button>
-              </div>
+                    <ApplicationBadge :app="bundle.urlSlug" show-icon full-width />
+                    <i class="pi pi-arrow-right ml-auto shrink-0 text-muted-color text-xs" aria-hidden="true" />
+                  </a>
+                <button v-if="userStore.isSuperAdmin" type="button" class="flex items-center gap-3 p-1.5 border border-surface rounded-md transition-colors duration-200 hover:bg-emphasis" @click="router.push('/configuration')">
+                  <i class="pi pi-cog text-primary" aria-hidden="true" />
+                  <span class="font-semibold text-sm">Configuration</span>
+                  <i class="pi pi-arrow-right ml-auto shrink-0 text-muted-color text-xs" aria-hidden="true" />
+                </button>
+              </nav>
+              <Message v-else severity="info">
+                Aucune application accessible dans cet espace. Contactez votre administrateur pour faire vérifier vos accès.
+              </Message>
             </div>
           </div>
         </aside>
@@ -273,14 +233,14 @@ watch(() => route.path, async (newPath, oldPath) => {
                     <img :src="userStore.userPhoto" alt="photo de profil" class="rounded-full" />
                   </template>
                   <template v-else>
-                    <span class="text-gray-700 text-xl">{{ initiales }}</span>
+                    <span class="text-color text-xl">{{ initiales }}</span>
                   </template>
                 </div>
                 <div class="ml-4">
                   <h2 class="text-2xl! mb-0! font-bold flex items-center gap-2">
                     <span class="font-light">Bonjour,</span> {{ userStore.user.prenom }}
                   </h2>
-                  <small class="text-gray-500">{{ formatDateLong(date) }}</small>
+                  <small class="text-muted-color">{{ formatDateLong(date) }}</small>
                 </div>
               </div>
               <div class="card flex justify-between items-center gap-6 m-0! p-4!">

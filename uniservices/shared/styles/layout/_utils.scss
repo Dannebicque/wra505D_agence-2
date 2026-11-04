@@ -72,6 +72,19 @@
     width: 100%;
 }
 
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 /* vue-cal estompe les heures de l'emploi du temps et l'heure courante (opacité 0,4 à 0,7) :
    jusqu'à 2,64:1. Ses propres sélecteurs sont plus précis que tout ce qu'on peut écrire ici sans
    !important. */

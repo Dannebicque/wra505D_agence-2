@@ -14,8 +14,15 @@ const panelMenuEtablissementItems = computed(() => {
 
 const panelMenuUserItems = computed(() => {
   const items = [
-    { label: 'Gestion des accès', icon: 'pi pi-users', route: '/auth/configuration/gestion-acces' },
+    { label: 'Gestion des accès personnels', icon: 'pi pi-users', route: '/auth/configuration/gestion-acces' },
   ];
+  if (isSuperAdmin.value) {
+    items.push({
+      label: 'Gestion des accès étudiants',
+      icon: 'pi pi-graduation-cap',
+      route: '/auth/configuration/gestion-acces-etudiants',
+    });
+  }
   return items;
 });
 
@@ -25,10 +32,12 @@ const panelMenuItems = [
   { label: 'Intégrations', icon: 'pi pi-link', route: '/auth/configuration/integrations' },
 ]
 
-const panelMenuCommunicationItems = computed(() => {
-  const items = [
+const panelMenuCommunicationItems = [
     { label: 'Modèles de mails', icon: 'pi pi-envelope', route: '/auth/configuration/emails' },
-  ];
+  ]
+
+const panelMenuTechnicalItems = computed(() => {
+  const items = [];
   if (isSuperAdmin.value) {
     items.push({ label: 'Planificateur de tâches', icon: 'pi pi-calendar', route: '/auth/configuration/scheduler' });
   }
@@ -78,7 +87,7 @@ const panelMenuCommunicationItems = computed(() => {
           <Fieldset class="w-full">
             <template #legend>
               <div class="flex items-center pl-2">
-                <i class="pi pi-users bg-purple-400/20 rounded-full p-4 text-purple-500"/>
+                <i class="pi pi-users bg-primary-50 rounded-full p-4 text-primary"/>
                 <div class="flex flex-col">
                   <span class="font-bold px-2 capitalize">Gérer les accès</span>
                   <em class="text-muted-color px-2">Gérer les utilisateurs et les applications autorisées</em>
@@ -111,7 +120,7 @@ const panelMenuCommunicationItems = computed(() => {
           <Fieldset class="w-full">
             <template #legend>
               <div class="flex items-center pl-2">
-                <i class="pi pi-wrench bg-blue-400/20 rounded-full p-4 text-blue-500"/>
+              <i class="pi pi-wrench bg-primary-50 rounded-full p-4 text-primary"/>
                 <div class="flex flex-col">
                   <span class="font-bold px-2 capitalize">Configuration</span>
                   <em class="text-muted-color px-2">Configuration des données communes aux applications</em>
@@ -147,7 +156,7 @@ const panelMenuCommunicationItems = computed(() => {
         <Fieldset class="w-full">
           <template #legend>
             <div class="flex items-center pl-2">
-              <i class="pi pi-envelope bg-teal-400/20 rounded-full p-4 text-teal-500"/>
+              <i class="pi pi-envelope bg-primary-50 rounded-full p-4 text-primary"/>
               <div class="flex flex-col">
                 <span class="font-bold px-2 capitalize">Communication</span>
                 <em class="text-muted-color px-2">Personnaliser les emails envoyés par l'application</em>
@@ -156,6 +165,33 @@ const panelMenuCommunicationItems = computed(() => {
           </template>
           <div class="mt-4">
             <PanelMenu :model="panelMenuCommunicationItems" multiple>
+              <template #item="{ item }">
+                <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+                  <a v-ripple
+                     class="flex items-center cursor-pointer text-surface-700 dark:text-surface-0 px-4 py-2"
+                     :href="href" @click="navigate">
+                    <span :class="item.icon"/>
+                    <span class="ml-2">{{ item.label }}</span>
+                  </a>
+                </router-link>
+              </template>
+            </PanelMenu>
+          </div>
+        </Fieldset>
+
+         <!-- Section Communication -->
+        <Fieldset class="w-full">
+          <template #legend>
+            <div class="flex items-center pl-2">
+              <i class="pi pi-cog bg-primary-50 rounded-full p-4 text-primary"/>
+              <div class="flex flex-col">
+                <span class="font-bold px-2 capitalize">Administration technique</span>
+                <em class="text-muted-color px-2">Personnaliser les aspects techniques de l'outil</em>
+              </div>
+            </div>
+          </template>
+          <div class="mt-4">
+            <PanelMenu :model="panelMenuTechnicalItems" multiple>
               <template #item="{ item }">
                 <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
                   <a v-ripple

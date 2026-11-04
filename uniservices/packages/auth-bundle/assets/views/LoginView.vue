@@ -145,7 +145,7 @@ onMounted(async () => {
               <label for="rememberme1">Se souvenir de moi</label>
             </div>
             <div class="flex justify-end items-center">
-              <router-link to="/reset-password" class="font-medium underline ml-2 text-right cursor-pointer text-primary">Mot de passe oublié ?</router-link>
+              <router-link to="/reset-password" class="font-medium underline ml-2 text-right cursor-pointer text-surface-700 dark:text-surface-200">Mot de passe oublié ?</router-link>
             </div>
             <div class="w-full flex flex-col gap-2">
               <Message v-if="errorMessage" severity="error">
@@ -214,7 +214,7 @@ onMounted(async () => {
 
 <style scoped>
 .bg {
-  background-image: url("../assets/iut.jpg");
+  background-image: linear-gradient(color-mix(in srgb, var(--surface-ground) 88%, transparent), color-mix(in srgb, var(--surface-ground) 88%, transparent)), url("../assets/iut.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -239,11 +239,17 @@ onMounted(async () => {
 }
 
 .pagination-btn:hover:not(.disabled) {
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: var(--p-content-border-color);
 }
 
 .pagination-btn.disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+/* Yellow remains the portal accent; dark text keeps its primary action legible. */
+.login-primary {
+  --p-button-primary-color: var(--p-yellow-950);
+  --p-button-primary-hover-color: var(--p-yellow-950);
+  --p-button-primary-active-color: var(--p-yellow-950);
 }
 </style>

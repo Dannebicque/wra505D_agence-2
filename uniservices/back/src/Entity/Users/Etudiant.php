@@ -419,7 +419,26 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
     /** @return list<string> */
     public function getApplications(): ?array
     {
-        return $this->applications ?? ['UniTranet'];
+        return $this->applications ?? ['intranet'];
+    }
+
+    /**
+     * Package codes the student may open. Students imported before the rename keep the legacy
+     * 'UniTranet' value, which still grants the intranet.
+     *
+     * @return list<string>
+     */
+    public function getPackageCodes(): array
+    {
+        $codes = [];
+        foreach ($this->getApplications() ?? [] as $application) {
+            $code = strtolower(trim($application));
+            if ('' !== $code) {
+                $codes['unitranet' === $code ? 'intranet' : $code] = true;
+            }
+        }
+
+        return [] === $codes ? ['intranet'] : array_keys($codes);
     }
 
     /** @param list<string>|null $applications */
