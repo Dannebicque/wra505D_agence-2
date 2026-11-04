@@ -3,16 +3,17 @@
 namespace IntranetBundle\Services\Dashboard\Provider;
 
 use App\Domain\Dashboard\WidgetDataProviderInterface;
+use App\Domain\Dashboard\DashboardContext;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
-use App\Repository\Edt\EdtEventRepository;
+use IntranetBundle\Service\Dashboard\IntranetScheduleService;
 use App\Repository\Structure\StructureDepartementRepository;
 use AuthBundle\Services\Dashboard\Provider\AuthWidgetDataProvider;
 
 class IntranetWidgetDataProvider implements WidgetDataProviderInterface
 {
     public function __construct(
-        private readonly EdtEventRepository $edtEventRepository,
+        private readonly IntranetScheduleService $schedule,
         private readonly StructureDepartementRepository $structureDepartementRepository,
         private readonly AuthWidgetDataProvider $authWidgetDataProvider,
     ) {
@@ -24,10 +25,10 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
     }
 
     /** @return array<mixed> */
-    public function getData(string $code, Personnel|Etudiant $user): array
+    public function getData(string $code, Personnel|Etudiant $user, ?DashboardContext $context = null): array
     {
         return match ($code) {
-            'intranet.emploi_du_temps' => $user instanceof Personnel ? $this->getEmploiDuTemps($user) : [],
+            'intranet.emploi_du_temps' => $this->schedule->getToday($user),
             'intranet.contacts' => $this->getContacts($user),
             'intranet.actualites' => $this->authWidgetDataProvider->getData('auth.actus_int', $user),
             'intranet.actualites_iut' => $this->authWidgetDataProvider->getData('auth.actus_ext', $user),
@@ -70,23 +71,4 @@ class IntranetWidgetDataProvider implements WidgetDataProviderInterface
         ];
     }
 
-    /** @return array<string, mixed> */
-    private function getEmploiDuTemps(Personnel $user): array
-    {
-        $today = new \DateTimeImmutable('today');
-        $tomorrow = $today->modify('+1 day');
-        $events = $this->edtEventRepository->findByPersonnelAndRange($user->getId() ?? throw new \LogicException('Personnel ID is required'), $today, $tomorrow);
-        $formatter = new \IntlDateFormatter('fr_FR', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, \IntlDateFormatter::GREGORIAN, 'EEEE d MMMM yyyy');
-        return [
-            'todayLabel' => $formatter->format($today),
-            'items' => array_map(fn ($e) => [
-                'heure'  => $e->getDebut()?->format('H:i') . ' - ' . $e->getFin()?->format('H:i'),
-                'groupe' => $e->getLibGroupe(),
-                'cours'  => $e->getCodeModule() . ' - ' . $e->getLibModule(),
-                'salle'  => $e->getSalle() ?? '-',
-                'color'  => $e->getCouleur(),
-                'eval'   => $e->isEvaluation(),
-            ], $events),
-        ];
-    }
 }

@@ -4,10 +4,11 @@ export default [
         alias: '/',
         component: () => import('@/views/IntranetDashboardView.vue'),
         name: 'IntranetDashboard',
+        meta: { breadcrumb: [{ label: 'Dashboard', route: '/intranet' }] },
     },
     {
         path: 'widgets',
-        component: () => import('@components/components/Dashboard/DashboardWidgetsConfiguration.vue'),
+        redirect: { name: 'PortailDashboardWidgetsConfig', params: { bundle: 'portail' } },
         name: 'IntranetDashboardWidgetsConfig',
     },
 ];

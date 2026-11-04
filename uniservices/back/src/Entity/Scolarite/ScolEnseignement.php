@@ -11,6 +11,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Apc\ApcApprentissageCritique;
 use App\Entity\Edt\EdtEvent;
+use App\Entity\Structure\StructureDiplome;
 use App\Utils\LooseValue;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 use App\Entity\Traits\ApogeeTrait;
@@ -30,6 +31,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [
         new Get(normalizationContext: ['groups' => ['enseignement:detail', 'enseignement_ue:read']]),
         new GetCollection(normalizationContext: ['groups' => ['enseignement:detail']]),
+        new GetCollection(
+            normalizationContext: ['groups' => ['enseignement:dashboard']],
+            uriTemplate: 'dashboard/scol_enseignements',
+        ),
         new GetCollection(
             normalizationContext: ['groups' => ['enseignement:light']],
             uriTemplate: 'mini/scol_enseignements',
@@ -172,7 +177,7 @@ class ScolEnseignement
      * @var Collection<int, Previsionnel>
      */
     #[ORM\OneToMany(targetEntity: Previsionnel::class, mappedBy: 'enseignement', cascade: ['remove'], orphanRemoval: true)]
-    #[Groups(['enseignement:detail', 'edt_event:read:agenda'])]
+    #[Groups(['enseignement:detail', 'edt_event:read:agenda', 'enseignement:dashboard'])]
     private Collection $previsionnels;
 
     public function __construct()
@@ -633,5 +638,25 @@ class ScolEnseignement
     public function setSae(?ScolEnseignement $sae): void
     {
         $this->sae = $sae;
+    }
+
+    #[Groups(['enseignement:dashboard'])]
+    public function getDiplome(): ?StructureDiplome
+    {
+        $enseignementUe = $this->enseignementUes->first();
+        if ($enseignementUe !== false && null !== $enseignementUe->getUe()?->getSemestre()) {
+            return $enseignementUe->getUe()->getSemestre()->getDiplome();
+        }
+        return null;
+    }
+
+    #[Groups(['enseignement:dashboard'])]
+    public function getSemestre(): ?\App\Entity\Structure\StructureSemestre
+    {
+        $enseignementUe = $this->enseignementUes->first();
+        if ($enseignementUe !== false) {
+            return $enseignementUe->getUe()?->getSemestre();
+        }
+        return null;
     }
 }

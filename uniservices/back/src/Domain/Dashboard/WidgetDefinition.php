@@ -22,6 +22,9 @@ class WidgetDefinition
         private readonly array $defaultConfig = [],
         /** @var list<string> $allowedProfiles */
         private readonly array $allowedProfiles = [self::PROFILE_PERSONNEL, self::PROFILE_ETUDIANT],
+        /** @var list<string> $requiredPermissions */
+        private readonly array $requiredPermissions = [],
+        private readonly bool $requireAllPermissions = false,
     ) {
     }
 
@@ -44,6 +47,22 @@ class WidgetDefinition
         return in_array(self::PROFILE_ETUDIANT, $this->allowedProfiles, true);
     }
 
+    /** @return list<string> */
+    public function getRequiredPermissions(): array
+    {
+        return $this->requiredPermissions;
+    }
+
+    public function requiresAllPermissions(): bool
+    {
+        return $this->requireAllPermissions;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
     /** @return array{code: string, bundle: string, label: string, icon: string, component: string, size?: string, enabled?: bool, defaultConfig: array<string, mixed>, allowedProfiles: list<string>} */
     public function toArray(): array
     {
@@ -54,9 +73,10 @@ class WidgetDefinition
             'icon' => $this->icon,
             'component' => $this->component,
             'size' => $this->size,
-            'enabled' => $this->enabled,
             'defaultConfig' => $this->defaultConfig,
             'allowedProfiles' => $this->allowedProfiles,
+            'requiredPermissions' => $this->requiredPermissions,
+            'requireAllPermissions' => $this->requireAllPermissions,
         ];
     }
 }

@@ -73,7 +73,7 @@ class StructureDeptFixtures extends Fixture implements OrderedFixtureInterface
             $superadminDept->setPersonnel($superadmin)
                 ->setDepartement($departement1)
                 ->setPackages(['intranet', 'stages', 'edt', 'helpdesk', 'questionnaire', 'unifolio', 'finance'])
-                ->setPermissions(['SUPER_ADMIN'])
+                ->setPermissions(['SUPER_ADMIN', 'ROLE_TEACHER'])
                 ->setDefaut(true);
             $manager->persist($superadminDept);
         }
