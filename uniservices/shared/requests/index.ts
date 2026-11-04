@@ -55,3 +55,4 @@ export * from './actu_services/actualiteService.js'
 export * from './recherche_services/rechercheService.js';
 export * from './notification_services/notificationService.js';
 export * from './plan_cours_services/planCoursService.js';
+export * from './scol_services/avancementEnseignementService.js';

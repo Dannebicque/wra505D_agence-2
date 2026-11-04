@@ -24,9 +24,9 @@ const intranetMenu = {
       permission: 'isPersonnel'
     },
     {
-      label: 'Plans de cours',
+      label: 'Pédagogie',
       icon: 'pi pi-fw pi-book',
-      to: '/intranet/plan-de-cours',
+      to: '/intranet/pedagogie',
       permission: 'isPersonnel'
     },
     {
