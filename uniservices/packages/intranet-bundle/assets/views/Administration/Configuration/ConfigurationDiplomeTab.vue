@@ -133,7 +133,7 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
 <template>
   <div class="space-y-6">
     <!-- Barre de sélection des diplômes actifs -->
-    <div v-if="activeDiplomes.length > 0" class="flex flex-wrap items-center gap-2 p-2 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+    <div v-if="activeDiplomes.length > 0" class="flex flex-wrap items-center gap-2 p-2 bg-emphasis rounded-2xl border border-surface">
       <button
         v-for="d in activeDiplomes"
         :key="d.id"
@@ -142,8 +142,8 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
         :class="[
           'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer',
           selectedDiplomeId === d.id
-            ? 'bg-white dark:bg-slate-800 text-primary shadow-sm border border-slate-200/80 dark:border-slate-700'
-            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/50'
+            ? 'bg-surface-0 text-primary shadow-sm border border-surface'
+            : 'text-muted-color hover:text-color hover:bg-surface-0'
         ]"
       >
         <i class="pi pi-graduation-cap text-base" />
@@ -152,8 +152,8 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
       </button>
     </div>
 
-    <div v-if="!selectedDiplome" class="card p-12 text-center text-slate-500">
-      <i class="pi pi-info-circle text-3xl mb-3 text-slate-400 block" />
+    <div v-if="!selectedDiplome" class="card p-12 text-center text-muted-color">
+      <i class="pi pi-info-circle text-3xl mb-3 text-muted-color block" />
       <p class="font-medium">Aucun diplôme actif n'est disponible pour ce département.</p>
     </div>
 
@@ -165,13 +165,13 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
         icon="pi pi-calendar"
         color="violet"
       >
-        <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div class="flex flex-col divide-y divide-surface">
           <ConfigOptionItem
             title="Démarche Qualité"
             description="Active le suivi et la production des indicateurs qualité pour cette formation."
             icon="pi pi-check-circle"
-            icon-color-class="text-emerald-500"
-            icon-bg-class="bg-emerald-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="diplomeOpt.certif_qualite ?? true"
             :loading="loadingKeys['certif_qualite']"
@@ -182,8 +182,8 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
             title="Responsable Qualité"
             description="Personnel désigné comme référent qualité pour ce diplôme."
             icon="pi pi-user"
-            icon-color-class="text-indigo-500"
-            icon-bg-class="bg-indigo-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="select"
             :model-value="diplomeOpt.resp_qualite ?? 0"
             :options="personnelOptions"
@@ -196,8 +196,8 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
             title="Mise à jour automatique CELCAT"
             description="Synchronisation automatique des plannings et cours depuis l'outil CELCAT."
             icon="pi pi-sync"
-            icon-color-class="text-blue-500"
-            icon-bg-class="bg-blue-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="diplomeOpt.update_celcat ?? false"
             :loading="loadingKeys['update_celcat']"
@@ -213,13 +213,13 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
         icon="pi pi-calendar-times"
         color="amber"
       >
-        <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div class="flex flex-col divide-y divide-surface">
           <ConfigOptionItem
             title="Délai maximum de saisie des absences"
             description="Nombre de jours accordé aux enseignants pour déclarer une absence après la séance (0 = illimité)."
             icon="pi pi-hourglass"
-            icon-color-class="text-amber-500"
-            icon-bg-class="bg-amber-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="number"
             :model-value="diplomeOpt.nb_jours_saisie_absence ?? 15"
             :min="0"
@@ -233,8 +233,8 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
             title="Suppression d'absence par les enseignants"
             description="Autorise les enseignants à supprimer eux-mêmes une absence signalée par erreur."
             icon="pi pi-trash"
-            icon-color-class="text-red-500"
-            icon-bg-class="bg-red-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="diplomeOpt.supp_absence ?? true"
             :loading="loadingKeys['supp_absence']"
@@ -245,8 +245,8 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
             title="Saisie d'absences en Cours Magistral (CM)"
             description="Autorise l'appel et l'enregistrement des absences lors des séances de cours magistraux."
             icon="pi pi-megaphone"
-            icon-color-class="text-purple-500"
-            icon-bg-class="bg-purple-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="diplomeOpt.saisie_cm_autorisee ?? true"
             :loading="loadingKeys['saisie_cm_autorisee']"
@@ -262,13 +262,13 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
         icon="pi pi-eye"
         color="teal"
       >
-        <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div class="flex flex-col divide-y divide-surface">
           <ConfigOptionItem
             title="Espace personnel visible"
             description="Rend visible l'espace personnel, notes et suivis dans le compte étudiant de ce diplôme."
             icon="pi pi-user-check"
-            icon-color-class="text-teal-500"
-            icon-bg-class="bg-teal-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="diplomeOpt.espace_perso_visible ?? false"
             :loading="loadingKeys['espace_perso_visible']"
@@ -279,8 +279,8 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
             title="Anonymat des copies et évaluations"
             description="Masque les identités des étudiants lors des évaluations pour une correction à l'aveugle."
             icon="pi pi-user-minus"
-            icon-color-class="text-slate-500"
-            icon-bg-class="bg-slate-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="diplomeOpt.anonymat ?? false"
             :loading="loadingKeys['anonymat']"
@@ -291,8 +291,8 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
             title="Semaines visibles sur l'emploi du temps"
             description="Nombre de semaines prévisionnelles affichées aux étudiants (0 = toutes les semaines affichées)."
             icon="pi pi-calendar"
-            icon-color-class="text-blue-500"
-            icon-bg-class="bg-blue-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="number"
             :model-value="diplomeOpt.semaine_visible ?? 2"
             :min="0"
@@ -306,8 +306,8 @@ const updateAnneeUniversitaire = async (anneeUnivIri) => {
             title="Commentaires sur les relevés de notes"
             description="Affiche les appréciations et remarques individuelles sur les bulletins de notes."
             icon="pi pi-comment"
-            icon-color-class="text-emerald-500"
-            icon-bg-class="bg-emerald-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="diplomeOpt.commentaire_releve ?? false"
             :loading="loadingKeys['commentaire_releve']"

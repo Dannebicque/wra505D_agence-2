@@ -77,13 +77,13 @@ const updateOption = async (key, value) => {
       icon="pi pi-box"
       color="blue"
     >
-      <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/60">
+      <div class="flex flex-col divide-y divide-surface">
         <ConfigOptionItem
           title="Emplois du temps"
           description="Active l'affichage, la consultation et la synchronisation des emplois du temps pour ce département."
           icon="pi pi-calendar"
-          icon-color-class="text-blue-500"
-          icon-bg-class="bg-blue-500/10"
+          icon-color-class="text-primary"
+          icon-bg-class="bg-primary/10"
           type="switch"
           :model-value="deptOpt.edt ?? false"
           :loading="loadingKeys['edt']"
@@ -99,13 +99,13 @@ const updateOption = async (key, value) => {
       icon="pi pi-users"
       color="purple"
     >
-      <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/60">
+      <div class="flex flex-col divide-y divide-surface">
         <ConfigOptionItem
           title="Responsable Relations Internationales (RI)"
           description="Enseignant ou personnel référent assurant le suivi des mobilités et étudiants internationaux."
           icon="pi pi-globe"
-          icon-color-class="text-indigo-500"
-          icon-bg-class="bg-indigo-500/10"
+          icon-color-class="text-primary"
+          icon-bg-class="bg-primary/10"
           type="select"
           :model-value="deptOpt.resp_ri ? String(deptOpt.resp_ri) : ''"
           :options="personnelOptions"

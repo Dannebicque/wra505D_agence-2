@@ -201,7 +201,7 @@ const onSemestreUpdated = ({ semestreId, key, value }) => {
 
       <!-- Navigation par onglets -->
       <Tabs v-model:value="activeTab">
-        <TabList class="bg-white dark:bg-slate-900 rounded-2xl p-1.5 border border-slate-200 dark:border-slate-800 shadow-xs">
+        <TabList class="bg-surface-0 rounded-2xl p-1.5 border border-surface shadow-xs">
           <Tab value="departement" class="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm">
             <i class="pi pi-building text-base" />
             <span>Département</span>

@@ -75,8 +75,8 @@ const updateAlternance = async (annee, value) => {
 
 <template>
   <div class="space-y-6">
-    <div v-if="activeAnnees.length === 0" class="card p-12 text-center text-slate-500">
-      <i class="pi pi-info-circle text-3xl mb-3 text-slate-400 block" />
+    <div v-if="activeAnnees.length === 0" class="card p-12 text-center text-muted-color">
+      <i class="pi pi-info-circle text-3xl mb-3 text-muted-color block" />
       <p class="font-medium">Aucune année d'étude active n'est enregistrée pour ce département.</p>
     </div>
 
@@ -89,7 +89,7 @@ const updateAlternance = async (annee, value) => {
         icon="pi pi-calendar-plus"
         color="emerald"
       >
-        <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div class="flex flex-col divide-y divide-surface">
           <div
             v-for="annee in years"
             :key="annee.id"
@@ -99,8 +99,8 @@ const updateAlternance = async (annee, value) => {
               :title="`Régime Alternance — ${annee.libelle}`"
               :description="`Indique si l'année ${annee.libelle} est dispensée sous contrat d'apprentissage ou de professionnalisation.`"
               icon="pi pi-briefcase"
-              icon-color-class="text-emerald-500"
-              icon-bg-class="bg-emerald-500/10"
+              icon-color-class="text-primary"
+              icon-bg-class="bg-primary/10"
               type="switch"
               :model-value="annee.opt?.alternance ?? false"
               :loading="loadingKeys[annee.id]"

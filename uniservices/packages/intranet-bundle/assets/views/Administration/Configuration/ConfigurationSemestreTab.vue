@@ -131,7 +131,7 @@ const updateDirectField = async (fieldName, value) => {
 <template>
   <div class="space-y-6">
     <!-- Barre de sélection des semestres actifs -->
-    <div v-if="activeSemestres.length > 0" class="flex flex-wrap items-center gap-2 p-2 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+    <div v-if="activeSemestres.length > 0" class="flex flex-wrap items-center gap-2 p-2 bg-emphasis rounded-2xl border border-surface">
       <button
         v-for="s in activeSemestres"
         :key="s.id"
@@ -140,8 +140,8 @@ const updateDirectField = async (fieldName, value) => {
         :class="[
           'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer',
           selectedSemestreId === s.id
-            ? 'bg-white dark:bg-slate-800 text-primary shadow-sm border border-slate-200/80 dark:border-slate-700'
-            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/50'
+            ? 'bg-surface-0 text-primary shadow-sm border border-surface'
+            : 'text-muted-color hover:text-color hover:bg-surface-0'
         ]"
       >
         <i class="pi pi-list text-base" />
@@ -155,8 +155,8 @@ const updateDirectField = async (fieldName, value) => {
       </button>
     </div>
 
-    <div v-if="!selectedSemestre" class="card p-12 text-center text-slate-500">
-      <i class="pi pi-info-circle text-3xl mb-3 text-slate-400 block" />
+    <div v-if="!selectedSemestre" class="card p-12 text-center text-muted-color">
+      <i class="pi pi-info-circle text-3xl mb-3 text-muted-color block" />
       <p class="font-medium">Aucun semestre actif n'est disponible pour ce département.</p>
     </div>
 
@@ -168,13 +168,13 @@ const updateDirectField = async (fieldName, value) => {
         icon="pi pi-envelope"
         color="amber"
       >
-        <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div class="flex flex-col divide-y divide-surface">
           <ConfigOptionItem
             title="Envoi par mail du relevé de notes"
             description="Autorise l'envoi automatisé des bulletins et relevés de notes aux étudiants par courrier électronique."
             icon="pi pi-send"
-            icon-color-class="text-amber-500"
-            icon-bg-class="bg-amber-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="semOpt.mail_releve ?? false"
             :loading="loadingKeys['mail_releve']"
@@ -185,8 +185,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Destinataire en copie du relevé de notes"
             description="Enseignant ou secrétariat systématiquement en copie lors de l'envoi des relevés."
             icon="pi pi-user-plus"
-            icon-color-class="text-amber-500"
-            icon-bg-class="bg-amber-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="select"
             :model-value="semOpt.dest_mail_releve ?? 0"
             :options="personnelOptions"
@@ -198,8 +198,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Alerte mail lors de modification d'une note"
             description="Avertit le responsable lorsqu'une note déjà validée est modifiée ultérieurement par un enseignant."
             icon="pi pi-bell"
-            icon-color-class="text-orange-500"
-            icon-bg-class="bg-orange-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="semOpt.mail_modif_note ?? false"
             :loading="loadingKeys['mail_modif_note']"
@@ -210,8 +210,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Destinataire alerte modification de note"
             description="Personnel recevant l'alerte en cas de changement de note."
             icon="pi pi-user"
-            icon-color-class="text-orange-500"
-            icon-bg-class="bg-orange-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="select"
             :model-value="semOpt.dest_mail_modif_note ?? 0"
             :options="personnelOptions"
@@ -223,8 +223,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Alerte dépassement d'absences au responsable"
             description="Envoie un récapitulatif dès qu'un étudiant franchit le seuil critique d'absences tolérées."
             icon="pi pi-exclamation-circle"
-            icon-color-class="text-red-500"
-            icon-bg-class="bg-red-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="semOpt.mail_absence_resp ?? false"
             :loading="loadingKeys['mail_absence_resp']"
@@ -235,8 +235,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Destinataire alerte dépassement absences"
             description="Responsable recevant le signalement des absences excessives."
             icon="pi pi-user"
-            icon-color-class="text-red-500"
-            icon-bg-class="bg-red-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="select"
             :model-value="semOpt.dest_mail_absence_resp ?? 0"
             :options="personnelOptions"
@@ -248,8 +248,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Notification immédiate envoyée à l'étudiant"
             description="Avertit par email l'étudiant à chaque nouvelle absence saisie par un enseignant."
             icon="pi pi-inbox"
-            icon-color-class="text-blue-500"
-            icon-bg-class="bg-blue-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="semOpt.mail_absence_etudiant ?? false"
             :loading="loadingKeys['mail_absence_etudiant']"
@@ -260,8 +260,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Notification secrétariat lors du dépôt d'un justificatif"
             description="Alerte le secrétariat lorsqu'un étudiant dépose un justificatif d'absence sur son portail."
             icon="pi pi-file-check"
-            icon-color-class="text-teal-500"
-            icon-bg-class="bg-teal-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="semOpt.mail_assistante_justif_absence ?? false"
             :loading="loadingKeys['mail_assistante_justif_absence']"
@@ -277,14 +277,14 @@ const updateDirectField = async (fieldName, value) => {
         icon="pi pi-check-square"
         color="violet"
       >
-        <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div class="flex flex-col divide-y divide-surface">
           <ConfigOptionItem
             v-if="ppnOptions.length > 1"
             title="Programme Pédagogique (PPN) actif"
             description="Associe la maquette ou le PPN de référence applicable aux enseignements de ce semestre."
             icon="pi pi-book"
-            icon-color-class="text-violet-500"
-            icon-bg-class="bg-violet-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="select"
             :model-value="selectedSemestre.ppnActif?.['@id'] || (selectedSemestre.ppnActif ? `/api/structure_pns/${selectedSemestre.ppnActif.id || selectedSemestre.ppnActif}` : '')"
             :options="ppnOptions"
@@ -297,8 +297,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Affichage immédiat des évaluations"
             description="Les notes saisies par les enseignants sont immédiatement consultables par les étudiants sans blocage préalable."
             icon="pi pi-eye"
-            icon-color-class="text-blue-500"
-            icon-bg-class="bg-blue-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="semOpt.eval_visible ?? true"
             :loading="loadingKeys['eval_visible']"
@@ -309,8 +309,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Modification des évaluations autorisée"
             description="Autorise les enseignants à corriger ou réajuster les notes d'une évaluation déjà saisie."
             icon="pi pi-file-edit"
-            icon-color-class="text-indigo-500"
-            icon-bg-class="bg-indigo-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="semOpt.eval_modif ?? true"
             :loading="loadingKeys['eval_modif']"
@@ -321,8 +321,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Afficher le bilan de semestre B.U.T."
             description="Affiche l'onglet de bilan des compétences, niveaux et moyennes B.U.T. aux étudiants dans leur profil."
             icon="pi pi-chart-bar"
-            icon-color-class="text-emerald-500"
-            icon-bg-class="bg-emerald-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             badge="B.U.T."
             badge-severity="info"
             type="switch"
@@ -335,8 +335,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Organisation des sessions de rattrapage"
             description="Active la gestion des sessions d'examens de rattrapage sur ce semestre."
             icon="pi pi-refresh"
-            icon-color-class="text-amber-500"
-            icon-bg-class="bg-amber-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="semOpt.rattrapage ?? true"
             :loading="loadingKeys['rattrapage']"
@@ -347,8 +347,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Responsable des rattrapages"
             description="Personnel désigné comme référent pour l'organisation et le calendrier des rattrapages."
             icon="pi pi-user"
-            icon-color-class="text-amber-500"
-            icon-bg-class="bg-amber-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="select"
             :model-value="semOpt.mail_rattrapage ?? 0"
             :options="personnelOptions"
@@ -365,13 +365,13 @@ const updateDirectField = async (fieldName, value) => {
         icon="pi pi-exclamation-triangle"
         color="red"
       >
-        <div class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800/60">
+        <div class="flex flex-col divide-y divide-surface">
           <ConfigOptionItem
             title="Activer la pénalité sur la moyenne pour absences injustifiées"
             description="Déduit un malus sur la moyenne générale du semestre lorsque les absences ne sont pas justifiées dans les délais."
             icon="pi pi-minus-circle"
-            icon-color-class="text-red-500"
-            icon-bg-class="bg-red-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="switch"
             :model-value="semOpt.opt_penalite_absence ?? true"
             :loading="loadingKeys['opt_penalite_absence']"
@@ -382,8 +382,8 @@ const updateDirectField = async (fieldName, value) => {
             title="Points de pénalité par absence injustifiée"
             description="Valeur du retrait de points sur la moyenne (ex: 0.5 point par absence non justifiée)."
             icon="pi pi-percentage"
-            icon-color-class="text-red-500"
-            icon-bg-class="bg-red-500/10"
+            icon-color-class="text-primary"
+            icon-bg-class="bg-primary/10"
             type="number"
             :model-value="semOpt.penalite_absence ?? 0.5"
             :min="0.1"

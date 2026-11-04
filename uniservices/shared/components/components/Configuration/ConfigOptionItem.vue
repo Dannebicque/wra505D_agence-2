@@ -107,12 +107,12 @@ const localValue = computed({
 </script>
 
 <template>
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3.5 px-3 rounded-xl transition-all duration-200 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 max-w-full">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3.5 px-3 rounded-xl transition-all duration-200 hover:bg-emphasis max-w-full">
     <div class="flex items-start sm:items-center gap-3.5 flex-1 min-w-0 pr-2">
       <div
         v-if="icon"
         :class="[
-          'w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-700/50 transition-colors',
+          'w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border border-surface transition-colors',
           iconBgClass,
           iconColorClass
         ]"
@@ -122,12 +122,12 @@ const localValue = computed({
 
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-sm font-semibold text-slate-900 dark:text-white leading-snug">
+          <span class="text-sm font-semibold text-color leading-snug">
             {{ title }}
           </span>
           <Tag v-if="badge" :value="badge" :severity="badgeSeverity" class="text-[10px] font-bold px-2 py-0.5 tracking-wide uppercase" />
         </div>
-        <p v-if="description" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+        <p v-if="description" class="text-xs text-muted-color mt-0.5 leading-relaxed">
           {{ description }}
         </p>
       </div>
