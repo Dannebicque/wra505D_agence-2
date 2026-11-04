@@ -563,9 +563,9 @@ généré.
 | E26.4 · en revue | exports PDF, Excel, CSV et trombinoscope du personnel, routes réservées au personnel du département | `2e37857a0`, `9520dbcd4`, `55a53493a`, `1f76d0b41` |
 | E26.5 · en revue | stage : convention générée, saisie de l'étudiant, partie enseignant, filtres des périodes ; notre `StageVoter` (E24) conservé et appliqué au PDF et aux avenants | `62fb937a5`, `2b9433565`, `a13210c97`, `c973bdd55` |
 | E26.6 · en revue | questionnaire : exports, lien accessible, relances et historique, département ; routes réservées au personnel | `eb54915d9`, `f4d7dcf1e`, `159a2404e`, `8e4522f31` |
-| E26.7 | sous-commission classique et APC, réservée au personnel du département | `5b39f062f`, `357499ef6` |
+| E26.7 · en revue | sous-commission classique et APC, réservée au personnel du département | `5b39f062f`, `357499ef6` |
 | E26.8 · en revue | finance : bundle de #249, jamais repris, et sa refonte avec PDF, routes sous contrôle d'accès | `f97f829e8` |
-| E26.9 | absences et évaluations côté personnel, indicateurs ; notre dépôt de justificatif par l'étudiant (P2) conservé | `3076e6f07`, `6b12732d0`, `187b207c2`, `0c71cb7fb` |
+| E26.9 · en revue | absences et évaluations côté personnel, indicateurs ; notre dépôt de justificatif par l'étudiant (P2) conservé | `3076e6f07`, `6b12732d0`, `187b207c2`, `0c71cb7fb` |
 | E26.10 | widgets et tableaux de bord : accès aux widgets, widgets limités aux applications de l'utilisateur, tableau de bord des enseignements ; notre accueil étudiant (C18, C19) conservé | `11ff61d2e`, `688feada9`, `aa15909aa`, `7775e5908`, `6a4176191`, `0258d3783` |
 | E26.11 | interface transverse : composants et accessibilité, portail, badge d'application, année active, renommage `unitranet` en `intranet` dans le code, accès des étudiants aux applications (`9090dcd54`, couleurs par module à adapter) ; le nom affiché reste Unitranet, nos jetons de couleur remplacent leurs couleurs en dur | `b79a176b0`, `3a4887acf`, `dc0ee62d9`, `6acb7381b`, `4978af083`, `94e79a0e3`, `5d8af9973`, `9090dcd54` |
 | E26.12 | configuration des modules et ses pages | `cad0a0ab9`, `6a30dbb22` |
@@ -623,6 +623,13 @@ généré.
   nulle part, est retiré. Couleurs : une seule primaire pour les cinq étapes, les statuts en `Tag`
   PrimeVue selon leur `severity`, le PDF sur `document_palette`. La page de configuration du module
   attend `ConfigOptionItem` et part en E26.12.
+- Sous-commission (E26.7) : la route du client renvoyait sans connexion les notes, numéros et dates
+  de naissance de tout un semestre. Elle exige le personnel, puis `SemestreListingVoter`
+  (`CAN_VIEW_COMMISSION`) vérifie le département du semestre, comme pour les listings. Les badges
+  de nature (SAÉ, ressource) passent sur les jetons et ne se distinguent plus que par leur libellé.
+- Absences et évaluations du personnel (E26.9) : écrans repris tels que le client les a écrits.
+  Écartés : la refonte cosmétique de l'écran des groupes, qui entrait en conflit avec la nôtre, et
+  les noms de couleur des KPI, notre composant `Kpi` lisant encore une nuance Tailwind.
 - Messagerie (E26.13) : on reprend la vraie messagerie du client. La source « messages » du
   centre de notifications lit ses messages. Les copies des e-mails envoyés restent dans le fil.
 

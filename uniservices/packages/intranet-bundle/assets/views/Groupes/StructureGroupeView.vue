@@ -16,6 +16,7 @@ const annees = ref([]);
 const annee = ref({});
 const groupes = ref({});
 const hasError = ref(false);
+const isLoadingAnnees = ref(true);
 const isLoadingAnnee = ref(true);
 const isLoadingSemestres = ref(true);
 const selectedGroupe = ref(null);
@@ -55,22 +56,24 @@ watch(groupes, (newVal) => {
 });
 
 const getAnnees = async () => {
-  if (anneeStore.annees && Array.isArray(anneeStore.annees) && anneeStore.annees.length > 0) {
-    annees.value = anneeStore.annees;
-  } else {
-    try {
-      const params = {
-        departement: departementId,
-        actif: true,
-      };
-      await anneeStore.getAnneesDepartement(params);
-      annees.value = Array.isArray(anneeStore.annees) ? anneeStore.annees : [];
-    } catch (error) {
-      console.error("Erreur lors de la récupération des années :", error);
-      hasError.value = true;
-    } finally {
-      isLoadingAnnee.value = false;
+  isLoadingAnnees.value = true;
+  try {
+    if (anneeStore.annees && Array.isArray(anneeStore.annees) && anneeStore.annees.length > 0) {
+      annees.value = anneeStore.annees;
+      return;
     }
+
+    const params = {
+      departement: departementId,
+      actif: true,
+    };
+    await anneeStore.getAnneesDepartement(params);
+    annees.value = Array.isArray(anneeStore.annees) ? anneeStore.annees : [];
+  } catch (error) {
+    console.error("Erreur lors de la récupération des années :", error);
+    hasError.value = true;
+  } finally {
+    isLoadingAnnees.value = false;
   }
 };
 
@@ -81,7 +84,7 @@ const getAnnee = async () => {
   try {
     const anneeId = Number.parseInt(String(route.params.anneeId), 10);
     if (!Number.isNaN(anneeId)) {
-      annee.value = await getAnneeService(anneeId);
+      annee.value = annees.value.find((item) => item.id === anneeId) || annees.value[0] || {};
     } else {
       annee.value = annees.value[0] || {};
     }
@@ -176,11 +179,6 @@ const deleteGroupeFromSemestre = async (groupeId, semestre) => {
 </script>
 
 <template>
-  <HeaderComponent
-      icon="pi pi-sitemap"
-      titre="Structure des groupes"
-      description="Gérer la structure des groupes"
-  />
   <div class="card">
     <div class="flex flex-col md:flex-row justify-between items-start w-full card-header">
       <div>

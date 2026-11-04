@@ -165,6 +165,9 @@ class StructureSemestre implements TimestampableInterface
     #[ORM\OneToMany(targetEntity: PersonnelEnseignantHrs::class, mappedBy: 'semestre', orphanRemoval: true, cascade: ['remove'])]
     private Collection $enseignantHrs;
 
+    #[ORM\Column]
+    private bool $cloture = false;
+
     public function __construct()
     {
         $this->groupes = new ArrayCollection();
@@ -510,5 +513,17 @@ class StructureSemestre implements TimestampableInterface
         }
 
         return array_values(array_unique($types));
+    }
+
+    public function isCloture(): bool
+    {
+        return $this->cloture;
+    }
+
+    public function setCloture(bool $cloture): static
+    {
+        $this->cloture = $cloture;
+
+        return $this;
     }
 }

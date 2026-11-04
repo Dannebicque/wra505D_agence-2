@@ -59,8 +59,22 @@ final class SemestreListingVoterTest extends TestCase
         self::assertSame(VoterInterface::ACCESS_DENIED, $this->vote(new Etudiant(), affecte: true));
     }
 
-    private function vote(UserInterface $user, bool $affecte, bool $superAdmin = false): int
+    /** La sous-commission suit la même règle : le département du semestre, jamais un étudiant. */
+    public function testSousCommissionReserveeAuDepartement(): void
     {
+        $commission = SemestreListingVoter::CAN_VIEW_COMMISSION;
+
+        self::assertSame(VoterInterface::ACCESS_GRANTED, $this->vote(new Personnel(), affecte: true, attribut: $commission));
+        self::assertSame(VoterInterface::ACCESS_DENIED, $this->vote(new Personnel(), affecte: false, attribut: $commission));
+        self::assertSame(VoterInterface::ACCESS_DENIED, $this->vote(new Etudiant(), affecte: true, attribut: $commission));
+    }
+
+    private function vote(
+        UserInterface $user,
+        bool $affecte,
+        bool $superAdmin = false,
+        string $attribut = SemestreListingVoter::CAN_EXPORT_LISTING,
+    ): int {
         $repository = $this->createMock(StructureDepartementPersonnelRepository::class);
         $repository->method('findOneBy')->willReturnCallback(
             fn (array $criteres): ?StructureDepartementPersonnel => $affecte && $criteres['departement'] === $this->departement && $criteres['personnel'] === $user
@@ -73,6 +87,6 @@ final class SemestreListingVoterTest extends TestCase
         $token = new UsernamePasswordToken($user, 'api', $user->getRoles());
 
         return (new SemestreListingVoter($repository, $permissions))
-            ->vote($token, $this->semestre, [SemestreListingVoter::CAN_EXPORT_LISTING]);
+            ->vote($token, $this->semestre, [$attribut]);
     }
 }
