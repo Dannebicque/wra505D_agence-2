@@ -36,15 +36,17 @@ const emit = defineEmits<{
 }>();
 
 function handleClick(event: MouseEvent) {
-  if (!props.disabled) {
-    emit('click', event);
+  if (props.disabled) {
+    event.preventDefault();
+    return;
   }
+  emit('click', event);
 }
 
 const severityClasses = computed(() => {
   switch (props.severity) {
     case 'primary':
-      return 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200 hover:border-orange-300 dark:bg-orange-950/20 dark:hover:bg-orange-900/40 dark:text-orange-400 dark:border-orange-900/50';
+      return 'bg-primary text-primary-contrast border-primary hover:brightness-95';
     case 'success':
       return 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border-emerald-200 hover:border-emerald-300 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-900/50';
     case 'info':

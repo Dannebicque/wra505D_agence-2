@@ -52,6 +52,7 @@ import ConfigOptionItem from './components/Configuration/ConfigOptionItem.vue';
 export {
   // Composants utilitaires
   PermissionGuard,
+  ApplicationBadge,
 
 
   // Composants mineurs

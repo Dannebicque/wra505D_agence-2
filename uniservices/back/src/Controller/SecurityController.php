@@ -317,6 +317,7 @@ class SecurityController extends AbstractController
                 'email' => $user->getMailUniv() ?? $user->getMailPerso(),
                 'type' => $user instanceof Personnel ? 'personnels' : 'etudiants',
                 'roles' => $effectivePermissionService->getEffectivePermissions($user),
+                'applications' => $activePackages,
             ],
             'currentDepartment' => $currentDepartment,
             'departments' => $departmentsData,

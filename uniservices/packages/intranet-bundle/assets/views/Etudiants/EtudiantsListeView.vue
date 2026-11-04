@@ -4,10 +4,11 @@ import { useRoute, useRouter } from 'vue-router';
 import ButtonInfo from '@components/components/Buttons/ButtonInfo.vue';
 import ButtonEdit from '@components/components/Buttons/ButtonEdit.vue';
 import ButtonDelete from '@components/components/Buttons/ButtonDelete.vue';
-import {ProfilEtudiant, SimpleSkeleton, HeaderComponent} from '@components';
+import {ProfilEtudiant, SimpleSkeleton, HeaderComponent, ApplicationBadge, EtudiantApplicationsDialog} from '@components';
 import { getEtudiantsScolariteService, demissionEtudiantScolariteService, getAnneesService } from '@requests';
 import { useToast } from 'primevue/usetoast';
 import { useUsersStore, useAnneeUnivStore } from '@stores';
+import { getAppTagInfo } from '@utils';
 import { useEtudiantFilters } from '../../../../../shared/composables/filters/usersFilters/useEtudiantFilters.ts';
 
 const toast = useToast();
@@ -97,6 +98,38 @@ watch([departementId, selectedAnneeUniversitaireId], async ([newDepartementId, n
 const showViewDialog = ref(false);
 const showEditDialog = ref(false);
 const selectedEtudiant = ref(null);
+const selectedScolarites = ref([]);
+const showApplicationsDialog = ref(false);
+const dialogEtudiants = ref([]);
+const dialogInitialMode = ref('selection');
+
+const currentAnnee = computed(() => {
+  return anneesList.value.find(a => a.id === filters.value.annee?.value) || null;
+});
+
+const openStudentApplications = (scolarite) => {
+  dialogEtudiants.value = [scolarite];
+  dialogInitialMode.value = 'selection';
+  showApplicationsDialog.value = true;
+};
+
+const openBulkApplications = () => {
+  dialogEtudiants.value = selectedScolarites.value;
+  dialogInitialMode.value = 'selection';
+  showApplicationsDialog.value = true;
+};
+
+const openPromoApplications = () => {
+  dialogEtudiants.value = [];
+  dialogInitialMode.value = 'promo';
+  showApplicationsDialog.value = true;
+};
+
+const onApplicationsSaved = async () => {
+  selectedScolarites.value = [];
+  await getEtudiantsScolarite();
+};
+
 
 onMounted(async () => {
   isInitialLoading.value = true;
@@ -287,6 +320,7 @@ const deleteEtudiant = async etudiant => {
           @update:rows="limit = $event"
           :globalFilterFields="['nom', 'prenom']"
       >
+        <Column selectionMode="multiple" headerStyle="width: 3rem" />
         <Column field="nom" :showFilterMenu="false" header="Nom" style="min-width: 12rem">
           <template #body="{ data }">
             {{ data.etudiant.nom }}
@@ -335,11 +369,34 @@ const deleteEtudiant = async etudiant => {
             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Filtrer par email" />
           </template>
         </Column>
-        <Column :showFilterMenu="false" style="min-width: 12rem">
+        <Column header="Applications" style="min-width: 14rem">
+          <template #body="{ data }">
+            <div class="flex flex-wrap gap-1">
+              <ApplicationBadge
+                v-for="app in (data.etudiant?.applications || ['intranet'])"
+                :key="app"
+                :app="app"
+                size="sm"
+              />
+            </div>
+          </template>
+        </Column>
+        <Column :showFilterMenu="false" style="min-width: 14rem">
           <template #body="slotProps">
-            <ButtonInfo tooltip="Voir les détails de l'étudiant" @click="viewEtudiant(slotProps.data)" />
-            <ButtonEdit tooltip="Modifier l'étudiant" @click="editEtudiant(slotProps.data)" />
-            <ButtonDelete tooltip="Marquer l'étudiant comme démissionnaire" @confirm-delete="deleteEtudiant(slotProps.data)" />
+            <div class="flex items-center gap-1">
+              <Button
+                icon="pi pi-th-large"
+                text
+                rounded
+                severity="help"
+                size="small"
+                v-tooltip.top="'Gérer les applications'"
+                @click="openStudentApplications(slotProps.data)"
+              />
+              <ButtonInfo tooltip="Voir les détails de l'étudiant" @click="viewEtudiant(slotProps.data)" />
+              <ButtonEdit tooltip="Modifier l'étudiant" @click="editEtudiant(slotProps.data)" />
+              <ButtonDelete tooltip="Marquer l'étudiant comme démissionnaire" @confirm-delete="deleteEtudiant(slotProps.data)" />
+            </div>
           </template>
         </Column>
         <template #footer> {{ nbEtudiants }} résultat(s).</template>
@@ -350,6 +407,17 @@ const deleteEtudiant = async etudiant => {
               @update:visible="showViewDialog = $event">
         <ProfilEtudiant :etudiantId="selectedEtudiant.etudiant.id" :isVisible="showViewDialog" />
       </Dialog>
+
+      <EtudiantApplicationsDialog
+        v-model:isVisible="showApplicationsDialog"
+        :etudiants="dialogEtudiants"
+        :annee="currentAnnee"
+        :anneesList="anneesList"
+        :departementId="departementId"
+        :anneeUniversitaireId="selectedAnneeUniversitaireId"
+        :initialMode="dialogInitialMode"
+        @saved="onApplicationsSaved"
+      />
     </div>
   </div>
 </template>

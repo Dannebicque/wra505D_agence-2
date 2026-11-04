@@ -1,6 +1,7 @@
 <script setup>
 import { computed, defineProps, ref } from 'vue';
 import { resolveWidgetComponent } from './widgets/widgetRegistry';
+import ApplicationBadge from '../Application/ApplicationBadge.vue';
 
 const isEditing = ref(false);
 
@@ -74,6 +75,16 @@ const decreaseRowSpan = () => {
 const toggleWidget = () => {
     emit('toggle', props.widget);
 };
+
+const showBundleBadge = computed(() => {
+    if (!props.widget?.bundle) return false;
+    // Sur le portail, on n'affiche pas le badge pour les widgets natifs du portail (auth)
+    if (props.isPortail) {
+        return props.widget.bundle !== 'auth';
+    }
+    // Sur un dashboard dédié (ex: intranet), on affiche si le widget provient d'un autre bundle
+    return props.widget.bundle !== 'intranet';
+});
 </script>
 
 <template>

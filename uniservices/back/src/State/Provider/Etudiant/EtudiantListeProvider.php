@@ -83,6 +83,7 @@ class EtudiantListeProvider implements ProviderInterface
                 'nom' => $etudiant->getNom(),
                 'mailUniv' => $etudiant->getMailUniv(),
                 'numEtudiant' => $etudiant->getNumEtudiant(),
+                'applications' => $normalizedApps,
             ] : [],
             'annee' => $annees,
         ];
