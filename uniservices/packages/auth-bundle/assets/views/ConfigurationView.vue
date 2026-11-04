@@ -87,7 +87,7 @@ const panelMenuTechnicalItems = computed(() => {
           <Fieldset class="w-full">
             <template #legend>
               <div class="flex items-center pl-2">
-                <i class="pi pi-users bg-purple-400/20 rounded-full p-4 text-purple-500"/>
+                <i class="pi pi-users bg-primary-50 rounded-full p-4 text-primary"/>
                 <div class="flex flex-col">
                   <span class="font-bold px-2 capitalize">Gérer les accès</span>
                   <em class="text-muted-color px-2">Gérer les utilisateurs et les applications autorisées</em>
@@ -120,7 +120,7 @@ const panelMenuTechnicalItems = computed(() => {
           <Fieldset class="w-full">
             <template #legend>
               <div class="flex items-center pl-2">
-                <i class="pi pi-wrench bg-blue-400/20 rounded-full p-4 text-blue-500"/>
+              <i class="pi pi-wrench bg-primary-50 rounded-full p-4 text-primary"/>
                 <div class="flex flex-col">
                   <span class="font-bold px-2 capitalize">Configuration</span>
                   <em class="text-muted-color px-2">Configuration des données communes aux applications</em>
@@ -156,7 +156,7 @@ const panelMenuTechnicalItems = computed(() => {
         <Fieldset class="w-full">
           <template #legend>
             <div class="flex items-center pl-2">
-              <i class="pi pi-envelope bg-teal-400/20 rounded-full p-4 text-teal-500"/>
+              <i class="pi pi-envelope bg-primary-50 rounded-full p-4 text-primary"/>
               <div class="flex flex-col">
                 <span class="font-bold px-2 capitalize">Communication</span>
                 <em class="text-muted-color px-2">Personnaliser les emails envoyés par l'application</em>
@@ -183,7 +183,7 @@ const panelMenuTechnicalItems = computed(() => {
         <Fieldset class="w-full">
           <template #legend>
             <div class="flex items-center pl-2">
-              <i class="pi pi-cog bg-green-400/20 rounded-full p-4 text-green-500"/>
+              <i class="pi pi-cog bg-primary-50 rounded-full p-4 text-primary"/>
               <div class="flex flex-col">
                 <span class="font-bold px-2 capitalize">Administration technique</span>
                 <em class="text-muted-color px-2">Personnaliser les aspects techniques de l'outil</em>

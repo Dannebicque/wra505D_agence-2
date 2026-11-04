@@ -214,7 +214,7 @@ onMounted(async () => {
 
 <style scoped>
 .bg {
-  background-image: linear-gradient(rgba(248, 250, 252, 0.88), rgba(248, 250, 252, 0.88)), url("../assets/iut.jpg");
+  background-image: linear-gradient(color-mix(in srgb, var(--surface-ground) 88%, transparent), color-mix(in srgb, var(--surface-ground) 88%, transparent)), url("../assets/iut.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
