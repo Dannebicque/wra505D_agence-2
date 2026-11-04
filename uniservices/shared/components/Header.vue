@@ -44,76 +44,16 @@ const userStore = useUsersStore();
 const afficherRetour = computed(() => props.showBack && !userStore.isEtudiant);
 
 const colorMap = {
-  blue: {
-    bg: 'bg-blue-100 dark:bg-blue-950/20',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-100 dark:border-blue-900/30'
-  },
-  green: {
-    bg: 'bg-green-100 dark:bg-green-950/20',
-    text: 'text-green-600 dark:text-green-400',
-    border: 'border-green-100 dark:border-green-900/30'
-  },
-  emerald: {
-    bg: 'bg-emerald-100 dark:bg-emerald-950/20',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-100 dark:border-emerald-900/30'
-  },
-  yellow: {
-    bg: 'bg-yellow-100 dark:bg-yellow-950/20',
-    text: 'text-yellow-600 dark:text-yellow-400',
-    border: 'border-yellow-100 dark:border-yellow-900/30'
-  },
-  amber: {
-    bg: 'bg-amber-100 dark:bg-amber-950/20',
-    text: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-100 dark:border-amber-900/30'
-  },
-  purple: {
-    bg: 'bg-purple-100 dark:bg-purple-950/20',
-    text: 'text-purple-600 dark:text-purple-400',
-    border: 'border-purple-100 dark:border-purple-900/30'
-  },
-  violet: {
-    bg: 'bg-violet-100 dark:bg-violet-950/20',
-    text: 'text-violet-600 dark:text-violet-400',
-    border: 'border-violet-100 dark:border-violet-900/30'
-  },
-  indigo: {
-    bg: 'bg-indigo-100 dark:bg-indigo-950/20',
-    text: 'text-indigo-600 dark:text-indigo-400',
-    border: 'border-indigo-100 dark:border-indigo-900/30'
-  },
-  red: {
-    bg: 'bg-red-100 dark:bg-red-950/20',
-    text: 'text-red-600 dark:text-red-400',
-    border: 'border-red-100 dark:border-red-900/30'
-  },
-  pink: {
-    bg: 'bg-pink-100 dark:bg-pink-950/20',
-    text: 'text-pink-600 dark:text-pink-400',
-    border: 'border-pink-100 dark:border-pink-900/30'
-  },
-  teal: {
-    bg: 'bg-teal-100 dark:bg-teal-950/20',
-    text: 'text-teal-600 dark:text-teal-400',
-    border: 'border-teal-100 dark:border-teal-900/30'
-  },
-  orange: {
-    bg: 'bg-orange-100 dark:bg-orange-950/20',
-    text: 'text-orange-600 dark:text-orange-400',
-    border: 'border-orange-100 dark:border-orange-900/30'
-  },
-  gray: {
-    bg: 'bg-gray-100 dark:bg-gray-950/20',
-    text: 'text-gray-600 dark:text-gray-400',
-    border: 'border-gray-100 dark:border-gray-900/30'
+  primary: {
+    bg: 'bg-primary-50 dark:bg-primary-950/20',
+    text: 'text-primary dark:text-primary-300',
+    border: 'border-primary-200 dark:border-primary-800'
   }
 };
 
 const colorClasses = computed(() => {
   if (!props.color) return null;
-  return colorMap[props.color] || colorMap.blue;
+  return colorMap.primary;
 });
 </script>
 
@@ -121,7 +61,7 @@ const colorClasses = computed(() => {
   <div class="mb-8">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
-        <h1 class="text-[length:var(--ui-page-title-size)] font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3 mb-0!">
+        <h1 class="text-[length:var(--ui-page-title-size)] font-bold text-color tracking-tight flex items-center gap-3 mb-0!">
         <span v-if="icon" :class="[
           colorClasses ? 'w-10 h-10 rounded-xl flex items-center justify-center border transition-all shrink-0' : '',
           colorClasses ? `${colorClasses.bg} ${colorClasses.text} ${colorClasses.border}` : '',
@@ -133,12 +73,12 @@ const colorClasses = computed(() => {
         </span>
           <span>{{ props.titre }}</span>
         </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1" :class="[icon && colorClasses ? 'pl-[52px]' : '']">
+        <p class="text-muted-color mt-1" :class="[icon && colorClasses ? 'pl-[52px]' : '']">
           {{ props.description }}
         </p>
       </div>
-      <div class="flex items-center gap-3 shrink-0">
-        <Button v-if="afficherRetour" severity="primary" label="Retour" icon="pi pi-arrow-left" @click="props.backUrl ? $router.push(props.backUrl) : $router.go(-1)" />
+      <div class="flex flex-wrap items-center gap-3">
+        <Button v-if="afficherRetour" severity="secondary" text label="Retour" icon="pi pi-arrow-left" @click="props.backUrl ? $router.push(props.backUrl) : $router.go(-1)" />
       </div>
     </div>
     <template class="w-full flex justify-end items-center gap-2">

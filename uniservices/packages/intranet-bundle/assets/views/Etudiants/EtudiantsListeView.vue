@@ -261,7 +261,14 @@ const deleteEtudiant = async etudiant => {
       icon="pi pi-users"
       titre="Liste des étudiants"
       description="Consultez la liste des étudiants inscrits dans le département"
-  />
+  >
+    <template #actions>
+      <div class="flex items-center gap-2">
+        <Button label="Affectation par promotion" icon="pi pi-sliders-h" severity="secondary" outlined size="small" @click="openPromoApplications" />
+        <Button v-if="selectedScolarites.length > 0" :label="`Gérer les applications (${selectedScolarites.length})`" icon="pi pi-th-large" severity="primary" size="small" @click="openBulkApplications" />
+      </div>
+    </template>
+  </HeaderComponent>
 
   <div class="flex justify-around mb-12 gap-2">
     <div v-for="annee in anneesList" :key="annee.id" class="card flex flex-col items-stretch" :style="{ width: anneesList.length ? (100 / anneesList.length) + '%' : 'auto' }">
@@ -301,10 +308,21 @@ const deleteEtudiant = async etudiant => {
       />
     </header>
     <div class="card-body">
+      <div v-if="selectedScolarites.length > 0" class="mb-3 p-3 rounded-xl bg-primary-50/60 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800 flex items-center justify-between gap-3 animate-fadein">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-check-circle text-primary font-bold" aria-hidden="true" />
+          <span class="text-sm font-semibold text-surface-900 dark:text-surface-100"><strong>{{ selectedScolarites.length }}</strong> étudiant(s) sélectionné(s)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <Button label="Gérer les applications" icon="pi pi-th-large" size="small" severity="primary" @click="openBulkApplications" />
+          <Button label="Désélectionner tout" icon="pi pi-times" size="small" text severity="secondary" @click="selectedScolarites = []" />
+        </div>
+      </div>
       <DataTable
           scrollHeight="800px"
           scrollable
           v-model:filters="filters"
+          v-model:selection="selectedScolarites"
           :value="etudiants"
           lazy
           stripedRows

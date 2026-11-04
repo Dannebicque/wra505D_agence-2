@@ -7,8 +7,8 @@
 export const APPLICATION_REGISTRY = {
   intranet: {
     slug: 'intranet',
-    name: 'Intranet',
-    shortLabel: 'Intranet',
+    name: 'Unitranet',
+    shortLabel: 'Unitranet',
     icon: 'pi pi-desktop',
     isDefault: true,
   },
@@ -89,7 +89,7 @@ export function normalizeAppSlug(appInput) {
   const clean = raw.trim().toLowerCase();
 
   const aliases = {
-    intranet: 'intranet',
+    unitranet: 'intranet',
     stages: 'stage',
     questionnaires: 'questionnaire',
     document: 'documents',

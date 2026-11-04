@@ -389,11 +389,10 @@ const selectAnneeUniversitaire = (annee) => {
             <i class="pi pi-box text-primary" aria-hidden="true"></i>
             <span>Applications</span>
           </button>
-          <Menu ref="toolsMenu" id="tools_menu" :model="tools" :popup="true">
+          <Menu ref="toolsMenu" id="tools_menu" :model="activeTools" :popup="true">
             <template #item="{ item, props }">
-              <a v-if="item.url && isEnabled(item)" :href="item.url" v-ripple v-bind="props.action">
-                <Logo :logo-url="item.logo" class="logo_menu" />
-                <span class="ml-2">{{ item.name }}</span>
+              <a v-if="item.url && isEnabled(item)" :href="item.url" v-ripple v-bind="props.action" class="flex items-center w-full">
+                <ApplicationBadge :app="item.urlSlug || item" show-icon full-width />
               </a>
             </template>
           </Menu>
@@ -458,7 +457,7 @@ const selectAnneeUniversitaire = (annee) => {
               <img :src="userStore.userPhoto" alt="photo de profil" class="rounded-full max-w-12 mx-auto">
             </template>
             <template v-else>
-              <span class="text-gray-700 text-xl">{{ initiales }}</span>
+              <span class="text-color text-xl">{{ initiales }}</span>
             </template>
           </Button>
           <Menu ref="profileMenu" id="profile_menu" :model="profileItems" :popup="true" />

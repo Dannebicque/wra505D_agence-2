@@ -124,10 +124,8 @@ const showBundleBadge = computed(() => {
                 <i :class="`${widget.icon} text-primary-500`" aria-hidden="true"/>
                 <span>{{ widget.label }}</span>
             </div>
-            <div v-if="widget.bundle && props.isPortail" class="mt-1">
-                <span v-if="widget.bundle !== 'auth'" class="inline-flex items-center rounded bg-primary-50 dark:bg-primary-900/30 px-1.5 py-0.5 text-xs font-semibold text-primary-700 dark:text-primary-300 border border-primary-200/50 dark:border-primary-900/50 uppercase tracking-wider">
-                    {{ widget.bundle }}
-                </span>
+            <div v-if="showBundleBadge" class="mt-1">
+                <ApplicationBadge :app="widget.bundle" size="xs" show-dot />
             </div>
         </div>
         <Button v-if="!isEditing" icon="pi pi-cog" size="small" text rounded title="Configurer le widget" aria-label="Configurer le widget" @click="isEditing = !isEditing"/>

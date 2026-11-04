@@ -4,7 +4,7 @@ import { useToast } from "primevue/usetoast";
 import { formatAdresse } from "@helpers/adresse.js";
 import { formatNaissance } from "@helpers/date.js";
 import { updateEtudiantService, getEtudiantService, getGroupesService } from "@requests";
-import { ValidatedInput, validationRules, ErrorView, PermissionGuard } from "@components";
+import { ValidatedInput, validationRules, ErrorView, PermissionGuard, ApplicationBadge } from "@components";
 import { PhotoUser } from "@components";
 import { useUsersStore } from "@stores";
 import { SimpleSkeleton } from "@components";
@@ -197,9 +197,9 @@ const updateEtudiantData = async () => {
     <div class="flex items-stretch md:flex-row flex-col gap-6 md:px-12">
       <div class="flex flex-col gap-2 justify-center md:w-1/3 w-full h-auto p-4 mb-0 card bg-primary-400 dark:bg-neutral-950">
         <div class="w-full flex justify-center">
-          <PhotoUser :user-photo="etudiant.photoName" class="rounded-full w-40 h-auto border-8 border-gray-300 border-opacity-60"/>
+          <PhotoUser :user-photo="etudiant.photoName" class="rounded-full w-40 h-auto border-8 border-surface-300 border-opacity-60"/>
         </div>
-        <div class="flex flex-col gap-2 p-4 bg-surface-0 shadow-md dark:bg-surface-800 dark:border-gray-700 rounded-md">
+        <div class="flex flex-col gap-2 p-4 bg-surface-0 shadow-md dark:bg-surface-800 dark:border-surface-700 rounded-md">
           <div class="text-center font-bold flex justify-center gap-1">
             <div class="first-letter:uppercase lowercase">{{ etudiant.prenom }}</div>
             <div class="uppercase">{{ etudiant.nom }}</div>
@@ -212,6 +212,12 @@ const updateEtudiantData = async () => {
           >
             {{ etudiant.mailUniv }} <i class="pi pi-copy" aria-hidden="true"></i>
           </button>
+          <div v-if="etudiant.applications?.length" class="mt-2 pt-2 border-t border-surface-200 dark:border-surface-700">
+            <div class="text-[10px] font-semibold text-muted-color uppercase tracking-wider mb-1.5 text-center">Applications autorisées</div>
+            <div class="flex flex-wrap gap-1 justify-center">
+              <ApplicationBadge v-for="app in etudiant.applications" :key="app" :app="app" size="xs" show-dot />
+            </div>
+          </div>
           <hr>
         </div>
       </div>
@@ -265,7 +271,7 @@ const updateEtudiantData = async () => {
             </span>
           </Message>
           <div v-if="isEditing === true" class="flex md:flex-row flex-col gap-4 flex-wrap">
-            <div class="text-sm font-normal text-red-500 w-full">Les champs marqués d'un * sont obligatoires</div>
+            <div class="text-sm font-normal text-danger w-full">Les champs marqués d'un * sont obligatoires</div>
             <div class="md:w-1/3 flex flex-col gap-2">
               <ValidatedInput
                   v-model="etudiant.mailPerso"

@@ -13,6 +13,7 @@ import ErrorView from './components/ErrorView.vue';
 import PhotoUser from './components/PhotoUser.vue';
 import ProfilEtudiant from "./components/Etudiant/ProfilEtudiant/ProfilEtudiant.vue";
 import ScolariteEtudiant from "./components/Etudiant/ProfilEtudiant/ScolariteEtudiant.vue";
+import EtudiantApplicationsDialog from "./components/Etudiant/EtudiantApplicationsDialog.vue";
 import MonProfil from "./components/Etudiant/MonProfil/MonProfil.vue";
 import ProfilPersonnel from "./components/Personnel/ProfilPersonnel.vue";
 import PermissionGuard from "./components/Permission/PermissionGuard.vue";
@@ -62,7 +63,6 @@ export {
   CardSkeleton,
   ApcCompetenceBadge,
   ApcAcBadge,
-  ApplicationBadge,
   ErrorView,
   PhotoUser,
   SimpleSkeleton,
@@ -83,6 +83,7 @@ export {
   PersonnelsListe,
   ProfilEtudiant,
   ScolariteEtudiant,
+  EtudiantApplicationsDialog,
   MonProfil,
   ProfilPersonnel,
   WidgetCard,

@@ -237,13 +237,13 @@ const exportSurvey = (survey: any) => {
         class="p-datatable-responsive ui-table-compact">
         <template #header>
           <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-            <h3 class="text-lg font-bold text-gray-800 dark:text-white">Registre des Enquêtes</h3>
+            <h3 class="text-lg font-bold text-color">Registre des Enquêtes</h3>
             <IconField>
               <InputIcon>
                 <i class="pi pi-search" />
               </InputIcon>
               <InputText v-model="filters['global'].value" placeholder="Rechercher un titre..."
-                class="py-2 px-3 rounded-lg shadow-sm border border-gray-300 dark:border-gray-700" />
+                class="py-2 px-3 rounded-lg shadow-sm border border-surface" />
             </IconField>
           </div>
         </template>
@@ -253,7 +253,7 @@ const exportSurvey = (survey: any) => {
         </template>
 
         <template #loading>
-          <div class="text-center py-8 text-gray-600 dark:text-gray-400">
+          <div class="text-center py-8 text-muted-color">
             Chargement des données... Veuillez patienter.
           </div>
         </template>
@@ -261,14 +261,14 @@ const exportSurvey = (survey: any) => {
         <!-- Titre -->
         <Column field="titre" :showFilterMenu="false" header="Titre" style="min-width: 15rem">
           <template #body="{ data }">
-            <span class="font-bold text-gray-900 dark:text-white block">{{ data.title }}</span>
+            <span class="font-bold text-color block">{{ data.title }}</span>
             <span v-if="data.description"
-              class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1 max-w-xs">{{ data.description
+              class="text-xs text-muted-color mt-0.5 line-clamp-1 max-w-xs">{{ data.description
               }}</span>
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Filtrer par titre"
-              class="w-full text-sm border border-gray-300 dark:border-gray-700 rounded p-1 px-2 focus:ring-1 focus:ring-primary-500" />
+              class="w-full text-sm border border-surface rounded p-1 px-2 focus:ring-1 focus:ring-primary" />
           </template>
         </Column>
 
@@ -279,12 +279,12 @@ const exportSurvey = (survey: any) => {
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <Select v-model="filterModel.value" @change="filterCallback()" :options="statuts" placeholder="Filtrer"
-              style="min-width: 10rem" :showClear="true" class="border border-gray-300 dark:border-gray-700">
+              style="min-width: 10rem" :showClear="true" class="border border-surface">
               <template #value="slotProps">
                 <div v-if="slotProps.value" class="flex items-center">
                   <Tag :value="slotProps.value.label" :severity="slotProps.value.severity" />
                 </div>
-                <span v-else class="text-gray-500 text-sm">Choisir</span>
+                <span v-else class="text-muted-color text-sm">Choisir</span>
               </template>
               <template #option="slotProps">
                 <Tag :value="slotProps.option.label" :severity="slotProps.option.severity" />
@@ -336,8 +336,8 @@ const exportSurvey = (survey: any) => {
         <!-- Date de création -->
         <Column header="Date de création" style="min-width: 10rem">
           <template #body="{ data }">
-            <div class="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300">
-              <CalendarIcon class="w-4 h-4 text-gray-450 shrink-0" />
+            <div class="flex items-center gap-1.5 text-sm text-color">
+              <CalendarIcon class="w-4 h-4 text-muted-color shrink-0" aria-hidden="true" />
               {{ data.createdAt ? formatDate(data.createdAt) : '-' }}
             </div>
           </template>
@@ -348,18 +348,18 @@ const exportSurvey = (survey: any) => {
           <template #body="{ data }">
             <div v-if="data.status === 'published' || data.published" class="space-y-1">
               <div class="flex justify-between text-xs font-semibold">
-                <span class="text-gray-500 dark:text-gray-400">
+                <span class="text-muted-color">
                   {{ getSurveyStats(data.uuid).responded }} / {{ getSurveyStats(data.uuid).invited }}
                 </span>
-                <span class="text-gray-900 dark:text-white">{{ getSurveyStats(data.uuid).rate }}%</span>
+                <span class="text-color">{{ getSurveyStats(data.uuid).rate }}%</span>
               </div>
-              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+              <div class="w-full bg-emphasis rounded-full h-1.5">
                 <div
                   class="bg-gradient-to-r from-primary-500 to-primary-600 h-1.5 rounded-full transition-all duration-500"
                   :style="{ width: `${getSurveyStats(data.uuid).rate}%` }"></div>
               </div>
             </div>
-            <span v-else class="text-xs text-gray-500 dark:text-gray-400 italic">
+            <span v-else class="text-xs text-muted-color italic">
               Non publié (Brouillon)
             </span>
           </template>
@@ -383,7 +383,7 @@ const exportSurvey = (survey: any) => {
         </Column>
 
         <template #footer>
-          <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <div class="text-sm font-semibold text-color">
             {{ nbQuestionnaires }} résultat(s).
           </div>
         </template>
