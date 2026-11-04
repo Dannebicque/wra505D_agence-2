@@ -570,7 +570,7 @@ généré.
 | E26.11 · en revue | interface transverse : composants et accessibilité, portail, badge d'application, année active, renommage `unitranet` en `intranet` dans le code, accès des étudiants aux applications (`9090dcd54`, couleurs par module à adapter) ; le nom affiché reste Unitranet, nos jetons de couleur remplacent leurs couleurs en dur | `b79a176b0`, `3a4887acf`, `dc0ee62d9`, `6acb7381b`, `4978af083`, `94e79a0e3`, `5d8af9973`, `9090dcd54` |
 | E26.12 · en revue | configuration des modules et ses pages | `cad0a0ab9`, `6a30dbb22` |
 | E26.13 · en revue | messagerie : bundle, widget, purge, tests ; pièces jointes hors de `public/`, cibles limitées au département ; les messages reçus rejoignent le fil de notifications de l'étudiant | `b2d2c639d`, `1d31012d9`, `ab39d0de6`, `d2beffc79`, `39c2fb9f6` |
-| E26.14 | tableau de bord enseignant : suivi d'avancement des enseignements (écran, dialogues), entrée « Pédagogie » ; l'API d'avancement est déjà reprise par la routine du 04/11 | front de `c46cebced`, `aa48a33a6`, `284c9204a`, `ae705e047`, `a1af79380` |
+| E26.14 · en revue | tableau de bord enseignant : suivi d'avancement des enseignements (écran, dialogues), entrée « Pédagogie » ; l'API d'avancement est déjà reprise par la routine du 04/11 | front de `c46cebced`, `aa48a33a6`, `284c9204a`, `ae705e047`, `a1af79380` |
 
 **Décisions de reprise**
 - Filtres (E26.1) : on adopte les `QueryParameter` du client pour nos filtres et on revient sur le
@@ -668,6 +668,11 @@ généré.
   - bandeau de contexte (année ou semestre de travail) des écrans du personnel repris ; les en-têtes
     de page déjà retirés en E26.9 ne reviennent pas ;
   - non repris : `.idea`, `reference.php`, montées de version de `composer.lock` sans besoin.
+- Tableau de bord enseignant (E26.14) : le front du client est repris tel quel (sections, dialogues
+  d'avancement, entrée « Pédagogie » qui remplace « Plans de cours » dans le menu du personnel,
+  l'ancienne adresse redirigeant vers la nouvelle). Seules ses deux couleurs en dur passent aux
+  jetons : le message d'erreur de saisie devient un `Message` PrimeVue, le texte vide prend
+  `text-muted-color`. Le droit d'accès reste porté par l'API d'avancement, déjà testée.
   Corrigé chez le client : les pièces jointes étaient rangées dans `public/` sous l'extension
   fournie, donc un PHP déposé pouvait s'exécuter ; elles vont dans `var/uploads/messages`, avec
   une liste de types MIME détectés, 10 Mo au plus, et sont servies en téléchargement. Les cibles
