@@ -7,6 +7,10 @@ const props = defineProps({
     menuItems: {
         type: Array,
         required: true
+    },
+    bottomItems: {
+        type: Array,
+        default: () => []
     }
 });
 
@@ -18,7 +22,12 @@ const libelleBouton = computed(() => (replie.value ? 'Déplier le menu' : 'Rédu
 
 <template>
     <nav id="menu-principal" class="layout-sidebar" aria-label="Menu principal">
-        <app-menu :model="menuItems"></app-menu>
+        <div class="layout-sidebar-top">
+            <app-menu :model="menuItems"></app-menu>
+        </div>
+        <div v-if="bottomItems && bottomItems.length > 0" class="layout-sidebar-bottom border-t border-surface pt-2">
+            <app-menu :model="bottomItems"></app-menu>
+        </div>
         <button
             type="button"
             class="layout-sidebar-toggle"

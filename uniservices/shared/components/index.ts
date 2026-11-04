@@ -47,6 +47,8 @@ import AddressAutocomplete from './components/Forms/AddressAutocomplete.vue';
 import ExampleValidatedForm from './components/Forms/ExampleValidatedForm.vue';
 import { validationRules, validateField } from './utils/formValidation';
 
+import ConfigOptionItem from './components/Configuration/ConfigOptionItem.vue';
+
 export {
   // Composants utilitaires
   PermissionGuard,
@@ -104,5 +106,6 @@ export {
   Card,
   EmptyState,
   QuickActionCard,
-  ActionButtonVertical
+  ActionButtonVertical,
+  ConfigOptionItem
 };

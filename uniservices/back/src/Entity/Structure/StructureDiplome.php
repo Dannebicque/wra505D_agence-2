@@ -73,7 +73,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['diplome:edt:read']],
         ),
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_DIPLOME', object)"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_DIPLOME', object)"),
+        new Patch(
+            normalizationContext: ['groups' => ['diplome:detail']],
+            denormalizationContext: ['groups' => ['diplome:write']],
+            security: "is_granted('CAN_EDIT_DIPLOME', object)",
+            securityPostDenormalize: "is_granted('CAN_EDIT_DIPLOME', object)"
+        ),
         new Delete(security: "is_granted('CAN_DELETE_DIPLOME', object)"),
     ],
     paginationEnabled: false,
@@ -391,6 +396,7 @@ class StructureDiplome implements TimestampableInterface
 
     public function configureOptions(OptionsResolver $resolver): void
     {
+        $resolver->setIgnoreUndefined(true);
         $resolver->setDefaults([
             'nb_jours_saisie_absence' => 15,
             'supp_absence' => true,
@@ -404,14 +410,14 @@ class StructureDiplome implements TimestampableInterface
             'saisie_cm_autorisee' => true,
         ]);
 
-        $resolver->setAllowedTypes('nb_jours_saisie_absence', 'int');
+        $resolver->setAllowedTypes('nb_jours_saisie_absence', ['int', 'float']);
         $resolver->setAllowedTypes('supp_absence', 'bool');
         $resolver->setAllowedTypes('anonymat', 'bool');
         $resolver->setAllowedTypes('commentaire_releve', 'bool');
         $resolver->setAllowedTypes('espace_perso_visible', 'bool');
-        $resolver->setAllowedTypes('semaine_visible', 'int');
+        $resolver->setAllowedTypes('semaine_visible', ['int', 'float']);
         $resolver->setAllowedTypes('certif_qualite', 'bool');
-        $resolver->setAllowedTypes('resp_qualite', 'int');
+        $resolver->setAllowedTypes('resp_qualite', ['int', 'string', 'null']);
         $resolver->setAllowedTypes('update_celcat', 'bool');
         $resolver->setAllowedTypes('saisie_cm_autorisee', 'bool');
     }
