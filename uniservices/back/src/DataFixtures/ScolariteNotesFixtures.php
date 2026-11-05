@@ -59,6 +59,12 @@ class ScolariteNotesFixtures extends Fixture implements OrderedFixtureInterface
             ['R1.06', 'Affiche', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 15, EtatEvaluationEnum::ETAT_PUBLIEE, null, EtudiantNote::STATUT_ABSENT_JUSTIFIE],
             ['R1.06', 'Charte graphique', 2.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 20, EtatEvaluationEnum::ETAT_PUBLIEE, 12.0, EtudiantNote::STATUT_PRESENT],
             ['SAE1.01', 'Soutenance', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 21, EtatEvaluationEnum::ETAT_COMPLETEE, 17.0, EtudiantNote::STATUT_PRESENT],
+            // Des notes jusqu'à la mi-octobre, pour que l'évolution du semestre ait une forme.
+            ['R1.03', 'Analyse de campagne', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_EXAM, 30, EtatEvaluationEnum::ETAT_PUBLIEE, 13.5, EtudiantNote::STATUT_PRESENT],
+            ['R1.05', 'Récit interactif', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 33, EtatEvaluationEnum::ETAT_PUBLIEE, 15.0, EtudiantNote::STATUT_PRESENT],
+            ['R1.06', 'Identité visuelle', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 38, EtatEvaluationEnum::ETAT_PUBLIEE, 9.5, EtudiantNote::STATUT_PRESENT],
+            ['R1.01', 'Oral de présentation', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_EXAM, 44, EtatEvaluationEnum::ETAT_PUBLIEE, 11.0, EtudiantNote::STATUT_PRESENT],
+            ['R1.11', 'Projet front', 2.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 47, EtatEvaluationEnum::ETAT_PUBLIEE, 13.0, EtudiantNote::STATUT_PRESENT],
             ['R1.02', 'Examen', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_EXAM, 60, EtatEvaluationEnum::ETAT_PLANIFIEE, null, null],
         ];
 
