@@ -13,7 +13,6 @@ import {
     libelleSemestre,
     periodeAbsence,
     poidsMatiere,
-    prochaineEvaluation,
     notesDuSemestre,
     resultatEvaluation,
     semestreParDefaut,
@@ -216,17 +215,6 @@ describe('statutUe', () => {
         expect(statutUe({moyenne: 10})).toEqual({texte: 'au-dessus de 10', ton: 'bonne'});
         expect(statutUe({moyenne: 9.99})).toEqual({texte: 'sous 10', ton: 'faible'});
         expect(statutUe({moyenne: null})).toEqual({texte: 'pas encore de note', ton: null});
-    });
-});
-
-describe('prochaineEvaluation', () => {
-    it('donne l\'évaluation pas encore publiée la plus proche, à partir d\'aujourd\'hui', () => {
-        expect(prochaineEvaluation(semestre(), new Date(2026, 10, 5))).toEqual({libelle: 'Partiel', date: '2026-12-01', matiere: 'R1.01'});
-        expect(prochaineEvaluation(semestre(), new Date(2026, 11, 1))).toEqual({libelle: 'Partiel', date: '2026-12-01', matiere: 'R1.01'});
-    });
-
-    it('ne donne rien quand tout est passé ou publié', () => {
-        expect(prochaineEvaluation(semestre(), new Date(2026, 11, 2))).toBeNull();
     });
 });
 

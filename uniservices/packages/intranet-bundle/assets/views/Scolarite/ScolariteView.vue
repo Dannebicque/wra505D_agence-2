@@ -77,9 +77,11 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
       </div>
       <div class="scolarite__squelette">
         <Skeleton height="8.5rem" border-radius="18px" class="scolarite__squelette-phare"/>
-        <Skeleton v-for="rang in 3" :key="rang" height="8.5rem" border-radius="14px"/>
-        <Skeleton height="16rem" border-radius="14px" class="scolarite__squelette-graphique"/>
-        <Skeleton height="16rem" border-radius="14px" class="scolarite__squelette-graphique"/>
+        <Skeleton v-for="rang in 2" :key="rang" height="8.5rem" border-radius="18px"/>
+      </div>
+      <div class="scolarite__squelette scolarite__squelette--graphiques">
+        <Skeleton height="22rem" border-radius="18px"/>
+        <Skeleton height="22rem" border-radius="18px"/>
       </div>
     </div>
 
@@ -205,12 +207,12 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
 
 .scolarite__squelette {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
 }
 
-.scolarite__squelette-graphique {
-  grid-column: span 2;
+.scolarite__squelette--graphiques {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
 }
 
 @media (max-width: 1199px) {
@@ -218,8 +220,11 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .scolarite__squelette-phare,
-  .scolarite__squelette-graphique {
+  .scolarite__squelette--graphiques {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scolarite__squelette-phare {
     grid-column: 1 / -1;
   }
 }

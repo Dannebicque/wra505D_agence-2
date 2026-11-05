@@ -235,24 +235,6 @@ const moyennePonderee = (valeurs) => {
     return poids > 0 ? arrondi(avecPoids.reduce((total, valeur) => total + valeur.valeur * valeur.poids, 0) / poids) : null;
 };
 
-const dateDuJour = (aujourdhui) => {
-    const deux = (nombre) => String(nombre).padStart(2, '0');
-    return `${aujourdhui.getFullYear()}-${deux(aujourdhui.getMonth() + 1)}-${deux(aujourdhui.getDate())}`;
-};
-
-/**
- * L'évaluation pas encore publiée la plus proche, à partir d'aujourd'hui.
- */
-export const prochaineEvaluation = (semestre, aujourdhui = new Date()) => {
-    const jour = dateDuJour(aujourdhui);
-    return enseignementsDuSemestre(semestre)
-        .flatMap(enseignement => enseignement.evaluations
-            .filter(evaluation => evaluation.etat !== 'publiee' && (evaluation.date ?? '') >= jour)
-            .map(evaluation => ({libelle: evaluation.libelle, date: evaluation.date, matiere: enseignement.code})))
-        .sort((a, b) => a.date.localeCompare(b.date))
-        .at(0) ?? null;
-};
-
 /**
  * La moyenne de l'UE après chaque date de note publiée, avec les notes de ce jour-là, par le calcul du serveur
  * (GradeAverageCalculator) : moyenne de chaque matière arrondie, pénalité retirée, puis moyenne

@@ -49,6 +49,12 @@ const semestreChoisi = computed(() => props.semestres.find(semestre => semestre.
   padding-left: 0.375rem;
 }
 
+.selecteur__liste :deep(.p-select-label) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .selecteur__valeur {
   display: inline-flex;
   align-items: center;

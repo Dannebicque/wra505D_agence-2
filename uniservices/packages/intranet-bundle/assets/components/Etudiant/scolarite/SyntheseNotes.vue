@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from 'vue';
-import {formatDate, formatNote, prochaineEvaluation, statutUe, syntheseSemestre} from '@/utils/scolarite.js';
+import {formatNote, statutUe, syntheseSemestre} from '@/utils/scolarite.js';
 import {useCompteur} from '@/composables/useCompteur.js';
 
 const props = defineProps({
@@ -9,7 +9,6 @@ const props = defineProps({
 const emit = defineEmits(['voir-absences']);
 
 const chiffres = computed(() => syntheseSemestre(props.semestre));
-const prochaine = computed(() => prochaineEvaluation(props.semestre));
 const sousDix = computed(() => props.semestre.ues.filter(ue => ue.moyenne !== null && ue.moyenne !== undefined && ue.moyenne < 10));
 const alerteAbsences = computed(() => chiffres.value.pointsPerdus > 0 || chiffres.value.pointsEnSuspens > 0);
 const uesValidees = useCompteur(() => chiffres.value.uesValidees);
@@ -44,17 +43,9 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
       <span class="tuile__valeur"><span aria-hidden="true">{{ Math.round(notesPubliees) }}</span><span class="sr-only">{{ chiffres.notesPubliees }}</span></span>
       <span class="tuile__detail">ce semestre</span>
     </li>
-    <li class="tuile apparition" style="--rang: 2; --tuile-fond: var(--p-seance-td-background); --tuile-couleur: var(--p-seance-td-color)">
-      <span class="tuile__entete"><span class="tuile__icone" aria-hidden="true"><i class="pi pi-calendar-clock"></i></span>Prochaine évaluation</span>
-      <template v-if="prochaine">
-        <span class="tuile__valeur tuile__valeur--texte"><time :datetime="prochaine.date">{{ formatDate(prochaine.date) }}</time></span>
-        <span class="tuile__detail">{{ prochaine.matiere }} · {{ prochaine.libelle }}</span>
-      </template>
-      <span v-else class="tuile__detail">Aucune prévue</span>
-    </li>
     <li
         class="tuile apparition"
-        :style="{'--rang': 3, '--tuile-fond': `var(--p-seance-${alerteAbsences ? 'evaluation' : 'autre'}-background)`, '--tuile-couleur': `var(--p-seance-${alerteAbsences ? 'evaluation' : 'autre'}-color)`}"
+        :style="{'--rang': 2, '--tuile-fond': `var(--p-seance-${alerteAbsences ? 'evaluation' : 'autre'}-background)`, '--tuile-couleur': `var(--p-seance-${alerteAbsences ? 'evaluation' : 'autre'}-color)`}"
     >
       <span class="tuile__entete"><span class="tuile__icone" aria-hidden="true"><i class="pi pi-calendar-times"></i></span>Perdus en absences</span>
       <span class="tuile__valeur"><span aria-hidden="true">{{ points(pointsPerdus) }}</span><span class="sr-only">{{ points(chiffres.pointsPerdus) }}</span></span>
@@ -74,7 +65,7 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 <style scoped>
 .synthese {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr));
   gap: 1.25rem;
   margin: 0;
   padding: 0;
@@ -125,10 +116,6 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
   line-height: 1.2;
   color: var(--p-text-color);
   font-variant-numeric: tabular-nums;
-}
-
-.tuile__valeur--texte {
-  font-size: 1.25rem;
 }
 
 .tuile__sur {
@@ -293,12 +280,6 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
   }
 
   .tuile--phare {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 479px) {
-  .synthese .tuile:last-child {
     grid-column: 1 / -1;
   }
 }

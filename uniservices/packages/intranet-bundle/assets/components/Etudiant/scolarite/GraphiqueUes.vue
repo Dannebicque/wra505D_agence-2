@@ -89,12 +89,12 @@ const valeurs = computed(() => ({
 }));
 
 const plugins = computed(() => [pluginZones('x', couleurs.value), pluginSeuil('x', couleurs.value.texte), valeurs.value]);
-const hauteur = computed(() => `${Math.max(16, props.ues.length * 4.5 + 3)}rem`);
+const hauteur = computed(() => `${props.ues.length * 3.5 + 3}rem`);
 </script>
 
 <template>
   <GraphiqueAccessible :rang="4" titre="Moyennes par UE" icone="pi pi-chart-bar" teinte="cm" :resume="resume">
-    <Chart type="bar" :data="donnees" :options="options" :plugins="plugins" :style="{height: hauteur}"/>
+    <Chart type="bar" :data="donnees" :options="options" :plugins="plugins" class="ues" :style="{minHeight: hauteur}"/>
     <template #tableau>
       <table>
         <caption class="sr-only">Moyennes par UE</caption>
@@ -123,6 +123,10 @@ const hauteur = computed(() => `${Math.max(16, props.ues.length * 4.5 + 3)}rem`)
 </template>
 
 <style scoped>
+.ues {
+  flex: 1;
+}
+
 .statut {
   display: inline-flex;
   align-items: center;
