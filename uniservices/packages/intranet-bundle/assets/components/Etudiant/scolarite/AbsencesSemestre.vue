@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from 'vue';
-import {absencesParEtat, creneauAbsence, formatNote} from '@/utils/scolarite.js';
+import {absencesParEtat, creneauAbsence, formatNote, syntheseSemestre} from '@/utils/scolarite.js';
+import GraphiqueAbsences from './GraphiqueAbsences.vue';
 
 const props = defineProps({
   semestre: {type: Object, required: true},
@@ -8,6 +9,8 @@ const props = defineProps({
 const emit = defineEmits(['justifier']);
 
 const groupes = computed(() => absencesParEtat(props.semestre.absences.liste));
+const chiffres = computed(() => syntheseSemestre(props.semestre));
+const points = (valeur) => `${formatNote(valeur)} point${valeur > 1 ? 's' : ''}`;
 
 // Ce qui demande une action d'abord : le rouge leur est réservé.
 const SECTIONS = [
@@ -27,6 +30,11 @@ const SECTIONS = [
       </template>
       <template v-else>Les absences ne pénalisent pas les moyennes de ce semestre.</template>
     </p>
+    <p v-if="semestre.penalite.active && (chiffres.pointsPerdus || chiffres.pointsEnSuspens)" class="bilan">
+      <template v-if="chiffres.pointsPerdus">Aujourd'hui, vos absences retirent <strong>{{ points(chiffres.pointsPerdus) }}</strong> à vos moyennes.</template>
+      <template v-else>Aujourd'hui, vos absences ne retirent aucun point à vos moyennes.</template>
+      <template v-if="chiffres.pointsEnSuspens"> Elles en retireront <strong>{{ points(chiffres.pointsEnSuspens) }}</strong>{{ chiffres.pointsPerdus ? ' de plus' : '' }} dès la première note des matières concernées.</template>
+    </p>
 
     <ul class="compteurs">
       <li :class="['compteur', { 'compteur--action': groupes.aJustifier.length + groupes.refusees.length }]">
@@ -41,6 +49,7 @@ const SECTIONS = [
     </ul>
 
     <p v-if="!semestre.absences.total" class="m-0!">Aucune absence ce semestre.</p>
+    <GraphiqueAbsences v-else :absences="semestre.absences.liste"/>
 
     <template v-for="section in SECTIONS" :key="section.cle">
       <section v-if="groupes[section.cle].length" class="section" :aria-labelledby="`absences-${section.cle}`">
@@ -79,6 +88,10 @@ const SECTIONS = [
 .regle {
   margin: 0;
   color: var(--p-text-muted-color);
+}
+
+.bilan {
+  margin: -0.75rem 0 0;
 }
 
 .compteurs {

@@ -1,16 +1,19 @@
 import {describe, expect, it} from 'vitest';
 import {
     absencesParEtat,
+    absencesParMatiere,
     creneauAbsence,
     dateHeureLocale,
     detailPenalite,
     erreurPiece,
+    evolutionUe,
     formatDate,
     formatNote,
     justificationAbsence,
     libelleSemestre,
     periodeAbsence,
-    resumeNotes,
+    poidsMatiere,
+    prochaineEvaluation,
     notesDuSemestre,
     resultatEvaluation,
     semestreParDefaut,
@@ -203,17 +206,68 @@ describe('statutUe', () => {
     });
 });
 
-describe('resumeNotes', () => {
-    it('résume les UE au-dessus de 10, nomme celles en dessous, et dit ce que coûtent les absences', () => {
-        expect(resumeNotes(semestre())).toEqual([
-            '1 UE sur 2 au-dessus de 10.',
-            'Sous 10 : UE 1.2.',
-            'Les absences non justifiées vous retirent 0,5 point.',
+describe('prochaineEvaluation', () => {
+    it('donne l\'évaluation pas encore publiée la plus proche, à partir d\'aujourd\'hui', () => {
+        expect(prochaineEvaluation(semestre(), new Date(2026, 10, 5))).toEqual({libelle: 'Partiel', date: '2026-12-01', matiere: 'R1.01'});
+        expect(prochaineEvaluation(semestre(), new Date(2026, 11, 1))).toEqual({libelle: 'Partiel', date: '2026-12-01', matiere: 'R1.01'});
+    });
+
+    it('ne donne rien quand tout est passé ou publié', () => {
+        expect(prochaineEvaluation(semestre(), new Date(2026, 11, 2))).toBeNull();
+    });
+});
+
+describe('evolutionUe', () => {
+    const ue = {
+        enseignements: [
+            {
+                code: 'R1.01', coefficient: 1, penalite: 0.5,
+                evaluations: [
+                    evaluation('Écrit', '2026-09-20', null, {statut: 'absent_injustifie'}),
+                    evaluation('Quiz', '2026-09-25', null, {statut: 'absent_justifie'}),
+                    evaluation('Oral', '2026-10-12', 16, {coefficient: 2}),
+                    evaluation('Partiel', '2026-12-01', null, {etat: 'a_venir', statut: null}),
+                ],
+            },
+            {code: 'R1.10', coefficient: 2, penalite: 0, evaluations: [evaluation('TP', '2026-10-05', 8)]},
+            {code: 'R1.02', coefficient: 3, penalite: 1, evaluations: []},
+        ],
+    };
+
+    it('recalcule la moyenne de l\'UE à chaque date de note, comme le serveur', () => {
+        expect(evolutionUe(ue)).toEqual([
+            {date: '2026-09-20', moyenne: 0},
+            {date: '2026-10-05', moyenne: 5.33},
+            {date: '2026-10-12', moyenne: 8.72},
         ]);
     });
 
-    it('le dit simplement quand rien n\'est publié', () => {
-        expect(resumeNotes(semestre({ues: []}))).toEqual(['Aucune note publiée pour ce semestre.']);
+    it('ne trace rien sans note publiée', () => {
+        expect(evolutionUe({enseignements: [{code: 'R1.02', coefficient: 1, evaluations: [evaluation('Partiel', '2026-12-01', null, {etat: 'a_venir'})]}]})).toEqual([]);
+    });
+});
+
+describe('poidsMatiere', () => {
+    it('donne la part du coefficient de la matière dans son UE', () => {
+        const ue = {enseignements: [{coefficient: 3}, {coefficient: 1}, {coefficient: 2}]};
+        expect(ue.enseignements.map(enseignement => poidsMatiere(ue, enseignement))).toEqual([50, 17, 33]);
+        expect(poidsMatiere({enseignements: []}, {coefficient: 1})).toBe(0);
+    });
+});
+
+describe('absencesParMatiere', () => {
+    it('compte les absences de chaque matière par état, la plus touchée d\'abord', () => {
+        expect(absencesParMatiere([
+            {matiere: 'R1.02 Culture', justification: 'en_attente'},
+            {matiere: 'R1.10 Intégration', justification: 'aucune'},
+            {matiere: 'R1.10 Intégration', justification: 'refusee'},
+            {matiere: 'R1.10 Intégration', justification: 'validee'},
+            {matiere: '', justification: 'validee'},
+        ])).toEqual([
+            {matiere: 'R1.10 Intégration', aJustifier: 2, enAttente: 0, justifiees: 1},
+            {matiere: 'Cours', aJustifier: 0, enAttente: 0, justifiees: 1},
+            {matiere: 'R1.02 Culture', aJustifier: 0, enAttente: 1, justifiees: 0},
+        ]);
     });
 });
 

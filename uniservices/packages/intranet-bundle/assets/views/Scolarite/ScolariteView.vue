@@ -97,7 +97,7 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
         <TabPanels>
           <TabPanel value="notes">
             <Transition name="onglet" appear>
-              <NotesSemestre :key="semestre.id" :semestre="semestre"/>
+              <NotesSemestre :key="semestre.id" :semestre="semestre" @voir-absences="onglet = 'absences'"/>
             </Transition>
           </TabPanel>
           <TabPanel value="absences">

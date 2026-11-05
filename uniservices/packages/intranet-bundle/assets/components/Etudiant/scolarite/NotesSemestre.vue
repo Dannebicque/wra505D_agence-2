@@ -1,27 +1,37 @@
 <script setup>
 import {computed} from 'vue';
-import {detailPenalite, formatDate, formatNote, resultatEvaluation, resumeNotes, statutUe, tonEvaluation} from '@/utils/scolarite.js';
+import {detailPenalite, formatDate, formatNote, notesDuSemestre, poidsMatiere, resultatEvaluation, statutUe, tonEvaluation} from '@/utils/scolarite.js';
 import {tonNote} from '@/utils/accueil.js';
+import GraphiqueEvolution from './GraphiqueEvolution.vue';
+import GraphiqueUes from './GraphiqueUes.vue';
 import JaugeNote from './JaugeNote.vue';
 import PastilleNote from './PastilleNote.vue';
+import SyntheseNotes from './SyntheseNotes.vue';
 
 const props = defineProps({
   semestre: {type: Object, required: true},
 });
+const emit = defineEmits(['voir-absences']);
 
-const resume = computed(() => resumeNotes(props.semestre));
+const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
 </script>
 
 <template>
   <div class="notes">
-    <div class="resume">
-      <p v-for="phrase in resume" :key="phrase" class="resume__phrase">{{ phrase }}</p>
+    <p v-if="!aDesNotes" class="resume__phrase">Aucune note publiée pour ce semestre.</p>
+    <template v-else>
+      <SyntheseNotes :semestre="semestre" @voir-absences="emit('voir-absences')"/>
       <p class="resume__aide">
         Moyennes provisoires, calculées sur les notes publiées jusqu'à la sous-commission.
         Une UE se valide à 10.
       </p>
-    </div>
+      <div class="graphiques">
+        <GraphiqueUes :ues="semestre.ues"/>
+        <GraphiqueEvolution :ues="semestre.ues"/>
+      </div>
+    </template>
 
+    <h2 v-if="semestre.ues.length" class="detail__titre">Détail par UE</h2>
     <p v-if="!semestre.ues.length" class="m-0!">Aucune UE pour ce semestre.</p>
 
     <Accordion v-else multiple class="ues">
@@ -44,6 +54,10 @@ const resume = computed(() => resumeNotes(props.semestre));
                 <span class="matiere__nom">
                   <span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}
                   <span class="matiere__coef">coef. {{ formatNote(enseignement.coefficient) }}</span>
+                  <span class="matiere__poids">
+                    <span class="matiere__poids-barre" aria-hidden="true"><span :style="{width: `${poidsMatiere(ue, enseignement)}%`}"></span></span>
+                    {{ poidsMatiere(ue, enseignement) }} % de l'UE
+                  </span>
                 </span>
                 <PastilleNote :ton="tonNote(enseignement.moyennePenalisee)">
                   {{ enseignement.moyennePenalisee === null ? 'Pas de note' : formatNote(enseignement.moyennePenalisee) }}
@@ -75,12 +89,6 @@ const resume = computed(() => resumeNotes(props.semestre));
   gap: 1.25rem;
 }
 
-.resume {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
 .resume__phrase {
   margin: 0;
   font-size: 1.125rem;
@@ -88,9 +96,21 @@ const resume = computed(() => resumeNotes(props.semestre));
 }
 
 .resume__aide {
-  margin: 0.25rem 0 0;
+  margin: -0.5rem 0 0;
   font-size: 0.875rem;
   color: var(--p-text-muted-color);
+}
+
+.graphiques {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 1rem;
+}
+
+.detail__titre {
+  margin: 0.5rem 0 -0.5rem !important;
+  font-size: 1.0625rem !important;
+  font-weight: 600;
 }
 
 .ues {
@@ -191,6 +211,31 @@ const resume = computed(() => resumeNotes(props.semestre));
   color: var(--p-text-muted-color);
 }
 
+.matiere__poids {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-left: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--p-text-muted-color);
+}
+
+.matiere__poids-barre {
+  display: inline-block;
+  width: 3rem;
+  height: 0.375rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--p-content-hover-background);
+}
+
+.matiere__poids-barre > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--p-seance-cm-color);
+}
+
 .matiere__penalite {
   display: flex;
   align-items: center;
@@ -225,6 +270,13 @@ const resume = computed(() => resumeNotes(props.semestre));
 .evaluation__meta {
   font-size: 0.8125rem;
   color: var(--p-text-muted-color);
+}
+
+/* Les deux graphiques côte à côte demandent de la place : en dessous, ils s'empilent. */
+@media (max-width: 1199px) {
+  .graphiques {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Sur téléphone, la jauge passe sous le nom de l'UE. */
