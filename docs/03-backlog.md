@@ -680,6 +680,13 @@ généré.
   contenu s'affiche en texte, sans `v-html` ni `|raw`. Le marquage « tout lu » visait une colonne
   inexistante. Reste chez le client : le modèle d'e-mail garde des couleurs hexadécimales en ligne,
   les clients mail ne lisant pas nos variables CSS.
+- Reprise amont `264bac7b9..d58b90811` (routine du 05/11/2026) : droits d'initialisation des
+  évaluations repris tel quel. `CAN_EDIT_EVAL` est vérifié avant la désérialisation du PATCH et
+  n'est plus accordé qu'au personnel autorisé, aux intervenants prévus cette année tant que
+  l'évaluation n'est pas initialisée, et aux rôles de gestion du département actif de
+  l'évaluation ; `ROLE_ADMIN` perd ce droit, choix du client gardé. Test unitaire du voter ajouté.
+  Le dialogue des évaluations du tableau de bord enseignant prend le `Message` du client à la
+  place de notre texte vide. Cypress non rejoué : base locale arrêtée.
 
 ---
 
