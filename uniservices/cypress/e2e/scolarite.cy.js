@@ -22,26 +22,29 @@ describe('Notes et absences de l\'étudiant', () => {
         cy.contains('.tuile', 'UE à 10 ou plus').should('contain', '2').and('contain', 'sur 3');
         cy.contains('.tuile', 'Notes publiées');
         cy.contains('.tuile', 'Perdus en absences').should('contain', '1 pt dès la prochaine note');
-        cy.contains('.ue', 'UE 1.1 Comprendre').should('contain', '11,17').and('contain', 'au-dessus de 10');
-        cy.contains('.ue', 'UE 1.3 Exprimer').should('contain', '9,57').and('contain', 'sous 10');
+        cy.contains('.ue', 'UE 1.1 Comprendre').should('contain', '11,7').and('contain', 'au-dessus de 10');
+        cy.contains('.ue', 'UE 1.3 Exprimer').should('contain', '9,96').and('contain', 'sous 10');
+        cy.contains('.phare__alerte', 'Sous 10 : UE 1.3 Exprimer');
     });
 
     it('montre les moyennes et leur évolution en graphiques, chacun lisible en tableau', () => {
         cy.contains('section', 'Moyennes par UE').within(() => {
-            cy.get('[role="img"]').should('have.attr', 'aria-label').and('contain', 'UE 1.3 Exprimer : 9,57, sous 10');
+            cy.get('[role="img"]').should('have.attr', 'aria-label').and('contain', 'UE 1.3 Exprimer : 9,96, sous 10');
             cy.get('canvas').should('be.visible');
-            cy.contains('button', 'Voir en tableau').click();
-            cy.contains('tr', 'UE 1.2 Concevoir').should('contain', '13,63');
-            cy.contains('button', 'Voir le graphique').should('be.focused');
+            cy.contains('button', 'Tableau').click().should('have.attr', 'aria-pressed', 'true');
+            cy.contains('tr', 'UE 1.2 Concevoir').should('contain', '13,13').and('contain', 'au-dessus de 10');
+            cy.get('canvas').should('not.exist');
+            cy.contains('button', 'Graphique').click();
+            cy.get('canvas').should('be.visible');
         });
 
         // Le dernier point de chaque courbe est la moyenne affichée de l'UE.
         cy.contains('section', 'Évolution des moyennes').within(() => {
-            cy.get('[role="img"]').should('have.attr', 'aria-label').and('contain', 'à 11,17 le').and('contain', 'à 9,57 le');
-            cy.contains('[role="button"], button', 'UE 1.3 Exprimer').click();
-            cy.contains('button', 'Voir en tableau').click();
-            cy.get('thead th').should('have.length', 2).last().should('have.text', 'UE 1.3 Exprimer');
-            cy.get('tbody tr').last().should('contain', '9,57');
+            cy.get('[role="img"]').should('have.attr', 'aria-label').and('contain', 'à 11,7 le').and('contain', 'à 9,96 le');
+            cy.contains('button', 'UE 1.3 Exprimer').click();
+            cy.contains('button', 'Tableau').click();
+            cy.get('thead th').eq(1).should('have.text', 'UE 1.3 Exprimer');
+            cy.get('tbody tr').last().should('contain', '9,96').and('contain', 'R1.01 · Listening test');
         });
     });
 
@@ -70,13 +73,13 @@ describe('Notes et absences de l\'étudiant', () => {
         cy.contains('[role="tab"]', 'Absences').click();
         cy.location('search').should('contain', 'onglet=absences');
         cy.contains('retire 0,5 point à la moyenne de sa matière');
-        cy.contains('.bilan', 'Elles en retireront 1 point dès la première note des matières concernées.');
+        cy.contains('.bilan', 'Aujourd\'hui, vos absences retirent 1 point à vos moyennes.').and('contain', 'Elles en retireront 1 point de plus dès la première note des matières concernées.');
         cy.contains('section', 'Absences par matière').within(() => {
-            cy.get('[role="img"]').should('have.attr', 'aria-label').and('contain', 'R1.10 Intégration : 1 à justifier');
-            cy.contains('button', 'Voir en tableau').click();
-            cy.contains('tr', 'R1.03').find('td').last().should('have.text', '1');
+            cy.contains('.ligne', 'R1.10 Intégration').should('contain', '1 à justifier');
+            cy.contains('.ligne', 'R1.03').should('contain', '1 en attente').and('contain', '1 justifiée');
         });
-        cy.contains('.compteur', 'à justifier').should('contain', '1');
+        cy.contains('.compteur', 'à justifier').should('contain', '2');
+        cy.contains('section', 'Justificatif refusé').should('contain', 'R1.06').and('contain', 'Le certificat ne couvre pas la date du cours.');
         cy.contains('section', 'À justifier').should('contain', 'R1.10 Intégration');
         cy.contains('section', 'En attente de décision').should('contain', 'R1.02');
         cy.contains('section', 'Justifiées').should('contain', 'R1.03');
