@@ -32,7 +32,8 @@ const donnees = computed(() => ({
     backgroundColor: props.ues.map(ue => (valide(ue) ? couleurs.value.vert : couleurs.value.rouge)),
     borderRadius: 999,
     borderSkipped: false,
-    barPercentage: 0.62,
+    barPercentage: 0.5,
+    maxBarThickness: 20,
   }],
 }));
 
@@ -46,7 +47,7 @@ const options = computed(() => ({
       min: 0,
       max: 20,
       ticks: {stepSize: 5, color: couleurs.value.attenue, font: policeGraphique},
-      grid: {color: couleurs.value.grille, drawTicks: false},
+      grid: {display: false},
       border: {display: false},
     },
     y: {
@@ -94,11 +95,6 @@ const hauteur = computed(() => `${Math.max(16, props.ues.length * 4.5 + 3)}rem`)
 <template>
   <GraphiqueAccessible :rang="4" titre="Moyennes par UE" icone="pi pi-chart-bar" teinte="cm" :resume="resume">
     <Chart type="bar" :data="donnees" :options="options" :plugins="plugins" :style="{height: hauteur}"/>
-    <ul class="legende">
-      <li><span class="legende__seuil" aria-hidden="true"></span> Seuil de validation : 10</li>
-      <li><span class="legende__zone legende__zone--bonne" aria-hidden="true"></span> 10 ou plus</li>
-      <li><span class="legende__zone legende__zone--faible" aria-hidden="true"></span> Sous 10</li>
-    </ul>
     <template #tableau>
       <table>
         <caption class="sr-only">Moyennes par UE</caption>
@@ -127,43 +123,6 @@ const hauteur = computed(() => `${Math.max(16, props.ues.length * 4.5 + 3)}rem`)
 </template>
 
 <style scoped>
-.legende {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem 1.25rem;
-  margin: 0.75rem 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.8125rem;
-  color: var(--p-text-muted-color);
-}
-
-.legende li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.legende__seuil {
-  width: 0;
-  height: 0.875rem;
-  border-left: 2px dashed var(--p-text-color);
-}
-
-.legende__zone {
-  width: 0.875rem;
-  height: 0.875rem;
-  border-radius: 999px;
-}
-
-.legende__zone--bonne {
-  background: var(--p-seance-tp-color);
-}
-
-.legende__zone--faible {
-  background: var(--p-seance-evaluation-color);
-}
-
 .statut {
   display: inline-flex;
   align-items: center;

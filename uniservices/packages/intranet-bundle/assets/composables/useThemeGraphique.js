@@ -3,7 +3,6 @@ import {onBeforeUnmount, onMounted, ref} from 'vue';
 const JETONS = {
     texte: '--p-text-color',
     attenue: '--p-text-muted-color',
-    grille: '--p-content-border-color',
     fond: '--p-content-background',
     violet: '--p-seance-cm-color',
     rose: '--p-seance-sae-color',

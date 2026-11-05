@@ -81,13 +81,13 @@ const optionsGraphique = computed(() => ({
       min: 0,
       max: 20,
       ticks: {stepSize: 5, color: couleurs.value.attenue, font: policeGraphique},
-      grid: {color: couleurs.value.grille},
+      grid: {display: false},
       border: {display: false},
     },
     x: {
       ticks: {color: couleurs.value.attenue, font: policeGraphique, maxRotation: 0, autoSkipPadding: 12},
       grid: {display: false},
-      border: {color: couleurs.value.grille},
+      border: {display: false},
     },
   },
   plugins: {
