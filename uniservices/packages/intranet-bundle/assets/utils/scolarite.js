@@ -89,7 +89,12 @@ export const semestreParDefaut = (semestres, idDemande = null) => {
     return notes.at(-1) ?? actifs.at(-1) ?? semestres.at(-1) ?? null;
 };
 
-const enseignementsDuSemestre = (semestre) => semestre.ues.flatMap(ue => ue.enseignements.map(enseignement => ({...enseignement, ue: ue.libelle})));
+// Une matière compte dans plusieurs UE, avec les mêmes notes et la même pénalité : elle n'est
+// comptée qu'une fois, sous la première UE où elle apparaît.
+const enseignementsDuSemestre = (semestre) => [...new Map(semestre.ues
+    .flatMap(ue => ue.enseignements.map(enseignement => ({...enseignement, ue: ue.libelle})))
+    .reverse()
+    .map(enseignement => [enseignement.code, enseignement])).values()].reverse();
 
 /**
  * Évaluations publiées qui comptent dans la moyenne, de la plus ancienne à la plus récente, avec
@@ -249,7 +254,7 @@ export const prochaineEvaluation = (semestre, aujourdhui = new Date()) => {
 };
 
 /**
- * La moyenne de l'UE après chaque date de note publiée, par le calcul du serveur
+ * La moyenne de l'UE après chaque date de note publiée, avec les notes de ce jour-là, par le calcul du serveur
  * (GradeAverageCalculator) : moyenne de chaque matière arrondie, pénalité retirée, puis moyenne
  * des matières par coefficient. La pénalité d'aujourd'hui vaut pour toute la courbe : le dernier
  * point est la moyenne affichée, sans qu'une absence ne fasse plonger la courbe à sa date.
@@ -267,7 +272,10 @@ export const evolutionUe = (ue) => {
                 .map(evaluation => ({valeur: evaluation.statut === 'absent_injustifie' ? 0 : evaluation.note, poids: evaluation.coefficient ?? 1})));
             return moyenne === null ? null : {valeur: arrondi(Math.max(0, moyenne - (enseignement.penalite ?? 0))), poids: enseignement.coefficient};
         });
-        return {date, moyenne: moyennePonderee(matieres.filter(matiere => matiere !== null))};
+        const nouvelles = ue.enseignements.flatMap(enseignement => enseignement.evaluations
+            .filter(evaluation => compte(evaluation) && evaluation.date === date)
+            .map(evaluation => ({libelle: evaluation.libelle, matiere: enseignement.code})));
+        return {date, moyenne: moyennePonderee(matieres.filter(matiere => matiere !== null)), nouvelles};
     });
 };
 

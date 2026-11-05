@@ -176,6 +176,19 @@ describe('tonEvaluation', () => {
     });
 });
 
+describe('syntheseSemestre, matière commune à deux UE', () => {
+    it('compte une seule fois ses notes et sa pénalité', () => {
+        const anglais = {code: 'R1.01', libelle: 'Anglais', moyenne: 13, moyennePenalisee: 12.5, penalite: 0.5, absencesPenalisantes: 1, absencesEnAttente: 0, evaluations: [evaluation('Oral', '2026-10-12', 16)]};
+        const chiffres = syntheseSemestre(semestre({ues: [
+            {libelle: 'UE 1.1', moyenne: 12.5, enseignements: [anglais]},
+            {libelle: 'UE 1.3', moyenne: 12.5, enseignements: [anglais]},
+        ]}));
+        expect(chiffres.notesPubliees).toBe(1);
+        expect(chiffres.pointsPerdus).toBe(0.5);
+        expect(chiffres.absencesPenalisantes).toBe(1);
+    });
+});
+
 describe('syntheseSemestre, pénalité d\'une matière sans note', () => {
     it('la met en suspens : elle ne retire rien avant la première note', () => {
         const sansNote = semestre();
@@ -236,9 +249,9 @@ describe('evolutionUe', () => {
 
     it('recalcule la moyenne de l\'UE à chaque date de note, comme le serveur', () => {
         expect(evolutionUe(ue)).toEqual([
-            {date: '2026-09-20', moyenne: 0},
-            {date: '2026-10-05', moyenne: 5.33},
-            {date: '2026-10-12', moyenne: 8.72},
+            {date: '2026-09-20', moyenne: 0, nouvelles: [{libelle: 'Écrit', matiere: 'R1.01'}]},
+            {date: '2026-10-05', moyenne: 5.33, nouvelles: [{libelle: 'TP', matiere: 'R1.10'}]},
+            {date: '2026-10-12', moyenne: 8.72, nouvelles: [{libelle: 'Oral', matiere: 'R1.01'}]},
         ]);
     });
 
