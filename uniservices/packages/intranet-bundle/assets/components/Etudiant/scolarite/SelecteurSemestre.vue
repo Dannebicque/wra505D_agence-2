@@ -26,7 +26,10 @@ const semestreChoisi = computed(() => props.semestres.find(semestre => semestre.
         class="selecteur__liste"
     >
       <template #value>
-        <span v-if="semestreChoisi">{{ semestreChoisi.libelle }}, {{ semestreChoisi.anneeUniversitaire.replace('/', '-') }}</span>
+        <span v-if="semestreChoisi" class="selecteur__valeur">
+          <i class="pi pi-calendar" aria-hidden="true"></i>
+          {{ semestreChoisi.libelle }}, {{ semestreChoisi.anneeUniversitaire.replace('/', '-') }}
+        </span>
       </template>
       <template #option="{option}">
         <span>{{ option.libelle }}<span v-if="option.actif" class="selecteur__en-cours"> (année en cours)</span></span>
@@ -36,10 +39,25 @@ const semestreChoisi = computed(() => props.semestres.find(semestre => semestre.
 </template>
 
 <style scoped>
+/* Une pilule, comme les commandes de l'agenda ; la bordure garde 3:1 sur la carte. */
 .selecteur__liste {
-  min-width: 14rem;
+  min-width: 13rem;
   min-height: 44px;
   align-items: center;
+  border-color: var(--p-ui-border-color);
+  border-radius: 999px;
+  padding-left: 0.375rem;
+}
+
+.selecteur__valeur {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.selecteur__valeur .pi {
+  color: var(--p-primary-color);
 }
 
 .selecteur__en-cours {

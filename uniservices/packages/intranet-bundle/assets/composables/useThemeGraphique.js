@@ -10,6 +10,8 @@ const JETONS = {
     vert: '--p-seance-tp-color',
     ocre: '--p-seance-td-color',
     rouge: '--p-seance-evaluation-color',
+    vertFond: '--p-seance-tp-background',
+    rougeFond: '--p-seance-evaluation-background',
     gris: '--p-seance-autre-color',
 };
 
@@ -74,21 +76,66 @@ export const pluginSeuil = (axe, couleur) => ({
     },
 });
 
+export const policeGraphique = {family: 'Roboto, sans-serif', size: 14};
+
 /**
- * Des hachures, pour une part qui doit se distinguer sans la couleur (la pénalité d'absence).
+ * Deux zones de part et d'autre du seuil : un voile rouge sous 10, un voile vert au-dessus. Très
+ * légers, ils situent une valeur d'un coup d'œil sans gêner la lecture des barres et des courbes.
  */
-export const hachures = (couleur) => {
-    const motif = document.createElement('canvas');
-    motif.width = 8;
-    motif.height = 8;
-    const ctx = motif.getContext('2d');
-    ctx.strokeStyle = couleur;
-    ctx.lineWidth = 2;
+export const pluginZones = (axe, couleurs) => ({
+    id: 'zones',
+    beforeDatasetsDraw(chart) {
+        const echelle = chart.scales[axe];
+        if (!echelle) {
+            return;
+        }
+        const {ctx, chartArea} = chart;
+        const seuil = echelle.getPixelForValue(10);
+        const rayon = 10;
+        const zone = (couleur, x, y, largeur, hauteur, rayons) => {
+            ctx.fillStyle = couleur;
+            ctx.beginPath();
+            ctx.roundRect(x, y, largeur, hauteur, rayons);
+            ctx.fill();
+        };
+        ctx.save();
+        ctx.globalAlpha = 0.08;
+        if (axe === 'x') {
+            zone(couleurs.rouge, chartArea.left, chartArea.top, seuil - chartArea.left, chartArea.height, [rayon, 0, 0, rayon]);
+            zone(couleurs.vert, seuil, chartArea.top, chartArea.right - seuil, chartArea.height, [0, rayon, rayon, 0]);
+        } else {
+            zone(couleurs.vert, chartArea.left, chartArea.top, chartArea.width, seuil - chartArea.top, [rayon, rayon, 0, 0]);
+            zone(couleurs.rouge, chartArea.left, seuil, chartArea.width, chartArea.bottom - seuil, [0, 0, rayon, rayon]);
+        }
+        ctx.restore();
+    },
+});
+
+/**
+ * Une valeur écrite dans une pastille teintée, comme les notes de l'accueil : texte foncé sur fond
+ * pâle du même type, 5,65:1 au moins.
+ */
+export const dessinerPastille = (ctx, texte, x, y, fond, couleur) => {
+    ctx.font = '600 12px Roboto, sans-serif';
+    const largeur = ctx.measureText(texte).width + 14;
+    ctx.fillStyle = fond;
     ctx.beginPath();
-    ctx.moveTo(0, 8);
-    ctx.lineTo(8, 0);
-    ctx.stroke();
-    return ctx.createPattern(motif, 'repeat');
+    ctx.roundRect(x, y - 11, largeur, 22, 11);
+    ctx.fill();
+    ctx.fillStyle = couleur;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    ctx.fillText(texte, x + 7, y + 0.5);
 };
 
-export const policeGraphique = {family: 'Roboto, sans-serif', size: 13};
+/**
+ * L'entrée d'un graphique : les éléments arrivent l'un après l'autre, en partant de zéro. Rien du
+ * tout si l'utilisateur a demandé à réduire les animations.
+ */
+export const animationEntree = (actif, ecart = 70) => (actif
+    ? {
+        duration: 700,
+        easing: 'easeOutQuart',
+        delay: (contexte) => (contexte.type === 'data' && contexte.mode === 'default' ? contexte.dataIndex * ecart + contexte.datasetIndex * 120 : 0),
+    }
+    : false);

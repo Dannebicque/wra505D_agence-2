@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from 'vue';
 import {absencesParEtat, creneauAbsence, formatNote, syntheseSemestre} from '@/utils/scolarite.js';
-import GraphiqueAbsences from './GraphiqueAbsences.vue';
+import AbsencesParMatiere from './AbsencesParMatiere.vue';
 
 const props = defineProps({
   semestre: {type: Object, required: true},
@@ -49,7 +49,7 @@ const SECTIONS = [
     </ul>
 
     <p v-if="!semestre.absences.total" class="m-0!">Aucune absence ce semestre.</p>
-    <GraphiqueAbsences v-else :absences="semestre.absences.liste"/>
+    <AbsencesParMatiere v-else :absences="semestre.absences.liste"/>
 
     <template v-for="section in SECTIONS" :key="section.cle">
       <section v-if="groupes[section.cle].length" class="section" :aria-labelledby="`absences-${section.cle}`">
@@ -79,10 +79,15 @@ const SECTIONS = [
 </template>
 
 <style scoped>
+/* Une seule carte, comme un bloc de l'accueil : la règle, les compteurs, le graphique, les listes. */
 .absences {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: var(--p-content-background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px -4px rgb(0 0 0 / 0.06);
 }
 
 .regle {

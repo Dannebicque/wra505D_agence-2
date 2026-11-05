@@ -1,8 +1,9 @@
 <script setup>
 import {computed, ref} from 'vue';
 import {evolutionUe, formatDate, formatNote} from '@/utils/scolarite.js';
-import {pluginSeuil, policeGraphique, useThemeGraphique} from '@/composables/useThemeGraphique.js';
+import {animationEntree, pluginSeuil, pluginZones, policeGraphique, useThemeGraphique} from '@/composables/useThemeGraphique.js';
 import GraphiqueAccessible from './GraphiqueAccessible.vue';
+import PastilleNote from './PastilleNote.vue';
 
 const props = defineProps({
   ues: {type: Array, required: true},
@@ -32,6 +33,15 @@ const options = computed(() => [
 ]);
 const dates = computed(() => [...new Set(affichees.value.flatMap(courbe => courbe.points.map(point => point.date)))].sort());
 const jourMois = (date) => formatDate(date).slice(0, 5);
+const dateLongue = (date) => new Date(date).toLocaleDateString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC'});
+
+// Les notes publiées à cette date dans les UE affichées ; une matière commune à deux UE ne compte
+// qu'une fois.
+const nouvellesDu = (date) => [...new Set(affichees.value.flatMap(courbe => (courbe.points.find(point => point.date === date)?.nouvelles ?? [])
+  .map(note => `${note.matiere} · ${note.libelle}`)))];
+
+const moyenneDu = (courbe, date) => courbe.points.find(point => point.date === date)?.moyenne ?? null;
+const dateCourte = (date) => new Date(date).toLocaleDateString('fr-FR', {weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'});
 
 const resume = computed(() => affichees.value
   .map(courbe => {
@@ -63,8 +73,9 @@ const donnees = computed(() => ({
 
 const optionsGraphique = computed(() => ({
   maintainAspectRatio: false,
-  animation: animation ? {duration: 400} : false,
-  interaction: {mode: 'nearest', intersect: false},
+  animation: animationEntree(animation),
+  layout: {padding: {right: 40}},
+  interaction: {mode: 'index', intersect: false},
   scales: {
     y: {
       min: 0,
@@ -84,19 +95,51 @@ const optionsGraphique = computed(() => ({
       display: affichees.value.length > 1,
       position: 'bottom',
       onClick: null,
-      labels: {usePointStyle: true, pointStyleWidth: 12, color: couleurs.value.texte, font: policeGraphique, padding: 16},
+      labels: {usePointStyle: true, boxWidth: 9, boxHeight: 9, color: couleurs.value.texte, font: policeGraphique, padding: 18},
     },
+    // La bulle d'une date dit quelles notes viennent d'être publiées : on comprend pourquoi la
+    // courbe monte ou descend.
     tooltip: {
-      callbacks: {label: (element) => `${element.dataset.label} : ${formatNote(element.raw)}`},
+      filter: (element) => element.raw !== null,
+      padding: 10,
+      callbacks: {
+        title: (elements) => dateLongue(dates.value[elements[0].dataIndex]),
+        label: (element) => `${element.dataset.label} : ${formatNote(element.raw)}`,
+        footer: (elements) => {
+          const nouvelles = nouvellesDu(dates.value[elements[0].dataIndex]);
+          return nouvelles.length ? ['Nouvelle note :', ...nouvelles] : [];
+        },
+      },
     },
   },
 }));
 
-const plugins = computed(() => [pluginSeuil('y', couleurs.value.texte)]);
+// La dernière moyenne écrite au bout de chaque courbe : la valeur d'aujourd'hui se lit sans survoler.
+const valeursFinales = computed(() => ({
+  id: 'valeursFinales',
+  afterDatasetsDraw(chart) {
+    const {ctx} = chart;
+    ctx.save();
+    ctx.font = '600 12px Roboto, sans-serif';
+    ctx.textBaseline = 'middle';
+    chart.data.datasets.forEach((dataset, index) => {
+      const dernier = dataset.data.findLastIndex(valeur => valeur !== null);
+      const point = chart.getDatasetMeta(index).data[dernier];
+      if (!point) {
+        return;
+      }
+      ctx.fillStyle = dataset.borderColor;
+      ctx.fillText(formatNote(dataset.data[dernier]), point.x + 9, point.y);
+    });
+    ctx.restore();
+  },
+}));
+
+const plugins = computed(() => [pluginZones('y', couleurs.value), pluginSeuil('y', couleurs.value.texte), valeursFinales.value]);
 </script>
 
 <template>
-  <GraphiqueAccessible v-if="courbes.length" titre="Évolution des moyennes" :resume="resume">
+  <GraphiqueAccessible v-if="courbes.length" :rang="5" titre="Évolution des moyennes" icone="pi pi-chart-line" teinte="sae" :resume="resume">
     <template #filtres>
       <SelectButton
           v-if="courbes.length > 1"
@@ -110,18 +153,28 @@ const plugins = computed(() => [pluginSeuil('y', couleurs.value.texte)]);
       />
     </template>
     <Chart type="line" :data="donnees" :options="optionsGraphique" :plugins="plugins" class="evolution"/>
-    <p class="aide">Moyenne de l'UE après chaque note publiée, pénalités d'absence comprises. Pointillé : seuil de validation, 10.</p>
+    <p class="aide">Moyenne de l'UE après chaque note publiée. Pointillé : seuil de validation, 10. Chaque point montre la note qui l'a fait bouger, au survol ou dans le tableau.</p>
     <template #tableau>
       <table>
         <caption class="sr-only">Évolution des moyennes</caption>
         <thead>
-          <tr><th scope="col">Date</th><th v-for="courbe in affichees" :key="courbe.ue.libelle" scope="col" class="nombre">{{ courbe.ue.libelle }}</th></tr>
+          <tr>
+            <th scope="col">Date</th>
+            <th v-for="courbe in affichees" :key="courbe.ue.libelle" scope="col" class="nombre">{{ courbe.ue.libelle }}</th>
+            <th scope="col">Nouvelle note</th>
+          </tr>
         </thead>
         <tbody>
           <tr v-for="date in dates" :key="date">
-            <th scope="row"><time :datetime="date">{{ formatDate(date) }}</time></th>
+            <th scope="row"><time :datetime="date" class="date">{{ dateCourte(date) }}</time></th>
             <td v-for="courbe in affichees" :key="courbe.ue.libelle" class="nombre">
-              {{ formatNote(courbe.points.find(point => point.date === date)?.moyenne) }}
+              <PastilleNote v-if="moyenneDu(courbe, date) !== null" :ton="moyenneDu(courbe, date) >= 10 ? 'bonne' : 'faible'" petite>{{ formatNote(moyenneDu(courbe, date)) }}</PastilleNote>
+              <span v-else class="vide">–</span>
+            </td>
+            <td>
+              <span class="nouvelles">
+                <span v-for="note in nouvellesDu(date)" :key="note" class="nouvelle">{{ note }}</span>
+              </span>
             </td>
           </tr>
         </tbody>
@@ -132,20 +185,68 @@ const plugins = computed(() => [pluginSeuil('y', couleurs.value.texte)]);
 
 <style scoped>
 .evolution {
-  height: 18rem;
+  height: 20rem;
 }
 
+/* Les UE en pilule, comme Jour et Semaine dans l'agenda. */
 .filtre {
   flex-wrap: wrap;
+  align-self: flex-start;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 24px;
+  background: var(--p-content-hover-background);
+}
+
+.filtre :deep(.p-togglebutton),
+.filtre :deep(.p-togglebutton-content) {
+  border: none;
+  border-radius: 999px !important;
 }
 
 .filtre :deep(.p-togglebutton) {
   min-height: 44px;
+  padding: 0.25rem;
+  background: transparent;
+}
+
+.filtre :deep(.p-togglebutton-checked .p-togglebutton-content) {
+  color: var(--p-primary-color);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+}
+
+.filtre :deep(.p-togglebutton:focus-visible) {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+.date {
+  white-space: nowrap;
+}
+
+.vide {
+  color: var(--p-text-muted-color);
+}
+
+.nouvelles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.nouvelle {
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  background: var(--p-seance-sae-background);
+  color: var(--p-seance-sae-color);
 }
 
 .aide {
-  margin: 0.5rem 0 0;
-  font-size: 0.8125rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
 }
 </style>

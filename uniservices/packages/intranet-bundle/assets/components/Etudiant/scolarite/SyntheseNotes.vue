@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from 'vue';
-import {formatDate, formatNote, prochaineEvaluation, syntheseSemestre} from '@/utils/scolarite.js';
+import {formatDate, formatNote, prochaineEvaluation, statutUe, syntheseSemestre} from '@/utils/scolarite.js';
+import {useCompteur} from '@/composables/useCompteur.js';
 
 const props = defineProps({
   semestre: {type: Object, required: true},
@@ -10,54 +11,62 @@ const emit = defineEmits(['voir-absences']);
 const chiffres = computed(() => syntheseSemestre(props.semestre));
 const prochaine = computed(() => prochaineEvaluation(props.semestre));
 const sousDix = computed(() => props.semestre.ues.filter(ue => ue.moyenne !== null && ue.moyenne !== undefined && ue.moyenne < 10));
+const alerteAbsences = computed(() => chiffres.value.pointsPerdus > 0 || chiffres.value.pointsEnSuspens > 0);
+const uesValidees = useCompteur(() => chiffres.value.uesValidees);
+const notesPubliees = useCompteur(() => chiffres.value.notesPubliees);
+const pointsPerdus = useCompteur(() => chiffres.value.pointsPerdus);
 const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 </script>
 
 <template>
   <ul class="synthese">
     <!-- La donnée qui décide du semestre, seule sur le violet de l'IUT, comme la carte de l'accueil. -->
-    <li class="tuile tuile--phare">
+    <li class="tuile tuile--phare apparition" style="--rang: 0">
       <span class="phare__cercle phare__cercle--accent" aria-hidden="true"></span>
       <span class="phare__cercle phare__cercle--clair" aria-hidden="true"></span>
       <span class="phare__cercle phare__cercle--sombre" aria-hidden="true"></span>
       <span class="tuile__libelle">UE à 10 ou plus</span>
-      <span class="tuile__valeur">{{ chiffres.uesValidees }}<span class="tuile__sur"> sur {{ chiffres.uesNotees }}</span></span>
+      <span class="tuile__valeur">
+        <span aria-hidden="true">{{ Math.round(uesValidees) }}</span><span class="sr-only">{{ chiffres.uesValidees }}</span><span class="tuile__sur"> sur {{ chiffres.uesNotees }}</span>
+      </span>
+      <!-- Une case par UE : pleine à 10 ou plus, cerclée de jaune en dessous, vide sans note. -->
+      <span class="phare__ues" aria-hidden="true">
+        <span v-for="ue in semestre.ues" :key="ue.libelle" :class="['phare__ue', `phare__ue--${statutUe(ue).ton ?? 'vide'}`]"></span>
+      </span>
       <span class="tuile__detail">{{ chiffres.totalUes - chiffres.uesNotees ? `${chiffres.totalUes - chiffres.uesNotees} UE sans note` : 'Toutes les UE sont notées' }}</span>
       <span v-if="sousDix.length" class="phare__alerte">
         <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
         Sous 10 : {{ sousDix.map(ue => ue.libelle).join(', ') }}
       </span>
     </li>
-    <li class="tuile">
-      <span class="tuile__libelle">Notes publiées</span>
-      <span class="tuile__valeur">{{ chiffres.notesPubliees }}</span>
+    <li class="tuile apparition" style="--rang: 1; --tuile-fond: var(--p-seance-cm-background); --tuile-couleur: var(--p-seance-cm-color)">
+      <span class="tuile__entete"><span class="tuile__icone" aria-hidden="true"><i class="pi pi-file-check"></i></span>Notes publiées</span>
+      <span class="tuile__valeur"><span aria-hidden="true">{{ Math.round(notesPubliees) }}</span><span class="sr-only">{{ chiffres.notesPubliees }}</span></span>
       <span class="tuile__detail">ce semestre</span>
     </li>
-    <li class="tuile">
-      <span class="tuile__libelle">Prochaine évaluation</span>
+    <li class="tuile apparition" style="--rang: 2; --tuile-fond: var(--p-seance-td-background); --tuile-couleur: var(--p-seance-td-color)">
+      <span class="tuile__entete"><span class="tuile__icone" aria-hidden="true"><i class="pi pi-calendar-clock"></i></span>Prochaine évaluation</span>
       <template v-if="prochaine">
         <span class="tuile__valeur tuile__valeur--texte"><time :datetime="prochaine.date">{{ formatDate(prochaine.date) }}</time></span>
         <span class="tuile__detail">{{ prochaine.matiere }} · {{ prochaine.libelle }}</span>
       </template>
       <span v-else class="tuile__detail">Aucune prévue</span>
     </li>
-    <li :class="['tuile', chiffres.pointsPerdus || chiffres.pointsEnSuspens ? 'tuile--alerte' : '']">
-      <span class="tuile__libelle">Perdus en absences</span>
-      <span class="tuile__valeur">{{ points(chiffres.pointsPerdus) }}</span>
+    <li
+        class="tuile apparition"
+        :style="{'--rang': 3, '--tuile-fond': `var(--p-seance-${alerteAbsences ? 'evaluation' : 'autre'}-background)`, '--tuile-couleur': `var(--p-seance-${alerteAbsences ? 'evaluation' : 'autre'}-color)`}"
+    >
+      <span class="tuile__entete"><span class="tuile__icone" aria-hidden="true"><i class="pi pi-calendar-times"></i></span>Perdus en absences</span>
+      <span class="tuile__valeur"><span aria-hidden="true">{{ points(pointsPerdus) }}</span><span class="sr-only">{{ points(chiffres.pointsPerdus) }}</span></span>
       <span class="tuile__detail">
         <template v-if="chiffres.pointsEnSuspens">{{ points(chiffres.pointsEnSuspens) }} dès la prochaine note</template>
         <template v-else>aucune pénalité en attente</template>
       </span>
-      <Button
-          v-if="chiffres.absencesPenalisantes || chiffres.absencesEnAttente"
-          label="Voir les absences"
-          icon="pi pi-arrow-right"
-          icon-pos="right"
-          text
-          size="small"
-          class="tuile__lien min-h-[44px]!"
-          @click="emit('voir-absences')"
-      />
+      <!-- Le lien des blocs de l'accueil, mais un bouton : il ouvre l'onglet voisin, sans quitter la page. -->
+      <button v-if="chiffres.absencesPenalisantes || chiffres.absencesEnAttente" type="button" class="tuile__lien" @click="emit('voir-absences')">
+        Voir les absences
+        <span class="tuile__fleche" aria-hidden="true"><i class="pi pi-arrow-right"></i></span>
+      </button>
     </li>
   </ul>
 </template>
@@ -66,33 +75,48 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 .synthese {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 1.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* Les blocs de l'accueil : carte blanche, ombre douce, pastille d'icône teintée au type de donnée. */
 .tuile {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
-  padding: 0.875rem 1rem;
-  border: 1px solid var(--p-content-border-color);
-  border-left: 4px solid var(--p-seance-autre-color);
-  border-radius: 14px;
+  gap: 0.25rem;
+  padding: 1.25rem 1.375rem;
+  border-radius: 18px;
+  background: var(--p-content-background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px -4px rgb(0 0 0 / 0.06);
 }
 
-.tuile--bonne {
-  border-left-color: var(--p-seance-tp-color);
+.tuile__entete {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.375rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--p-text-color);
 }
 
-.tuile--alerte {
-  border-left-color: var(--p-seance-evaluation-color);
+.tuile__icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  background: var(--tuile-fond);
+  color: var(--tuile-couleur);
 }
 
 .tuile__libelle {
-  font-size: 0.8125rem;
-  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
 }
 
 .tuile__valeur {
@@ -119,7 +143,7 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 }
 
 .tuile__detail,
-.tuile__libelle {
+.tuile__entete {
   overflow-wrap: anywhere;
 }
 
@@ -130,8 +154,7 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
   justify-content: center;
   padding: 1.125rem 1.375rem;
   overflow: hidden;
-  border: none;
-  border-radius: 18px;
+  box-shadow: none;
   background: var(--p-primary-500);
   color: #FFFFFF;
 }
@@ -182,6 +205,29 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
   background: var(--p-primary-600);
 }
 
+.phare__ues {
+  display: flex;
+  gap: 0.375rem;
+  margin: 0.375rem 0 0.25rem;
+}
+
+/* Chaque case garde 3:1 au moins sur le violet : primary-200 plein, ou un contour jaune. */
+.phare__ue {
+  width: 2rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  border: 2px solid var(--p-primary-300);
+}
+
+.phare__ue--bonne {
+  border-color: var(--p-primary-200);
+  background: var(--p-primary-200);
+}
+
+.phare__ue--faible {
+  border-color: var(--accent-color);
+}
+
 /* L'alerte en capsule jaune, texte violet dessus : 5,29:1. */
 .phare__alerte {
   display: inline-flex;
@@ -198,8 +244,46 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 }
 
 .tuile__lien {
-  align-self: flex-start;
-  margin: 0.25rem 0 0 -0.75rem;
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 0 0.25rem 0 0.75rem;
+  border: none;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--p-primary-color);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.tuile__lien:hover {
+  background: var(--p-content-hover-background);
+}
+
+.tuile__lien:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}
+
+.tuile__fleche {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: var(--p-content-hover-background);
+  transition: transform 150ms ease;
+}
+
+.tuile__lien:hover .tuile__fleche {
+  transform: translateX(2px);
 }
 
 /* En dessous du bureau large, deux colonnes : la carte violette prend toute la première ligne. */
@@ -216,6 +300,30 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 @media (max-width: 479px) {
   .synthese .tuile:last-child {
     grid-column: 1 / -1;
+  }
+}
+
+/* Les blocs arrivent l'un après l'autre, du haut vers le bas, à chaque affichage. */
+.apparition {
+  animation: apparition 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--rang, 0) * 70ms);
+}
+
+@keyframes apparition {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apparition {
+    animation: none;
+  }
+
+  .tuile__lien,
+  .tuile__fleche {
+    transition: none;
   }
 }
 </style>

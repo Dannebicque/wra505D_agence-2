@@ -39,7 +39,7 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
         <AccordionHeader class="ue__entete">
           <span class="ue__ligne">
             <span class="ue__nom">{{ ue.libelle }}</span>
-            <span class="ue__jauge"><JaugeNote :moyenne="ue.moyenne" :sans-penalite="ue.moyenneSansPenalite"/></span>
+            <span class="ue__jauge"><JaugeNote :moyenne="ue.moyenne"/></span>
             <span class="ue__chiffre">
               <strong :class="['ue__moyenne', `ue__moyenne--${statutUe(ue).ton ?? 'vide'}`]">{{ formatNote(ue.moyenne) }}</strong>
               <span class="ue__statut">{{ statutUe(ue).texte }}</span>
@@ -52,12 +52,8 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
             <li v-for="enseignement in ue.enseignements" :key="enseignement.code" class="matiere">
               <div class="matiere__ligne">
                 <span class="matiere__nom">
-                  <span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}
-                  <span class="matiere__coef">coef. {{ formatNote(enseignement.coefficient) }}</span>
-                  <span class="matiere__poids">
-                    <span class="matiere__poids-barre" aria-hidden="true"><span :style="{width: `${poidsMatiere(ue, enseignement)}%`}"></span></span>
-                    {{ poidsMatiere(ue, enseignement) }} % de l'UE
-                  </span>
+                  <span class="matiere__titre"><span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}</span>
+                  <span class="matiere__poids">coef. {{ formatNote(enseignement.coefficient) }} · {{ poidsMatiere(ue, enseignement) }} % de l'UE</span>
                 </span>
                 <PastilleNote :ton="tonNote(enseignement.moyennePenalisee)">
                   {{ enseignement.moyennePenalisee === null ? 'Pas de note' : formatNote(enseignement.moyennePenalisee) }}
@@ -86,7 +82,7 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
 .notes {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .resume__phrase {
@@ -104,7 +100,7 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
 .graphiques {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .detail__titre {
@@ -116,37 +112,48 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
 .ues {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 /* Chaque UE est une carte qui se déplie : le panneau de PrimeVue garde le clavier et l'animation. */
 .ue {
-  border: 1px solid var(--p-content-border-color) !important;
-  border-radius: 14px;
+  border: none !important;
+  border-radius: 18px;
   overflow: hidden;
+  background: var(--p-content-background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px -4px rgb(0 0 0 / 0.06);
 }
 
 .ue :deep(.p-accordionheader) {
   min-height: 44px;
-  padding: 0.875rem 1rem;
+  padding: 1.125rem 1.25rem;
+  border-radius: 18px;
   background: transparent;
 }
 
+/* Le contour de focus suit l'arrondi de la carte, au lieu d'un rectangle rogné par ses coins. */
+.ue :deep(.p-accordionheader:focus-visible) {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: -3px;
+  box-shadow: none;
+}
+
 .ue :deep(.p-accordioncontent-content) {
-  padding: 0 1rem 1rem;
+  padding: 0 1.25rem 1.25rem;
 }
 
 .ue__ligne {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(6rem, 14rem) auto;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
   margin-right: 0.75rem;
   text-align: left;
 }
 
 .ue__nom {
+  font-size: 1.0625rem;
   font-weight: 600;
   color: var(--p-text-color);
 }
@@ -173,14 +180,16 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
 }
 
 .ue__statut {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 400;
   color: var(--p-text-muted-color);
 }
 
+/* Chaque matière dans son encart pâle : on lit une matière à la fois. */
 .matieres {
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -189,9 +198,10 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
 .matiere {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  padding: 0.75rem 0;
-  border-top: 1px solid var(--p-content-border-color);
+  gap: 0.75rem;
+  padding: 1rem 1.125rem;
+  border-radius: 14px;
+  background: var(--p-content-hover-background);
 }
 
 .matiere__ligne {
@@ -201,57 +211,46 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
   gap: 1rem;
 }
 
-.matiere__code {
-  font-weight: 600;
+.matiere__nom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
 }
 
-.matiere__coef {
-  margin-left: 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--p-text-muted-color);
+.matiere__titre {
+  font-size: 1.0625rem;
+  color: var(--p-text-color);
+}
+
+.matiere__code {
+  font-weight: 700;
 }
 
 .matiere__poids {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  margin-left: 0.5rem;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
-}
-
-.matiere__poids-barre {
-  display: inline-block;
-  width: 3rem;
-  height: 0.375rem;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--p-content-hover-background);
-}
-
-.matiere__poids-barre > span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--p-seance-cm-color);
 }
 
 .matiere__penalite {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 0.5rem;
   margin: 0;
-  font-size: 0.875rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  background: var(--p-seance-evaluation-background);
   color: var(--p-seance-evaluation-color);
 }
 
 .evaluations {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
   margin: 0;
-  padding: 0 0 0 0.75rem;
-  border-left: 2px solid var(--p-content-border-color);
+  padding: 0;
+  border-radius: 10px;
+  background: var(--p-content-background);
   list-style: none;
 }
 
@@ -259,8 +258,13 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.125rem 0.75rem;
-  font-size: 0.9375rem;
+  gap: 0.25rem 1rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 1rem;
+}
+
+.evaluation + .evaluation {
+  border-top: 1px solid var(--p-content-border-color);
 }
 
 .evaluation__nom {
@@ -268,7 +272,7 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
 }
 
 .evaluation__meta {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color);
 }
 
