@@ -16,12 +16,44 @@ describe('Notes et absences de l\'étudiant', () => {
 
     after(retirerJustificatifsDeposes);
 
-    it('s\'ouvre sur les notes : un résumé, puis chaque UE face au seuil de 10', () => {
+    it('s\'ouvre sur les notes : les chiffres du semestre, puis chaque UE face au seuil de 10', () => {
         cy.location('search').should('match', /^\?semestre=\d+$/);
         cy.contains('[role="tab"]', 'Notes').should('have.attr', 'aria-selected', 'true');
-        cy.contains('0 UE sur 1 au-dessus de 10.');
-        cy.contains('Sous 10 : UE 1.1 Comprendre.');
-        cy.contains('.ue', 'UE 1.1 Comprendre').should('contain', '8,97').and('contain', 'sous 10');
+        cy.contains('.tuile', 'UE à 10 ou plus').should('contain', '2').and('contain', 'sur 3');
+        cy.contains('.tuile', 'Notes publiées');
+        cy.contains('.tuile', 'Perdus en absences').should('contain', '1 pt dès la prochaine note');
+        cy.contains('.ue', 'UE 1.1 Comprendre').should('contain', '11,17').and('contain', 'au-dessus de 10');
+        cy.contains('.ue', 'UE 1.3 Exprimer').should('contain', '9,57').and('contain', 'sous 10');
+    });
+
+    it('montre les moyennes et leur évolution en graphiques, chacun lisible en tableau', () => {
+        cy.contains('section', 'Moyennes par UE').within(() => {
+            cy.get('[role="img"]').should('have.attr', 'aria-label').and('contain', 'UE 1.3 Exprimer : 9,57, sous 10');
+            cy.get('canvas').should('be.visible');
+            cy.contains('button', 'Voir en tableau').click();
+            cy.contains('tr', 'UE 1.2 Concevoir').should('contain', '13,63');
+            cy.contains('button', 'Voir le graphique').should('be.focused');
+        });
+
+        // Le dernier point de chaque courbe est la moyenne affichée de l'UE.
+        cy.contains('section', 'Évolution des moyennes').within(() => {
+            cy.get('[role="img"]').should('have.attr', 'aria-label').and('contain', 'à 11,17 le').and('contain', 'à 9,57 le');
+            cy.contains('[role="button"], button', 'UE 1.3 Exprimer').click();
+            cy.contains('button', 'Voir en tableau').click();
+            cy.get('thead th').should('have.length', 2).last().should('have.text', 'UE 1.3 Exprimer');
+            cy.get('tbody tr').last().should('contain', '9,57');
+        });
+    });
+
+    it('donne le poids de chaque matière dans son UE', () => {
+        cy.contains('.ue', 'UE 1.2 Concevoir').find('button').first().click();
+        cy.contains('.ue', 'UE 1.2 Concevoir').contains('.matiere', 'SAE1.01').should('contain', '38 % de l\'UE');
+    });
+
+    it('mène des notes aux absences depuis la tuile des pénalités', () => {
+        cy.contains('.tuile', 'Perdus en absences').contains('button', 'Voir les absences').click();
+        cy.contains('[role="tab"]', 'Absences').should('have.attr', 'aria-selected', 'true');
+        cy.location('search').should('contain', 'onglet=absences');
     });
 
     it('déplie une UE : moyennes, pénalités écrites en clair, et chaque statut d\'évaluation', () => {
@@ -38,6 +70,12 @@ describe('Notes et absences de l\'étudiant', () => {
         cy.contains('[role="tab"]', 'Absences').click();
         cy.location('search').should('contain', 'onglet=absences');
         cy.contains('retire 0,5 point à la moyenne de sa matière');
+        cy.contains('.bilan', 'Elles en retireront 1 point dès la première note des matières concernées.');
+        cy.contains('section', 'Absences par matière').within(() => {
+            cy.get('[role="img"]').should('have.attr', 'aria-label').and('contain', 'R1.10 Intégration : 1 à justifier');
+            cy.contains('button', 'Voir en tableau').click();
+            cy.contains('tr', 'R1.03').find('td').last().should('have.text', '1');
+        });
         cy.contains('.compteur', 'à justifier').should('contain', '1');
         cy.contains('section', 'À justifier').should('contain', 'R1.10 Intégration');
         cy.contains('section', 'En attente de décision').should('contain', 'R1.02');
