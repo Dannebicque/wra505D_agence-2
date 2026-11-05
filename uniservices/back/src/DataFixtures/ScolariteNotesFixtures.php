@@ -65,6 +65,14 @@ class ScolariteNotesFixtures extends Fixture implements OrderedFixtureInterface
             ['R1.06', 'Identité visuelle', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 38, EtatEvaluationEnum::ETAT_PUBLIEE, 9.5, EtudiantNote::STATUT_PRESENT],
             ['R1.01', 'Oral de présentation', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_EXAM, 44, EtatEvaluationEnum::ETAT_PUBLIEE, 11.0, EtudiantNote::STATUT_PRESENT],
             ['R1.11', 'Projet front', 2.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 47, EtatEvaluationEnum::ETAT_PUBLIEE, 13.0, EtudiantNote::STATUT_PRESENT],
+            ['SAE1.01', 'Benchmark', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 50, EtatEvaluationEnum::ETAT_PUBLIEE, 13.0, EtudiantNote::STATUT_PRESENT],
+            ['R1.03', 'Étude de cas', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_EXAM, 52, EtatEvaluationEnum::ETAT_PUBLIEE, 12.0, EtudiantNote::STATUT_PRESENT],
+            ['R1.05', 'Storyboard', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 55, EtatEvaluationEnum::ETAT_PUBLIEE, 16.5, EtudiantNote::STATUT_PRESENT],
+            ['R1.06', 'Pictogrammes', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 58, EtatEvaluationEnum::ETAT_PUBLIEE, 8.5, EtudiantNote::STATUT_PRESENT],
+            ['R1.11', 'Quiz JavaScript', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_EXAM, 61, EtatEvaluationEnum::ETAT_PUBLIEE, 14.0, EtudiantNote::STATUT_PRESENT],
+            ['R1.01', 'Listening test', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_EXAM, 63, EtatEvaluationEnum::ETAT_PUBLIEE, 12.5, EtudiantNote::STATUT_PRESENT],
+            ['R1.05', 'Projet narratif', 2.0, TypeEvaluationEnum::TYPE_EVALUATION_PROJET, 80, EtatEvaluationEnum::ETAT_PLANIFIEE, null, null],
+            ['R1.03', 'Partiel', 2.0, TypeEvaluationEnum::TYPE_EVALUATION_EXAM, 90, EtatEvaluationEnum::ETAT_PLANIFIEE, null, null],
             ['R1.02', 'Examen', 1.0, TypeEvaluationEnum::TYPE_EVALUATION_EXAM, 60, EtatEvaluationEnum::ETAT_PLANIFIEE, null, null],
         ];
 
@@ -95,13 +103,19 @@ class ScolariteNotesFixtures extends Fixture implements OrderedFixtureInterface
             $manager->persist($note);
         }
 
-        // [matière, jours après la rentrée, heure de début, justificatif]
+        // [matière, jours après la rentrée, heure de début, justificatif, motif du refus]
+        // Une seule absence sans justificatif (R1.10) : c'est elle que la page fait justifier.
         $absences = [
-            ['R1.03', 3, '10:15', EtatJustificatifEnum::VALIDE],
-            ['R1.10', 9, '13:30', null],
-            ['R1.02', 16, '08:00', EtatJustificatifEnum::EN_ATTENTE],
+            ['R1.03', 3, '10:15', EtatJustificatifEnum::VALIDE, null],
+            ['R1.10', 9, '13:30', null, null],
+            ['R1.02', 16, '08:00', EtatJustificatifEnum::EN_ATTENTE, null],
+            ['R1.06', 24, '10:15', EtatJustificatifEnum::REFUSE, 'Le certificat ne couvre pas la date du cours.'],
+            ['R1.05', 29, '08:00', EtatJustificatifEnum::VALIDE, null],
+            ['R1.11', 37, '13:30', EtatJustificatifEnum::VALIDE, null],
+            ['R1.03', 45, '15:45', EtatJustificatifEnum::EN_ATTENTE, null],
+            ['R1.01', 51, '10:15', EtatJustificatifEnum::VALIDE, null],
         ];
-        foreach ($absences as [$code, $jours, $heure, $etatJustificatif]) {
+        foreach ($absences as [$code, $jours, $heure, $etatJustificatif, $motifRefus]) {
             $debut = $rentree->modify("+$jours days $heure");
             $event = new EdtEvent();
             $event->setDate(\DateTime::createFromImmutable($debut->setTime(0, 0)))
@@ -125,6 +139,7 @@ class ScolariteNotesFixtures extends Fixture implements OrderedFixtureInterface
                 $justificatif->setScolariteSemestre($scolariteSemestre)
                     ->setEtat($etatJustificatif)
                     ->setMotif('Rendez-vous médical');
+                $justificatif->setMotifRefus($motifRefus);
                 $manager->persist($justificatif);
                 $absence->setAbsenceJustificatif($justificatif);
             }
