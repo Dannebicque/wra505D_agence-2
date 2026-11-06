@@ -51,32 +51,33 @@ onMounted(() => {
   <section class="col-span-12 lg:col-span-10 mt-10 md:mt-0">
     <h1 class="sr-only">Accueil</h1>
 
-    <!-- Trois étages : la journée (l'identité de l'IUT et les cours), puis notes et « À faire »,
+    <!-- Les blocs entrent l'un après l'autre (.apparition), comme sur la page des notes.
+         Trois étages : la journée (l'identité de l'IUT et les cours), puis notes et « À faire »,
          colorés pour se détacher, puis ce qu'on consulte, en simple. Le téléphone suit cet ordre. -->
     <div class="accueil">
-      <CarteBienvenue :journee="journee" class="accueil__bienvenue"/>
+      <CarteBienvenue :journee="journee" class="accueil__bienvenue apparition" style="--rang: 0"/>
 
-      <BlocAccueil class="accueil__cours" titre="Aujourd'hui" icone="pi pi-calendar" teinte="cm" lien="/intranet/agenda" texte-lien="Voir la semaine">
+      <BlocAccueil class="accueil__cours apparition" style="--rang: 1" titre="Aujourd'hui" icone="pi pi-calendar" teinte="cm" lien="/intranet/agenda" texte-lien="Voir la semaine">
         <JourneeCours :journee="journee"/>
       </BlocAccueil>
 
-      <BlocAccueil class="accueil__notes" titre="Dernières notes" icone="pi pi-chart-bar" teinte="tp" lien="/intranet/scolarite" texte-lien="Toutes mes notes">
+      <BlocAccueil class="accueil__notes apparition" style="--rang: 2" titre="Dernières notes" icone="pi pi-chart-bar" teinte="tp" lien="/intranet/scolarite" texte-lien="Toutes mes notes">
         <NotesWidget :releve="releve" :erreur="erreurReleve"/>
       </BlocAccueil>
 
-      <BlocAccueil titre="Absences et à faire" icone="pi pi-flag" teinte="evaluation" class="accueil__a-faire">
+      <BlocAccueil titre="Absences et à faire" icone="pi pi-flag" teinte="evaluation" class="accueil__a-faire apparition" style="--rang: 3">
         <AFaire :releve="releve" :echeances="echeances" :erreur="erreurReleve || erreurEcheances"/>
       </BlocAccueil>
 
-      <BlocAccueil class="accueil__documents" titre="Nouveaux documents" icone="pi pi-folder-open" lien="/documents" texte-lien="Tous les documents">
+      <BlocAccueil class="accueil__documents apparition" style="--rang: 4" titre="Nouveaux documents" icone="pi pi-folder-open" lien="/documents" texte-lien="Tous les documents">
         <NouveauxDocuments/>
       </BlocAccueil>
 
-      <BlocAccueil class="accueil__actualites" titre="Actualités" icone="pi pi-megaphone">
+      <BlocAccueil class="accueil__actualites apparition" style="--rang: 5" titre="Actualités" icone="pi pi-megaphone">
         <Actualites/>
       </BlocAccueil>
 
-      <BlocAccueil class="accueil__contacts" titre="Contacts" icone="pi pi-phone">
+      <BlocAccueil class="accueil__contacts apparition" style="--rang: 6" titre="Contacts" icone="pi pi-phone">
         <ContactsWidget v-if="contacts" :data="contacts"/>
         <Skeleton v-else height="5rem" border-radius="14px" aria-hidden="true"/>
       </BlocAccueil>

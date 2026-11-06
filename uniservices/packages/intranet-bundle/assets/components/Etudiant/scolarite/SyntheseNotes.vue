@@ -285,23 +285,4 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
     font-size: 1rem;
   }
 }
-
-/* Les blocs arrivent l'un après l'autre, du haut vers le bas, à chaque affichage. */
-.apparition {
-  animation: apparition 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--rang, 0) * 70ms);
-}
-
-@keyframes apparition {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .apparition {
-    animation: none;
-  }
-}
 </style>

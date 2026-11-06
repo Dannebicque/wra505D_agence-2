@@ -19,7 +19,7 @@ const id = useId();
 </script>
 
 <template>
-  <section v-if="matieres.length" class="repartition apparition" :aria-labelledby="id">
+  <section v-if="matieres.length" class="repartition apparition" style="--rang: 2" :aria-labelledby="id">
     <h3 :id="id" class="repartition__titre">
       <span class="repartition__icone" aria-hidden="true"><i class="pi pi-calendar-times"></i></span>
       Absences par matière
@@ -135,24 +135,6 @@ const id = useId();
   .ligne {
     flex-direction: column;
     align-items: flex-start;
-  }
-}
-
-.apparition {
-  animation: apparition 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 140ms;
-}
-
-@keyframes apparition {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .apparition {
-    animation: none;
   }
 }
 </style>

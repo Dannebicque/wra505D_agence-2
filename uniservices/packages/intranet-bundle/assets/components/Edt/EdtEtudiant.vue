@@ -391,7 +391,7 @@ const detail = computed(() => {
         @event-click="openDialog">
 
       <template #header="{ view }">
-        <div class="edt-barre">
+        <div class="edt-barre apparition">
           <div class="edt-barre__periode">
             <div class="edt-barre__fleches">
               <Button
@@ -734,6 +734,40 @@ const detail = computed(() => {
 
 :deep(.vuecal__cell--today) {
   background-color: color-mix(in srgb, var(--p-primary-color) 5%, transparent);
+}
+
+/* Les cours entrent comme les blocs des autres pages (apparition), jour après jour, de gauche à
+   droite : à l'arrivée, et à chaque semaine affichée, puisque vue-cal les recrée. */
+:deep(.vuecal__event) {
+  animation: apparition 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 120ms;
+}
+
+:deep(.vuecal__cell--tue .vuecal__event) {
+  animation-delay: 180ms;
+}
+
+:deep(.vuecal__cell--wed .vuecal__event) {
+  animation-delay: 240ms;
+}
+
+:deep(.vuecal__cell--thu .vuecal__event) {
+  animation-delay: 300ms;
+}
+
+:deep(.vuecal__cell--fri .vuecal__event) {
+  animation-delay: 360ms;
+}
+
+:deep(.vuecal__cell--sat .vuecal__event),
+:deep(.vuecal__cell--sun .vuecal__event) {
+  animation-delay: 420ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :deep(.vuecal__event) {
+    animation: none;
+  }
 }
 
 /* Une gouttière autour de chaque cours : deux cours voisins ne se touchent jamais. */

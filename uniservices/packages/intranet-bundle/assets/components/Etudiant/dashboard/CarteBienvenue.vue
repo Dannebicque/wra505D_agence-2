@@ -96,7 +96,7 @@ const finDeJournee = computed(() => {
     <div class="bienvenue__milieu">
       <figure v-if="journee.cours.value && totalSemaine > 0" class="bienvenue__semaine">
         <ol class="bienvenue__jours">
-          <li v-for="jour in jours" :key="jour.nom" :class="['bienvenue__jour', `bienvenue__jour--${jour.etat}`]">
+          <li v-for="(jour, rang) in jours" :key="jour.nom" :class="['bienvenue__jour', `bienvenue__jour--${jour.etat}`]" :style="{'--jour': rang}">
             <RouterLink :to="jour.lien" class="bienvenue__lien">
               <span class="bienvenue__barre" aria-hidden="true"><span :style="{ height: jour.hauteur }"></span></span>
               <span class="bienvenue__initiale" aria-hidden="true">{{ jour.initiale }}</span>
@@ -367,6 +367,22 @@ const finDeJournee = computed(() => {
   width: 100%;
   border-radius: 999px;
   background: var(--p-primary-200);
+  transform-origin: bottom;
+  animation: pousser 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(200ms + var(--jour, 0) * 60ms);
+}
+
+/* Les barres de la semaine montent depuis le bas, jour après jour, à l'arrivée sur l'accueil. */
+@keyframes pousser {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bienvenue__barre span {
+    animation: none;
+  }
 }
 
 /* Les barres disent une quantité : chacune garde 3:1 au moins sur le violet. */
