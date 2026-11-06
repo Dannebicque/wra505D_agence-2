@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from 'vue';
+import {computed, provide, ref} from 'vue';
 import {detailPenalite, formatDate, formatNote, notesDuSemestre, poidsMatiere, resultatEvaluation, statutUe, tonEvaluation} from '@/utils/scolarite.js';
 import {tonNote} from '@/utils/accueil.js';
 import GraphiqueEvolution from './GraphiqueEvolution.vue';
@@ -11,21 +11,43 @@ import SyntheseNotes from './SyntheseNotes.vue';
 const props = defineProps({
   semestre: {type: Object, required: true},
 });
-const emit = defineEmits(['voir-absences']);
 
 const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
+
+// Les deux graphiques côte à côte partagent leur hauteur. Quand l'un passe en tableau, la hauteur
+// commune est figée : la carte restée en graphique ne bouge pas, celle en tableau peut grandir
+// mais pas rapetisser. Plus aucun tableau ouvert, elles redeviennent liées.
+const hauteurFigee = ref(null);
+let tableauxOuverts = 0;
+provide('ligneGraphiques', {
+  ouvrirTableau(hauteur) {
+    if (tableauxOuverts === 0) {
+      hauteurFigee.value = hauteur;
+    }
+    tableauxOuverts++;
+  },
+  fermerTableau() {
+    tableauxOuverts = Math.max(0, tableauxOuverts - 1);
+    if (tableauxOuverts === 0) {
+      hauteurFigee.value = null;
+    }
+  },
+});
 </script>
 
 <template>
   <div class="notes">
     <p v-if="!aDesNotes" class="resume__phrase">Aucune note publiée pour ce semestre.</p>
     <template v-else>
-      <SyntheseNotes :semestre="semestre" @voir-absences="emit('voir-absences')"/>
+      <SyntheseNotes :semestre="semestre"/>
       <p class="resume__aide">
         Moyennes provisoires, calculées sur les notes publiées jusqu'à la sous-commission.
         Une UE se valide à 10.
       </p>
-      <div class="graphiques">
+      <div
+          :class="['graphiques', {'graphiques--figees': hauteurFigee}]"
+          :style="hauteurFigee ? {'--hauteur-ligne': `${hauteurFigee}px`} : null"
+      >
         <GraphiqueUes :ues="semestre.ues"/>
         <GraphiqueEvolution :ues="semestre.ues"/>
       </div>
@@ -34,7 +56,8 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
     <h2 v-if="semestre.ues.length" class="detail__titre">Détail par UE</h2>
     <p v-if="!semestre.ues.length" class="m-0!">Aucune UE pour ce semestre.</p>
 
-    <Accordion v-else multiple class="ues">
+    <!-- Monté à chaque ouverture (lazy) : les matières entrent l'une après l'autre, à chaque fois. -->
+    <Accordion v-else multiple lazy class="ues">
       <AccordionPanel v-for="ue in semestre.ues" :key="ue.libelle" :value="ue.libelle" class="ue">
         <AccordionHeader class="ue__entete">
           <span class="ue__ligne">
@@ -49,7 +72,7 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
         <AccordionContent>
           <p v-if="!ue.enseignements.length" class="m-0!">Aucune ressource ni SAÉ dans cette UE.</p>
           <ul v-else class="matieres">
-            <li v-for="enseignement in ue.enseignements" :key="enseignement.code" class="matiere">
+            <li v-for="(enseignement, rang) in ue.enseignements" :key="enseignement.code" class="matiere" :style="{'--rang': rang}">
               <div class="matiere__ligne">
                 <span class="matiere__nom">
                   <span class="matiere__titre"><span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}</span>
@@ -100,8 +123,15 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
 .graphiques {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  align-items: start;
   gap: 1.25rem;
+}
+
+.graphiques--figees {
+  align-items: start;
+}
+
+.graphiques--figees > * {
+  min-height: var(--hauteur-ligne);
 }
 
 .detail__titre {
@@ -203,6 +233,21 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
   padding: 1rem 1.125rem;
   border-radius: 14px;
   background: var(--p-content-hover-background);
+  animation: deplier 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--rang, 0) * 45ms);
+}
+
+@keyframes deplier {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .matiere {
+    animation: none;
+  }
 }
 
 .matiere__ligne {

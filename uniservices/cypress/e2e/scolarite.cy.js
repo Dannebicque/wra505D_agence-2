@@ -53,12 +53,6 @@ describe('Notes et absences de l\'étudiant', () => {
         cy.contains('.ue', 'UE 1.2 Concevoir').contains('.matiere', 'SAE1.01').should('contain', '38 % de l\'UE');
     });
 
-    it('mène des notes aux absences depuis la tuile des pénalités', () => {
-        cy.contains('.tuile', 'Perdus en absences').contains('button', 'Voir les absences').click();
-        cy.contains('[role="tab"]', 'Absences').should('have.attr', 'aria-selected', 'true');
-        cy.location('search').should('contain', 'onglet=absences');
-    });
-
     it('déplie une UE : moyennes, pénalités écrites en clair, et chaque statut d\'évaluation', () => {
         cy.contains('.ue', 'UE 1.1 Comprendre').find('button').first().click();
         cy.contains('.matiere', 'R1.10').should('contain', '−0,5 pt dès la première note (1 absence)');

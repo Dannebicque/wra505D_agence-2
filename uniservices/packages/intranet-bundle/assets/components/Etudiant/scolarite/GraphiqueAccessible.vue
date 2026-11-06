@@ -1,5 +1,5 @@
 <script setup>
-import {ref, useId} from 'vue';
+import {inject, onBeforeUnmount, ref, useId, watch} from 'vue';
 
 // Un graphique ne se lit ni au clavier ni au lecteur d'écran : le même contenu existe en tableau,
 // une bascule passe de l'un à l'autre, et le canvas porte un résumé en une phrase.
@@ -19,10 +19,28 @@ const VUES = [
 ];
 const vue = ref('graphique');
 const id = useId();
+
+// Avant que le tableau ne remplace le graphique, la carte donne sa hauteur à la ligne qui la porte,
+// pour que sa voisine n'en change pas.
+const ligne = inject('ligneGraphiques', null);
+const carte = ref(null);
+watch(vue, (nouvelle) => {
+  if (nouvelle === 'tableau') {
+    ligne?.ouvrirTableau(carte.value.getBoundingClientRect().height);
+  } else {
+    ligne?.fermerTableau();
+  }
+}, {flush: 'pre'});
+onBeforeUnmount(() => {
+  if (vue.value === 'tableau') {
+    ligne?.fermerTableau();
+  }
+});
 </script>
 
 <template>
   <section
+      ref="carte"
       class="graphique apparition"
       :style="{'--rang': rang, '--graphique-fond': `var(--p-seance-${teinte}-background)`, '--graphique-couleur': `var(--p-seance-${teinte}-color)`}"
       :aria-labelledby="`${id}-titre`"
@@ -127,7 +145,8 @@ const id = useId();
 }
 
 .graphique__bascule :deep(.p-togglebutton-checked .p-togglebutton-content) {
-  color: var(--p-primary-color);
+  background: var(--p-pastille-active-background);
+  color: var(--p-pastille-active-color);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
 }
 
@@ -138,13 +157,21 @@ const id = useId();
   box-shadow: none;
 }
 
+/* Le graphique prend la hauteur restante de la carte quand elle s'aligne sur une voisine plus
+   haute, au lieu de laisser un vide dessous. */
 .graphique__contenu {
   position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   min-width: 0;
 }
 
 .graphique__zone {
   position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 
 .graphique__tableau {

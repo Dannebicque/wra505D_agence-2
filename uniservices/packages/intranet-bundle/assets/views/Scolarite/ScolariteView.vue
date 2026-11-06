@@ -111,7 +111,7 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
         <TabPanels>
           <TabPanel value="notes">
             <Transition name="onglet" appear>
-              <NotesSemestre v-if="onglet === 'notes'" :key="semestre.id" :semestre="semestre" @voir-absences="onglet = 'absences'"/>
+              <NotesSemestre v-if="onglet === 'notes'" :key="semestre.id" :semestre="semestre"/>
             </Transition>
           </TabPanel>
           <TabPanel value="absences">
@@ -189,8 +189,8 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
 }
 
 .scolarite__onglet[data-p-active="true"] {
-  background: var(--p-content-background);
-  color: var(--p-primary-color);
+  background: var(--p-pastille-active-background);
+  color: var(--p-pastille-active-color);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
 }
 

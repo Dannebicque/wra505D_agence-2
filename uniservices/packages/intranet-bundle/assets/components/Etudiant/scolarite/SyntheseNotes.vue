@@ -6,7 +6,6 @@ import {useCompteur} from '@/composables/useCompteur.js';
 const props = defineProps({
   semestre: {type: Object, required: true},
 });
-const emit = defineEmits(['voir-absences']);
 
 const chiffres = computed(() => syntheseSemestre(props.semestre));
 const sousDix = computed(() => props.semestre.ues.filter(ue => ue.moyenne !== null && ue.moyenne !== undefined && ue.moyenne < 10));
@@ -53,11 +52,6 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
         <template v-if="chiffres.pointsEnSuspens">{{ points(chiffres.pointsEnSuspens) }} dès la prochaine note</template>
         <template v-else>aucune pénalité en attente</template>
       </span>
-      <!-- Le lien des blocs de l'accueil, mais un bouton : il ouvre l'onglet voisin, sans quitter la page. -->
-      <button v-if="chiffres.absencesPenalisantes || chiffres.absencesEnAttente" type="button" class="tuile__lien" @click="emit('voir-absences')">
-        Voir les absences
-        <span class="tuile__fleche" aria-hidden="true"><i class="pi pi-arrow-right"></i></span>
-      </button>
     </li>
   </ul>
 </template>
@@ -87,8 +81,7 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  margin-bottom: 0.375rem;
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 600;
   color: var(--p-text-color);
 }
@@ -97,11 +90,11 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   flex-shrink: 0;
   border-radius: 999px;
-  font-size: 0.9375rem;
+  font-size: 1.125rem;
   background: var(--tuile-fond);
   color: var(--tuile-couleur);
 }
@@ -125,8 +118,17 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 }
 
 .tuile__detail {
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
+}
+
+/* L'en-tête en haut, le chiffre et sa précision en bas : la tuile se remplit à la hauteur de la
+   carte violette voisine. */
+.tuile:not(.tuile--phare) .tuile__valeur {
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 2.75rem;
+  line-height: 1.1;
 }
 
 .tuile__detail,
@@ -158,7 +160,7 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 }
 
 .tuile--phare .tuile__valeur {
-  font-size: 2.5rem;
+  font-size: 2.75rem;
   color: inherit;
 }
 
@@ -230,49 +232,6 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
   color: var(--p-primary-500);
 }
 
-.tuile__lien {
-  align-self: flex-end;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 44px;
-  margin-top: auto;
-  padding: 0 0.25rem 0 0.75rem;
-  border: none;
-  border-radius: 999px;
-  font: inherit;
-  font-weight: 600;
-  color: var(--p-primary-color);
-  background: transparent;
-  cursor: pointer;
-  transition: background-color 150ms ease;
-}
-
-.tuile__lien:hover {
-  background: var(--p-content-hover-background);
-}
-
-.tuile__lien:focus-visible {
-  outline: 2px solid var(--p-primary-color);
-  outline-offset: 2px;
-}
-
-.tuile__fleche {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  background: var(--p-content-hover-background);
-  transition: transform 150ms ease;
-}
-
-.tuile__lien:hover .tuile__fleche {
-  transform: translateX(2px);
-}
-
 /* En dessous du bureau large, deux colonnes : la carte violette prend toute la première ligne. */
 @media (max-width: 1199px) {
   .synthese {
@@ -300,11 +259,6 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 @media (prefers-reduced-motion: reduce) {
   .apparition {
     animation: none;
-  }
-
-  .tuile__lien,
-  .tuile__fleche {
-    transition: none;
   }
 }
 </style>

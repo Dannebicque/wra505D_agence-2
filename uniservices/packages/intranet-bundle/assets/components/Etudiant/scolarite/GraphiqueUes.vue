@@ -30,8 +30,9 @@ const donnees = computed(() => ({
     label: 'Moyenne',
     data: props.ues.map(ue => ue.moyenne),
     backgroundColor: props.ues.map(ue => (valide(ue) ? couleurs.value.vert : couleurs.value.rouge)),
+    // Le départ reste droit, seul le bout s'arrondit.
     borderRadius: 999,
-    borderSkipped: false,
+    borderSkipped: 'start',
     barPercentage: 0.5,
     maxBarThickness: 20,
   }],
@@ -94,7 +95,7 @@ const hauteur = computed(() => `${props.ues.length * 3.5 + 3}rem`);
 
 <template>
   <GraphiqueAccessible :rang="4" titre="Moyennes par UE" icone="pi pi-chart-bar" teinte="cm" :resume="resume">
-    <Chart type="bar" :data="donnees" :options="options" :plugins="plugins" :style="{height: hauteur}"/>
+    <Chart type="bar" :data="donnees" :options="options" :plugins="plugins" class="ues" :style="{minHeight: hauteur}"/>
     <template #tableau>
       <table>
         <caption class="sr-only">Moyennes par UE</caption>
@@ -123,6 +124,18 @@ const hauteur = computed(() => `${props.ues.length * 3.5 + 3}rem`);
 </template>
 
 <style scoped>
+/* La boîte décide de la taille et le canvas la suit : dans le flux, il imposerait sa propre hauteur
+   à la carte, qui ne pourrait plus redescendre une fois étirée. */
+.ues {
+  position: relative;
+  flex: 1;
+}
+
+.ues :deep(canvas) {
+  position: absolute;
+  inset: 0;
+}
+
 .statut {
   display: inline-flex;
   align-items: center;

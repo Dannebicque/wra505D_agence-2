@@ -211,7 +211,8 @@ const plugins = computed(() => [pluginZones('y', couleurs.value), pluginSeuil('y
 }
 
 .filtre :deep(.p-togglebutton-checked .p-togglebutton-content) {
-  color: var(--p-primary-color);
+  background: var(--p-pastille-active-background);
+  color: var(--p-pastille-active-color);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
 }
 
