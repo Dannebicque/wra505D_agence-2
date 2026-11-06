@@ -63,6 +63,9 @@ const MyPreset = definePreset(Aura, {
         // Type de notification, repris des couleurs de séance déjà mesurées : violet pour les notes,
         // rouge pour les absences, jaune pour les documents, vert pour les actualités, rose pour les
         // messages. La couleur sur la carte : 6,52:1 au moins en clair, 7,13:1 en sombre.
+        // Pastille du choix actif dans une pilule (onglet, bascule, filtre) : blanche en clair ; en
+        // sombre, le fond de carte se confondait avec la pilule (1,0:1), le violet 400 s'en détache
+        // (5,77:1). Texte 9,95:1 en clair, 7,44:1 en sombre.
         // Bordure d'un élément d'interface (champ, case, carte de choix) : 3,49:1 en clair et
         // 3,15:1 en sombre, au-dessus du seuil RGAA de 3:1, là où les gris d'Aura n'y arrivent pas.
         // Type de séance de l'emploi du temps, dans les couleurs de la DA : violet pour les CM, jaune
@@ -73,6 +76,7 @@ const MyPreset = definePreset(Aura, {
         colorScheme: {
             light: {
                 uiBorder: { color: '#7E848D' },
+                pastilleActive: { background: '#FFFFFF', color: '#4D3677' },
                 seance: {
                     cm: { background: '#F1ECFC', color: '#4D3677', pill: { background: '#4D3677', color: '#FFFFFF' } },
                     td: { background: '#FEF4D9', color: '#7A5200', pill: { background: '#7A5200', color: '#FFFFFF' } },
@@ -92,6 +96,7 @@ const MyPreset = definePreset(Aura, {
             },
             dark: {
                 uiBorder: { color: '#666B73' },
+                pastilleActive: { background: '#AC95E1', color: '#170331' },
                 seance: {
                     cm: { background: '#2B2240', color: '#C7B6F1', pill: { background: '#4D3677', color: '#FFFFFF' } },
                     td: { background: '#3A3020', color: '#F2C14E', pill: { background: '#7A5200', color: '#FFFFFF' } },
