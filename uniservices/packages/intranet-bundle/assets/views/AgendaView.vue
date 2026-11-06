@@ -40,8 +40,7 @@ onMounted( () => {
       titre="Emploi du temps"
       :description="description"
   />
-  <!-- Sans fil d'Ariane, rien ne le sépare plus de la barre du haut, qui le recouvre en mobile. -->
-  <div class="card" :class="{ 'agenda-etudiant mt-10 md:mt-0': store.isEtudiant }">
+  <div class="card" :class="{ 'agenda-etudiant': store.isEtudiant }">
     <component v-if="tabs.length === 1" :is="tabs[0].component" />
     <Tabs v-else value="0">
       <TabList>

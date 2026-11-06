@@ -46,9 +46,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- La page ouvre sur la journée : son titre reste pour les lecteurs d'écran, comme l'agenda.
-       Sans lui, rien ne sépare plus la journée de la barre du haut, qui la recouvre en mobile. -->
-  <section class="col-span-12 lg:col-span-10 mt-10 md:mt-0">
+  <!-- La page ouvre sur la journée : son titre reste pour les lecteurs d'écran, comme l'agenda. -->
+  <section class="col-span-12 lg:col-span-10">
     <h1 class="sr-only">Accueil</h1>
 
     <!-- Les blocs entrent l'un après l'autre (.apparition), comme sur la page des notes.

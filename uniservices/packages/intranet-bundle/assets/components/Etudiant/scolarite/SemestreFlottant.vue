@@ -63,12 +63,13 @@ const choisir = (id) => {
 </template>
 
 <style scoped>
-/* Le bouton flottant de l'agenda : rond violet, icône blanche 9,95:1, en bas à droite. Il n'existe
-   que sur téléphone ; au-delà, le semestre se choisit dans la barre de la page. */
+/* Le bouton flottant de l'agenda : rond violet, icône blanche 9,95:1, en bas à droite, au-dessus de
+   la barre de navigation. Il n'existe que sur téléphone ; au-delà, le semestre se choisit dans la
+   barre de la page. */
 .semestre-flottant {
   position: fixed !important;
   right: 1.25rem;
-  bottom: 1.25rem;
+  bottom: calc(1.25rem + var(--barre-bas, 0px));
   z-index: 20;
   width: 3.5rem !important;
   height: 3.5rem !important;

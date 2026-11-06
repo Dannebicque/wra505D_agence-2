@@ -262,13 +262,56 @@ const optionsProfil = [
   }
 ];
 
+// Sur téléphone, l'étudiant n'a plus que la cloche et son avatar dans la barre : le mode sombre
+// passe dans le menu de l'avatar.
+const ecranEtroit = window.matchMedia('(max-width: 991px)');
+const telephone = ref(ecranEtroit.matches);
+const suivreLargeur = (evenement) => {
+  telephone.value = evenement.matches;
+};
+ecranEtroit.addEventListener('change', suivreLargeur);
+onUnmounted(() => ecranEtroit.removeEventListener('change', suivreLargeur));
+
+// Sur téléphone, la barre de l'étudiant se replie quand il descend dans la page et revient dès
+// qu'il remonte : le contenu garde tout l'écran. Elle reste là tant que la recherche est ouverte,
+// et revient au changement de page ou quand le clavier l'atteint.
+const repliee = ref(false);
+let dernierePosition = 0;
+const suivreDefilement = (evenement) => {
+  if (!evenement.target.classList?.contains('layout-main-container')) {
+    return;
+  }
+  const position = evenement.target.scrollTop;
+  const ecart = position - dernierePosition;
+  if (Math.abs(ecart) < 8) {
+    return;
+  }
+  repliee.value = estEtudiant.value && telephone.value && !rechercheOuverte.value && ecart > 0 && position > 56;
+  dernierePosition = position;
+};
+document.addEventListener('scroll', suivreDefilement, {capture: true, passive: true});
+onUnmounted(() => document.removeEventListener('scroll', suivreDefilement, {capture: true}));
+watch(() => route.fullPath, () => {
+  repliee.value = false;
+  dernierePosition = 0;
+});
+
 // « Paramètres » ne mène nulle part : on ne le montre pas à l'étudiant, dont le département,
 // retiré de la barre, s'affiche ici.
 const profileItems = computed(() => optionsProfil.map(section => (estEtudiant.value
   ? {
       ...section,
       label: departementLabel.value || section.label,
-      items: section.items.filter(item => !item.mortPourEtudiant)
+      items: [
+        ...section.items.filter(item => !item.mortPourEtudiant && item.label !== 'Déconnexion'),
+        {
+          label: isDarkTheme.value ? 'Mode clair' : 'Mode sombre',
+          icon: isDarkTheme.value ? 'pi pi-sun' : 'pi pi-moon',
+          visible: telephone.value,
+          command: toggleDarkMode,
+        },
+        ...section.items.filter(item => item.label === 'Déconnexion'),
+      ]
     }
   : section)));
 
@@ -339,7 +382,7 @@ const selectAnneeUniversitaire = (annee) => {
 </script>
 
 <template>
-  <header class="layout-topbar">
+  <header :class="['layout-topbar', { 'layout-topbar--etudiant': estEtudiant, 'layout-topbar--repliee': repliee }]" @focusin="repliee = false">
     <div class="layout-topbar-logo-container">
       <button
           v-if="route.name !== 'portail'"
@@ -379,6 +422,7 @@ const selectAnneeUniversitaire = (annee) => {
       </button>
 
       <button
+          v-if="!estEtudiant"
           ref="boutonActions"
           type="button"
           class="layout-topbar-menu-button layout-topbar-action"
@@ -393,7 +437,7 @@ const selectAnneeUniversitaire = (annee) => {
       <div
           id="actions-barre-haute"
           ref="menuActions"
-          :class="['layout-topbar-menu lg:block', actionsOuvertes ? 'animate-scalein' : 'hidden']"
+          :class="['layout-topbar-menu lg:block', estEtudiant ? 'layout-topbar-menu--en-ligne' : (actionsOuvertes ? 'animate-scalein' : 'hidden')]"
       >
         <div class="layout-topbar-menu-content">
           <router-link :to="{ name: 'portail' }" v-if="route.name !== 'portail' && !estEtudiant"

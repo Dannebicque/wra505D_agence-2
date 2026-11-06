@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
 import AppTopbar from './AppTopbar.vue';
+import NavigationBas from './NavigationBas.vue';
 import AppBreadcrumb from "./AppBreadcrumb.vue";
 import { hasPermission } from '@utils/permissions';
 import { menuEtudiant } from '@helpers/menuEtudiant.js';
@@ -47,7 +48,8 @@ const containerClass = computed(() => {
     'layout-static': layoutConfig.menuMode === 'static',
     'layout-static-inactive': layoutState.staticMenuDesktopInactive && layoutConfig.menuMode === 'static',
     'layout-overlay-active': layoutState.overlayMenuActive,
-    'layout-mobile-active': layoutState.staticMenuMobileActive
+    'layout-mobile-active': layoutState.staticMenuMobileActive,
+    'layout-wrapper--etudiant': hasPermission('isEtudiant')
   };
 });
 
@@ -137,6 +139,7 @@ const computedBottomMenuItems = computed(() => {
   <div class="layout-wrapper" :class="containerClass">
     <app-topbar :logo-url :app-name></app-topbar>
     <app-sidebar :menu-items="computedMenuItems" :bottom-items="computedBottomMenuItems"></app-sidebar>
+    <NavigationBas v-if="hasPermission('isEtudiant')" :menu="computedMenuItems"/>
     <div class="layout-main-container">
       <div class="flex justify-between items-center">
         <app-breadcrumb v-if="breadcrumbItems.length > 0" :items="breadcrumbItems"></app-breadcrumb>

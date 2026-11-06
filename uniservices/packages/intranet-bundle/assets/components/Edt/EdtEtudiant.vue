@@ -594,7 +594,7 @@ const detail = computed(() => {
 .edt-flottant {
   @apply fixed! z-20 w-14! h-14! shadow-lg;
   right: 1.25rem;
-  bottom: 1.25rem;
+  bottom: calc(1.25rem + var(--barre-bas, 0px));
 }
 
 .edt-flottant-enter-active {

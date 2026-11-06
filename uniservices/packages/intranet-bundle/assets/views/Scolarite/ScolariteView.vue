@@ -68,7 +68,7 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
 <template>
   <!-- Comme l'agenda : le titre reste pour les lecteurs d'écran, les onglets disent déjà la page,
        et le semestre se choisit dans la carte, au même niveau qu'eux. -->
-  <section class="scolarite col-span-12 mt-16 md:mt-0">
+  <section class="scolarite col-span-12">
     <h1 class="sr-only">Notes et absences</h1>
 
     <div v-if="chargement" class="scolarite__chargement" aria-hidden="true">
