@@ -93,24 +93,47 @@ describe('Navigation de l\'étudiant', () => {
     });
 });
 
-describe('Barre du haut de l\'étudiant sur téléphone', () => {
+describe('Navigation de l\'étudiant sur téléphone', () => {
     beforeEach(() => {
         cy.viewport(375, 812);
         cy.connexionInvite('etudiant');
         cy.visit('/app/intranet/');
     });
 
-    it('garde le menu d\'actions fermé jusqu\'à ce qu\'on l\'ouvre, et le referme avec Échap', () => {
-        cy.get('button[aria-label="Plus d\'actions"]', { timeout: 15000 }).as('actions')
-            .should('have.attr', 'aria-expanded', 'false');
-        cy.get('#actions-barre-haute').should('not.be.visible');
+    it('garde la cloche et le profil en vue, sans hamburger ni menu caché', () => {
+        cy.get('.notifications-cloche', { timeout: 15000 }).should('be.visible');
+        cy.get('.layout-menu-button').should('not.be.visible');
+        cy.get('button[aria-label="Plus d\'actions"]').should('not.exist');
+        cy.get('[aria-controls="profile_menu"]').should('be.visible').click();
+        cy.get('#profile_menu').should('contain', 'Profil').and('contain', 'Mode sombre').and('contain', 'Déconnexion');
+    });
 
-        cy.get('@actions').click();
-        cy.get('@actions').should('have.attr', 'aria-expanded', 'true');
-        cy.get('#actions-barre-haute').should('be.visible').find('[aria-controls="profile_menu"]').should('be.visible');
+    it('passe d\'une rubrique à l\'autre par la barre du bas, et ouvre le reste depuis « Plus »', () => {
+        cy.get('.navigation-bas', { timeout: 15000 }).within(() => {
+            cy.contains('a', 'Accueil').should('have.attr', 'aria-current', 'page');
+            cy.contains('a', 'Agenda').click();
+        });
+        cy.location('pathname').should('eq', '/app/intranet/agenda');
+        cy.get('.navigation-bas').contains('a', 'Agenda').should('have.attr', 'aria-current', 'page');
 
+        cy.get('.navigation-bas').contains('button', 'Plus').click();
+        cy.get('.navigation-plus').should('be.visible').and('contain', 'Cahier de texte');
         cy.press(Cypress.Keyboard.Keys.ESC);
-        cy.get('#actions-barre-haute').should('not.be.visible');
-        cy.focused().should('have.attr', 'aria-label', 'Plus d\'actions');
+        cy.get('.navigation-plus').should('not.exist');
+
+        cy.get('.navigation-bas').contains('button', 'Plus').click();
+        cy.get('.navigation-plus').contains('a', 'Cahier de texte').click();
+        cy.location('pathname').should('eq', '/app/intranet/cahier-de-texte');
+        cy.get('.navigation-plus').should('not.exist');
+        cy.get('.navigation-bas').contains('button', 'Plus').should('have.class', 'navigation-bas__onglet--actif');
+    });
+
+    it('replie la barre du haut quand on descend, et la rend quand on remonte', () => {
+        cy.visit('/app/intranet/scolarite');
+        cy.get('.tuile', { timeout: 15000 }).should('exist');
+        cy.get('.layout-main-container').scrollTo(0, 150).scrollTo(0, 500);
+        cy.get('.layout-topbar').should('have.class', 'layout-topbar--repliee');
+        cy.get('.layout-main-container').scrollTo(0, 0);
+        cy.get('.layout-topbar').should('not.have.class', 'layout-topbar--repliee');
     });
 });
