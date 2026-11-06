@@ -100,12 +100,15 @@ describe('Navigation de l\'étudiant sur téléphone', () => {
         cy.visit('/app/intranet/');
     });
 
-    it('garde la cloche et le profil en vue, sans hamburger ni menu caché', () => {
-        cy.get('.notifications-cloche', { timeout: 15000 }).should('be.visible');
-        cy.get('.layout-menu-button').should('not.be.visible');
-        cy.get('button[aria-label="Plus d\'actions"]').should('not.exist');
-        cy.get('[aria-controls="profile_menu"]').should('be.visible').click();
-        cy.get('#profile_menu').should('contain', 'Profil').and('contain', 'Mode sombre').and('contain', 'Déconnexion');
+    it('laisse tout l\'écran au contenu : une seule barre, en bas', () => {
+        cy.get('.navigation-bas', { timeout: 15000 }).should('be.visible');
+        cy.get('.layout-topbar').should('not.be.visible');
+        cy.get('.navigation-bas li').should('have.length', 5);
+        cy.get('.navigation-bas a, .navigation-bas button').each(($cible) => {
+            const { width, height } = $cible[0].getBoundingClientRect();
+            expect(width).to.be.at.least(44);
+            expect(height).to.be.at.least(44);
+        });
     });
 
     it('passe d\'une rubrique à l\'autre par la barre du bas, et ouvre le reste depuis « Plus »', () => {
@@ -117,23 +120,27 @@ describe('Navigation de l\'étudiant sur téléphone', () => {
         cy.get('.navigation-bas').contains('a', 'Agenda').should('have.attr', 'aria-current', 'page');
 
         cy.get('.navigation-bas').contains('button', 'Plus').click();
-        cy.get('.navigation-plus').should('be.visible').and('contain', 'Cahier de texte');
+        cy.get('.navigation-feuille').should('be.visible').and('contain', 'Documents').and('contain', 'Cahier de texte');
         cy.press(Cypress.Keyboard.Keys.ESC);
-        cy.get('.navigation-plus').should('not.exist');
+        cy.get('.navigation-feuille').should('not.exist');
 
         cy.get('.navigation-bas').contains('button', 'Plus').click();
-        cy.get('.navigation-plus').contains('a', 'Cahier de texte').click();
+        cy.get('.navigation-feuille').contains('a', 'Cahier de texte').click();
         cy.location('pathname').should('eq', '/app/intranet/cahier-de-texte');
-        cy.get('.navigation-plus').should('not.exist');
+        cy.get('.navigation-feuille').should('not.exist');
         cy.get('.navigation-bas').contains('button', 'Plus').should('have.class', 'navigation-bas__onglet--actif');
     });
 
-    it('replie la barre du haut quand on descend, et la rend quand on remonte', () => {
-        cy.visit('/app/intranet/scolarite');
-        cy.get('.tuile', { timeout: 15000 }).should('exist');
-        cy.get('.layout-main-container').scrollTo(0, 150).scrollTo(0, 500);
-        cy.get('.layout-topbar').should('have.class', 'layout-topbar--repliee');
-        cy.get('.layout-main-container').scrollTo(0, 0);
-        cy.get('.layout-topbar').should('not.have.class', 'layout-topbar--repliee');
+    it('ouvre son compte depuis l\'avatar : profil, mode sombre et déconnexion', () => {
+        cy.get('.navigation-bas', { timeout: 15000 }).contains('button', 'Mon compte').click();
+        cy.get('.navigation-feuille').should('be.visible')
+            .and('contain', 'Voir mon profil')
+            .and('contain', 'Déconnexion');
+        cy.get('.navigation-feuille').contains('button', 'Mode sombre').as('sombre')
+            .should('have.attr', 'aria-pressed', 'false')
+            .click();
+        cy.get('html').should('have.class', 'app-dark');
+        cy.get('@sombre').should('have.attr', 'aria-pressed', 'true').click();
+        cy.get('html').should('not.have.class', 'app-dark');
     });
 });
