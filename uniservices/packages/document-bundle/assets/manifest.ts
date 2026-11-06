@@ -14,7 +14,7 @@ const documentMenu = {
 export default {
   name: 'documents',
   studentMenu: [
-    { label: 'Documents', icon: 'pi pi-fw pi-folder', to: '/documents', groupe: 'scolarite', ordre: 40, motsCles: ['cours', 'supports', 'fichiers'] },
+    { label: 'Documents', icon: 'pi pi-fw pi-folder', to: '/documents', groupe: 'scolarite', ordre: 40, onglet: 'Documents', motsCles: ['cours', 'supports', 'fichiers'] },
   ],
   registerWidgets,
   routes: [
