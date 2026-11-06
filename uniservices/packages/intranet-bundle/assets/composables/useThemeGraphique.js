@@ -58,7 +58,7 @@ export const pluginSeuil = (axe, couleur) => ({
         ctx.fillStyle = couleur;
         ctx.lineWidth = 1.5;
         ctx.setLineDash([5, 4]);
-        ctx.font = '500 12px Roboto, sans-serif';
+        ctx.font = '500 14px Roboto, sans-serif';
         ctx.beginPath();
         if (axe === 'x') {
             ctx.moveTo(position, chartArea.top);
@@ -115,16 +115,16 @@ export const pluginZones = (axe, couleurs) => ({
  * pâle du même type, 5,65:1 au moins.
  */
 export const dessinerPastille = (ctx, texte, x, y, fond, couleur) => {
-    ctx.font = '600 12px Roboto, sans-serif';
-    const largeur = ctx.measureText(texte).width + 14;
+    ctx.font = '600 14px Roboto, sans-serif';
+    const largeur = ctx.measureText(texte).width + 16;
     ctx.fillStyle = fond;
     ctx.beginPath();
-    ctx.roundRect(x, y - 11, largeur, 22, 11);
+    ctx.roundRect(x, y - 13, largeur, 26, 13);
     ctx.fill();
     ctx.fillStyle = couleur;
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
-    ctx.fillText(texte, x + 7, y + 0.5);
+    ctx.fillText(texte, x + 8, y + 0.5);
 };
 
 /**

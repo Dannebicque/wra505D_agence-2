@@ -41,8 +41,8 @@ provide('ligneGraphiques', {
     <template v-else>
       <SyntheseNotes :semestre="semestre"/>
       <p class="resume__aide">
-        Moyennes provisoires, calculées sur les notes publiées jusqu'à la sous-commission.
-        Une UE se valide à 10.
+        <span class="texte-long">Moyennes provisoires, calculées sur les notes publiées jusqu'à la sous-commission. Une UE se valide à 10.</span>
+        <span class="texte-court">Moyennes provisoires. Une UE se valide à 10.</span>
       </p>
       <div
           :class="['graphiques', {'graphiques--figees': hauteurFigee}]"
@@ -84,7 +84,7 @@ provide('ligneGraphiques', {
               </div>
               <p v-if="detailPenalite(enseignement)" class="matiere__penalite">
                 <i class="pi pi-calendar-times" aria-hidden="true"></i>
-                {{ detailPenalite(enseignement) }}<span v-if="enseignement.absencesEnAttente"> · levable si le justificatif est accepté</span>
+                <span>{{ detailPenalite(enseignement) }}<template v-if="enseignement.absencesEnAttente"> · levable si le justificatif est accepté</template></span>
               </p>
               <ul v-if="enseignement.evaluations.length" class="evaluations" :aria-label="`Évaluations de ${enseignement.code}`">
                 <li v-for="evaluation in enseignement.evaluations" :key="`${evaluation.libelle}-${evaluation.date}`" class="evaluation">
@@ -116,7 +116,7 @@ provide('ligneGraphiques', {
 
 .resume__aide {
   margin: -0.5rem 0 0;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
 }
 
@@ -211,7 +211,7 @@ provide('ligneGraphiques', {
 }
 
 .ue__statut {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 400;
   color: var(--p-text-muted-color);
 }
@@ -274,18 +274,18 @@ provide('ligneGraphiques', {
 }
 
 .matiere__poids {
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
 }
 
 .matiere__penalite {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0.5rem;
   margin: 0;
   padding: 0.5rem 0.875rem;
   border-radius: 10px;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   background: var(--p-seance-evaluation-background);
   color: var(--p-seance-evaluation-color);
 }
@@ -318,7 +318,7 @@ provide('ligneGraphiques', {
 }
 
 .evaluation__meta {
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
 }
 
@@ -338,6 +338,21 @@ provide('ligneGraphiques', {
   .ue__jauge {
     grid-column: 1 / -1;
     grid-row: 2;
+  }
+}
+/* Sur téléphone, les explications passent en version courte : une seule des deux est affichée, et
+   donc lue par un lecteur d'écran. */
+.texte-court {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .texte-long {
+    display: none;
+  }
+
+  .texte-court {
+    display: inline;
   }
 }
 </style>

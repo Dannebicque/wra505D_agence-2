@@ -63,7 +63,7 @@ const id = useId();
   width: 2rem;
   height: 2rem;
   border-radius: 999px;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   background: var(--p-seance-evaluation-background);
   color: var(--p-seance-evaluation-color);
 }
@@ -109,7 +109,7 @@ const id = useId();
   gap: 0.375rem;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -127,6 +127,15 @@ const id = useId();
 .etat--ok {
   background: var(--p-seance-tp-background);
   color: var(--p-seance-tp-color);
+}
+
+/* Sur téléphone, les pastilles passent toujours sous la matière : selon la longueur du nom, elles
+   tombaient tantôt à côté, tantôt dessous. */
+@media (max-width: 639px) {
+  .ligne {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .apparition {

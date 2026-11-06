@@ -279,7 +279,7 @@ const envoyer = async () => {
 
 .champ__aide {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
 }
 
@@ -365,7 +365,7 @@ const envoyer = async () => {
 }
 
 .depot__aide {
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
 }
 
@@ -402,7 +402,7 @@ const envoyer = async () => {
 }
 
 .piece__taille {
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
 }
 

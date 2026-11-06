@@ -142,7 +142,7 @@ const hauteur = computed(() => `${props.ues.length * 3.5 + 3}rem`);
   gap: 0.375rem;
   padding: 0.125rem 0.625rem;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   white-space: nowrap;
   background: var(--p-seance-autre-background);

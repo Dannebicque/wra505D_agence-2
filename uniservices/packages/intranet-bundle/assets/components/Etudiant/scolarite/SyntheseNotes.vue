@@ -100,7 +100,7 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 }
 
 .tuile__libelle {
-  font-size: 0.875rem;
+  font-size: 1rem;
 }
 
 .tuile__valeur {
@@ -226,7 +226,7 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
   margin-top: 0.625rem;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   background: var(--accent-color);
   color: var(--p-primary-500);
@@ -240,6 +240,49 @@ const points = (valeur) => `${formatNote(valeur)} pt${valeur > 1 ? 's' : ''}`;
 
   .tuile--phare {
     grid-column: 1 / -1;
+  }
+}
+
+/* Sur téléphone, une tuile par ligne, lue d'un trait : l'icône et le libellé à gauche avec leur
+   précision dessous, le chiffre à droite. Plus rien ne passe à la ligne. */
+@media (max-width: 639px) {
+  .synthese {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .tuile:not(.tuile--phare) {
+    display: grid;
+    grid-template-areas: "entete valeur" "detail valeur";
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 1rem;
+    row-gap: 0.125rem;
+    padding: 1rem 1.125rem;
+  }
+
+  .tuile:not(.tuile--phare) .tuile__entete {
+    grid-area: entete;
+    font-size: 1rem;
+  }
+
+  .tuile:not(.tuile--phare) .tuile__icone {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1rem;
+  }
+
+  .tuile:not(.tuile--phare) .tuile__valeur {
+    grid-area: valeur;
+    margin: 0;
+    padding: 0;
+    font-size: 2rem;
+  }
+
+  .tuile:not(.tuile--phare) .tuile__detail {
+    grid-area: detail;
+    padding-left: 2.875rem;
+    font-size: 1rem;
   }
 }
 

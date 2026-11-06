@@ -4,6 +4,7 @@ import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router';
 import {getMaScolariteService} from '@requests';
 import {absencesParEtat, semestreParDefaut} from '@/utils/scolarite.js';
 import SelecteurSemestre from '@/components/Etudiant/scolarite/SelecteurSemestre.vue';
+import SemestreFlottant from '@/components/Etudiant/scolarite/SemestreFlottant.vue';
 import NotesSemestre from '@/components/Etudiant/scolarite/NotesSemestre.vue';
 import AbsencesSemestre from '@/components/Etudiant/scolarite/AbsencesSemestre.vue';
 import JustificatifDrawer from '@/components/Etudiant/scolarite/JustificatifDrawer.vue';
@@ -67,7 +68,7 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
 <template>
   <!-- Comme l'agenda : le titre reste pour les lecteurs d'écran, les onglets disent déjà la page,
        et le semestre se choisit dans la carte, au même niveau qu'eux. -->
-  <section class="scolarite col-span-12 mt-10 md:mt-0">
+  <section class="scolarite col-span-12 mt-16 md:mt-0">
     <h1 class="sr-only">Notes et absences</h1>
 
     <div v-if="chargement" class="scolarite__chargement" aria-hidden="true">
@@ -104,7 +105,7 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
               <span v-if="aJustifier" class="scolarite__compte">{{ aJustifier }}<span class="sr-only"> à justifier</span></span>
             </Tab>
           </TabList>
-          <SelecteurSemestre v-model="idSemestre" :semestres="semestres"/>
+          <SelecteurSemestre v-model="idSemestre" :semestres="semestres" class="scolarite__semestre"/>
         </div>
         <!-- Seul l'onglet ouvert est monté : en changer, ou changer de semestre, rejoue l'entrée des
              chiffres et des graphiques. -->
@@ -122,6 +123,8 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
         </TabPanels>
       </Tabs>
     </div>
+
+    <SemestreFlottant v-if="semestres.length" v-model="idSemestre" :semestres="semestres"/>
 
     <JustificatifDrawer :absence="absenceAJustifier" @fermer="absenceAJustifier = null" @depose="apresDepot"/>
   </section>
@@ -229,8 +232,17 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
   }
 }
 
-/* Sur téléphone, le semestre passe sous les onglets, sur toute la largeur. */
+/* Sur téléphone, le semestre se choisit depuis le bouton flottant : la barre ne garde que les
+   onglets, et le bas de page laisse la place du bouton. */
 @media (max-width: 639px) {
+  .scolarite {
+    padding-bottom: 5rem;
+  }
+
+  .scolarite__semestre {
+    display: none;
+  }
+
   .scolarite__barre :deep(.p-tablist),
   .scolarite__barre :deep(.p-tablist-tab-list) {
     width: 100%;
@@ -241,10 +253,6 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
     justify-content: center;
   }
 
-  .scolarite__barre :deep(.selecteur),
-  .scolarite__barre :deep(.selecteur__liste) {
-    width: 100%;
-  }
 }
 
 .scolarite__onglets :deep(.p-tabpanels) {
@@ -261,7 +269,7 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
   min-width: 1.5rem;
   padding: 0 0.4rem;
   border-radius: 999px;
-  font-size: 0.8125rem;
+  font-size: 1rem;
   line-height: 1.5rem;
   text-align: center;
   background: var(--p-seance-evaluation-background);

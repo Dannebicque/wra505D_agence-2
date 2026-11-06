@@ -21,18 +21,25 @@ const vue = ref('graphique');
 const id = useId();
 
 // Avant que le tableau ne remplace le graphique, la carte donne sa hauteur à la ligne qui la porte,
-// pour que sa voisine n'en change pas.
+// pour que sa voisine n'en change pas. Elle ne la libère qu'une fois le graphique revenu : libérée
+// au clic, la voisine s'étirait un instant sur le tableau qui s'efface encore.
 const ligne = inject('ligneGraphiques', null);
 const carte = ref(null);
+let signale = false;
 watch(vue, (nouvelle) => {
-  if (nouvelle === 'tableau') {
+  if (nouvelle === 'tableau' && !signale) {
     ligne?.ouvrirTableau(carte.value.getBoundingClientRect().height);
-  } else {
-    ligne?.fermerTableau();
+    signale = true;
   }
 }, {flush: 'pre'});
+const graphiqueRevenu = () => {
+  if (signale && vue.value === 'graphique') {
+    ligne?.fermerTableau();
+    signale = false;
+  }
+};
 onBeforeUnmount(() => {
-  if (vue.value === 'tableau') {
+  if (signale) {
     ligne?.fermerTableau();
   }
 });
@@ -68,7 +75,7 @@ onBeforeUnmount(() => {
     </div>
     <slot name="filtres"/>
     <div :id="`${id}-contenu`" class="graphique__contenu">
-      <Transition name="vue" mode="out-in">
+      <Transition name="vue" mode="out-in" @after-enter="graphiqueRevenu">
         <div v-if="vue === 'tableau'" key="tableau" class="graphique__tableau">
           <slot name="tableau"/>
         </div>
@@ -198,13 +205,13 @@ onBeforeUnmount(() => {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.9375rem;
+  font-size: 1rem;
 }
 
 .graphique :deep(thead th) {
   padding: 0.625rem 0.875rem;
   border: none;
-  font-size: 0.8125rem;
+  font-size: 1rem;
   font-weight: 600;
   text-align: left;
   color: var(--p-text-muted-color);
@@ -241,7 +248,26 @@ onBeforeUnmount(() => {
   font-variant-numeric: tabular-nums;
 }
 
-/* Sur téléphone, la bascule ne garde que ses icônes ; les libellés restent lus. */
+/* Sur téléphone, la carte se resserre et le titre garde sa bascule sur sa ligne : la pastille du
+   titre s'efface, la bascule ne garde que ses icônes, dont les libellés restent lus. */
+@media (max-width: 639px) {
+  .graphique {
+    padding: 1rem;
+  }
+
+  .graphique__entete {
+    flex-wrap: nowrap;
+  }
+
+  .graphique__titre {
+    font-size: 1rem !important;
+  }
+
+  .graphique__icone {
+    display: none;
+  }
+}
+
 @media (max-width: 479px) {
   .graphique__bascule-texte {
     position: absolute;

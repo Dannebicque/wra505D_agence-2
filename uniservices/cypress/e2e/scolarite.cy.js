@@ -107,6 +107,18 @@ describe('Notes et absences de l\'étudiant', () => {
         cy.focused().should('have.id', 'absences-enAttente');
     });
 
+    it('change de semestre sur téléphone depuis le bouton flottant', () => {
+        cy.viewport(375, 812);
+        cy.get('.selecteur__liste').should('not.be.visible');
+        cy.location('search').invoke('match', /semestre=(\d+)/).its(1).then((courant) => {
+            cy.get('.semestre-flottant').should('be.visible').click();
+            cy.get('.semestre-fenetre [aria-current="true"]').should('be.focused');
+            cy.get('.semestre-fenetre button:not([aria-current])').first().click();
+            cy.location('search').should('match', /semestre=\d+/).and('not.contain', `semestre=${courant}`);
+            cy.get('.semestre-fenetre').should('not.exist');
+        });
+    });
+
     it('change de semestre depuis la liste, et le garde dans l\'adresse', () => {
         cy.location('search').invoke('match', /semestre=(\d+)/).its(1).then((courant) => {
             cy.get('.selecteur__liste').click();

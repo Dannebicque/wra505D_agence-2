@@ -105,7 +105,7 @@ const semestreChoisi = computed(() => props.semestres.find(semestre => semestre.
 
 .selecteur__en-cours {
   color: var(--p-text-muted-color);
-  font-size: 0.8125rem;
+  font-size: 1rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

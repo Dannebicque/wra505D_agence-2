@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from 'vue';
+import {computed, onBeforeUnmount, ref} from 'vue';
 import {evolutionUe, formatDate, formatNote} from '@/utils/scolarite.js';
 import {animationEntree, pluginSeuil, pluginZones, policeGraphique, useThemeGraphique} from '@/composables/useThemeGraphique.js';
 import GraphiqueAccessible from './GraphiqueAccessible.vue';
@@ -10,6 +10,17 @@ const props = defineProps({
 });
 
 const {couleurs, animation} = useThemeGraphique();
+
+// Sur téléphone, la légende ne garde que « UE 1.1 » : les libellés entiers l'étalaient sur trois
+// lignes.
+const ecranEtroit = window.matchMedia('(max-width: 639px)');
+const etroit = ref(ecranEtroit.matches);
+const suivreLargeur = (evenement) => {
+  etroit.value = evenement.matches;
+};
+ecranEtroit.addEventListener('change', suivreLargeur);
+onBeforeUnmount(() => ecranEtroit.removeEventListener('change', suivreLargeur));
+const libelleCourt = (libelle) => libelle.match(/^UE\s+\S+/)?.[0] ?? libelle;
 
 // Chaque UE a sa couleur, sa forme de point et son trait : on les distingue sans la couleur.
 const STYLES = [
@@ -56,7 +67,7 @@ const donnees = computed(() => ({
   datasets: affichees.value.map(({ue, style, points}) => {
     const couleur = couleurs.value[style.couleur];
     return {
-      label: ue.libelle,
+      label: etroit.value ? libelleCourt(ue.libelle) : ue.libelle,
       data: dates.value.map(date => points.find(point => point.date === date)?.moyenne ?? null),
       spanGaps: true,
       borderColor: couleur,
@@ -120,7 +131,7 @@ const valeursFinales = computed(() => ({
   afterDatasetsDraw(chart) {
     const {ctx} = chart;
     ctx.save();
-    ctx.font = '600 12px Roboto, sans-serif';
+    ctx.font = '600 14px Roboto, sans-serif';
     ctx.textBaseline = 'middle';
     chart.data.datasets.forEach((dataset, index) => {
       const dernier = dataset.data.findLastIndex(valeur => valeur !== null);
@@ -140,9 +151,10 @@ const plugins = computed(() => [pluginZones('y', couleurs.value), pluginSeuil('y
 
 <template>
   <GraphiqueAccessible v-if="courbes.length" :rang="5" titre="Évolution des moyennes" icone="pi pi-chart-line" teinte="sae" :resume="resume">
-    <template #filtres>
+    <!-- Les UE en pilules sur grand écran ; sur téléphone, où elles s'étalaient sur deux lignes, une
+         liste déroulante. Une seule des deux est affichée. -->
+    <template v-if="courbes.length > 1" #filtres>
       <SelectButton
-          v-if="courbes.length > 1"
           v-model="choix"
           :options="options"
           option-label="label"
@@ -151,9 +163,20 @@ const plugins = computed(() => [pluginZones('y', couleurs.value), pluginSeuil('y
           aria-label="UE affichées"
           class="filtre"
       />
+      <Select
+          v-model="choix"
+          :options="options"
+          option-label="label"
+          option-value="value"
+          aria-label="UE affichées"
+          class="filtre-liste"
+      />
     </template>
     <Chart type="line" :data="donnees" :options="optionsGraphique" :plugins="plugins" class="evolution"/>
-    <p class="aide">Moyenne de l'UE après chaque note publiée. Pointillé : seuil de validation, 10. Chaque point montre la note qui l'a fait bouger, au survol ou dans le tableau.</p>
+    <p class="aide">
+      <span class="texte-long">Moyenne de l'UE après chaque note publiée. Pointillé : seuil de validation, 10. Chaque point montre la note qui l'a fait bouger, au survol ou dans le tableau.</span>
+      <span class="texte-court">Moyenne après chaque note. Le détail est dans le tableau.</span>
+    </p>
     <template #tableau>
       <table>
         <caption class="sr-only">Évolution des moyennes</caption>
@@ -222,6 +245,36 @@ const plugins = computed(() => [pluginZones('y', couleurs.value), pluginSeuil('y
   box-shadow: none;
 }
 
+.filtre-liste {
+  display: none;
+  min-height: 48px;
+  align-items: center;
+  border: none;
+  border-radius: 999px;
+  background: var(--p-content-hover-background);
+  box-shadow: none;
+}
+
+.filtre-liste :deep(.p-select-label) {
+  padding-left: 1rem;
+  font-weight: 600;
+}
+
+.filtre-liste:focus-within {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}
+
+@media (max-width: 639px) {
+  .filtre {
+    display: none;
+  }
+
+  .filtre-liste {
+    display: flex;
+  }
+}
+
 .date {
   white-space: nowrap;
 }
@@ -239,7 +292,7 @@ const plugins = computed(() => [pluginZones('y', couleurs.value), pluginSeuil('y
 .nouvelle {
   padding: 0.125rem 0.625rem;
   border-radius: 999px;
-  font-size: 0.8125rem;
+  font-size: 1rem;
   white-space: nowrap;
   background: var(--p-seance-sae-background);
   color: var(--p-seance-sae-color);
@@ -247,7 +300,22 @@ const plugins = computed(() => [pluginZones('y', couleurs.value), pluginSeuil('y
 
 .aide {
   margin: 0.75rem 0 0;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
+}
+/* Sur téléphone, les explications passent en version courte : une seule des deux est affichée, et
+   donc lue par un lecteur d'écran. */
+.texte-court {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .texte-long {
+    display: none;
+  }
+
+  .texte-court {
+    display: inline;
+  }
 }
 </style>
