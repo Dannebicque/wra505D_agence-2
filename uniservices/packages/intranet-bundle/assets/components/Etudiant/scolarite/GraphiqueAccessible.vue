@@ -138,21 +138,13 @@ const id = useId();
   box-shadow: none;
 }
 
-/* Le contenu prend la hauteur restante de la carte : à côté d'un voisin plus haut, le graphique
-   s'étire au lieu de laisser un vide dessous. */
 .graphique__contenu {
   position: relative;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
   min-width: 0;
 }
 
 .graphique__zone {
   position: relative;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
 }
 
 .graphique__tableau {

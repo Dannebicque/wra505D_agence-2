@@ -100,6 +100,7 @@ const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
 .graphiques {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  align-items: start;
   gap: 1.25rem;
 }
 

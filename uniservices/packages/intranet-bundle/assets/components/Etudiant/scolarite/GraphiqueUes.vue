@@ -94,7 +94,7 @@ const hauteur = computed(() => `${props.ues.length * 3.5 + 3}rem`);
 
 <template>
   <GraphiqueAccessible :rang="4" titre="Moyennes par UE" icone="pi pi-chart-bar" teinte="cm" :resume="resume">
-    <Chart type="bar" :data="donnees" :options="options" :plugins="plugins" class="ues" :style="{minHeight: hauteur}"/>
+    <Chart type="bar" :data="donnees" :options="options" :plugins="plugins" :style="{height: hauteur}"/>
     <template #tableau>
       <table>
         <caption class="sr-only">Moyennes par UE</caption>
@@ -123,10 +123,6 @@ const hauteur = computed(() => `${props.ues.length * 3.5 + 3}rem`);
 </template>
 
 <style scoped>
-.ues {
-  flex: 1;
-}
-
 .statut {
   display: inline-flex;
   align-items: center;
