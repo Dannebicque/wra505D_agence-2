@@ -233,12 +233,8 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
 }
 
 /* Sur téléphone, le semestre se choisit depuis le bouton flottant : la barre ne garde que les
-   onglets, et le bas de page laisse la place du bouton. */
+   onglets. */
 @media (max-width: 639px) {
-  .scolarite {
-    padding-bottom: 5rem;
-  }
-
   .scolarite__semestre {
     display: none;
   }
