@@ -253,16 +253,15 @@
     }
 }
 
-// Sur téléphone et petite tablette, l'étudiant a tout l'écran : le contenu défile sous ses deux
-// barres translucides, celle du haut (3,5rem) et sa navigation du bas (--barre-bas), et commence
-// et finit à leur bord. Les pages n'ont plus à compenser une à une. Après la règle des 575 px, qui
-// redéfinit tout le padding.
+// Sur téléphone et petite tablette, l'étudiant n'a pas de barre du haut : son contenu prend tout
+// l'écran, du haut (sous l'encoche) jusqu'au-dessus de sa barre de navigation du bas (--barre-bas).
+// Après la règle des 575 px, qui redéfinit tout le padding.
 @media (max-width: 991px) {
     .layout-wrapper.layout-wrapper--etudiant .layout-main-container {
         margin-top: 0;
         height: 100vh;
         height: 100dvh;
-        padding-top: calc(3.5rem + var(--ui-space-2));
+        padding-top: calc(var(--ui-space-2) + env(safe-area-inset-top, 0px));
         padding-bottom: calc(var(--ui-space-2) + var(--barre-bas, 0px));
     }
 }
