@@ -89,7 +89,12 @@ export const semestreParDefaut = (semestres, idDemande = null) => {
     return notes.at(-1) ?? actifs.at(-1) ?? semestres.at(-1) ?? null;
 };
 
-const enseignementsDuSemestre = (semestre) => semestre.ues.flatMap(ue => ue.enseignements.map(enseignement => ({...enseignement, ue: ue.libelle})));
+// Une matière compte dans plusieurs UE, avec les mêmes notes et la même pénalité : elle n'est
+// comptée qu'une fois, sous la première UE où elle apparaît.
+const enseignementsDuSemestre = (semestre) => [...new Map(semestre.ues
+    .flatMap(ue => ue.enseignements.map(enseignement => ({...enseignement, ue: ue.libelle})))
+    .reverse()
+    .map(enseignement => [enseignement.code, enseignement])).values()].reverse();
 
 /**
  * Évaluations publiées qui comptent dans la moyenne, de la plus ancienne à la plus récente, avec
@@ -165,25 +170,6 @@ export const statutUe = (ue) => {
 };
 
 /**
- * Le résumé du semestre en phrases courtes, à lire avant tout le reste.
- */
-export const resumeNotes = (semestre) => {
-    const chiffres = syntheseSemestre(semestre);
-    if (chiffres.notesPubliees === 0) {
-        return ['Aucune note publiée pour ce semestre.'];
-    }
-    const phrases = [`${chiffres.uesValidees} UE sur ${chiffres.uesNotees} au-dessus de 10.`];
-    const sous = semestre.ues.filter(ue => ue.moyenne !== null && ue.moyenne !== undefined && ue.moyenne < 10);
-    if (sous.length) {
-        phrases.push(`Sous 10 : ${sous.map(ue => ue.libelle).join(', ')}.`);
-    }
-    if (chiffres.pointsPerdus) {
-        phrases.push(`Les absences non justifiées vous retirent ${formatNote(chiffres.pointsPerdus)} point${chiffres.pointsPerdus > 1 ? 's' : ''}.`);
-    }
-    return phrases;
-};
-
-/**
  * « 13 − 0,5 (1 absence) = 12,5 » : la moyenne brute, la pénalité et ce qui est retenu, écrits
  * en clair plutôt qu'une moyenne amputée sans explication. Rien sans pénalité.
  */
@@ -239,4 +225,69 @@ export const erreurPiece = (fichier) => {
         return 'La pièce doit être un PDF, un JPG ou un PNG.';
     }
     return fichier.size > PIECE_JUSTIFICATIVE.tailleMax ? 'La pièce dépasse 5 Mo.' : null;
+};
+
+const arrondi = (valeur) => Math.round(valeur * 100) / 100;
+
+const moyennePonderee = (valeurs) => {
+    const avecPoids = valeurs.filter(({poids}) => poids > 0);
+    const poids = avecPoids.reduce((total, valeur) => total + valeur.poids, 0);
+    return poids > 0 ? arrondi(avecPoids.reduce((total, valeur) => total + valeur.valeur * valeur.poids, 0) / poids) : null;
+};
+
+/**
+ * La moyenne de l'UE après chaque date de note publiée, avec les notes de ce jour-là, par le calcul du serveur
+ * (GradeAverageCalculator) : moyenne de chaque matière arrondie, pénalité retirée, puis moyenne
+ * des matières par coefficient. La pénalité d'aujourd'hui vaut pour toute la courbe : le dernier
+ * point est la moyenne affichée, sans qu'une absence ne fasse plonger la courbe à sa date.
+ */
+export const evolutionUe = (ue) => {
+    const compte = (evaluation) => resultatEvaluation(evaluation).compte;
+    const dates = [...new Set(ue.enseignements.flatMap(enseignement => enseignement.evaluations
+        .filter(evaluation => compte(evaluation) && evaluation.date)
+        .map(evaluation => evaluation.date)))].sort();
+
+    return dates.map(date => {
+        const matieres = ue.enseignements.map(enseignement => {
+            const moyenne = moyennePonderee(enseignement.evaluations
+                .filter(evaluation => compte(evaluation) && evaluation.date && evaluation.date <= date)
+                .map(evaluation => ({valeur: evaluation.statut === 'absent_injustifie' ? 0 : evaluation.note, poids: evaluation.coefficient ?? 1})));
+            return moyenne === null ? null : {valeur: arrondi(Math.max(0, moyenne - (enseignement.penalite ?? 0))), poids: enseignement.coefficient};
+        });
+        const nouvelles = ue.enseignements.flatMap(enseignement => enseignement.evaluations
+            .filter(evaluation => compte(evaluation) && evaluation.date === date)
+            .map(evaluation => ({libelle: evaluation.libelle, matiere: enseignement.code})));
+        return {date, moyenne: moyennePonderee(matieres.filter(matiere => matiere !== null)), nouvelles};
+    });
+};
+
+/**
+ * La part de chaque matière dans la moyenne de son UE, en pourcentage de la somme des
+ * coefficients.
+ */
+export const poidsMatiere = (ue, enseignement) => {
+    const total = ue.enseignements.reduce((somme, candidat) => somme + (candidat.coefficient ?? 0), 0);
+    return total > 0 ? Math.round((enseignement.coefficient ?? 0) / total * 100) : 0;
+};
+
+/**
+ * Les absences comptées par matière et par ce qu'elles demandent, la matière la plus touchée
+ * d'abord. Un justificatif refusé se justifie de nouveau : il compte avec les absences à justifier.
+ */
+export const absencesParMatiere = (liste) => {
+    const matieres = new Map();
+    for (const absence of liste) {
+        const nom = absence.matiere || 'Cours';
+        const compte = matieres.get(nom) ?? {matiere: nom, aJustifier: 0, enAttente: 0, justifiees: 0};
+        if (absence.justification === 'en_attente') {
+            compte.enAttente++;
+        } else if (absence.justification === 'validee') {
+            compte.justifiees++;
+        } else {
+            compte.aJustifier++;
+        }
+        matieres.set(nom, compte);
+    }
+    const total = (compte) => compte.aJustifier + compte.enAttente + compte.justifiees;
+    return [...matieres.values()].sort((a, b) => total(b) - total(a) || a.matiere.localeCompare(b.matiere));
 };

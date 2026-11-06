@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from 'vue';
-import {absencesParEtat, creneauAbsence, formatNote} from '@/utils/scolarite.js';
+import {absencesParEtat, creneauAbsence, formatNote, syntheseSemestre} from '@/utils/scolarite.js';
+import AbsencesParMatiere from './AbsencesParMatiere.vue';
 
 const props = defineProps({
   semestre: {type: Object, required: true},
@@ -8,6 +9,8 @@ const props = defineProps({
 const emit = defineEmits(['justifier']);
 
 const groupes = computed(() => absencesParEtat(props.semestre.absences.liste));
+const chiffres = computed(() => syntheseSemestre(props.semestre));
+const points = (valeur) => `${formatNote(valeur)} point${valeur > 1 ? 's' : ''}`;
 
 // Ce qui demande une action d'abord : le rouge leur est réservé.
 const SECTIONS = [
@@ -22,10 +25,21 @@ const SECTIONS = [
   <div class="absences">
     <p class="regle">
       <template v-if="semestre.penalite.active">
-        Une absence non justifiée retire {{ formatNote(semestre.penalite.points) }} point à la moyenne de sa matière.
-        Un justificatif accepté lève la pénalité.
+        <span class="texte-long">Une absence non justifiée retire {{ formatNote(semestre.penalite.points) }} point à la moyenne de sa matière. Un justificatif accepté lève la pénalité.</span>
+        <span class="texte-court">−{{ formatNote(semestre.penalite.points) }} pt par absence non justifiée, levé si le justificatif est accepté.</span>
       </template>
       <template v-else>Les absences ne pénalisent pas les moyennes de ce semestre.</template>
+    </p>
+    <p v-if="semestre.penalite.active && (chiffres.pointsPerdus || chiffres.pointsEnSuspens)" class="bilan">
+      <span class="texte-long">
+        <template v-if="chiffres.pointsPerdus">Aujourd'hui, vos absences retirent <strong>{{ points(chiffres.pointsPerdus) }}</strong> à vos moyennes.</template>
+        <template v-else>Aujourd'hui, vos absences ne retirent aucun point à vos moyennes.</template>
+        <template v-if="chiffres.pointsEnSuspens"> Elles en retireront <strong>{{ points(chiffres.pointsEnSuspens) }}</strong>{{ chiffres.pointsPerdus ? ' de plus' : '' }} dès la première note des matières concernées.</template>
+      </span>
+      <span class="texte-court">
+        <template v-if="chiffres.pointsPerdus">Aujourd'hui : <strong>−{{ points(chiffres.pointsPerdus) }}</strong></template>
+        <template v-else>Aucun point retiré pour l'instant</template><template v-if="chiffres.pointsEnSuspens">, puis <strong>−{{ points(chiffres.pointsEnSuspens) }}</strong> à la prochaine note</template>.
+      </span>
     </p>
 
     <ul class="compteurs">
@@ -41,6 +55,7 @@ const SECTIONS = [
     </ul>
 
     <p v-if="!semestre.absences.total" class="m-0!">Aucune absence ce semestre.</p>
+    <AbsencesParMatiere v-else :absences="semestre.absences.liste"/>
 
     <template v-for="section in SECTIONS" :key="section.cle">
       <section v-if="groupes[section.cle].length" class="section" :aria-labelledby="`absences-${section.cle}`">
@@ -57,7 +72,6 @@ const SECTIONS = [
                 v-if="section.action"
                 :label="section.action"
                 icon="pi pi-upload"
-                size="small"
                 class="min-h-[44px]! shrink-0"
                 :aria-label="`${section.action} l'absence en ${absence.matiere || 'cours'}, ${creneauAbsence(absence)}`"
                 @click="emit('justifier', absence)"
@@ -70,15 +84,24 @@ const SECTIONS = [
 </template>
 
 <style scoped>
+/* Une seule carte, comme un bloc de l'accueil : la règle, les compteurs, le graphique, les listes. */
 .absences {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: var(--p-content-background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px -4px rgb(0 0 0 / 0.06);
 }
 
 .regle {
   margin: 0;
   color: var(--p-text-muted-color);
+}
+
+.bilan {
+  margin: -0.75rem 0 0;
 }
 
 .compteurs {
@@ -133,7 +156,7 @@ const SECTIONS = [
 .section__nombre {
   padding: 0 0.5rem;
   border-radius: 999px;
-  font-size: 0.8125rem;
+  font-size: 1rem;
   background: var(--p-content-hover-background);
 }
 
@@ -189,19 +212,34 @@ const SECTIONS = [
 }
 
 .absence__creneau {
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
 }
 
 .absence__refus {
   margin-top: 0.25rem;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--p-seance-evaluation-color);
 }
 
 @media (max-width: 639px) {
   .absence {
     flex-wrap: wrap;
+  }
+}
+/* Sur téléphone, les explications passent en version courte : une seule des deux est affichée, et
+   donc lue par un lecteur d'écran. */
+.texte-court {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .texte-long {
+    display: none;
+  }
+
+  .texte-court {
+    display: inline;
   }
 }
 </style>
