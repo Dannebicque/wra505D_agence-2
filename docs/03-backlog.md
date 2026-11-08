@@ -687,6 +687,13 @@ généré.
   l'évaluation ; `ROLE_ADMIN` perd ce droit, choix du client gardé. Test unitaire du voter ajouté.
   Le dialogue des évaluations du tableau de bord enseignant prend le `Message` du client à la
   place de notre texte vide. Cypress non rejoué : base locale arrêtée.
+- Reprise amont `d58b90811..f5bb12d5a` (routine du 08/11/2026) : filtre `enseignement` des
+  absences et dialogues du tableau de bord enseignant (liens vers les pages absences, évaluations,
+  plans de cours, prévisionnel) repris tels quels. Le filtre s'ajoute à la description
+  d'`AbsenceFilter`, notre entité gardant `#[ApiFilter]` ; la collection reste derrière
+  `CAN_VIEW_ABSENCE`. Les couleurs CM, TD et TP du prévisionnel restent celles du client, écran du
+  personnel. Écartée : la release 0.9.0 (version et CHANGELOG à nous). Cypress non rejoué : base
+  locale arrêtée.
 
 ---
 
