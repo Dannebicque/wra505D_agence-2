@@ -2,6 +2,7 @@
 import {computed, provide, ref} from 'vue';
 import {detailPenalite, formatDate, formatNote, notesDuSemestre, poidsMatiere, resultatEvaluation, statutUe, tonEvaluation} from '@/utils/scolarite.js';
 import {tonNote} from '@/utils/accueil.js';
+import {lienFicheMatiere} from '@/utils/ficheMatiere.js';
 import GraphiqueEvolution from './GraphiqueEvolution.vue';
 import GraphiqueUes from './GraphiqueUes.vue';
 import JaugeNote from './JaugeNote.vue';
@@ -75,7 +76,11 @@ provide('ligneGraphiques', {
             <li v-for="(enseignement, rang) in ue.enseignements" :key="enseignement.code" class="matiere" :style="{'--rang': rang}">
               <div class="matiere__ligne">
                 <span class="matiere__nom">
-                  <span class="matiere__titre"><span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}</span>
+                  <!-- La fiche ne couvre que l'année en cours : les semestres passés gardent un titre simple. -->
+                  <router-link v-if="semestre.actif && enseignement.id" :to="lienFicheMatiere(enseignement.id)" class="matiere__titre matiere__lien">
+                    <span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}
+                  </router-link>
+                  <span v-else class="matiere__titre"><span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}</span>
                   <span class="matiere__poids">coef. {{ formatNote(enseignement.coefficient) }} · {{ poidsMatiere(ue, enseignement) }} % de l'UE</span>
                 </span>
                 <PastilleNote :ton="tonNote(enseignement.moyennePenalisee)">
@@ -271,6 +276,23 @@ provide('ligneGraphiques', {
 
 .matiere__code {
   font-weight: 700;
+}
+
+.matiere__lien {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.3em;
+  min-height: 44px;
+  color: var(--p-primary-color);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.matiere__lien:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 .matiere__poids {

@@ -7,6 +7,12 @@ export default [
         meta: { breadcrumb: [] },
     },
     {
+        path: 'matieres/:id(\\d+)',
+        component: () => import('@/views/Scolarite/FicheMatiereView.vue'),
+        name: 'Fiche matière',
+        meta: { breadcrumb: [{ label: 'Notes et absences', route: '/intranet/scolarite' }, { label: 'Fiche matière', route: null, icon: 'pi pi-book' }] },
+    },
+    {
         path: 'cahier-de-texte',
         component: () => import('@/views/Etudiants/CahierDeTexteView.vue'),
         name: 'Cahier de texte',

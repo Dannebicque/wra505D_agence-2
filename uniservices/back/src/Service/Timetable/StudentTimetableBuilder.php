@@ -74,6 +74,22 @@ class StudentTimetableBuilder
     }
 
     /**
+     * Les prochains cours d'un enseignement pour les groupes de l'étudiant, celui en cours compris,
+     * dans la même forme que la semaine.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function upcoming(Etudiant $student, int $teachingId, int $limit, ?\DateTimeImmutable $now = null): array
+    {
+        $now ??= new \DateTimeImmutable('now', new \DateTimeZone(self::TIMEZONE));
+
+        return array_map(
+            $this->course(...),
+            $this->edtEvents->findUpcomingByGroupesAndEnseignement($this->groupIds($student), $teachingId, $now, $limit),
+        );
+    }
+
+    /**
      * @return list<int>
      */
     private function groupIds(Etudiant $student): array

@@ -86,7 +86,7 @@ final class PerimetreAnnuelRegistry
         // Vues de l'étudiant connecté : le serveur lit l'année de son inscription, pas la sélection de l'interface.
         'StudentTimetable' => 'transversal', 'StudentWeeks' => 'transversal', 'Transcript' => 'transversal',
         'NotificationFeed' => 'transversal', 'SearchResult' => 'transversal', 'CourseLog' => 'transversal',
-        'StudentInvitationDto' => 'transversal',
+        'StudentInvitationDto' => 'transversal', 'SubjectSheet' => 'transversal',
     ];
 
     public function mode(string $class): string
