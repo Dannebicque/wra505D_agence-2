@@ -9,12 +9,19 @@ const connexion = (login) => {
     cy.request('POST', '/api/login', { username: login, password: 'test' });
 };
 
-const appel = (method, url) => cy.request({
+const appel = (method, url, headers = {}) => cy.request({
     method,
     url,
+    headers,
     body: method === 'POST' ? { repere: 'Chapitre 1', prochaineEtape: '', versionId: 0 } : undefined,
     failOnStatusCode: false,
 });
+
+// Comme le front, l'appel porte l'année universitaire sélectionnée : sans elle, la requête est
+// refusée avant même le contrôle d'accès.
+const avecAnneeActive = (envoi) => cy.request('/api/structure_annee_universitaires?actif=true')
+    .its('body.member.0.id')
+    .then((id) => envoi({ 'X-Contexte-Annuel': 'selection', 'X-Annee-Universitaire': String(id) }));
 
 describe('Avancement des enseignements', () => {
     routes.forEach(([method, url]) => {
@@ -24,7 +31,7 @@ describe('Avancement des enseignements', () => {
 
         it(`${method} ${url} est refusée à un étudiant`, () => {
             connexion('etudiant');
-            appel(method, url).its('status').should('eq', 403);
+            avecAnneeActive((headers) => appel(method, url, headers).its('status').should('eq', 403));
         });
     });
 });

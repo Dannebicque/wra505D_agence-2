@@ -20,6 +20,7 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Relance manuelle des participants d'un questionnaire, avec historique sur chaque invitation.
  */
+#[\App\AnneeUniversitaire\ContexteAnnuel('ressource', 'Questionnaire explicitement identifié.', \QuestionnaireBundle\Entity\Questionnaires\Questionnaire::class, 'uuid', 'uuid')]
 class QuestionnaireReminderController extends AbstractController
 {
     public function __construct(

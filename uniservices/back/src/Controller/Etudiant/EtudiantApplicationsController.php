@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[\App\AnneeUniversitaire\ContexteAnnuel('transversal', 'Applications ouvertes aux étudiants du département actif, quelle que soit l’année.')]
 class EtudiantApplicationsController extends AbstractController
 {
     private const ACTIONS = ['add', 'remove', 'set'];

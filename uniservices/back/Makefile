@@ -5,7 +5,7 @@ PHPSTAN_CONFIG = phpstan.neon
 
 all: check
 
-check: install composer-validate lint-container doctrine-validate phpstan cs test
+check: install composer-validate lint-container doctrine-validate annual-audit phpstan cs test
 
 install:
 	composer install --no-progress --no-interaction --prefer-dist
@@ -18,6 +18,10 @@ lint-container:
 
 doctrine-validate:
 	php bin/console doctrine:schema:validate --skip-sync
+
+# Chaque opération HTTP et chaque ressource déclarent leur politique d'année universitaire.
+annual-audit:
+	php bin/console app:annees-universitaires:audit
 
 phpstan:
 	$(PHPSTAN) analyse -c $(PHPSTAN_CONFIG) --memory-limit=1G

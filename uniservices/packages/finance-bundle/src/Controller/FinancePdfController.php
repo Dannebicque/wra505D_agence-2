@@ -23,6 +23,7 @@ use Twig\Environment;
  * Formulaire de demande d'achat en PDF ou en HTML, dépôt et lecture du PDF signé. `^/api` est
  * public : chaque route vérifie d'abord le rôle finance, puis le département de la demande.
  */
+#[\App\AnneeUniversitaire\ContexteAnnuel('independant', 'Identité, paramétrage partagé ou données sans année universitaire.')]
 class FinancePdfController extends AbstractController
 {
     public function __construct(
