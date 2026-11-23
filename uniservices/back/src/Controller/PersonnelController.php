@@ -5,8 +5,11 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Enum\StatutEnum;
 
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('independant', 'Identité, paramétrage partagé ou données sans année universitaire.')]
 class PersonnelController extends AbstractController
 {
     #[Route('/api/statuts', name: 'api_statuts', methods: ['GET'])]

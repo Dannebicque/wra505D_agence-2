@@ -33,6 +33,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: PrevisionnelRepository::class)]
 #[ApiResource(
@@ -77,7 +79,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             provider: PreviStatsEdtProvider::class,
             output: PreviStatsEdtDto::class,
         ),
-        new Patch(normalizationContext: ['groups' => ['previsionnel:read']], securityPostDenormalize: "is_granted('CAN_EDIT_PREVISIONNEL', object)"),
+        new Patch(normalizationContext: ['groups' => ['previsionnel:read']], security: "is_granted('CAN_EDIT_PREVISIONNEL', object)", securityPostDenormalize: "is_granted('CAN_EDIT_PREVISIONNEL', object)"),
         new Post(normalizationContext: ['groups' => ['previsionnel:read']], securityPostDenormalize: "is_granted('CAN_EDIT_PREVISIONNEL', object)"),
         new Delete(normalizationContext: ['groups' => ['previsionnel:read']], security: "is_granted('CAN_DELETE_PREVISIONNEL', object)"),
     ],
@@ -96,6 +98,7 @@ class Previsionnel
 
     #[ORM\ManyToOne(inversedBy: 'previsionnels')]
     #[Groups(['previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read', 'previsionnel_enseignement:read', 'previsionnel_personnel:read', 'previsionnel_all_personnels:read', 'edt_event:read:agenda'])]
+    #[Assert\NotNull]
     private ?Personnel $personnel = null;
 
     #[ORM\ManyToOne(inversedBy: 'previsionnels')]

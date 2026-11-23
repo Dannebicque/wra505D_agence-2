@@ -119,9 +119,28 @@ class EtudiantNote implements TimestampableInterface
         }
     }
 
-    public function setNote(float $note): static
+    #[Groups(['note:detail'])]
+    public function getNoteBrute(): ?float
     {
-        if ($note < -0.01 || $note > 20.0) {
+        return $this->note;
+    }
+
+    #[Assert\Callback]
+    public function validateRattachements(ExecutionContextInterface $context): void
+    {
+        $evaluation = $this->evaluation;
+        $inscription = $this->scolariteSemestre;
+        if ($evaluation === null || $inscription === null
+            || $evaluation->getSemestre() !== $inscription->getSemestre()
+            || $evaluation->getAnneeUniversitaire() !== $inscription->getScolarite()?->getAnneeUniversitaire()) {
+            $context->buildViolation('La note doit relier une évaluation et une inscription du même semestre et de la même année universitaire.')
+                ->atPath('scolariteSemestre')->addViolation();
+        }
+    }
+
+    public function setNote(?float $note): static
+    {
+        if ($note !== null && ($note < -0.01 || $note > 20.0)) {
             throw new \InvalidArgumentException('La valeur doit être comprise entre 0 et 20.');
         }
 
@@ -150,18 +169,6 @@ class EtudiantNote implements TimestampableInterface
     public function setEvaluation(?ScolEvaluation $evaluation): static
     {
         $this->evaluation = $evaluation;
-
-        return $this;
-    }
-
-    public function getScolarite(): ?EtudiantScolarite
-    {
-        return $this->scolarite;
-    }
-
-    public function setScolarite(?EtudiantScolarite $scolarite): static
-    {
-        $this->scolarite = $scolarite;
 
         return $this;
     }

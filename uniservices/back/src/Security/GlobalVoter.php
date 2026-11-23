@@ -2,7 +2,6 @@
 
 namespace App\Security;
 
-use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;

@@ -19,6 +19,9 @@ class ImportApogeeEtudiantController extends AbstractController
     {
         // Récupérer les données JSON envoyées dans la requête
         $data = $request->toArray();
+        if (is_array($data)) {
+            $data['anneeUnivId'] = $request->attributes->get('_annee_universitaire_id');
+        }
 
         $anneeId = $data['anneeId'] ?? null;
         $semestreId = $data['semestreId'] ?? null;

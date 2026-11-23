@@ -14,6 +14,8 @@ import { tools } from '@config/uniServices.js';
 import noImage from "@images/photos_etudiants/noimage.png";
 import { PermissionGuard } from "@components";
 import ApplicationBadge from '../Application/ApplicationBadge.vue';
+import NotificationBell from './NotificationBell.vue';
+import { normalizeAppSlug } from '@utils';
 import api from '@helpers/axios';
 
 const anneeUnivStore = useAnneeUnivStore();
@@ -23,8 +25,30 @@ const router = useRouter();
 
 const hasError = ref(false);
 
-const deptItems = ref([]);
-const departementLabel = ref('');
+const header = ref(null);
+let headerObserver;
+const departementLabel = computed(() => userStore.departementDefaut?.libelle || 'Aucun département sélectionné');
+const canChangeDepartement = computed(() => userStore.userType === 'personnels' && userStore.departementsNotDefaut?.length > 0);
+const deptItems = computed(() => (Array.isArray(userStore.departements) ? userStore.departements : []).map(departement => ({
+  label: departement.libelle,
+  icon: departement.id === userStore.departementDefaut?.id ? 'pi pi-check' : 'pi pi-building',
+  disabled: departement.id === userStore.departementDefaut?.id,
+  command: () => changeDepartement(departement.id)
+})));
+
+onMounted(() => {
+  // Include wrapped department names when positioning content below the header.
+  const updateHeaderHeight = () => {
+    document.documentElement.style.setProperty('--layout-header-height', `${header.value.getBoundingClientRect().height}px`);
+  };
+  updateHeaderHeight();
+  headerObserver = new ResizeObserver(updateHeaderHeight);
+  headerObserver.observe(header.value);
+});
+onBeforeUnmount(() => {
+  headerObserver?.disconnect();
+  document.documentElement.style.removeProperty('--layout-header-height');
+});
 const anneesUniv = ref([]);
 const anneeItems = ref([
   {
@@ -102,26 +126,6 @@ const fetchData = async () => {
       }
     }
 
-    // Gérer les données des départements pour l'interface utilisateur
-    if (userStore.user) {
-      if (userStore.userType === 'personnels') {
-        // Mapper les départements pour le menu déroulant
-        deptItems.value = Array.isArray(userStore.departementsNotDefaut)
-          ? userStore.departementsNotDefaut.map(departement => ({
-            label: departement.libelle,
-            id: departement.id,
-            command: () => changeDepartement(departement.id)
-          }))
-          : [];
-
-        // Définir le libellé du département par défaut
-        departementLabel.value = userStore.departementDefaut?.libelle || '';
-      } else {
-        // Pour les utilisateurs non-personnel
-        deptItems.value = [];
-        departementLabel.value = userStore.departementDefaut?.libelle || '';
-      }
-    }
   } catch (error) {
     hasError.value = true;
     console.error('Error fetching data:', error);
@@ -295,12 +299,6 @@ const toggleRolesMenu = (event) => {
 const changeDepartement = async (departementId) => {
   try {
     await userStore.changeDepartement(departementId);
-    deptItems.value = userStore.departementsNotDefaut.map(departementPersonnel => ({
-      label: departementPersonnel.libelle,
-      id: departementPersonnel.id,
-      command: () => changeDepartement(departementPersonnel.id)
-    }));
-    departementLabel.value = userStore.departementDefaut.libelle;
   } catch (error) {
     hasError.value = true;
     console.error('Error changing department:', error);
@@ -315,7 +313,9 @@ const initiales = computed(() => {
 });
 
 const isEnabled = (item) => {
-  return item.urlSlug === 'intranet' || userStore.applications.includes(item.urlSlug);
+  const userApps = (userStore.applications || []).map(normalizeAppSlug);
+  const slug = normalizeAppSlug(item.urlSlug || item.name || item);
+  return slug === 'intranet' || userApps.includes(slug);
 };
 
 const activeTools = computed(() => {

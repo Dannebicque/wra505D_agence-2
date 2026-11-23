@@ -8,7 +8,7 @@ use App\Repository\Edt\EdtEventRepository;
 
 class IntranetScheduleService
 {
-    public function __construct(private readonly EdtEventRepository $edtEventRepository)
+    public function __construct(private readonly EdtEventRepository $edtEventRepository, private readonly \App\AnneeUniversitaire\AnneeUniversitaireContext $anneeContext)
     {
     }
 

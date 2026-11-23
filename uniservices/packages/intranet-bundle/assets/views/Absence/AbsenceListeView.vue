@@ -2,11 +2,13 @@
 import AbsencesPeriodesTable from '@/components/Absence/AbsencesPeriodesTable.vue';
 import ContexteSelection from '@/components/Structure/ContexteSelection.vue';
 import {computed, onMounted, ref, watch} from "vue";
-import {SimpleSkeleton, HeaderComponent, ButtonDelete, Kpi} from "@components";
+import { EmptyState, SimpleSkeleton, HeaderComponent, ButtonDelete, Kpi} from "@components";
 import {useAnneeStore, useUsersStore} from "@stores";
 import {getAnneeService, getEtudiantAbsencesService, deleteEtudiantAbsenceService} from "@requests";
 import {useRoute, useRouter} from "vue-router";
 import {Button} from "primevue";
+
+const props = defineProps({ integre: Boolean });
 
 const route = useRoute();
 const router = useRouter();
@@ -33,8 +35,10 @@ const isLoadingAbsencesStats = ref(true);
 onMounted(async () => {
   await getAnnees();
   await getAnnee();
-  await getAbsences();
-  await getAbsencesStats();
+  if (!annee.value?.id) {
+    isLoadingAbsences.value = false;
+    isLoadingAbsencesStats.value = false;
+  }
 });
 
 const getAnnees = async () => {
@@ -63,7 +67,7 @@ const getAnnee = async () => {
   hasError.value = false;
   // Récupération de l'id de l'année via l'URL
   try {
-    const anneeId = Number.parseInt(String(route.params.anneeId), 10);
+    const anneeId = Number.parseInt(String(props.integre ? anneeStore.annee?.id : route.params.anneeId), 10);
     if (!Number.isNaN(anneeId)) {
       annee.value = annees.value.find((item) => item.id === anneeId) || annees.value[0] || {};
     } else {
@@ -79,9 +83,9 @@ const getAnnee = async () => {
 };
 
 watch(annee, async (newAnnee, oldAnnee) => {
-  if (newAnnee?.id === oldAnnee?.id) return;
+  if (!newAnnee?.id || newAnnee.id === oldAnnee?.id) return;
 
-  if (newAnnee?.id && String(route.params.anneeId) !== String(newAnnee.id)) {
+  if (!props.integre && newAnnee?.id && String(route.params.anneeId) !== String(newAnnee.id)) {
     await router.replace({
       name: route.name,
       params: {
@@ -228,9 +232,7 @@ const onPageChange = async event => {
       <div class="card-body">
         <div>
           <h3 class="m-0 mb-3">Toutes les absences saisies</h3>
-          <Message severity="info" icon="pi pi-info-circle" class="w-full flex justify-center" v-if="!isLoadingAbsences && (!absences || absences.length === 0)">
-            Aucune absence trouvée pour cette année.
-          </Message>
+          <EmptyState class="w-full flex justify-center" v-if="!isLoadingAbsences && (!absences || absences.length === 0)" compact title="Aucune absence trouvée pour cette année." />
           <AbsencesPeriodesTable v-else :absences="absences" :total-absences="totalAbsences"
             :offset="offset" :limit="limit" :row-options="rowOptions" @page="onPageChange">
             <template #detail-actions="{absence}">
@@ -247,9 +249,7 @@ const onPageChange = async event => {
           <div class="flex flex-col justify-between xl:col-span-2">
             <div>
               <h3 class="m-0 mb-3">Dernière absences saisies</h3>
-              <Message severity="info" icon="pi pi-info-circle" class="w-full flex justify-center" v-if="!isLoadingAbsences && (!absences || absences.length === 0)">
-                Aucune absence trouvée pour cette année.
-              </Message>
+              <EmptyState class="w-full flex justify-center" v-if="!isLoadingAbsences && (!absences || absences.length === 0)" compact title="Aucune absence trouvée pour cette année." />
 
             </div>
           </div>

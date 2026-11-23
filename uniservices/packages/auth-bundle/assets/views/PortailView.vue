@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { TopbarComponent, WidgetCard, GlobalLoader, HeaderComponent, PermissionGuard } from '@components';
-import { getApplicationMeta } from '@utils';
+import { getApplicationMeta, normalizeAppSlug } from '@utils';
 import { tools } from '@config/uniServices.js';
 import { getWidgetDataByCodeService, getWidgetsCatalogService, updateDashboardWidgetLayoutService, getActualitesService } from '@requests';
 import { useUsersStore, useAnneeUnivStore, useEtablissementStore } from "@stores";
@@ -47,6 +47,7 @@ const titrePortail = computed(() => {
 onMounted(async () => {
   isLoadingBundles.value = true;
   try {
+    await userStore.getUser(true);
     etablissement.value = await etablissementStore.etablissement;
     await getWidgets();
   } finally {
@@ -342,6 +343,16 @@ watch(() => route.path, async (newPath, oldPath) => {
 </template>
 
 <style scoped>
+.portal-page {
+  padding-top: calc(var(--layout-header-height, 4rem) + 2rem);
+}
+
+@media (min-width: 1024px) {
+  .portal-column {
+    height: calc(100dvh - var(--layout-header-height, 4rem) - 2rem);
+  }
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

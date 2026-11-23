@@ -1,13 +1,13 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
-import { ListSkeleton } from '@components';
+import { computed, ref, watch } from 'vue';
+import { EmptyState, ErrorState, ListSkeleton } from '@components';
 import EnseignementAvancementDialog from './EnseignementAvancementDialog.vue';
 import EnseignementEvaluationsDialog from './EnseignementEvaluationsDialog.vue';
 import EnseignementAbsencesDialog from './EnseignementAbsencesDialog.vue';
 import EnseignementPlanCoursDialog from './EnseignementPlanCoursDialog.vue';
 import EnseignementPrevisionnelDialog from './EnseignementPrevisionnelDialog.vue';
 import { getEnseignementsService } from '@requests';
-import { useUsersStore } from '@stores';
+import { useAnneeUnivStore, useUsersStore } from '@stores';
 
 const usersStore = useUsersStore();
 
@@ -19,17 +19,23 @@ const shortcuts = [
   { key: 'previsionnel', label: 'Prévisionnel', icon: 'pi pi-calendar' },
 ];
 
+const props = defineProps({ anneeId: Number, semestreId: Number });
+
 const selectedTeaching = ref(null);
 const dialogsVisible = ref({ evaluations: false, absences: false, plan: false, previsionnel: false });
 const avancementVisible = ref(false);
 const enseignementAvancement = ref(null);
 const enseignements = ref([]);
 const isLoadingEnseignements = ref(false);
+const hasError = ref(false);
 const selectedDiplome = ref(null);
 const selectedType = ref('tous');
 
 const anneeUniv = localStorage.getItem('selectedAnneeUniv') ? JSON.parse(localStorage.getItem('selectedAnneeUniv')) : { id: null };
-const anneeUniversitaire = anneeUniv?.id;
+const anneeUnivStore = useAnneeUnivStore();
+const anneeUniversitaire = props.anneeId == null
+    ? anneeUniv?.id
+    : anneeUnivStore.selectedAnneeUniv?.id ?? anneeUnivStore.anneeUniv?.id;
 
 const diplomes = computed(() => {
   const diplomesMap = new Map();
@@ -89,25 +95,37 @@ const enseignementsFiltres = computed(() => {
   return enseignementsDiplomeSelectionne.value.filter(enseignement => enseignement?.type === selectedType.value);
 });
 
-const getEnseignements = async () => {
-  isLoadingEnseignements.value = true;
+watch([() => props.semestreId, () => usersStore.userId], async ([semestre, personnel], _, onCleanup) => {
+  let current = true;
+  onCleanup(() => { current = false; });
+  enseignements.value = [];
+  hasError.value = false;
+  selectedTeaching.value = null;
+  enseignementAvancement.value = null;
+  isLoadingEnseignements.value = personnel != null;
+  if (!isLoadingEnseignements.value) return;
+
   try {
     const params = {
-      personnel: usersStore.user.id,
-      anneeUniversitaire: anneeUniv.id,
-      departement: usersStore.departementDefaut?.id ?? null,
+      personnel,
+      anneeUniversitaire,
     };
-    enseignements.value = await getEnseignementsService(params, '/dashboard');
+    if (semestre != null) {
+      params.semestre = semestre;
+    } else {
+      params.departement = usersStore.departementDefaut?.id ?? null;
+    }
+    const result = await getEnseignementsService(params, '/dashboard');
+    if (current) enseignements.value = result ?? [];
   } catch (error) {
-    console.error('Erreur lors de la récupération des enseignements :', error);
+    if (current) {
+      hasError.value = true;
+      console.error('Erreur lors de la récupération des enseignements :', error);
+    }
   } finally {
-    isLoadingEnseignements.value = false;
+    if (current) isLoadingEnseignements.value = false;
   }
-};
-
-onMounted(async () => {
-  await getEnseignements();
-});
+}, { immediate: true });
 
 function openTeaching(teaching, shortcut) {
   if (shortcut === 'avancement') {
@@ -167,7 +185,13 @@ function openTeaching(teaching, shortcut) {
         </TabPanel>
       </TabPanels>
     </Tabs>
-    <p v-else class="m-0! text-sm text-muted-color">Aucun enseignement disponible pour ce contexte.</p>
+    <ErrorState v-else-if="hasError" compact message="Impossible de charger les enseignements." />
+    <EmptyState
+        v-else-if="usersStore.userId != null"
+        title="Aucun enseignement disponible pour ce contexte."
+        icon="pi pi-book"
+        compact
+    />
 
     <EnseignementEvaluationsDialog
         v-model:visible="dialogsVisible.evaluations"

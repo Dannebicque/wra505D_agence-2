@@ -118,7 +118,7 @@ const toggleEdusignScope = (scope) => {
     <em>Gestion des intégrations externes de l'établissement</em>
     </div>
 
-    <ErrorView v-if="hasError"/>
+    <ErrorState v-if="hasError"/>
     <template v-else>
       <div class="card-body">
         <ListSkeleton v-if="isLoadingEtablissement"/>

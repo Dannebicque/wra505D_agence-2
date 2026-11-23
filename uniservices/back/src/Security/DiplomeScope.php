@@ -2,6 +2,8 @@
 
 namespace App\Security;
 
+use App\Entity\Scolarite\ScolEnseignement;
+use App\Entity\Scolarite\ScolEnseignementUe;
 use App\Entity\Structure\StructureDiplome;
 
 /** Resolves a unique diploma; shared or unknown resources deliberately have no scope. */

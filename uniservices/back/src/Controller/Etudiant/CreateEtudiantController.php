@@ -66,13 +66,18 @@ class CreateEtudiantController extends AbstractController
             return new JsonResponse(['message' => 'Année pédagogique introuvable'], Response::HTTP_NOT_FOUND);
         }
 
+        $newScolarite = $this->createEtudiantScolariteFromData($etudiant, $anneeUniv, $annee);
+        $this->denyAccessUnlessGranted('CAN_EDIT_ETUDIANT_SCOLARITE', $newScolarite);
+
         $scolarite = $this->etudiantScolariteRepository->findOneBy([
             'etudiant' => $etudiant,
             'anneeUniversitaire' => $anneeUniv,
         ]);
 
-        if (!$scolarite instanceof EtudiantScolarite) {
-            $scolarite = $this->createEtudiantScolariteFromData($etudiant, $anneeUniv, $annee);
+        if ($scolarite instanceof EtudiantScolarite) {
+            $this->denyAccessUnlessGranted('CAN_EDIT_ETUDIANT_SCOLARITE', $scolarite);
+        } else {
+            $scolarite = $newScolarite;
             $this->entityManager->persist($scolarite);
         }
 

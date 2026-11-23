@@ -169,6 +169,11 @@ class EdtEvent implements TimestampableInterface
     #[Groups(['edt_event:read:agenda'])]
     private ?string $type = null;
 
+    // Le champ type historique décrit le format du cours (CM, TD, TP…).
+    #[ORM\Column(length: 20, enumType: TypeEvenementEdt::class, options: ['default' => 'autre'])]
+    #[Groups(['edt_event:read:agenda'])]
+    private TypeEvenementEdt $typeEvenement = TypeEvenementEdt::Autre;
+
     #[ORM\ManyToOne(inversedBy: 'edtEvents')]
     #[Groups(['edt_event:read:agenda'])]
     private ?StructureAnneeUniversitaire $anneeUniversitaire = null;
@@ -446,6 +451,18 @@ class EdtEvent implements TimestampableInterface
     public function setType(?string $type): static
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getTypeEvenement(): TypeEvenementEdt
+    {
+        return $this->typeEvenement;
+    }
+
+    public function setTypeEvenement(TypeEvenementEdt $typeEvenement): static
+    {
+        $this->typeEvenement = $typeEvenement;
 
         return $this;
     }

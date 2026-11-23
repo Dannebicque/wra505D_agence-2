@@ -29,6 +29,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/messages')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('transversal', 'Historique, cursus, publications ou ressources explicitement choisis par le métier.')]
 class MessageController extends AbstractController
 {
     private const PERMANENTS_STATUTS = ['MCF', 'PU', 'PRCE', 'PRAG', 'CONTRACTUEL', 'CONTRAC', 'PRCACDD', 'CDD'];
@@ -411,7 +413,8 @@ class MessageController extends AbstractController
      * Options de cibles pour la rédaction (semestres, groupes, étudiants, enseignants, personnels CC).
      */
     #[Route('/targets', name: 'api_messages_targets', methods: ['GET'])]
-    public function getTargetOptions(): JsonResponse
+    #[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Destinataires de l’année de travail.')]
+    public function getTargetOptions(Request $request): JsonResponse
     {
         $user = $this->getCurrentUser();
         if (!$user instanceof Personnel) {
@@ -441,7 +444,7 @@ class MessageController extends AbstractController
         $etudiants = [];
         $etudiantIdsMap = [];
 
-        foreach ($semestresActifs as $s) {
+        foreach ($semestresAnnee as $s) {
             $semestres[] = [
                 'id' => $s->getId(),
                 'libelle' => $s->getLibelle(),

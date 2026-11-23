@@ -120,7 +120,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                             'count' => $count++,
                             'personnel' => $personnel,
                             'statutLibelle' => $statutLibelle,
-                            'statutBadge' => $statut->getBadge(),
+                            'statutBadge' => $statut?->getBadge() ?? '',
                             'heures' => [
                                 'CM' => 0,
                                 'TD' => 0,
@@ -133,11 +133,10 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
 
                     // Cache these values to avoid repeated array access
                     $heures = $item->getHeures();
-                    $groupes = $item->getGroupes();
 
-                    $cmHours = $heures['CM'] * $groupes['CM'];
-                    $tdHours = $heures['TD'] * $groupes['TD'];
-                    $tpHours = $heures['TP'] * $groupes['TP'];
+                    $cmHours = (float) ($heures['CM'] ?? 0);
+                    $tdHours = (float) ($heures['TD'] ?? 0);
+                    $tpHours = (float) ($heures['TP'] ?? 0);
 
                     $groupedData[$personnelId]['heures']['CM'] += $cmHours;
                     $groupedData[$personnelId]['heures']['TD'] += $tdHours;

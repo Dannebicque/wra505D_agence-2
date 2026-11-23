@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
-import { HeaderComponent, Kpi, ErrorView, GlobalLoader } from '@components';
+import { HeaderComponent, Kpi, ErrorState, GlobalLoader } from '@components';
 import { useUsersStore, useAnneeUnivStore } from '@stores';
 import {
   getDepartementService,
@@ -37,17 +37,17 @@ const personnels = ref([]);
 
 const currentDeptId = computed(() => userStore.departementDefaut?.id);
 
-// Filtrer uniquement les éléments actifs
-const activeDiplomes = computed(() => {
-  return (allDiplomes.value || []).filter(d => d.actif !== false);
-});
+// Le filtre API annéeUniversitaire sélectionne les diplômes via leurs PN.
+const activeDiplomes = computed(() => allDiplomes.value || []);
+const currentAnneeUnivId = computed(() => anneeUnivStore.selectedAnneeUniv?.id
+  ?? anneeUnivStore.anneesUniv?.find(annee => annee.actif === true)?.id);
 
 const activeAnnees = computed(() => {
   return (allAnnees.value || []).filter(a => a.actif === true);
 });
 
-const activeSemestres = computed(() => {
-  return (allSemestres.value || []).filter(s => s.actif === true);
+const semestresDisponibles = computed(() => {
+  return allSemestres.value || [];
 });
 
 const loadConfigurationData = async () => {
@@ -69,11 +69,19 @@ const loadConfigurationData = async () => {
       await anneeUnivStore.getAllAnneesUniv();
     }
 
-    // 3. Charger diplômes, années, semestres (uniquement actifs) et personnels en parallèle
+    if (!currentAnneeUnivId.value) {
+      throw new Error('Aucune année universitaire sélectionnée ou active.');
+    }
+    const formationParams = {
+      departement: currentDeptId.value,
+      anneeUniversitaire: currentAnneeUnivId.value,
+    };
+
+    // 3. Limiter les formations aux PN de l’année universitaire sélectionnée.
     const [diplomesData, anneesData, semestresData, personnelsData] = await Promise.all([
-      getDiplomesService({ departement: currentDeptId.value }),
-      getAnneesService({ departement: currentDeptId.value, actif: true }),
-      getDepartementSemestresService(currentDeptId.value, true),
+      getDiplomesService(formationParams),
+      getAnneesService({ ...formationParams, actif: true }),
+      getDepartementSemestresService(currentDeptId.value, currentAnneeUnivId.value),
       getPersonnelsService({ departement: currentDeptId.value, pagination: false }).catch(() => [])
     ]);
 
@@ -94,10 +102,8 @@ onMounted(async () => {
   await loadConfigurationData();
 });
 
-watch(currentDeptId, async (newDeptId) => {
-  if (newDeptId) {
-    await loadConfigurationData();
-  }
+watch([currentDeptId, () => anneeUnivStore.selectedAnneeUniv?.id], async () => {
+  await loadConfigurationData();
 });
 
 const onDepartementUpdated = (updatedInfo) => {
@@ -130,7 +136,7 @@ const onAnneeUpdated = ({ anneeId, key, value }) => {
 const onSemestreUpdated = ({ semestreId, key, value }) => {
   const s = allSemestres.value.find(item => item.id === semestreId);
   if (s) {
-    if (key === 'actif' || key === 'ppnActif') {
+    if (key === 'ppnActif') {
       s[key] = value;
     } else {
       if (!s.opt) s.opt = {};
@@ -146,14 +152,14 @@ const onSemestreUpdated = ({ semestreId, key, value }) => {
       icon="pi pi-sliders-h"
       color="violet"
       titre="Configuration de l'Intranet"
-      :description="`Paramétrage du département ${departement?.libelle || ''}, des diplômes, années et semestres actifs`"
+      :description="`Paramétrage du département ${departement?.libelle || ''}, des diplômes, années et semestres de l’année universitaire`"
       :show-back="true"
       back-url="/intranet/administration"
     />
 
     <GlobalLoader v-if="isLoading" />
 
-    <ErrorView
+    <ErrorState
       v-else-if="hasError"
       :message="errorMessage"
       @retry="loadConfigurationData"
@@ -190,11 +196,11 @@ const onSemestreUpdated = ({ semestreId, key, value }) => {
         />
 
         <Kpi
-          label="Semestres actifs"
-          :value="activeSemestres.length"
+          label="Semestres de l’année"
+          :value="semestresDisponibles.length"
           icon="pi pi-list"
           color="amber"
-          description="Semestres ouverts aux saisies"
+          description="Semestres de la maquette annuelle"
           @click="activeTab = 'semestre'"
         />
       </div>
@@ -219,7 +225,7 @@ const onSemestreUpdated = ({ semestreId, key, value }) => {
           <Tab value="semestre" class="flex items-center gap-2 px-4 py-2.5 font-semibold text-sm">
             <i class="pi pi-list text-base" />
             <span>Semestres</span>
-            <Badge v-if="activeSemestres.length > 0" :value="activeSemestres.length" severity="secondary" />
+            <Badge v-if="semestresDisponibles.length > 0" :value="semestresDisponibles.length" severity="secondary" />
           </Tab>
         </TabList>
 
@@ -251,7 +257,7 @@ const onSemestreUpdated = ({ semestreId, key, value }) => {
 
           <TabPanel value="semestre">
             <ConfigurationSemestreTab
-              :semestres="activeSemestres"
+              :semestres="semestresDisponibles"
               :personnels="personnels"
               @updated="onSemestreUpdated"
             />

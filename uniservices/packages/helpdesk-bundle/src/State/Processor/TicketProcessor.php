@@ -19,6 +19,7 @@ class TicketProcessor implements ProcessorInterface
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly Security $security,
         private readonly SluggerInterface $slugger,
         #[Autowire('%env(string:HELPDESK_TICKETS_UPLOAD_DIR)%')]
         private readonly string $uploadsDirectory,

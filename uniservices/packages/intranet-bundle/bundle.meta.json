@@ -2,5 +2,9 @@
   "name": "Intranet",
   "description": "Gestion des formations et étudiants.",
   "urlSlug": "intranet",
-  "url": "http://localhost:3001/intranet/"
+  "url": "/app/intranet",
+  "shortLabel": "Intranet",
+  "primaryColor": "violet",
+  "icon": "pi pi-desktop",
+  "isDefault": true
 }

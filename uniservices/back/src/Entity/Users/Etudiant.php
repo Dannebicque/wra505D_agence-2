@@ -98,7 +98,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['etudiant:detail', 'etudiant:light', 'etudiant:write'])]
-    private ?string $mailPerso;
+    private ?string $mailPerso = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $password = null;
@@ -117,7 +117,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
     private string $nom;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['etudiant:detail', 'etudiant:scolarite'])]
+    #[Groups(['etudiant:detail', 'etudiant:scolarite', 'etudiant:light'])]
     private ?string $photoName = null;
 
     /**
@@ -147,7 +147,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
     private ?string $site_univ = null;
 
     #[ORM\Column(length: 20, nullable: true)]
-    #[Groups(['etudiant:detail', 'scolarite-semestre:manage-groupes', 'etudiant:scolarite'])]
+    #[Groups(['etudiant:detail', 'scolarite-semestre:manage-groupes', 'etudiant:scolarite', 'etudiant:light'])]
     private ?string $num_etudiant = null;
 
     #[ORM\Column(length: 20, nullable: true)]
@@ -336,6 +336,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
         return $this;
     }
 
+    #[Groups(['etudiant:detail', 'etudiant:light'])]
     public function getPhotoName(): ?string
     {
         return $this->photoName;
@@ -473,6 +474,7 @@ class Etudiant implements UserInterface, PasswordAuthenticatedUserInterface, Tim
         return $this;
     }
 
+    #[Groups(['etudiant:detail', 'etudiant:light'])]
     public function getNumEtudiant(): ?string
     {
         return $this->num_etudiant;

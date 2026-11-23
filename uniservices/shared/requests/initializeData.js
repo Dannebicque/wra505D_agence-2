@@ -1,3 +1,4 @@
+import { setSelectedAnneeUniversitaireId } from '@helpers/contexteAnnuel.js';
 import { useAnneeUnivStore, useUsersStore, useDiplomeStore, useAnneeStore, useEtablissementStore } from '@stores';
 
 export const initializeAppData = async () => {

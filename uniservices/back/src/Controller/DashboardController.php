@@ -442,6 +442,7 @@ class DashboardController extends AbstractController
     }
 
     #[Route('/api/widgets/{code}/data', name: 'api_widgets_data', methods: ['GET'])]
+    #[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Données des widgets dans le contexte annuel de travail.')]
     public function getWidgetData(string $code): JsonResponse
     {
         $user = $this->getCurrentPersonnel();

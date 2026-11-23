@@ -2,11 +2,6 @@
 
 namespace App\Security;
 
-use App\Entity\Apc\ApcApprentissageCritique;
-use App\Entity\Apc\ApcCompetence;
-use App\Entity\Apc\ApcNiveau;
-use App\Entity\Apc\ApcParcours;
-use App\Entity\Apc\ApcReferentiel;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;

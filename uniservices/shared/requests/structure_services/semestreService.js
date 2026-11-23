@@ -1,14 +1,19 @@
 import api from '@helpers/axios';
 import apiCall from '@helpers/apiCall';
 
+import { getSelectedAnneeUniversitaireId } from '@helpers/contexteAnnuel.js';
+
+const getSemestresAnneeUniversitaire = getSelectedAnneeUniversitaireId;
+
 // ----------------------------------------------
 // ------------------- GET ----------------------
 // ----------------------------------------------
-const getSemestresService = async (params, scope = '', showToast = false) => {
+const getSemestresService = async (params = {}, scope = '', showToast = false) => {
+    const filters = { ...params };
     try {
         const response = await apiCall(
             api.get,
-            [`/api${scope}/structure_semestres`, { params }],
+            [`/api${scope}/structure_semestres`, { params: filters }],
             'Semestres récupérés avec succès',
             'Erreur lors de la récupération des semestres',
             showToast
@@ -39,37 +44,11 @@ const getSemestreService = async (semestreId, scope = '',showToast = false) => {
 //----------------------------------------------
 //@deprecated use getSemestresService with params
 // ----------------------------------------------
-const getDepartementSemestresService = async (departementId, onlyActif = false, scope = '', showToast = false) => {
-    try {
-        const response = await apiCall(
-            api.get,
-            [`/api${scope}/structure_semestres?actif=${onlyActif}&departement=${departementId}`],
-            'Semestres du département récupérés avec succès',
-            'Erreur lors de la récupération des semestres du département',
-            showToast
-        );
-        return response.member;
-    } catch (error) {
-        console.error('Erreur dans getDepartementSemestresService:', error);
-        throw error;
-    }
-}
+const getDepartementSemestresService = (departementId, anneeUniversitaire = null, scope = '', showToast = false) =>
+    getSemestresService({ departement: departementId, anneeUniversitaire }, scope, showToast);
 
-const getDiplomeSemestresService = async (diplomeId, onlyActif, showToast = false) => {
-    try {
-        const response = await apiCall(
-            api.get,
-            [`/api/structure_semestres?diplome=${diplomeId}&actif=${onlyActif}`],
-            'Semestres du diplôme récupérés avec succès',
-            'Erreur lors de la récupération des semestres du diplôme',
-            showToast
-        );
-        return response.member;
-    } catch (error) {
-        console.error('Erreur dans getDiplomeSemestresService:', error);
-        throw error;
-    }
-}
+const getDiplomeSemestresService = (diplomeId, anneeUniversitaire = null, showToast = false) =>
+    getSemestresService({ diplome: diplomeId, anneeUniversitaire }, '', showToast);
 
 const getAnneeSemestresService = async (anneeId, showToast = false) => {
     try {
@@ -130,4 +109,4 @@ const deleteSemestreService = async (semestreId, showToast = false) => {
     }
 }
 
-export { getSemestresService, getSemestreService, getDepartementSemestresService, getDiplomeSemestresService, getAnneeSemestresService, updateSemestreService, deleteSemestreService };
+export { getSemestresAnneeUniversitaire, getSemestresService, getSemestreService, getDepartementSemestresService, getDiplomeSemestresService, getAnneeSemestresService, updateSemestreService, deleteSemestreService };

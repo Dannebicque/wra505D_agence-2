@@ -3,7 +3,8 @@ import {useRouter} from 'vue-router';
 import {useEnseignementPage} from './useEnseignementPage';
 import {defineProps, defineEmits, ref, watch, computed} from 'vue';
 import { getEvaluationsService, updateEvaluationService } from '@requests';
-import { ListSkeleton } from '@components';
+import { EmptyState, ErrorState, ListSkeleton } from '@components';
+import { calcEvaluationProgress } from '@/components/Evaluation/evaluationProgress';
 import EvaluationCard from "@/components/Evaluation/EvaluationCard.vue";
 import {useUsersStore} from '@stores';
 import EvaluationForm from "@/components/Evaluation/EvaluationForm.vue";
@@ -111,13 +112,6 @@ const onEvaluationSaved = async () => {
   await getEvaluations();
 };
 
-const calcEvaluationProgress = (evaluation) => {
-  // Ne compter que les notes existantes et dont la propriété `note` n'est pas null
-  const notesExistantes = Array.isArray(evaluation?.notes) ? evaluation.notes.filter(n => n != null) : [];
-  evaluation.total = notesExistantes.length;
-  evaluation.entered = notesExistantes.filter(n => n.note !== null && n.note !== undefined).length;
-  evaluation.percent = evaluation.total > 0 ? Math.round((evaluation.entered / evaluation.total) * 100) : 0;
-};
 const {destination, accessible} = useEnseignementPage('evaluations', () => props.enseignement);
 </script>
 
@@ -127,9 +121,7 @@ const {destination, accessible} = useEnseignementPage('evaluations', () => props
           class="w-[90vw] md:w-[85vw]">
     <ListSkeleton v-if="isLoadingEvaluations" class="card-body"/>
     <div v-else class="flex flex-col gap-2">
-      <Message v-if="hasError" severity="error" class="w-fit p-4" icon="pi pi-times-circle">
-        Impossible de récupérer les évaluations.
-      </Message>
+      <ErrorState v-if="hasError" class="w-fit p-4" compact :show-navigation="false" message="Impossible de récupérer les évaluations." />
       <div v-else-if="evaluations.length !== 0" class="flex flex-col gap-2">
         <EvaluationCard
             v-for="evaluation in evaluations"
@@ -145,9 +137,7 @@ const {destination, accessible} = useEnseignementPage('evaluations', () => props
         />
       </div>
       <div v-else class="flex justify-center">
-        <Message severity="warn" class="w-fit p-4" icon="pi pi-exclamation-triangle">
-          Aucune évaluation trouvée.
-        </Message>
+        <EmptyState class="w-fit p-4" compact title="Aucune évaluation trouvée." />
       </div>
     </div>
     <template #footer>

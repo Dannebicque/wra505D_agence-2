@@ -115,7 +115,10 @@ const colorClasses = computed(() => {
 </script>
 
 <template>
-  <div class="card">
+  <component :is="tag" v-if="bare" class="card">
+    <slot />
+  </component>
+  <div v-else class="card">
     <div v-if="title || $slots.header" class="card-header flex justify-between items-center gap-4">
       <slot name="header">
         <div class="flex flex-col min-w-0">

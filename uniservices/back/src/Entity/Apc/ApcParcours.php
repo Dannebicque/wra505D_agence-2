@@ -9,7 +9,6 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Structure\StructureDiplome;
-use App\Entity\Structure\StructureGroupe;
 use App\Entity\Traits\OldIdTrait;
 use App\Entity\Traits\OptionTrait;
 use App\Repository\Apc\ApcParcoursRepository;
@@ -25,7 +24,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(normalizationContext: ['groups' => ['parcours:read']]),
         new GetCollection(normalizationContext: ['groups' => ['parcours:read']]),
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_APC_PARCOURS', object)"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_APC_PARCOURS', object)"),
+        new Patch(security: "is_granted('CAN_EDIT_APC_PARCOURS', object)", securityPostDenormalize: "is_granted('CAN_EDIT_APC_PARCOURS', object)"),
         new Delete(security: "is_granted('CAN_DELETE_APC_PARCOURS', object)"),
     ]
 )]
@@ -59,12 +58,6 @@ class ApcParcours
     private Collection $diplome;
 
     /**
-     * @var Collection<int, StructureGroupe>
-     */
-    #[ORM\OneToMany(targetEntity: StructureGroupe::class, mappedBy: 'parcours')]
-    private Collection $groupes;
-
-    /**
      * @var Collection<int, ApcNiveau>
      */
     #[ORM\ManyToMany(targetEntity: ApcNiveau::class, mappedBy: 'parcours')]
@@ -73,7 +66,6 @@ class ApcParcours
     public function __construct()
     {
         $this->diplome = new ArrayCollection();
-        $this->groupes = new ArrayCollection();
         $this->niveaux = new ArrayCollection();
         $this->setOpt([]);
     }
@@ -177,36 +169,6 @@ class ApcParcours
             // set the owning side to null (unless already changed)
             if ($diplome->getParcours() === $this) {
                 $diplome->setParcours(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, StructureGroupe>
-     */
-    public function getGroupes(): Collection
-    {
-        return $this->groupes;
-    }
-
-    public function addGroupe(StructureGroupe $groupe): static
-    {
-        if (!$this->groupes->contains($groupe)) {
-            $this->groupes->add($groupe);
-            $groupe->setParcours($this);
-        }
-
-        return $this;
-    }
-
-    public function removeGroupe(StructureGroupe $groupe): static
-    {
-        if ($this->groupes->removeElement($groupe)) {
-            // set the owning side to null (unless already changed)
-            if ($groupe->getParcours() === $this) {
-                $groupe->setParcours(null);
             }
         }
 

@@ -4,8 +4,7 @@ import {VueCal} from 'vue-cal'
 import 'vue-cal/style'
 import {computed, nextTick, onMounted, ref, watch} from 'vue';
 import {useUsersStore} from '@stores';
-import {PhotoUser, SimpleSkeleton, ListSkeleton, ErrorView} from '@components';
-import {getISOWeekNumber} from "@helpers/date";
+import {PhotoUser, SimpleSkeleton, ListSkeleton, ErrorState} from '@components';
 import EdtEvent from "./EdtEvent.vue";
 import {
   getEdtEventsService,
@@ -63,7 +62,7 @@ const isLoadingEvents = ref(false);
 const hasError = ref(false);
 const personnel = usersStore.user;
 const departement = usersStore.departementDefaut;
-const weekUnivNumber = ref(0);
+const weekUnivNumber = ref(null);
 const events = ref([]);
 const schedules = ref([]);
 const isLoadingGroupes = ref(false);
@@ -187,12 +186,14 @@ const getEnseignements = async () => {
 };
 
 const getWeekUnivNumber = async (date) => {
-  const calendarWeekNumber = getISOWeekNumber(date);
+  weekUnivNumber.value = null;
   try {
-    const response = await getSemaineUniversitaireService(calendarWeekNumber, anneeUniv.id);
-    weekUnivNumber.value = response[0]?.semaineFormation || 0; // Définit la semaine de formation
+    const semaine = await getSemaineUniversitaireService(date, anneeUniv.id);
+    weekUnivNumber.value = semaine?.semaineFormation ?? null;
+    hasError.value = false;
   } catch (error) {
-    console.error('Erreur lors de la récupération du numéro de semaine universitaire :', error);
+    hasError.value = true;
+    console.error('Impossible de calculer la semaine universitaire :', error);
   }
 };
 
@@ -251,6 +252,10 @@ watch(selectedEnseignement, async () => {
 });
 
 const getEventsDepartementWeek = async () => {
+  if (weekUnivNumber.value === null) {
+    events.value = [];
+    return;
+  }
   const hasAtLeastOneFilter = selectedSemestre.value || selectedEnseignant.value || selectedSalle.value || selectedEnseignement.value;
 
   try {
@@ -389,7 +394,7 @@ const heuresParType = computed(() => {
       </div>
     </div>
   </Dialog>
-  <ErrorView v-if="hasError"></ErrorView>
+  <ErrorState v-if="hasError"></ErrorState>
   <div v-else class="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-6 mb-6 w-full ">
     <div class="text-lg font-bold mb-4">
       Filtres
@@ -416,9 +421,7 @@ const heuresParType = computed(() => {
     </ContexteSelection>
     <div class="flex justify-center items-center gap-4 mb-4">
       <SimpleSkeleton v-if="isLoadingEnseignants" class="w-1/3"/>
-      <Message v-else-if="hasErrorEnseignants" severity="error" class="w-full my-6" icon="pi pi-exclamation-circle">
-        Erreur lors du chargement des enseignants.
-      </Message>
+      <ErrorState v-else-if="hasErrorEnseignants" class="w-full my-6" compact :show-navigation="false" message="Erreur lors du chargement des enseignants." />
       <Select
           v-else
           v-model="selectedEnseignant"
@@ -430,9 +433,7 @@ const heuresParType = computed(() => {
           filter
       ></Select>
       <SimpleSkeleton v-if="isLoadingSalles" class="w-1/3"/>
-      <Message v-else-if="hasErrorSalles" severity="error" class="w-full my-6" icon="pi pi-exclamation-circle">
-        Erreur lors du chargement des salles.
-      </Message>
+      <ErrorState v-else-if="hasErrorSalles" class="w-full my-6" compact :show-navigation="false" message="Erreur lors du chargement des salles." />
       <Select
           v-else
           v-model="selectedSalle"
@@ -444,9 +445,7 @@ const heuresParType = computed(() => {
           filter
       ></Select>
       <SimpleSkeleton v-if="isLoadingEnseignements" class="w-1/3"/>
-      <Message v-else-if="hasErrorEnseignements" severity="error" class="w-full my-6" icon="pi pi-exclamation-circle">
-        Erreur lors du chargement des enseignements.
-      </Message>
+      <ErrorState v-else-if="hasErrorEnseignements" class="w-full my-6" compact :show-navigation="false" message="Erreur lors du chargement des enseignements." />
       <Select
           v-else
           v-model="selectedEnseignement"
@@ -466,7 +465,7 @@ const heuresParType = computed(() => {
   </div>
 
   <ListSkeleton v-if="isLoadingEvents"/>
-  <ErrorView v-else-if="hasError" message="Une erreur est survenue lors du chargement de l'emploi du temps. Veuillez réessayer plus tard."/>
+  <ErrorState v-else-if="hasError" message="Une erreur est survenue lors du chargement de l'emploi du temps. Veuillez réessayer plus tard."/>
   <vue-cal
       v-else
       ref="vuecalRef"

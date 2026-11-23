@@ -17,7 +17,7 @@ import PrevisionnelTable from '@/components/Previsionnel/PrevisionnelTable.vue';
 import createApiService from "@requests/apiService.js";
 import apiCall from "@helpers/apiCall.js";
 import { showSuccess, showDanger } from '@helpers/toast.js';
-import {ErrorView} from "@components";
+import {ErrorState} from "@components";
 
 const previService = createApiService('/api/previsionnels');
 const hrsService = createApiService('/api/personnel_enseignant_hrs');
@@ -155,7 +155,7 @@ const getTypesHrs = async () => {
 
 const getSemestres = async () => {
   try {
-    semestreList.value = await getDepartementSemestresService(departementId, true);
+    semestreList.value = await getDepartementSemestresService(departementId);
     // construire chaque élément de la liste des semestres avec le libelle en label et le semestre en value
     semestreList.value = semestreList.value.map((semestre) => ({
       id: semestre.id,
@@ -745,7 +745,7 @@ const footerColsForm = computed(() => [
 </script>
 
 <template>
-  <ErrorView v-if="hasError" />
+  <ErrorState v-if="hasError" />
   <div v-else class="px-4 flex flex-col">
     <div class="flex justify-between gap-10">
       <div class="flex gap-6 w-1/2">

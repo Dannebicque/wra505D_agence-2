@@ -32,7 +32,7 @@ class PrevisionnelSemestreDto
     #[Groups(['previsionnel_semestre:read'])]
     protected string $intervenant = '';
     #[Groups(['previsionnel_semestre:read'])]
-    protected StructureAnneeUniversitaire $anneeUniversitaire;
+    protected ?StructureAnneeUniversitaire $anneeUniversitaire = null;
 
     public function getId(): int
     {
@@ -44,12 +44,12 @@ class PrevisionnelSemestreDto
         $this->id = $id;
     }
 
-    public function getAnneeUniversitaire(): StructureAnneeUniversitaire
+    public function getAnneeUniversitaire(): ?StructureAnneeUniversitaire
     {
         return $this->anneeUniversitaire;
     }
 
-    public function setAnneeUniversitaire(StructureAnneeUniversitaire $anneeUniversitaire): void
+    public function setAnneeUniversitaire(?StructureAnneeUniversitaire $anneeUniversitaire): void
     {
         $this->anneeUniversitaire = $anneeUniversitaire;
     }

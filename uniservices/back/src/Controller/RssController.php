@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
+#[\App\AnneeUniversitaire\ContexteAnnuel('independant', 'Identité, paramétrage partagé ou données sans année universitaire.')]
 class RssController extends AbstractController
 {
     public function __construct(
@@ -40,7 +41,7 @@ class RssController extends AbstractController
         return $xml;
     }
 
-    #[Route('/api/actualites', name: 'app_rss_actus')]
+    #[Route('/api/actualites', name: 'app_rss_actus', methods: ['GET'])]
     public function getActus(): Response
     {
         // récupérer l'url depuis .env
@@ -68,7 +69,7 @@ class RssController extends AbstractController
         return $this->json($data);
     }
 
-    #[Route('/api/agenda', name: 'app_rss_events')]
+    #[Route('/api/agenda', name: 'app_rss_events', methods: ['GET'])]
     public function getEvents(): Response
     {
         $events = $this->loadRss('https://www.univ-reims.fr/iut-troyes/service/rss/getRss.php?type=event');

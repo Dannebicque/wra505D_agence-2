@@ -22,13 +22,13 @@ const toast = useToast();
 const selectedSemestreId = ref(null);
 const loadingKeys = ref({});
 
-// N'afficher que les semestres actifs
-const activeSemestres = computed(() => {
-  return (props.semestres || []).filter(s => s.actif === true);
+// N'afficher que les semestres de l’année universitaire
+const semestresDisponibles = computed(() => {
+  return props.semestres || [];
 });
 
-// Sélectionner par défaut le premier semestre actif
-watch(activeSemestres, (list) => {
+// Sélectionner par défaut le premier semestre de l’année universitaire
+watch(semestresDisponibles, (list) => {
   if (list && list.length > 0) {
     if (!selectedSemestreId.value || !list.some(s => s.id === selectedSemestreId.value)) {
       selectedSemestreId.value = list[0].id;
@@ -39,7 +39,7 @@ watch(activeSemestres, (list) => {
 }, { immediate: true });
 
 const selectedSemestre = computed(() => {
-  return activeSemestres.value.find(s => s.id === selectedSemestreId.value) || activeSemestres.value[0] || null;
+  return semestresDisponibles.value.find(s => s.id === selectedSemestreId.value) || semestresDisponibles.value[0] || null;
 });
 
 const semOpt = computed(() => selectedSemestre.value?.opt || {});

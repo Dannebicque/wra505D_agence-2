@@ -1,6 +1,14 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
-import { DataTable, Column, Button } from 'primevue'
+import EmptyState from './EmptyState.vue';
+import { ref, onMounted, computed, watch, useSlots } from 'vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Button from 'primevue/button'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import ToggleSwitch from 'primevue/toggleswitch'
 import ButtonInfo from '@components/components/Buttons/ButtonInfo.vue'
 import ButtonEdit from '@components/components/Buttons/ButtonEdit.vue'
 import ButtonDelete from '@components/components/Buttons/ButtonDelete.vue'
@@ -8,6 +16,18 @@ import { FilterMatchMode } from '@primevue/core/api'
 import api from '@helpers/axios.js'
 import { normalizeCollectionResponse } from '@helpers/collectionResponse.js'
 
+/**
+ * Tableau générique.
+ *
+ * Deux modes :
+ *  - serveur (lazy) : `apiEndpoint` fourni, pagination / tri / recherche délégués à l'API ;
+ *  - local : `value` fourni (tableau déjà chargé), pagination / tri / filtres faits par PrimeVue.
+ *
+ * Colonnes : { field, header, key?, sortable?, style?, type?, bodyClass?, headerClass?, filterField?,
+ *              filter?: { type: 'text' | 'select', matchMode?, placeholder?, options?, optionLabel?, optionValue?, param? } }
+ * Une cellule peut être personnalisée via le slot `body-<key|field>` ({ data, index }).
+ * Expansion de ligne : `expandable` + slot `expansion` ({ data }) + v-model:expandedRows.
+ */
 const props = defineProps({
   columns: {
     type: Array,
@@ -30,7 +50,18 @@ const props = defineProps({
   },
   apiEndpoint: {
     type: String,
-    required: true
+    required: false,
+    default: null
+  },
+  value: {
+    type: Array,
+    required: false,
+    default: null
+  },
+  loading: {
+    type: Boolean,
+    required: false,
+    default: false
   },
   refreshKey: {
     type: Number,
@@ -41,25 +72,97 @@ const props = defineProps({
     type: String,
     required: false,
     default: null
+  },
+  globalFilterFields: {
+    type: Array,
+    required: false,
+    default: null
+  },
+  filterDisplay: {
+    type: String,
+    required: false,
+    default: null // 'row' | 'menu' : active les filtres par colonne
+  },
+  expandable: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
+  showHeader: {
+    type: Boolean,
+    required: false,
+    default: true
+  },
+  showFooter: {
+    type: Boolean,
+    required: false,
+    default: true
+  },
+  rowsPerPageOptions: {
+    type: Array,
+    required: false,
+    default: () => [30, 60, 120]
+  },
+  dataKey: {
+    type: String,
+    required: false,
+    default: 'id'
+  },
+  tableClass: {
+    type: [String, Array, Object],
+    required: false,
+    default: null
+  },
+  emptyTitle: {
+    type: String,
+    required: false,
+    default: 'Aucun enregistrement trouvé.'
   }
 })
 
+const expandedRows = defineModel('expandedRows', { default: () => ({}) })
+const globalFilter = defineModel('globalFilter', { default: null })
+
+const slots = useSlots()
+const modeLocal = computed(() => Array.isArray(props.value))
+
 const data = ref([])
 const totalRecords = ref(0)
-const loading = ref(true)
+const loadingApi = ref(!modeLocal.value)
 const page = ref(0)
-const rowOptions = [30, 60, 120]
-const limit = ref(rowOptions[0])
+const limit = ref(props.rowsPerPageOptions[0])
 const offset = computed(() => Number(limit.value * page.value))
 const sortField = ref(null)
 const sortOrder = ref(null)
 
-const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-})
+const colKey = (col) => col.key ?? col.field
+const colFilterField = (col) => col.filterField ?? col.field
+const colonnesFiltrables = computed(() => props.filterDisplay ? props.columns.filter(col => col.filter) : [])
+
+const defaultMatchMode = (col) => col.filter.matchMode
+  ?? (col.filter.type === 'select' ? FilterMatchMode.EQUALS : FilterMatchMode.CONTAINS)
+
+const construireFiltres = () => {
+  const f = { global: { value: globalFilter.value, matchMode: FilterMatchMode.CONTAINS } }
+  colonnesFiltrables.value.forEach((col) => {
+    f[colFilterField(col)] = { value: null, matchMode: defaultMatchMode(col) }
+  })
+  return f
+}
+const filters = ref(construireFiltres())
+
+// Synchronise la recherche globale avec un éventuel v-model:globalFilter du parent.
+watch(globalFilter, (v) => { if (filters.value.global.value !== v) filters.value.global.value = v })
+watch(() => filters.value.global.value, (v) => { if (globalFilter.value !== v) globalFilter.value = v })
+
+const lignes = computed(() => modeLocal.value ? props.value : data.value)
+const nombreTotal = computed(() => modeLocal.value ? props.value.length : totalRecords.value)
+const chargementEnCours = computed(() => modeLocal.value ? props.loading : loadingApi.value)
+const champsRecherche = computed(() => props.globalFilterFields ?? props.columns.map(col => col.field).filter(Boolean))
 
 const fetchData = async () => {
-  loading.value = true
+  if (modeLocal.value || !props.apiEndpoint) return
+  loadingApi.value = true
   const endpoint = props.apiEndpoint.startsWith('/') || props.apiEndpoint.startsWith('http')
     ? props.apiEndpoint
     : '/' + props.apiEndpoint
@@ -75,28 +178,38 @@ const fetchData = async () => {
     params[props.searchParameter] = filters.value.global.value
   }
 
-  const response = await api.get(endpoint, { params })
-  const normalized = normalizeCollectionResponse(response.data)
-  totalRecords.value = normalized.totalRecords
-  data.value = normalized.items
-  loading.value = false
+  colonnesFiltrables.value.forEach((col) => {
+    const valeur = filters.value[colFilterField(col)]?.value
+    if (valeur !== null && valeur !== undefined && valeur !== '') {
+      params[col.filter.param ?? colFilterField(col)] = valeur
+    }
+  })
+
+  try {
+    const response = await api.get(endpoint, { params })
+    const normalized = normalizeCollectionResponse(response.data)
+    totalRecords.value = normalized.totalRecords
+    data.value = normalized.items
+  } finally {
+    loadingApi.value = false
+  }
 }
 
 onMounted(fetchData)
 
-watch(() => props.refreshKey, async (newValue, oldValue) => {
+watch(() => props.refreshKey, async () => {
   await fetchData()
 });
 
 let searchTimeout = null
-watch(() => filters.value.global.value, (newVal) => {
+watch(() => filters.value.global.value, () => {
+  if (modeLocal.value) return
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(async () => {
     page.value = 0
     await fetchData()
   }, 400)
 })
-
 
 const onPageChange = async (event) => {
   page.value = event.page
@@ -158,14 +271,14 @@ function getNestedValue(obj, path) {
     </Column>
     <Column v-if="extraActions.length" header="Actions" :style="{ minWidth: '10rem' }">
       <template #body="slotProps">
-        <Button v-for="action in actions" :key="action.label" :label="action.label" :icon="action.icon"
+        <Button v-for="action in extraActions" :key="action.label" :label="action.label" :icon="action.icon"
           @click="action.handler(slotProps.data)" />
       </template>
     </Column>
-    <template #footer> {{ totalRecords }} résultat(s).</template>
+
+    <template v-if="expandable && slots.expansion" #expansion="slotProps">
+      <slot name="expansion" v-bind="slotProps" />
+    </template>
+    <template v-if="showFooter" #footer> {{ nombreTotal }} résultat(s).</template>
   </DataTable>
 </template>
-
-<style scoped>
-/* Ajoutez vos styles ici */
-</style>

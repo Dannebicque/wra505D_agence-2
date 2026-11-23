@@ -4,7 +4,7 @@ import {useEnseignementPage} from './useEnseignementPage';
 import {computed, ref, watch} from 'vue';
 import AbsencesPeriodesTable from '@/components/Absence/AbsencesPeriodesTable.vue';
 import {getEtudiantAbsencesService} from '@requests';
-import {ListSkeleton, ErrorView} from '@components';
+import { EmptyState, ListSkeleton, ErrorState} from '@components';
 
 const props = defineProps({
   visible: Boolean,
@@ -64,8 +64,8 @@ const {destination, accessible} = useEnseignementPage('absences', () => props.en
           :header="`Absences · ${enseignement?.codeEnseignement || ''} - ${enseignement?.libelle || ''}`"
           class="w-[90vw] md:w-[85vw]">
     <ListSkeleton v-if="isLoadingAbsences" />
-    <ErrorView v-else-if="hasError" />
-    <Message v-else-if="!absences.length" severity="warn" icon="pi pi-exclamation-triangle" class="mt-4">Aucune absence trouvée.</Message>
+    <ErrorState v-else-if="hasError" />
+    <EmptyState v-else-if="!absences.length" class="mt-4" compact title="Aucune absence trouvée." />
     <div v-else>
       <AbsencesPeriodesTable :absences="absences" :total-absences="totalAbsences"
         :offset="offset" :limit="limit" :row-options="rowOptions" @page="onPageChange" />

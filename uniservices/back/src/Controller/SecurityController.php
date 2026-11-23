@@ -328,6 +328,7 @@ class SecurityController extends AbstractController
     }
 
     #[Route(path: '/api/security/permissions', name: 'api_security_permissions', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function getPermissions(PermissionRegistry $registry): JsonResponse
     {
         $grouped = [];

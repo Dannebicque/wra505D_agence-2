@@ -21,7 +21,6 @@ use IntranetBundle\Entity\Etudiant\EtudiantAbsence;
 use App\Entity\Personnel\PersonnelEnseignantHrs;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 use App\Entity\Scolarite\ScolEvaluation;
-use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDepartementPersonnel;
 use App\Entity\Structure\StructureDiplome;
 use App\Entity\Contracts\TimestampableInterface;
@@ -59,8 +58,16 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['personnel:config']],
             provider: PersonnelConfigProvider::class
         ),
-        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_PERSONNEL', object)"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_PERSONNEL', object)"),
+        // Les affectations et leurs permissions ont des opérations dédiées.
+        new Post(
+            denormalizationContext: ['ignored_attributes' => ['departementsPersonnel']],
+            securityPostDenormalize: "is_granted('CAN_EDIT_PERSONNEL', object)",
+        ),
+        new Patch(
+            denormalizationContext: ['ignored_attributes' => ['departementsPersonnel']],
+            security: "is_granted('CAN_EDIT_PERSONNEL', object)",
+            securityPostDenormalize: "is_granted('CAN_EDIT_PERSONNEL', object)",
+        ),
         new Delete(security: "is_granted('CAN_DELETE_PERSONNEL', object)"),
     ],
     order: ['nom' => 'ASC'],
@@ -448,18 +455,6 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
                 $assistantDiplome->setAssistantDiplome(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getAnneeUniversitaire(): ?StructureAnneeUniversitaire
-    {
-        return $this->anneeUniversitaire;
-    }
-
-    public function setAnneeUniversitaire(?StructureAnneeUniversitaire $anneeUniversitaire): static
-    {
-        $this->anneeUniversitaire = $anneeUniversitaire;
 
         return $this;
     }

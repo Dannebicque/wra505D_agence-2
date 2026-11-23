@@ -122,9 +122,6 @@ class EnseignementFilter implements FilterInterface
                 $queryBuilder
                     ->andWhere("$anneeUniversitaireAlias.id = :anneeUniversitaireId")
                     ->setParameter("anneeUniversitaireId", $anneeUniversitaireId);
-            } else {
-                $queryBuilder
-                    ->andWhere("$anneeUniversitaireAlias.actif = true");
             }
         }
 

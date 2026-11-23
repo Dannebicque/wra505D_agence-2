@@ -52,8 +52,8 @@ class SalleVoter extends Voter
 
         return match($attribute) {
             self::CAN_VIEW_SALLE => $this->canViewSalle($user),
-            self::CAN_EDIT_SALLE => $this->canEditSalle($user),
-            self::CAN_DELETE_SALLE => $this->canDeleteSalle($user),
+            self::CAN_EDIT_SALLE => false,
+            self::CAN_DELETE_SALLE => false,
             default => false,
         };
     }

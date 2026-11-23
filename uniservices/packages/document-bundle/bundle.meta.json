@@ -1,6 +1,12 @@
 {
-    "name": "Documents",
-    "description": "Gestion Électronique de Documents",
-    "urlSlug": "documents",
-    "url": "http://localhost:5173/documents"
+  "name": "Documents",
+  "description": "Gestion Électronique de Documents",
+  "urlSlug": "documents",
+  "url": "/app/documents",
+  "shortLabel": "Documents",
+  "primaryColor": "blue",
+  "icon": "pi pi-folder",
+  "aliases": [
+    "document"
+  ]
 }

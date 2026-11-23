@@ -2,8 +2,6 @@
 
 namespace IntranetBundle\Entity\Etudiant;
 
-use ApiPlatform\Metadata\ApiResource;
-use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Structure\StructureUe;
 use App\Entity\Users\Personnel;
@@ -11,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use IntranetBundle\Repository\Etudiant\MoyenneUeRepository;
 
 #[ORM\Entity(repositoryClass: MoyenneUeRepository::class)]
-#[ApiResource]
+/** @deprecated Données historiques uniquement ; les résultats officiels sont figés par révision de sous-commission. */
 class MoyenneUe
 {
     #[ORM\Id]
@@ -51,12 +49,12 @@ class MoyenneUe
         return $this;
     }
 
-    public function getEtudiantScolarite(): ?EtudiantScolariteSemestre
+    public function getEtudiantScolariteSemestre(): ?EtudiantScolariteSemestre
     {
         return $this->etudiantScolariteSemestre;
     }
 
-    public function setEtudiantScolarite(?EtudiantScolariteSemestre $etudiantScolariteSemestre): static
+    public function setEtudiantScolariteSemestre(?EtudiantScolariteSemestre $etudiantScolariteSemestre): static
     {
         $this->etudiantScolariteSemestre = $etudiantScolariteSemestre;
 

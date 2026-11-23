@@ -58,6 +58,11 @@ use Symfony\Component\Serializer\Attribute\SerializedName;
 )]
 class Etablissement
 {
+    public function __construct()
+    {
+        $this->universite = new Universite();
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -83,6 +88,26 @@ class Etablissement
 
     #[ORM\Column(nullable: true)]
     private ?bool $isMain = null;
+
+    /** Directeur(trice) de l'établissement (prénom et nom). */
+    #[ORM\Column(length: 150, nullable: true)]
+    #[Groups(['etablissement:read', 'etablissement:write'])]
+    private ?string $directeurNom = null;
+
+    /** Université de rattachement (colonnes universite_*). */
+    #[ORM\Embedded(class: Universite::class, columnPrefix: 'universite_')]
+    #[Groups(['etablissement:read', 'etablissement:write'])]
+    private Universite $universite;
+
+    /** Signataire des conventions de stage (souvent le directeur, par délégation du président de l'université). */
+    #[ORM\Column(length: 150, nullable: true)]
+    #[Groups(['etablissement:read', 'etablissement:write'])]
+    private ?string $signataireNom = null;
+
+    /** Qualité du signataire (ex. « Directeur de l'IUT, par délégation du Président »). */
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['etablissement:read', 'etablissement:write'])]
+    private ?string $signataireQualite = null;
 
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $telephone = null;

@@ -44,6 +44,7 @@ class EtudiantAnneesStatsProvider implements ProviderInterface
                 $annees[$anneeId] = [
                     'id' => $anneeId,
                     'libelle' => $annee->getLibelle(),
+                    'diplomeId' => $annee->getDiplome()?->getId(),
                     'etudiantsCount' => 0,
                 ];
                 $anneeIds[] = $anneeId;

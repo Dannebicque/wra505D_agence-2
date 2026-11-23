@@ -11,7 +11,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('IS_SUPER_ADMIN')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Travail sur la maquette ou les données de l’année demandée.')]
 class EdtGenereSlotsController extends AbstractController
 {
     public function __construct(
@@ -24,10 +27,7 @@ class EdtGenereSlotsController extends AbstractController
     #[Route('/api/edt_genere_slots', name: 'edt_progression_genere_slots', methods: ['POST'])]
     public function genereSlots(Request $request): Response
     {
-        //todo: ajouter un voter pour vérifier que l'utilisateur a le droit de dupliquer une ressource
-        //todo: test des droits avec un voters
-
-        $previsionnels = $this->previsionnelRepository->findAll(); //todo: filtrer sur département de l'user connecté
+        $previsionnels = $this->previsionnelRepository->findBy(['anneeUniversitaire' => $request->attributes->get('_annee_universitaire_id')]);
         $nbSlots = $this->genereSlots->genereAllSlots($previsionnels);
 
         return \App\Utils\JsonResponse::Success($nbSlots. ' slot(s) généré(s) avec succès');

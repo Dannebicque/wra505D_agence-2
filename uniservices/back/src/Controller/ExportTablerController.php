@@ -10,8 +10,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Travail sur la maquette ou les données de l’année demandée.')]
 class ExportTablerController extends AbstractController
 {
     use SpreadsheetTrait;

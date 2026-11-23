@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {useEtablissementStore} from "@stores";
-import { ValidatedInput, validationRules, ErrorView, ListSkeleton } from "@components";
+import { ValidatedInput, validationRules, ErrorState, ListSkeleton } from "@components";
 import {updateEtablissementService, uploadEtablissementLogoService} from "@requests"
 
 const etablissementStore = useEtablissementStore()
@@ -45,10 +45,21 @@ const ensureAdresseObject = (adresse) => {
   };
 };
 
+// Université de rattachement (objet embarqué côté API : libellé, adresse, téléphone, président).
+const ensureUniversite = (universite) => ({
+  libelle: universite?.libelle ?? '',
+  telephone: universite?.telephone ?? '',
+  president: universite?.president ?? '',
+  adresse: ensureAdresseObject(universite?.adresse)
+});
+
+const nullIfEmpty = (value) => (typeof value === 'string' && value.trim() === '' ? null : value ?? null);
+
 onMounted(async () => {
   try {
     etablissement.value = await etablissementStore.etablissement;
     etablissement.value.adresse = ensureAdresseObject(etablissement.value?.adresse);
+    etablissement.value.universite = ensureUniversite(etablissement.value?.universite);
   } catch (error) {
     hasError.value = true;
     console.error('Error fetching etablissement:', error)
@@ -60,12 +71,22 @@ onMounted(async () => {
 const updateEtablissement = async () => {
   try {
     etablissement.value.adresse = ensureAdresseObject(etablissement.value?.adresse);
+    const universite = ensureUniversite(etablissement.value?.universite);
 
     await updateEtablissementService(etablissement.value.id, {
       libelle: etablissement.value.libelle,
       adresse: etablissement.value.adresse,
       site_web: etablissement.value.site_web,
-      telephone: etablissement.value.telephone
+      telephone: etablissement.value.telephone,
+      directeurNom: nullIfEmpty(etablissement.value.directeurNom),
+      signataireNom: nullIfEmpty(etablissement.value.signataireNom),
+      signataireQualite: nullIfEmpty(etablissement.value.signataireQualite),
+      universite: {
+        libelle: nullIfEmpty(universite.libelle),
+        telephone: nullIfEmpty(universite.telephone),
+        president: nullIfEmpty(universite.president),
+        adresse: universite.adresse
+      }
     }, true);
 
     if (logoFile.value) {
@@ -94,10 +115,10 @@ const handleValidation = (field, result) => {
 <template>
   <div class="card">
     <h2 class="text-2xl! mb-0! font-bold">Données de l'Établissement</h2>
-    <em>Gestion des données d'identification de l'établissement</em>
+    <em>Gestion des données d'identification de l'établissement (la composante, ex. l'IUT) et de son université de rattachement</em>
     <Divider/>
 
-    <ErrorView v-if="hasError"/>
+    <ErrorState v-if="hasError"/>
     <template v-else>
       <ListSkeleton v-if="isLoadingEtablissement"/>
       <div v-else>
