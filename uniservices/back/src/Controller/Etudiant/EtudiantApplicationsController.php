@@ -31,7 +31,7 @@ class EtudiantApplicationsController extends AbstractController
      * whatever department the payload names.
      */
     #[Route('/api/etudiants/bulk-applications', name: 'app_etudiants_bulk_applications', methods: ['POST'])]
-    #[IsGranted(PostVoter::CAN_EDIT_ETUDIANT_SCOLARITE)]
+    #[IsGranted('IS_PERSONNEL')]
     public function updateBulkApplications(Request $request): JsonResponse
     {
         $user = $this->getUser();
@@ -41,6 +41,8 @@ class EtudiantApplicationsController extends AbstractController
         if (!$departement instanceof StructureDepartement) {
             return $this->json(['message' => 'Aucun département actif.'], Response::HTTP_FORBIDDEN);
         }
+        // Le droit se lit dans le département actif : sans sujet, la révision des accès le refuse.
+        $this->denyAccessUnlessGranted(PostVoter::CAN_EDIT_ETUDIANT_SCOLARITE, $departement);
 
         $data = json_decode($request->getContent(), true);
         if (is_array($data)) {
