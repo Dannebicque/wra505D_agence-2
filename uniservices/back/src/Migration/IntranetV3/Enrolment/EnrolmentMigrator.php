@@ -184,7 +184,7 @@ SQL;
                     foreach ($scolarite->getScolariteSemestre() as $candidate) {
                         $candidateOldId = $candidate->getSemestre()?->getOldId()
                             ?? self::legacySemesterOldId($candidate->getLegacyContext());
-                        if (null !== $candidateOldId && $candidateOldId === LooseValue::castInt($row['semestre_id'])) {
+                        if ($candidateOldId === LooseValue::castInt($row['semestre_id'])) {
                             $scolariteSemestre = $candidate;
                             break;
                         }

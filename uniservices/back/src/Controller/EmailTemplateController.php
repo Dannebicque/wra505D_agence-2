@@ -126,7 +126,7 @@ class EmailTemplateController extends AbstractController
     #[Route('/templates', name: 'template_save', methods: ['POST'])]
     public function saveTemplate(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = LooseValue::assoc(json_decode($request->getContent(), true) ?? []);
         $key = LooseValue::castString($data['emailKey'] ?? '');
         $subject = trim(LooseValue::castString($data['subject'] ?? ''));
         $bodyHtml = LooseValue::castString($data['bodyHtml'] ?? '');
@@ -135,7 +135,7 @@ class EmailTemplateController extends AbstractController
         }
         $definition = $this->registry->get($key) ?? throw $this->createNotFoundException('Clé d\'email inconnue : '.$key);
         $departement = null;
-        if (!empty($data['departement'])) {
+        if (isset($data['departement']) && is_scalar($data['departement']) && (bool) $data['departement']) {
             $departement = $this->departement(LooseValue::castInt($data['departement'])) ?? throw $this->createNotFoundException('Département introuvable.');
         }
 
@@ -192,8 +192,8 @@ class EmailTemplateController extends AbstractController
     {
         [$definition, $subject, $bodyHtml] = $this->saisie($request);
         $user = $this->getUser();
-        $to = $user instanceof Personnel || $user instanceof Etudiant ? ($user->getMailUniv() ?: $user->getMailPerso()) : null;
-        if (!$to) {
+        $to = $user instanceof Personnel || $user instanceof Etudiant ? ($user->getMailUniv() ?? $user->getMailPerso()) : null;
+        if ($to === null || $to === '') {
             return $this->json(['error' => 'Votre compte n\'a pas d\'adresse e-mail.'], Response::HTTP_CONFLICT);
         }
         try {
@@ -262,7 +262,7 @@ class EmailTemplateController extends AbstractController
     public function enregistrerHabillage(Request $request): JsonResponse
     {
         $etab = $this->etablissements->findPrincipal() ?? throw $this->createNotFoundException('Aucun établissement configuré.');
-        [$reglages, $erreurs] = $this->reglagesHabillage(json_decode($request->getContent(), true) ?? []);
+        [$reglages, $erreurs] = $this->reglagesHabillage(LooseValue::assoc(json_decode($request->getContent(), true) ?? []));
         if ($erreurs !== []) {
             return $this->json(['error' => implode("\n", $erreurs), 'erreurs' => $erreurs], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
@@ -280,7 +280,8 @@ class EmailTemplateController extends AbstractController
     #[Route('/habillage/apercu', name: 'habillage_apercu', methods: ['POST'])]
     public function apercuHabillage(Request $request): JsonResponse
     {
-        [$reglages, $erreurs] = $this->reglagesHabillage((json_decode($request->getContent(), true) ?? [])['reglages'] ?? []);
+        $data = LooseValue::assoc(json_decode($request->getContent(), true) ?? []);
+        [$reglages, $erreurs] = $this->reglagesHabillage(LooseValue::assoc($data['reglages'] ?? []));
         if ($erreurs !== []) {
             return $this->json(['error' => implode("\n", $erreurs)], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
@@ -302,18 +303,18 @@ class EmailTemplateController extends AbstractController
     {
         $texte = static fn (string $cle, int $max) => mb_substr(trim(LooseValue::castString($donnees[$cle] ?? '')), 0, $max);
         $reglages = [
-            'couleur' => $texte('couleur', 7) ?: '#1a3a5c',
-            'expediteur_nom' => $texte('expediteur_nom', 100) ?: null,
-            'reply_to' => $texte('reply_to', 180) ?: null,
+            'couleur' => '' !== $texte('couleur', 7) ? $texte('couleur', 7) : '#1a3a5c',
+            'expediteur_nom' => '' !== $texte('expediteur_nom', 100) ? $texte('expediteur_nom', 100) : null,
+            'reply_to' => '' !== $texte('reply_to', 180) ? $texte('reply_to', 180) : null,
             'signature' => $texte('signature', 500),
             'mentions_legales' => $texte('mentions_legales', 2000),
-            'contact_rgpd' => $texte('contact_rgpd', 255) ?: null,
+            'contact_rgpd' => '' !== $texte('contact_rgpd', 255) ? $texte('contact_rgpd', 255) : null,
         ];
         $erreurs = [];
-        if (!preg_match('/^#[0-9a-fA-F]{6}$/', $reglages['couleur'])) {
+        if (preg_match('/^#[0-9a-fA-F]{6}$/', $reglages['couleur']) !== 1) {
             $erreurs[] = 'La couleur doit être au format #RRGGBB.';
         }
-        if ($reglages['reply_to'] !== null && !filter_var($reglages['reply_to'], \FILTER_VALIDATE_EMAIL)) {
+        if ($reglages['reply_to'] !== null && filter_var($reglages['reply_to'], \FILTER_VALIDATE_EMAIL) === false) {
             $erreurs[] = 'L\'adresse de réponse n\'est pas une adresse e-mail valide.';
         }
 
@@ -356,7 +357,7 @@ class EmailTemplateController extends AbstractController
             ? $qb->andWhere('et.departement IS NULL')
             : $qb->andWhere('et.departement = :d')->setParameter('d', $departement);
 
-        return array_column($qb->getQuery()->getScalarResult(), 'emailKey');
+        return array_map(static fn (mixed $key): string => LooseValue::castString($key), array_column($qb->getQuery()->getScalarResult(), 'emailKey'));
     }
 
     /**
@@ -381,7 +382,7 @@ class EmailTemplateController extends AbstractController
     /** @return array{AbstractEmailDefinition, string, string} */
     private function saisie(Request $request): array
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = LooseValue::assoc(json_decode($request->getContent(), true) ?? []);
         $definition = $this->registry->get(LooseValue::castString($data['emailKey'] ?? '')) ?? throw $this->createNotFoundException('Clé d\'email inconnue.');
 
         return [$definition, LooseValue::castString($data['subject'] ?? ''), LooseValue::castString($data['bodyHtml'] ?? '')];

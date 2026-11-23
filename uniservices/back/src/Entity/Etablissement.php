@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Post;
 use App\Repository\EtablissementRepository;
 use App\State\Processor\EtablissementProcessor;
 use App\State\Provider\EtablissementProvider;
+use App\Utils\LooseValue;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -253,6 +254,7 @@ class Etablissement
         return $this;
     }
 
+    /** @return array{integrations: array<string, array{enabled: bool, scope: list<string>, apiKey: ?string, apiUrl: ?string}>, stage: array{gratification_minimale: float}, emails: array{couleur: string, expediteur_nom: ?string, reply_to: ?string, signature: string, mentions_legales: string, contact_rgpd: ?string}} */
     public function getSettings(): array
     {
         return self::normalizeSettings($this->settings ?? []);
@@ -329,10 +331,10 @@ class Etablissement
      */
     private static function normalizeSettings(array $settings): array
     {
-        $given = is_array($settings['integrations'] ?? null) ? $settings['integrations'] : [];
+        $given = LooseValue::assoc($settings['integrations'] ?? []);
         $integrations = [];
         foreach (self::INTEGRATIONS as $name) {
-            $integration = is_array($given[$name] ?? null) ? $given[$name] : [];
+            $integration = LooseValue::assoc($given[$name] ?? []);
             $scope = is_array($integration['scope'] ?? null) ? $integration['scope'] : [];
             $integrations[$name] = [
                 'enabled' => ($integration['enabled'] ?? false) === true,
@@ -342,7 +344,7 @@ class Etablissement
             ];
         }
 
-        $stage = is_array($settings['stage'] ?? null) ? $settings['stage'] : [];
+        $stage = LooseValue::assoc($settings['stage'] ?? []);
         $gratification = $stage['gratification_minimale'] ?? null;
 
         return [
@@ -392,7 +394,7 @@ class Etablissement
     private static function normalizeEmails(array $emails): array
     {
         $defaut = self::HABILLAGE_EMAILS_DEFAUT;
-        $texte = static fn (string $cle): string => is_string($emails[$cle] ?? null) ? $emails[$cle] : $defaut[$cle];
+        $texte = static fn (string $cle): string => is_string($emails[$cle] ?? null) ? $emails[$cle] : (string) $defaut[$cle];
         $couleur = $texte('couleur');
 
         return [

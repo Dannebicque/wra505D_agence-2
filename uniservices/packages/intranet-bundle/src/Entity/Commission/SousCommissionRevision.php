@@ -9,6 +9,11 @@ use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Users\Personnel;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * @phpstan-type CommissionRow array{scolariteSemestreId: int, etudiantId: int|null, nom: string, prenom: string, cells: array<string, float|null>, moyenne: float|null, rang: int|null, decision: bool|null, decisionLibelle: string, uesValidees: int, numeroEtudiant: string|null, dateNaissance: string|null, bac: string|null, propositionCalculee?: bool|null, decisionJury?: bool, motifJury?: string|null}
+ * @phpstan-type CommissionVue array{mode: mixed, modeLibelle: mixed, semestre: mixed, columns: list<array<string, mixed>>, columnsByEnseignement: list<array<string, mixed>>, rows: list<CommissionRow>, statistiques: array<string, mixed>}
+ */
+
 #[ORM\Entity]
 #[ORM\Table(name: 'intranet_sous_commission_revision')]
 #[ORM\UniqueConstraint(name: 'UNIQ_COMMISSION_REVISION', columns: ['sous_commission_id', 'numero'])]
@@ -33,9 +38,11 @@ class SousCommissionRevision implements TimestampableInterface
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $valideLe;
 
+    /** @var CommissionVue */
     #[ORM\Column(type: 'json')]
     private array $vue;
 
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $sources;
 
@@ -58,6 +65,10 @@ class SousCommissionRevision implements TimestampableInterface
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $motifRestauration;
 
+    /**
+     * @param CommissionVue $vue
+     * @param array<string, mixed> $sources
+     */
     public function __construct(SousCommission $commission, int $numero, Personnel $auteur, array $vue, array $sources, string $empreinte, ?self $restaureeDepuis = null, ?string $motifRestauration = null)
     {
         $this->sousCommission = $commission;
@@ -82,10 +93,12 @@ class SousCommissionRevision implements TimestampableInterface
     {
         return $this->numero;
     }
+    /** @return CommissionVue */
     public function getVue(): array
     {
         return $this->vue;
     }
+    /** @return array<string, mixed> */
     public function getSources(): array
     {
         return $this->sources;
@@ -107,6 +120,7 @@ class SousCommissionRevision implements TimestampableInterface
         $this->invalideeLe = new \DateTimeImmutable();
         $this->motifReouverture = $motif;
     }
+    /** @return array<string, mixed> */
     public function metadata(): array
     {
         return ['id' => $this->id, 'numero' => $this->numero,

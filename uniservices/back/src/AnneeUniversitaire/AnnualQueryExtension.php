@@ -18,12 +18,12 @@ final readonly class AnnualQueryExtension implements QueryCollectionExtensionInt
 
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
-        if ($resourceClass === \App\Entity\Users\Etudiant::class && $this->context->request()?->query->getBoolean('sansScolarite')) {
+        if ($resourceClass === \App\Entity\Users\Etudiant::class && $this->context->request()?->query->getBoolean('sansScolarite') === true) {
             $alias = $queryNameGenerator->generateJoinAlias('sans_scolarite');
             $queryBuilder->leftJoin($queryBuilder->getRootAliases()[0].'.scolarites', $alias)->andWhere($alias.'.id IS NULL');
             return;
         }
-        if ($resourceClass === \QuestionnaireBundle\Entity\Questionnaires\Questionnaire::class && $this->context->request()?->query->getBoolean('estModele')) {
+        if ($resourceClass === \QuestionnaireBundle\Entity\Questionnaires\Questionnaire::class && $this->context->request()?->query->getBoolean('estModele') === true) {
             $queryBuilder->andWhere($queryBuilder->getRootAliases()[0].'.estModele = true');
             return;
         }

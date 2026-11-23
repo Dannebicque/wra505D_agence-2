@@ -15,7 +15,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités de structure
  * Gère les droits d'accès pour : Département, Diplôme, Semestre, Groupe, UE, PN, Annee, Calendrier, TypeDiplome
  */
-/** @extends Voter<string, StructureDiplome> */
+/** @extends Voter<string, mixed> */
 class StructureVoter extends Voter
 {
     // Permissions Département

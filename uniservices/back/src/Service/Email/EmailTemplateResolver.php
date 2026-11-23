@@ -36,7 +36,7 @@ final class EmailTemplateResolver
             ));
         }
 
-        foreach (array_filter([$emailKey, $definition->getParentKey()]) as $cle) {
+        foreach (array_filter([$emailKey, $definition->getParentKey()], static fn (?string $cle): bool => $cle !== null && $cle !== '') as $cle) {
             $template = $this->personnalisation($cle, $departement, $locale);
             if ($template !== null) {
                 return ResolvedEmailTemplate::fromDatabase($template, $definition);

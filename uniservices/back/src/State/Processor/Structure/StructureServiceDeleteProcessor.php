@@ -18,19 +18,21 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  */
 final class StructureServiceDeleteProcessor implements ProcessorInterface
 {
+    /** @param ProcessorInterface<StructureService, mixed> $remove */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.remove_processor')]
         private readonly ProcessorInterface $remove,
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
-        if ($data instanceof StructureService && (!$data->getHelpdeskCategories()->isEmpty() || !$data->getPersonnel()->isEmpty())) {
+        if (!$data->getHelpdeskCategories()->isEmpty() || !$data->getPersonnel()->isEmpty()) {
             throw new ConflictHttpException('Ce service a des personnels ou des catégories helpdesk rattachés : il ne peut pas être supprimé.');
         }
         try {
-            return $this->remove->process($data, $operation, $uriVariables, $context);
+            $this->remove->process($data, $operation, $uriVariables, $context);
+            return;
         } catch (ForeignKeyConstraintViolationException) {
             throw new ConflictHttpException('Ce service est utilisé (demandes d\'achat…) : il ne peut pas être supprimé.');
         }

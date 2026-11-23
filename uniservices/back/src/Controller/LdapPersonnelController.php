@@ -27,7 +27,7 @@ class LdapPersonnelController extends AbstractController
         PersonnelRepository $personnels,
         LoggerInterface $logger,
     ): JsonResponse {
-        if ($personnels->findOneBy(['numeroHarpege' => (int) $numeroHarpege])) {
+        if ($personnels->findOneBy(['numeroHarpege' => (int) $numeroHarpege]) !== null) {
             return new JsonResponse(['message' => 'Un personnel existe déjà avec ce code RH.'], Response::HTTP_CONFLICT);
         }
 

@@ -122,6 +122,9 @@ class NotificationDigest
         $groupes = [];
         foreach ($evenements as $n) {
             $type = $this->types->get($n->getType());
+            if ($type === null) {
+                continue;
+            }
             $groupes[$type->sourceLibelle.' — '.$type->rubrique][] = $n;
         }
         ksort($groupes);

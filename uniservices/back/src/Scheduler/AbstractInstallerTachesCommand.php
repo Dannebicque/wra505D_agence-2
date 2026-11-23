@@ -45,8 +45,9 @@ abstract class AbstractInstallerTachesCommand extends Command
                 $io->writeln(sprintf(' • %s : déjà présente', $nom));
                 continue;
             }
-            $this->em->persist((new SchedulerTask())->setName($nom)->setCommand($commande)->setArguments($arguments)
-                ->setCronExpression($cron)->setDescription($description)->setActive(!$input->getOption('inactives')));
+            $argumentsAssoc = array_combine(array_map(static fn (int $index): string => (string) $index, array_keys($arguments)), $arguments);
+            $this->em->persist((new SchedulerTask())->setName($nom)->setCommand($commande)->setArguments($argumentsAssoc)
+                ->setCronExpression($cron)->setDescription($description)->setActive($input->getOption('inactives') !== true));
             $io->writeln(sprintf(' • %s : créée (%s)', $nom, $cron));
         }
         $this->em->flush();

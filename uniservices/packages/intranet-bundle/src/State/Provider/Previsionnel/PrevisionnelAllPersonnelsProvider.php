@@ -120,7 +120,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
                             'count' => $count++,
                             'personnel' => $personnel,
                             'statutLibelle' => $statutLibelle,
-                            'statutBadge' => $statut?->getBadge() ?? '',
+                            'statutBadge' => $statut->getBadge(),
                             'heures' => [
                                 'CM' => 0,
                                 'TD' => 0,
@@ -148,7 +148,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
 
                     $totalHeures = $cmHours + $tdHours + $tpHours;
 
-                    $statutValue = $statut?->value;
+                    $statutValue = $statut->value;
                     if (in_array($statutValue, ['MCF', 'PU', 'ENSAM', 'PRAG', 'PRCE', 'CDD'], true)) {
                         $totalPermanent += $totalHeures;
                     } elseif (in_array($statutValue, ['vacataire'], true)) {

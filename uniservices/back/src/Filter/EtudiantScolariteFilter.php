@@ -53,8 +53,8 @@ class EtudiantScolariteFilter implements FilterInterface
 
         if ('search' === $property) {
             $etudiantAlias = $this->getOrCreateJoin($queryBuilder, $queryNameGenerator, $alias, 'etudiant');
-            $terms = array_values(array_filter(explode(' ', trim(LooseValue::castString($value)))));
-            if (!empty($terms)) {
+            $terms = array_values(array_filter(explode(' ', trim(LooseValue::castString($value))), static fn (string $term): bool => $term !== ''));
+            if ($terms !== []) {
                 $termIndex = 0;
                 foreach ($terms as $term) {
                     $searchParam = $queryNameGenerator->generateParameterName('search_term_' . $termIndex);
@@ -143,10 +143,13 @@ class EtudiantScolariteFilter implements FilterInterface
 
     private function getOrCreateJoin(QueryBuilder $qb, QueryNameGeneratorInterface $queryNameGenerator, string $fromAlias, string $association): string
     {
-        foreach ($qb->getDQLPart('join') as $joins) {
-            foreach ($joins as $join) {
+        foreach (LooseValue::row($qb->getDQLPart('join')) as $joins) {
+            foreach (LooseValue::row($joins) as $join) {
+                if (!$join instanceof \Doctrine\ORM\Query\Expr\Join) {
+                    continue;
+                }
                 if ($join->getJoin() === "$fromAlias.$association") {
-                    return $join->getAlias();
+                    return $join->getAlias() ?? throw new \LogicException('Doctrine join without alias.');
                 }
             }
         }

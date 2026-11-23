@@ -19,6 +19,7 @@ class Universite
     #[Groups(['etablissement:read', 'etablissement:write'])]
     private ?string $libelle = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $adresse = null;
 
@@ -49,6 +50,7 @@ class Universite
         return Adresse::fromArray($this->adresse);
     }
 
+    /** @param Adresse|array<string, mixed>|null $adresse */
     #[Groups(['etablissement:write'])]
     public function setAdresse(Adresse|array|null $adresse): static
     {

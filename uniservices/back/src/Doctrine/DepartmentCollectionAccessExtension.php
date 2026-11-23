@@ -112,7 +112,6 @@ final class DepartmentCollectionAccessExtension implements QueryCollectionExtens
         }
 
         $roles = match (true) {
-            $finance => ['ROLE_FINANCE_VIEW'],
             $invitation => ['ROLE_ADMIN', 'ROLE_CHEF_DEPT', 'ROLE_QUALITE'],
             $resourceClass === EtudiantNote::class => ['ROLE_ADMIN', 'ROLE_CHEF_DEPT', 'ROLE_NOTES_MANAGER', 'ROLE_PERMANENT'],
             $studentRecord => ['ROLE_ADMIN', 'ROLE_CHEF_DEPT', 'ROLE_SCOLARITE', 'ROLE_ASSISTANT', 'ROLE_DIRECTEUR_ETUDES', 'ROLE_PERMANENT'],
@@ -137,10 +136,6 @@ final class DepartmentCollectionAccessExtension implements QueryCollectionExtens
             $owner = $scolarite;
         } elseif ($invitation) {
             $owner = $this->join($queryBuilder, $queryNameGenerator, $root, 'questionnaire');
-        } elseif ($finance) {
-            $owner = $resourceClass === FinanceReception::class
-                ? $this->join($queryBuilder, $queryNameGenerator, $root, 'bonCommande')
-                : $root;
         } else {
             $periodOwner = $resourceClass === StageAvenant::class
                 ? $this->join($queryBuilder, $queryNameGenerator, $root, 'stageEtudiant')

@@ -32,7 +32,7 @@ final readonly class NotificationType
         public ModeNotificationEnum $modeParDefaut = ModeNotificationEnum::RESUME,
         public ?array $modesAutorises = null,
     ) {
-        if (!preg_match('/^[a-z0-9_]+\.[a-z0-9_]+$/', $cle)) {
+        if (preg_match('/^[a-z0-9_]+\.[a-z0-9_]+$/', $cle) !== 1) {
             throw new \InvalidArgumentException(sprintf('Clé de notification invalide « %s » : attendu « package.evenement » en minuscules.', $cle));
         }
         if (!str_starts_with($cle, $source.'.')) {

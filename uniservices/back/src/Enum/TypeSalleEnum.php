@@ -10,6 +10,7 @@ enum TypeSalleEnum: string
     case TYPE_SALLE_TD = 'TD';
     case TYPE_SALLE_TP = 'TP';
 
+    /** @return array<string, self> */
     public static function getChoices(): array
     {
         return [
@@ -21,6 +22,7 @@ enum TypeSalleEnum: string
         ];
     }
 
+    /** @return list<self> */
     public static function getTypes(): array
     {
         return [

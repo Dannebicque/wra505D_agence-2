@@ -137,6 +137,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     #[Groups(['personnel:detail', 'personnel:config'])]
     private Collection $assistantDiplome;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?array $adressePersonnelle = null;

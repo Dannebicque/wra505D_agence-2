@@ -124,7 +124,7 @@ class PreferenceNotification
 
     private function reglageValide(NotificationType $type): ?ModeNotificationEnum
     {
-        $mode = ModeNotificationEnum::tryFrom((string) ($this->reglages[$type->cle] ?? ''));
+        $mode = ModeNotificationEnum::tryFrom($this->reglages[$type->cle] ?? '');
 
         return $mode !== null && $type->autorise($mode) ? $mode : null;
     }

@@ -114,7 +114,7 @@ class Previsionnel
     #[Groups(['previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read','previsionnel_all_personnels:read', 'previsionnel_personnel:read'])]
     private array $heures = [];
 
-    /** @var array<string, int>|null */
+    /** @var array<string, int> */
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read'])]
     private array $groupes = [];
@@ -223,7 +223,7 @@ class Previsionnel
     public function verifierSaisie(ExecutionContextInterface $context): void
     {
         foreach ($this->heures as $type => $heures) {
-            if (!is_numeric($heures) || !is_finite((float) $heures) || $heures < 0) {
+            if (!is_finite($heures) || $heures < 0) {
                 $context->buildViolation('Le nombre d’heures doit être positif ou nul.')
                     ->atPath('heures['.$type.']')->addViolation();
             }
@@ -247,12 +247,13 @@ class Previsionnel
             ->atPath('enseignement')->addViolation();
     }
 
+    /** @return array<string, array{NbHrGrp: float, NbGrp: int, NbSeanceGrp: float}> */
     public function getRepartitionHeures(): array
     {
         $repartition = [];
         foreach (['CM', 'TD', 'TP', 'Projet'] as $type) {
             $heures = $this->heures[$type] ?? 0;
-            $groupes = (int) ($this->groupes[$type] ?? 0);
+            $groupes = $this->groupes[$type] ?? 0;
             $repartition[$type] = [
                 'NbHrGrp' => $type !== 'Projet' && $groupes > 0 ? $heures / $groupes : $heures,
                 'NbGrp' => $groupes,
@@ -297,10 +298,6 @@ class Previsionnel
     /** @return array<string, int> */
     public function getGroupes(): array
     {
-        if ($this->groupes === null) {
-            throw new \LogicException('Groupes are required');
-        }
-
         return $this->groupes;
     }
 

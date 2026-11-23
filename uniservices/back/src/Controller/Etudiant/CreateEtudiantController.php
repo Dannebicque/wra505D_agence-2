@@ -101,9 +101,7 @@ class CreateEtudiantController extends AbstractController
     {
         // Récupérer les données JSON envoyées dans la requête
         $data = $request->toArray();
-        if (is_array($data)) {
-            $data['anneeUniversitaireId'] = $request->attributes->get('_annee_universitaire_id');
-        }
+        $data['anneeUniversitaireId'] = $request->attributes->get('_annee_universitaire_id');
         $fileContent = $data['fileContent'] ?? null;
         $anneeUniv = $this->structureAnneeUniversitaireRepository->findOneBy(['id' => $data['anneeUniversitaireId'] ?? null]);
 

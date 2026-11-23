@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Calendrier;
 
 use App\Entity\Structure\StructureAnneeUniversitaire;
+use App\Utils\LooseValue;
 
 final class CalendrierUniversitaireService
 {
@@ -16,7 +17,7 @@ final class CalendrierUniversitaireService
 
     public function getDateFin(StructureAnneeUniversitaire $annee): \DateTimeImmutable
     {
-        return new \DateTimeImmutable(sprintf('%d-08-31', $annee->getAnnee() + 1), new \DateTimeZone('UTC'));
+        return new \DateTimeImmutable(sprintf('%d-08-31', LooseValue::int($annee->getAnnee()) + 1), new \DateTimeZone('UTC'));
     }
 
     private function debut(StructureAnneeUniversitaire $annee): \DateTimeImmutable
@@ -39,9 +40,10 @@ final class CalendrierUniversitaireService
         if ($date < $debut || $date > $this->getDateFin($annee)) {
             return null;
         }
-        return intdiv((int) $debut->diff($date)->days, 7) + 1;
+        return intdiv($debut->diff($date)->days, 7) + 1;
     }
 
+    /** @return array{semaineFormation: int, semaineReelle: int, anneeIso: int, dateLundi: string, dateFin: string}|null */
     public function getSemaine(StructureAnneeUniversitaire $annee, int $numero): ?array
     {
         $debut = $this->debut($annee);
@@ -63,22 +65,27 @@ final class CalendrierUniversitaireService
         ];
     }
 
-    /** Vérifie un calendrier historique continu avant d’en déduire son lundi de référence. */
+    /**
+     * Vérifie un calendrier historique continu avant d’en déduire son lundi de référence.
+     *
+     * @param list<array{semaine_formation: mixed, date_lundi: mixed, semaine_reelle: mixed}> $lignes
+     */
     public function getDateDebutDepuisCorrespondances(array $lignes): ?\DateTimeImmutable
     {
         $reference = null;
         $numeros = [];
         foreach ($lignes as $ligne) {
-            $numero = (int) $ligne['semaine_formation'];
-            $date = \DateTimeImmutable::createFromFormat('!Y-m-d', (string) $ligne['date_lundi'], new \DateTimeZone('UTC'));
-            if ($numero < 1 || $date === false || $date->format('Y-m-d') !== $ligne['date_lundi']
+            $numero = LooseValue::castInt($ligne['semaine_formation']);
+            $dateLundi = LooseValue::castString($ligne['date_lundi']);
+            $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $dateLundi, new \DateTimeZone('UTC'));
+            if ($numero < 1 || $date === false || $date->format('Y-m-d') !== $dateLundi
                 || $date->format('N') !== '1' || isset($numeros[$numero])
-                || (int) $date->format('W') !== (int) $ligne['semaine_reelle']) {
+                || (int) $date->format('W') !== LooseValue::castInt($ligne['semaine_reelle'])) {
                 throw new \DomainException('Correspondance historique invalide ou dupliquée : vérifier le calendrier avant migration.');
             }
             $numeros[$numero] = true;
             $candidate = $date->modify('-'.(($numero - 1) * 7).' days');
-            if ($reference !== null && $reference != $candidate) {
+            if ($reference !== null && $reference->getTimestamp() !== $candidate->getTimestamp()) {
                 throw new \DomainException('Le calendrier historique ne suit pas un compteur continu.');
             }
             $reference = $candidate;
@@ -86,6 +93,7 @@ final class CalendrierUniversitaireService
         return $reference;
     }
 
+    /** @return list<array{semaineFormation: int, semaineReelle: int, anneeIso: int, dateLundi: string, dateFin: string}> */
     public function getCalendrier(StructureAnneeUniversitaire $annee): array
     {
         $semaines = [];

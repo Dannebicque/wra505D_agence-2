@@ -27,6 +27,7 @@ class ResultatSousCommission
     private EtudiantScolariteSemestre $inscription;
 
     /** Moyennes d’enseignement et d’UE, moyenne générale et rang figés. */
+    /** @var array{decision: bool|null, moyenne: float|null, rang: int|null, decisionJury?: bool, motifJury?: string|null} */
     #[ORM\Column(type: 'json')]
     private array $resultat;
 
@@ -39,6 +40,7 @@ class ResultatSousCommission
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $motifJury;
 
+    /** @param array{decision: bool|null, moyenne: float|null, rang: int|null, decisionJury?: bool, motifJury?: string|null} $resultat */
     public function __construct(SousCommissionRevision $revision, EtudiantScolariteSemestre $inscription, array $resultat, bool $decision, ?string $motif)
     {
         $this->revision = $revision;

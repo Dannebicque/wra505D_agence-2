@@ -10,6 +10,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/** @extends Voter<string, mixed> */
 final class DocumentVoter extends Voter
 {
     public const MANAGE = 'CAN_MANAGE_DOCUMENT';
@@ -33,6 +34,9 @@ final class DocumentVoter extends Voter
     {
         $user = $token->getUser();
         if (!$user instanceof Personnel) {
+            return false;
+        }
+        if (!$subject instanceof Document && !$subject instanceof DocumentCategory) {
             return false;
         }
 

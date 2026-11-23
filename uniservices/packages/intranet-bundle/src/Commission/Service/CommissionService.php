@@ -21,6 +21,7 @@ final readonly class CommissionService implements CommissionServiceInterface
         return $this->calculate($semestre)[0];
     }
 
+    /** @return array{\IntranetBundle\Commission\Dto\CommissionView, \IntranetBundle\Commission\Dto\CommissionDataset} */
     public function calculate(StructureSemestre $semestre): array
     {
         $dataset = $this->dataLoader->loadDataset($semestre);

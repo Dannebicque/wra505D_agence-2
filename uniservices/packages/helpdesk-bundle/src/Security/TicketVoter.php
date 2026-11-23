@@ -73,6 +73,7 @@ class TicketVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
+    /** @param array<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);

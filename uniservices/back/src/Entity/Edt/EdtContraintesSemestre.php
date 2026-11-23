@@ -34,6 +34,7 @@ class EdtContraintesSemestre
     }
 
     /** Contraintes indexées par date civile du lundi (AAAA-MM-JJ). */
+    /** @var array<string, mixed> */
     #[ORM\Column(type: 'json')]
     private array $contraintes = [];
 
@@ -50,10 +51,13 @@ class EdtContraintesSemestre
         $this->semestre = $semestre;
         return $this;
     }
+    /** @return array<string, mixed> */
+    /** @return array<string, mixed> */
     public function getContraintes(): array
     {
         return $this->contraintes;
     }
+    /** @param array<string, mixed> $contraintes */
     public function setContraintes(array $contraintes): static
     {
         $this->contraintes = $contraintes;

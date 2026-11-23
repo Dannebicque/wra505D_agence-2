@@ -85,13 +85,13 @@ final class PerimetreAnnuelRegistry
 
     public function mode(string $class): string
     {
-        $name = substr($class, strrpos($class, '\\') + 1);
+        $name = substr($class, (int) strrpos($class, '\\') + 1);
         return self::DTO_MODES[$name] ?? ($this->path($class) === null ? 'independant' : 'annuel');
     }
 
     public function path(string $class): ?string
     {
-        $name = substr($class, strrpos($class, '\\') + 1);
+        $name = substr($class, (int) strrpos($class, '\\') + 1);
         if (str_starts_with($class, 'ApiPlatform\\') || isset(self::DTO_MODES[$name])) {
             return null;
         }
@@ -109,6 +109,6 @@ final class PerimetreAnnuelRegistry
 
     public function autoriseToutes(string $class): bool
     {
-        return in_array(substr($class, strrpos($class, '\\') + 1), ['Etudiant', 'StructureDiplome', 'EtudiantScolarite', 'EtudiantScolariteSemestre', 'Portfolio', 'Trace', 'Campagne'], true);
+        return in_array(substr($class, (int) strrpos($class, '\\') + 1), ['Etudiant', 'StructureDiplome', 'EtudiantScolarite', 'EtudiantScolariteSemestre', 'Portfolio', 'Trace', 'Campagne'], true);
     }
 }

@@ -11,6 +11,7 @@ use App\Notification\NotificationService;
 use App\Notification\NotificationType;
 use App\Notification\NotificationTypeRegistry;
 use App\Security\UserPackageResolver;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -105,12 +106,12 @@ class NotificationController extends AbstractController
                 $prefs->setActif((bool) $d['actif']);
             }
             if (isset($d['frequence'])) {
-                $prefs->setFrequence(FrequenceResumeEnum::tryFrom((string) $d['frequence']) ?? throw new \InvalidArgumentException('Fréquence inconnue.'));
+                $prefs->setFrequence(FrequenceResumeEnum::tryFrom(LooseValue::castString($d['frequence'])) ?? throw new \InvalidArgumentException('Fréquence inconnue.'));
             }
             $permis = $this->typesPermis();
             foreach ((array) ($d['reglages'] ?? []) as $cle => $mode) {
                 $type = $permis[(string) $cle] ?? throw new \InvalidArgumentException('Type de notification inconnu.');
-                $prefs->definirMode($type, ModeNotificationEnum::tryFrom((string) $mode) ?? throw new \InvalidArgumentException('Mode inconnu.'));
+                $prefs->definirMode($type, ModeNotificationEnum::tryFrom(LooseValue::castString($mode)) ?? throw new \InvalidArgumentException('Mode inconnu.'));
             }
         } catch (\InvalidArgumentException $e) {
             return $this->json(['message' => $e->getMessage(), 'erreurs' => [$e->getMessage()]], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -141,7 +142,7 @@ class NotificationController extends AbstractController
                 'defaut' => $t->modeParDefaut->value,
                 'modes' => array_map(static fn (ModeNotificationEnum $m) => ['value' => $m->value, 'libelle' => $m->getLibelle()], $t->modes()),
             ], $this->typesPermis())),
-            'enAttente' => (int) $this->em->getRepository(Notification::class)->count([$this->champ() => $this->personne(), 'emailTraiteLe' => null]),
+            'enAttente' => $this->em->getRepository(Notification::class)->count([$this->champ() => $this->personne(), 'emailTraiteLe' => null]),
             'dernierResume' => $prefs->getDernierResumeLe()?->format(\DATE_ATOM),
         ];
     }
@@ -173,7 +174,7 @@ class NotificationController extends AbstractController
 
         return [
             'uuid' => $n->getUuidString(),
-            'source' => ['cle' => $n->getSource(), 'libelle' => $type?->sourceLibelle ?? ucfirst($n->getSource())],
+            'source' => ['cle' => $n->getSource(), 'libelle' => $type->sourceLibelle ?? ucfirst($n->getSource())],
             'type' => $n->getType(),
             'texte' => $n->getTexte(),
             'url' => $n->getUrl(),
@@ -185,7 +186,7 @@ class NotificationController extends AbstractController
 
     private function nonLues(): int
     {
-        return (int) $this->em->getRepository(Notification::class)->count([$this->champ() => $this->personne(), 'lueLe' => null]);
+        return $this->em->getRepository(Notification::class)->count([$this->champ() => $this->personne(), 'lueLe' => null]);
     }
 
     private function champ(): string

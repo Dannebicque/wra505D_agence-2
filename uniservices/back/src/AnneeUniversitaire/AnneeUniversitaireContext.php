@@ -43,22 +43,27 @@ final readonly class AnneeUniversitaireContext
             if ($annee === null) {
                 throw new BadRequestHttpException('Aucune année universitaire active.');
             }
-            return $annee->getId();
+            $id = $annee->getId();
+            if ($id === null) {
+                throw new BadRequestHttpException('Aucune année universitaire active.');
+            }
+            return $id;
         }
-        if (is_string($value) && preg_match('~^/api/structure_annee_universitaires/(\d+)$~', $value, $matches)) {
+        if (is_string($value) && preg_match('~^/api/structure_annee_universitaires/(\d+)$~', $value, $matches) !== false && isset($matches[1])) {
             $value = $matches[1];
         }
-        if ((!is_string($value) && !is_int($value)) || !ctype_digit((string) $value) || (int) $value < 1) {
+        if ((!is_string($value) && !is_int($value)) || ctype_digit((string) $value) !== true || (int) $value < 1) {
             throw new BadRequestHttpException('Identifiant d’année universitaire invalide.');
         }
         return (int) $value;
     }
 
+    /** @return array<string, mixed> */
     public function body(Request $request): array
     {
         if ($request->getContentTypeFormat() === 'json' || str_contains($request->headers->get('Content-Type', ''), 'json')) {
             $data = json_decode($request->getContent(), true);
-            return is_array($data) ? $data : [];
+            return is_array($data) ? \App\Utils\LooseValue::assoc($data) : [];
         }
         return $request->request->all();
     }
@@ -95,11 +100,12 @@ final readonly class AnneeUniversitaireContext
         }
         $explicit = $this->explicit($request);
         $reference = $this->fromReferences($request);
-        $header = $request->headers->get(self::HEADER);
-        if ($mode === 'explicite' && $header !== null && $explicit !== null && $this->id($header) !== $explicit) {
+        $header = $this->header($request);
+        $headerId = $this->idFromHeader($header);
+        if ($mode === 'explicite' && $headerId !== null && $explicit !== null && $headerId !== $explicit) {
             throw new ConflictHttpException('Le contexte explicite contredit l’année de la requête.');
         }
-        $id = $explicit ?? ($mode === 'explicite' && $header !== null ? $this->id($header) : null) ?? $reference ?? ($header !== null ? $this->id($header) : null);
+        $id = $explicit ?? $reference ?? $headerId;
         if ($id === null || in_array($mode, ['aucun', 'toutes'], true)) {
             throw new BadRequestHttpException('Cette opération exige une année universitaire explicite ou sélectionnée.');
         }
@@ -111,6 +117,17 @@ final readonly class AnneeUniversitaireContext
         }
         $request->attributes->set('_annee_universitaire_id', $id);
         return $id;
+    }
+
+    private function header(Request $request): ?string
+    {
+        $values = $request->headers->all(self::HEADER);
+        return $values[0] ?? null;
+    }
+
+    private function idFromHeader(?string $header): ?int
+    {
+        return $header === null ? null : $this->id($header);
     }
 
     public function toutesAutorisees(string $class): bool
@@ -138,7 +155,13 @@ final readonly class AnneeUniversitaireContext
             if (is_string($value) && str_starts_with($value, '/api/')) {
                 $value = basename($value);
             }
+            if (!is_int($value) && !is_string($value)) {
+                continue;
+            }
             if (!ctype_digit((string) $value)) {
+                continue;
+            }
+            if (!class_exists($class)) {
                 continue;
             }
             $object = $this->em->getRepository($class)->findOneBy([$identifier => (int) $value]);
@@ -157,10 +180,12 @@ final readonly class AnneeUniversitaireContext
         return $ids[0] ?? null;
     }
 
+    /** @return list<int> */
     public function years(object $object): array
     {
         if ($object instanceof StructureAnneeUniversitaire) {
-            return [$object->getId()];
+            $id = $object->getId();
+            return $id === null ? [] : [$id];
         }
         $class = $this->em->getClassMetadata($object::class)->getName();
         $path = $this->registry->path($class);
@@ -182,7 +207,7 @@ final readonly class AnneeUniversitaireContext
             }
             $objects = $next;
         }
-        return array_values(array_unique(array_filter(array_map(static fn ($year) => $year instanceof StructureAnneeUniversitaire ? $year->getId() : null, $objects))));
+        return array_values(array_unique(array_filter(array_map(static fn ($year) => $year instanceof StructureAnneeUniversitaire ? $year->getId() : null, $objects), static fn (?int $year): bool => $year !== null), SORT_NUMERIC));
     }
 
     public function isModele(object $entity): bool

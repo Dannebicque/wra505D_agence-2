@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/** @extends Voter<string, mixed> */
 final class PlanCoursVoter extends Voter
 {
     public const MANAGE = 'CAN_MANAGE_PLAN_COURS';
@@ -34,6 +35,9 @@ final class PlanCoursVoter extends Voter
     {
         $user = $token->getUser();
         if (!$user instanceof Personnel) {
+            return false;
+        }
+        if (!$subject instanceof PlanCours && !$subject instanceof PlanCoursRealise && !$subject instanceof PlanCoursSequence) {
             return false;
         }
 

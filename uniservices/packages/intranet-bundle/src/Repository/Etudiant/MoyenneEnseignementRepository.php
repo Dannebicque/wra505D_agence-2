@@ -5,6 +5,7 @@ namespace IntranetBundle\Repository\Etudiant;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use IntranetBundle\Entity\Etudiant\MoyenneEnseignement;
+use App\Entity\Structure\StructureSemestre;
 
 /**
  * @extends ServiceEntityRepository<MoyenneEnseignement>

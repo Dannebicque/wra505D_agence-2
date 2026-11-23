@@ -34,6 +34,9 @@ final readonly class AnnualWriteListener
             $entities[] = $collection->getOwner();
         }
         foreach ($entities as $entity) {
+            if (!is_object($entity)) {
+                continue;
+            }
             if ($entity instanceof \App\Entity\Users\Etudiant) {
                 continue;
             } // L’identité est indépendante ; ses scolarités sont contrôlées séparément.

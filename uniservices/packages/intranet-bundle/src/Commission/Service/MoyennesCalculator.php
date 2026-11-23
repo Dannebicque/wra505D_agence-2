@@ -6,11 +6,21 @@ namespace IntranetBundle\Commission\Service;
 
 use App\Entity\Etudiant\EtudiantNote;
 
+/**
+ * @phpstan-type Ue array{id: int, coefficient: float, ects: float, liens: list<Lien>}
+ * @phpstan-type Lien array{enseignement: int|null, coefficient: float}
+ * @phpstan-type Inscription array{id: int, anneeUniversitaire: int, typesGroupes: list<int|string>}
+ * @phpstan-type Note array{id: int, inscription: int, evaluation: int, presenceStatut: string, note: float|null}
+ * @phpstan-type Evaluation array{id: int, enseignement: int, anneeUniversitaire: int, typeGroupe: int|string|null, coeff: float|null}
+ */
 final class MoyennesCalculator
 {
     public const REGLES = ['version' => '1', 'absent_injustifie' => 'zero', 'absent_justifie' => 'exclu', 'dispense' => 'exclu', 'manquante' => 'bloque_validation', 'arrondi' => 3];
 
-    /** @return array{array, array, array} Moyennes UE, enseignements et erreurs bloquantes. */
+    /**
+     * @param array{anneeUniversitaireId: int, ues: list<Ue>, inscriptions: list<Inscription>, notes: list<Note>, evaluations: list<Evaluation>} $sources
+     * @return array{array<int, array<int, float|null>>, array<int, array<int, float|null>>, list<string>} Moyennes UE, enseignements et erreurs bloquantes.
+     */
     public function calculer(array $sources): array
     {
         $erreurs = $moyennesUe = $moyennesEnseignement = $notes = $evaluations = $enseignements = [];
@@ -68,7 +78,7 @@ final class MoyennesCalculator
                         $complet = false;
                         continue;
                     }
-                    if ((float) $poids === 0.0) {
+                    if ($poids === 0.0) {
                         continue;
                     }
                     if ($note === null || ($note['presenceStatut'] === EtudiantNote::STATUT_PRESENT && $note['note'] === null)) {

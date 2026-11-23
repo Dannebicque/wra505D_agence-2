@@ -38,7 +38,7 @@ class UserPackageResolver
         $dps = $this->affectations->findBy(['personnel' => $user]);
         $retenue = null;
         foreach ($dps as $dp) {
-            if ($dp->getDepartement() !== null && $dp->isDefaut()) {
+            if ($dp->getDepartement() !== null && $dp->isDefaut() === true) {
                 $retenue = $dp;
             }
         }

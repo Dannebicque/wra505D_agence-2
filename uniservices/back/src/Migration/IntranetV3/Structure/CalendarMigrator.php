@@ -14,16 +14,27 @@ use App\Utils\LooseValue;
 /** Reprend le début annuel depuis V3 ; aucune semaine n’est persistée. */
 final class CalendarMigrator extends AbstractMigrator
 {
-    public function getName(): string { return 'calendriers'; }
-    public function getDependencies(): array { return [AcademicYearMigrator::class]; }
+    public function getName(): string
+    {
+        return 'calendriers';
+    }
+    public function getDependencies(): array
+    {
+        return [AcademicYearMigrator::class];
+    }
 
     public function migrate(MigrationContext $context): MigrationResult
     {
         $updated = $skipped = $failed = 0;
         $messages = [];
+        /** @var array<string, list<array{semaine_formation: mixed, date_lundi: mixed, semaine_reelle: mixed}>> $groups */
         $groups = [];
         foreach ($this->source->fetchAllAssociative('SELECT semaine_formation, semaine_reelle, date_lundi, annee_universitaire_id FROM calendrier ORDER BY annee_universitaire_id, semaine_formation') as $row) {
-            $groups[LooseValue::castString($row['annee_universitaire_id'])][] = $row;
+            $groups[LooseValue::castString($row['annee_universitaire_id'])][] = [
+                'semaine_formation' => $row['semaine_formation'] ?? null,
+                'date_lundi' => $row['date_lundi'] ?? null,
+                'semaine_reelle' => $row['semaine_reelle'] ?? null,
+            ];
         }
         $service = new CalendrierUniversitaireService();
         foreach ($groups as $oldId => $lines) {

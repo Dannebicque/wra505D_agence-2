@@ -21,12 +21,11 @@ class SemestreFilter implements FilterInterface
      */
     public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
-        if (isset($context['parameter'])) {
-            $parameter = $context['parameter'];
-            $this->filterProperty($parameter->getProperty() ?? $parameter->getKey(), $parameter->getValue(), $queryBuilder, $queryNameGenerator);
+        if (($parameter = $context['parameter'] ?? null) instanceof Parameter) {
+            $this->filterProperty($parameter->getProperty() ?? $parameter->getKey() ?? '', $parameter->getValue(), $queryBuilder, $queryNameGenerator);
             return;
         }
-        foreach ($context['filters'] ?? [] as $property => $value) {
+        foreach (LooseValue::row($context['filters'] ?? []) as $property => $value) {
             $this->filterProperty(LooseValue::castString($property), $value, $queryBuilder, $queryNameGenerator);
         }
     }
@@ -63,10 +62,13 @@ class SemestreFilter implements FilterInterface
 
     private function join(QueryBuilder $qb, QueryNameGeneratorInterface $names, string $owner, string $field): string
     {
-        foreach ($qb->getDQLPart('join') as $joins) {
-            foreach ($joins as $join) {
+        foreach (LooseValue::row($qb->getDQLPart('join')) as $joins) {
+            foreach (LooseValue::row($joins) as $join) {
+                if (!$join instanceof \Doctrine\ORM\Query\Expr\Join) {
+                    continue;
+                }
                 if ($join->getJoin() === "$owner.$field") {
-                    return $join->getAlias();
+                    return $join->getAlias() ?? throw new \LogicException('Doctrine join without alias.');
                 }
             }
         }

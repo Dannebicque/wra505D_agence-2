@@ -45,8 +45,8 @@ final readonly class AnnualRequestSubscriber implements EventSubscriberInterface
                 $request->attributes->set('_api_operation', $operation);
             }
             $hasIdentifier = false;
-            foreach (array_keys($operation?->getUriVariables() ?? []) as $key) {
-                if ($request->attributes->has($key)) {
+            foreach ($operation instanceof \ApiPlatform\Metadata\HttpOperation ? array_keys($operation->getUriVariables() ?? []) : [] as $key) {
+                if (is_string($key) && $request->attributes->has($key)) {
                     $hasIdentifier = true;
                 }
             }
@@ -66,11 +66,11 @@ final readonly class AnnualRequestSubscriber implements EventSubscriberInterface
             if ($mode === ContexteAnnuel::RESSOURCE && str_starts_with($class, 'QuestionnaireBundle\\ApiDto\\')) {
                 $entity = null;
                 foreach (['questionnaireUuid', 'surveyId'] as $key) {
-                    if ($uuid = $request->attributes->get($key)) {
+                    if (($uuid = $request->attributes->get($key)) !== null && $uuid !== '') {
                         $entity = $this->em->getRepository(\QuestionnaireBundle\Entity\Questionnaires\Questionnaire::class)->findOneBy(['uuid' => $uuid]);
                     }
                 }
-                if ($token = $request->attributes->get('token')) {
+                if (($token = $request->attributes->get('token')) !== null && $token !== '') {
                     $entity = $this->em->getRepository(\QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
                 }
                 if ($entity !== null && count($years = $this->context->years($entity)) === 1) {
@@ -84,7 +84,10 @@ final readonly class AnnualRequestSubscriber implements EventSubscriberInterface
         if ($method === null) {
             return;
         }
-        $attributes = $method->getAttributes(ContexteAnnuel::class) ?: $method->getDeclaringClass()->getAttributes(ContexteAnnuel::class);
+        $attributes = $method->getAttributes(ContexteAnnuel::class);
+        if ($attributes === []) {
+            $attributes = $method->getDeclaringClass()->getAttributes(ContexteAnnuel::class);
+        }
         if ($attributes === []) {
             // Les contrôleurs techniques des bundles tiers ne sont pas des opérations métier du projet.
             if (!in_array(explode('\\', $method->getDeclaringClass()->getName())[0], ['App', 'IntranetBundle', 'UnifolioBundle', 'MessageBundle', 'StageBundle', 'QuestionnaireBundle', 'FinanceBundle', 'DocumentBundle', 'HelpdeskBundle'], true)) {
@@ -100,6 +103,9 @@ final readonly class AnnualRequestSubscriber implements EventSubscriberInterface
             if ($policy->ressource !== null) {
                 $id = $request->attributes->get($policy->cle) ?? $request->query->get($policy->cle) ?? ($this->context->body($request)[$policy->cle] ?? null);
                 if ($id !== null) {
+                    if (!class_exists($policy->ressource)) {
+                        throw new \LogicException('Classe de ressource annuelle inconnue.');
+                    }
                     $object = $this->em->getRepository($policy->ressource)->findOneBy([$policy->identifiant => $id]);
                     if ($object !== null) {
                         $years = $this->context->years($object);
@@ -132,7 +138,7 @@ final readonly class AnnualRequestSubscriber implements EventSubscriberInterface
     {
         $id = $this->context->requireId($request);
         $request->query->set('anneeUniversitaire', $id);
-        $filters = $request->attributes->get('_api_filters', []);
+        $filters = LooseValue::assoc($request->attributes->get('_api_filters', []));
         $filters['anneeUniversitaire'] = $id;
         $request->attributes->set('_api_filters', $filters);
     }
@@ -144,7 +150,7 @@ final readonly class AnnualRequestSubscriber implements EventSubscriberInterface
             return;
         }
         $response = $event->getResponse();
-        $response->headers->set(AnneeUniversitaireContext::MODE_HEADER, $request->attributes->get('_politique_annuelle'));
+        $response->headers->set(AnneeUniversitaireContext::MODE_HEADER, LooseValue::castString($request->attributes->get('_politique_annuelle')));
         $response->setVary([AnneeUniversitaireContext::HEADER, AnneeUniversitaireContext::MODE_HEADER], false);
         if ($request->attributes->has('_annee_universitaire_id')) {
             $response->headers->set(AnneeUniversitaireContext::HEADER, LooseValue::castString($request->attributes->get('_annee_universitaire_id')));

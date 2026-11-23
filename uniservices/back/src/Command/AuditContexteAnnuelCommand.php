@@ -48,7 +48,8 @@ final class AuditContexteAnnuelCommand extends Command
             if (!str_starts_with($route->getPath(), '/api/')) {
                 continue;
             }
-            if ($class = $route->getDefault('_api_resource_class')) {
+            $class = $route->getDefault('_api_resource_class');
+            if (is_string($class) && $class !== '') {
                 try {
                     $this->registry->path(LooseValue::string($class));
                     ++$operations;
@@ -66,7 +67,10 @@ final class AuditContexteAnnuelCommand extends Command
                 continue;
             }
             $reflection = new \ReflectionMethod($class, $method);
-            $attributes = $reflection->getAttributes(ContexteAnnuel::class) ?: $reflection->getDeclaringClass()->getAttributes(ContexteAnnuel::class);
+            $attributes = $reflection->getAttributes(ContexteAnnuel::class);
+            if ($attributes === []) {
+                $attributes = $reflection->getDeclaringClass()->getAttributes(ContexteAnnuel::class);
+            }
             if ($attributes === []) {
                 $errors[] = 'Politique absente : '.$class.'::'.$method;
             } else {

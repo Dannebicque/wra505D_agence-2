@@ -4,6 +4,7 @@ namespace App\Service\Ldap;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Ldap\Exception\LdapException;
+use App\Utils\LooseValue;
 use Symfony\Component\Ldap\Ldap;
 use Symfony\Component\Ldap\LdapInterface;
 
@@ -47,10 +48,10 @@ class LdapPersonnelService
         $entree = $resultats[0];
 
         return [
-            'login' => $entree->getAttribute('uid')[0] ?? null,
-            'mail' => $entree->getAttribute('mail')[0] ?? null,
-            'nom' => $entree->getAttribute('sn')[0] ?? null,
-            'prenom' => $entree->getAttribute('givenName')[0] ?? null,
+            'login' => LooseValue::nullableString($entree->getAttribute('uid')[0] ?? null),
+            'mail' => LooseValue::nullableString($entree->getAttribute('mail')[0] ?? null),
+            'nom' => LooseValue::nullableString($entree->getAttribute('sn')[0] ?? null),
+            'prenom' => LooseValue::nullableString($entree->getAttribute('givenName')[0] ?? null),
         ];
     }
 }

@@ -142,20 +142,20 @@ class PrevisionnelSemestreProvider implements ProviderInterface
                     }
 
                     $nbHrSaisiCM += $item->getGroupes()['CM'] !== 0
-                        ? ($item->getGroupes()['CM'] % ($semestre->getNbGroupesCm() ?? 0) === 0
-                            ? $item->getHeures()['CM'] / ($semestre->getNbGroupesCm() ?? 0)
+                        ? ($item->getGroupes()['CM'] % $semestre->getNbGroupesCm() === 0
+                            ? $item->getHeures()['CM'] / $semestre->getNbGroupesCm()
                             : $item->getHeures()['CM'] / $item->getGroupes()['CM'])
                         : 0;
 
                     $nbHrSaisiTD += $item->getGroupes()['TD'] !== 0
-                        ? ($item->getGroupes()['TD'] % ($semestre->getNbGroupesTd() ?? 0) === 0
-                            ? $item->getHeures()['TD'] / ($semestre->getNbGroupesTd() ?? 0)
+                        ? ($item->getGroupes()['TD'] % $semestre->getNbGroupesTd() === 0
+                            ? $item->getHeures()['TD'] / $semestre->getNbGroupesTd()
                             : $item->getHeures()['TD'] / $item->getGroupes()['TD'])
                         : 0;
 
                     $nbHrSaisiTP += $item->getGroupes()['TP'] !== 0
-                        ? ($item->getGroupes()['TP'] % ($semestre->getNbGroupesTp() ?? 0) === 0
-                            ? $item->getHeures()['TP'] / ($semestre->getNbGroupesTp() ?? 0)
+                        ? ($item->getGroupes()['TP'] % $semestre->getNbGroupesTp() === 0
+                            ? $item->getHeures()['TP'] / $semestre->getNbGroupesTp()
                             : $item->getHeures()['TP'] / $item->getGroupes()['TP'])
                         : 0;
                 }

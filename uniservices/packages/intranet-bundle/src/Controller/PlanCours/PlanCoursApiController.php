@@ -226,13 +226,13 @@ class PlanCoursApiController extends AbstractController
             $semestre = null;
             foreach ($ens->getEnseignementUes() as $enseignementUe) {
                 $candidat = $enseignementUe->getUe()?->getSemestre();
-                if (!$semestreId || $candidat?->getId() === $semestreId) {
+                if ($semestreId === 0 || $candidat?->getId() === $semestreId) {
                     $semestre = $candidat;
                     break;
                 }
             }
 
-            if ($semestreId && !$semestre) {
+            if ($semestreId !== 0 && $semestre === null) {
                 continue;
             }
 

@@ -39,7 +39,7 @@ final class PrevisionnelActionsController extends AbstractController
     {
         $this->denyAccessUnlessGranted('CAN_EDIT_SEMESTRE', $semestre);
         $ids = $request->toArray()['ids'] ?? null;
-        if (!is_array($ids) || !array_is_list($ids) || $ids === [] || array_filter($ids, static fn ($id) => !is_int($id) || $id <= 0)) {
+        if (!is_array($ids) || !array_is_list($ids) || $ids === [] || array_filter($ids, static fn ($id): bool => !is_int($id) || $id <= 0) !== []) {
             throw new UnprocessableEntityHttpException('La liste des lignes à supprimer est invalide.');
         }
 
@@ -54,7 +54,11 @@ final class PrevisionnelActionsController extends AbstractController
             }
             foreach ($lignes as $ligne) {
                 $this->denyAccessUnlessGranted('CAN_DELETE_PREVISIONNEL', $ligne);
-                $this->verifierRattachement($semestre, $ligne->getEnseignement());
+                $enseignement = $ligne->getEnseignement();
+                if ($enseignement === null) {
+                    throw new UnprocessableEntityHttpException('Le prévisionnel ne référence aucun enseignement.');
+                }
+                $this->verifierRattachement($semestre, $enseignement);
             }
             foreach ($lignes as $ligne) {
                 $this->em->remove($ligne);
@@ -87,7 +91,7 @@ final class PrevisionnelActionsController extends AbstractController
                 throw new UnprocessableEntityHttpException("Ligne $numero : intervenant ou code d’enseignement invalide ou ambigu.");
             }
             $personnel = $this->em->find(Personnel::class, $personnelId);
-            if (!$personnel) {
+            if ($personnel === null) {
                 throw new UnprocessableEntityHttpException("Ligne $numero : intervenant introuvable.");
             }
             $heures = $groupes = [];
@@ -112,7 +116,7 @@ final class PrevisionnelActionsController extends AbstractController
         $sourceId = $request->toArray()['source'] ?? null;
         $source = is_int($sourceId) ? $this->em->find(StructureSemestre::class, $sourceId) : null;
         $diplome = $semestre->getAnnee()?->getPn()?->getDiplome();
-        if (!$source || $source === $semestre || !$diplome || $source->getAnnee()?->getPn()?->getDiplome() !== $diplome) {
+        if ($source === null || $source === $semestre || $diplome === null || $source->getAnnee()?->getPn()?->getDiplome() !== $diplome) {
             throw new UnprocessableEntityHttpException('Sélectionnez un autre semestre du même diplôme.');
         }
 
@@ -122,12 +126,16 @@ final class PrevisionnelActionsController extends AbstractController
         foreach ($this->previsionnels->findForSemester($source) as $ligne) {
             $this->denyAccessUnlessGranted('CAN_VIEW_PREVISIONNEL', $ligne);
             $formation = $ligne->getEnseignement();
+            if ($formation === null) {
+                throw new UnprocessableEntityHttpException('Le prévisionnel ne référence aucun enseignement.');
+            }
             $code = trim($formation->getCodeEnseignement() ?? '');
             $cibles = array_values($enseignements[$code] ?? []);
-            if (count($cibles) !== 1 || $cibles[0]->getType() !== $formation->getType() || !$ligne->getPersonnel()) {
+            $personnel = $ligne->getPersonnel();
+            if (count($cibles) !== 1 || $cibles[0]->getType() !== $formation->getType() || $personnel === null) {
                 throw new UnprocessableEntityHttpException(sprintf('Impossible de faire correspondre l’enseignement « %s » dans le semestre cible.', $formation->getDisplay()));
             }
-            $copies[] = $this->construire($semestre, $cibles[0], $ligne->getPersonnel(), $ligne->getHeures(), $ligne->getGroupes());
+            $copies[] = $this->construire($semestre, $cibles[0], $personnel, $ligne->getHeures(), $ligne->getGroupes());
         }
 
         if ($copies === []) {
@@ -137,6 +145,10 @@ final class PrevisionnelActionsController extends AbstractController
         return $this->json(['ajoutees' => $this->ajouter($semestre, $copies)], 201);
     }
 
+    /**
+     * @param array<string, float|int> $heures
+     * @param array<string, int> $groupes
+     */
     private function construire(StructureSemestre $semestre, ScolEnseignement $enseignement, Personnel $personnel, array $heures, array $groupes): Previsionnel
     {
         $this->verifierRattachement($semestre, $enseignement);
@@ -146,8 +158,8 @@ final class PrevisionnelActionsController extends AbstractController
             ->setReferent(false)->setHeures($heures)->setGroupes($groupes);
         $this->denyAccessUnlessGranted('CAN_EDIT_PREVISIONNEL', $ligne);
         $violations = $this->validator->validate($ligne);
-        if (count($violations)) {
-            throw new UnprocessableEntityHttpException($violations[0]->getMessage());
+        if ($violations->count() > 0) {
+            throw new UnprocessableEntityHttpException((string) $violations->get(0)->getMessage());
         }
         return $ligne;
     }
@@ -157,7 +169,7 @@ final class PrevisionnelActionsController extends AbstractController
         $annee = $semestre->getAnnee()?->getPn()?->getAnneeUniversitaire();
         foreach ($enseignement->getEnseignementUes() as $lien) {
             $autre = $lien->getUe()?->getSemestre();
-            if ($autre && $autre !== $semestre && $autre->getAnnee()?->getPn()?->getAnneeUniversitaire() === $annee) {
+            if ($autre !== null && $autre !== $semestre && $autre->getAnnee()?->getPn()?->getAnneeUniversitaire() === $annee) {
                 throw new ConflictHttpException(sprintf(
                     '« %s » est partagé avec un autre semestre. Gérez cette ligne individuellement.',
                     $enseignement->getDisplay(),
@@ -173,9 +185,15 @@ final class PrevisionnelActionsController extends AbstractController
         foreach ($semestre->getUes() as $ue) {
             foreach ($ue->getEnseignementUes() as $lien) {
                 $enseignement = $lien->getEnseignement();
-                $code = trim($enseignement?->getCodeEnseignement() ?? '');
+                if ($enseignement === null) {
+                    continue;
+                }
+                $code = trim($enseignement->getCodeEnseignement() ?? '');
                 if ($code !== '') {
-                    $codes[$code][$enseignement->getId()] = $enseignement;
+                    $id = $enseignement->getId();
+                    if ($id !== null) {
+                        $codes[$code][$id] = $enseignement;
+                    }
                 }
             }
         }
@@ -189,14 +207,21 @@ final class PrevisionnelActionsController extends AbstractController
             $this->em->lock($semestre, LockMode::PESSIMISTIC_WRITE);
             $existantes = [];
             foreach ($this->previsionnels->findForSemester($semestre) as $ligne) {
-                $existantes[$ligne->getEnseignement()->getId()][$ligne->getPersonnel()?->getId()] = true;
+                $enseignement = $ligne->getEnseignement();
+                $personnel = $ligne->getPersonnel();
+                if ($enseignement === null || $personnel === null) {
+                    continue;
+                }
+                $existantes[$enseignement->getId()][$personnel->getId()] = true;
             }
             foreach ($nouvelles as $ligne) {
-                if (isset($existantes[$ligne->getEnseignement()->getId()][$ligne->getPersonnel()->getId()])) {
+                $enseignement = $ligne->getEnseignement();
+                $personnel = $ligne->getPersonnel();
+                if ($enseignement !== null && $personnel !== null && isset($existantes[$enseignement->getId()][$personnel->getId()])) {
                     throw new ConflictHttpException(sprintf(
                         'Une ligne existe déjà pour %s et %s.',
-                        $ligne->getPersonnel()->getDisplay(),
-                        $ligne->getEnseignement()->getDisplay(),
+                        $personnel->getDisplay(),
+                        $enseignement->getDisplay(),
                     ));
                 }
                 $this->em->persist($ligne);

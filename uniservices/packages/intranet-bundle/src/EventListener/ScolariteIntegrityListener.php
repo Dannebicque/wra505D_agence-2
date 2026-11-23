@@ -8,6 +8,7 @@ use App\Entity\Etudiant\EtudiantNote;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Scolarite\ScolEvaluation;
+use App\Utils\LooseValue;
 use App\Entity\Scolarite\ScolEnseignement;
 use App\Entity\Scolarite\ScolEnseignementUe;
 use App\Entity\Structure\{StructureAnnee, StructureAnneeUniversitaire, StructurePn, StructureDiplome, StructureTypeDiplome, StructureSemestre, StructureUe, StructureGroupe};
@@ -39,6 +40,9 @@ final readonly class ScolariteIntegrityListener
         }
         $semestres = [];
         foreach ($entities as $entity) {
+            if (!is_object($entity)) {
+                continue;
+            }
             $changes = $uow->getEntityChangeSet($entity);
             $old = $uow->getOriginalEntityData($entity);
             if ($entity instanceof SousCommission || $entity instanceof SousCommissionRevision || $entity instanceof ResultatSousCommission) {
@@ -62,7 +66,7 @@ final readonly class ScolariteIntegrityListener
                 }
             }
             if ($entity instanceof EtudiantScolariteSemestre && !$this->context->isActive()) {
-                if (array_intersect(array_keys($changes), ['moyenne', 'rang', 'decision'])) {
+                if (array_intersect(array_keys($changes), ['moyenne', 'rang', 'decision']) !== []) {
                     throw new ConflictHttpException('Les résultats semestriels sont écrits uniquement lors de la validation.');
                 }
             }
@@ -84,7 +88,7 @@ final readonly class ScolariteIntegrityListener
         foreach ($semestres as $semestre) {
             if ($semestre->getId() !== null) {
                 $validee = $em->getConnection()->fetchOne('SELECT validee FROM intranet_sous_commission WHERE semestre_id = ?', [$semestre->getId()]);
-                if ($validee) {
+                if ($validee === true || $validee === 1 || $validee === '1') {
                     throw new ConflictHttpException('Résultats validés : rouvrez explicitement la sous-commission avant toute modification.');
                 }
             }
@@ -108,20 +112,28 @@ final readonly class ScolariteIntegrityListener
         }
     }
 
+    /**
+     * @param array<string, mixed> $old
+     * @param array<string, mixed> $changes
+     */
     private function auditNote(EtudiantNote $note, array $old, array $changes, EntityManagerInterface $em): void
     {
         // Un historique envoyé par un client ne peut jamais remplacer celui enregistré.
-        if (isset($changes['historique']) && $old !== [] && ($changes['historique'][1] !== $old['historique'])) {
+        if (isset($changes['historique']) && $old !== [] && (LooseValue::row($changes['historique'])[1] ?? null) !== ($old['historique'] ?? null)) {
             throw new UnprocessableEntityHttpException('L’historique des notes est géré exclusivement par le serveur.');
         }
-        if ($old === [] || !array_intersect(array_keys($changes), ['note', 'presenceStatut', 'evaluation', 'scolariteSemestre'])) {
+        if ($old === [] || array_intersect(array_keys($changes), ['note', 'presenceStatut', 'evaluation', 'scolariteSemestre']) === []) {
             return;
         }
-        $historique = $old['historique'] ?? [];
+        $historique = array_values(LooseValue::rows($old['historique'] ?? []));
+        $user = $this->security->getUser();
+        $evaluation = $old['evaluation'] ?? null;
+        $inscription = $old['scolariteSemestre'] ?? null;
         $historique[] = ['note' => $old['note'] ?? null, 'presenceStatut' => $old['presenceStatut'] ?? null,
-            'evaluationId' => ($old['evaluation'] ?? null)?->getId(), 'inscriptionId' => ($old['scolariteSemestre'] ?? null)?->getId(),
-            'date' => (new \DateTimeImmutable())->format(DATE_ATOM), 'auteurId' => $this->security->getUser()?->getId(),
-            'motif' => $note->getMotifModification() ?: 'Saisie ou correction du résultat'];
+            'evaluationId' => $evaluation instanceof ScolEvaluation ? $evaluation->getId() : null,
+            'inscriptionId' => $inscription instanceof EtudiantScolariteSemestre ? $inscription->getId() : null,
+            'date' => (new \DateTimeImmutable())->format(DATE_ATOM), 'auteurId' => $user instanceof \App\Entity\Users\Personnel || $user instanceof \App\Entity\Users\Etudiant ? $user->getId() : null,
+            'motif' => ($note->getMotifModification() ?? '') !== '' ? $note->getMotifModification() : 'Saisie ou correction du résultat'];
         $note->setHistorique($historique);
         $em->getUnitOfWork()->recomputeSingleEntityChangeSet($em->getClassMetadata(EtudiantNote::class), $note);
     }
@@ -136,10 +148,10 @@ final readonly class ScolariteIntegrityListener
             return array_values(array_filter([$entity->getEvaluation()?->getSemestre(), $entity->getScolariteSemestre()?->getSemestre()]));
         }
         if ($entity instanceof ScolEvaluation || $entity instanceof EtudiantScolariteSemestre || $entity instanceof StructureUe) {
-            return array_values(array_filter([$entity->getSemestre()]));
+            return array_filter([$entity->getSemestre()]);
         }
         if ($entity instanceof ScolEnseignementUe) {
-            return array_values(array_filter([$entity->getUe()?->getSemestre()]));
+            return array_filter([$entity->getUe()?->getSemestre()]);
         }
         if ($entity instanceof StructureGroupe) {
             return $entity->getSemestres()->toArray();

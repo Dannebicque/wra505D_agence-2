@@ -48,7 +48,6 @@ final class EmailService
         private readonly string $defaultFromName,
         /** URL publique du front (« https://… ») : les liens relatifs des e-mails (« /app/… ») sont rendus absolus. */
         private readonly string $urlFrontend = '',
-        private readonly LoggerInterface $logger = new NullLogger(),
         private readonly ?EtablissementRepository $etablissements = null,
     ) {
     }
@@ -152,13 +151,13 @@ final class EmailService
     {
         $etab = $this->etablissements?->findPrincipal();
         $reglages = array_merge(\App\Entity\Etablissement::HABILLAGE_EMAILS_DEFAUT, $etab?->getHabillageEmails() ?? [], $surcharge);
-        $etablissement = $etab?->getLibelle() ?: 'UniServices';
+        $etablissement = $etab?->getLibelle() ?? 'UniServices';
 
         $context['habillage'] = [
             'etablissement' => $etablissement,
             'universite' => $etab?->getUniversite()->getLibelle() ?? '',
-            'logo_url' => $etab?->getLogoName() ? '/uploads/etablissement/'.$etab->getLogoName() : '',
-            'expediteur' => $reglages['expediteur_nom'] ?: $etablissement,
+            'logo_url' => $etab?->getLogoName() !== null ? '/uploads/etablissement/'.$etab->getLogoName() : '',
+            'expediteur' => $reglages['expediteur_nom'] ?? $etablissement,
             'expediteur_nom' => $reglages['expediteur_nom'] ?? '',
             'reply_to' => $reglages['reply_to'] ?? '',
             'signature' => LooseValue::castString($reglages['signature']),
@@ -261,7 +260,7 @@ final class EmailService
         } catch (\Throwable) {
             return null;
         }
-        if (!preg_match('/\{%-?\s*block\s+body\s*-?%\}(.*?)\{%-?\s*endblock(?:\s+body)?\s*-?%\}/s', $source, $m)) {
+        if (preg_match('/\{%-?\s*block\s+body\s*-?%\}(.*?)\{%-?\s*endblock(?:\s+body)?\s*-?%\}/s', $source, $m) !== 1) {
             return null;
         }
         $lignes = explode("\n", trim($m[1], "\n"));

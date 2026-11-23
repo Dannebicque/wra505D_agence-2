@@ -86,7 +86,7 @@ class EtudiantNote implements TimestampableInterface
     #[Groups(['note:write', 'note:detail'])]
     private ?string $presenceStatut = self::STATUT_PRESENT;
 
-    /** @var array<string, mixed>|null */
+    /** @var list<array<array-key, mixed>>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['note:detail'])]
     private ?array $historique = null;
@@ -214,13 +214,13 @@ class EtudiantNote implements TimestampableInterface
         return $this;
     }
 
-    /** @return array<string, mixed>|null */
+    /** @return list<array<array-key, mixed>>|null */
     public function getHistorique(): ?array
     {
         return $this->historique;
     }
 
-    /** @param array<string, mixed>|null $historique */
+    /** @param list<array<array-key, mixed>>|null $historique */
     public function setHistorique(?array $historique): static
     {
         $this->historique = $historique;
