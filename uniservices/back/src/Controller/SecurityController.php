@@ -12,6 +12,7 @@ use App\Security\DepartmentPermissionChecker;
 use App\Security\PermissionRegistry;
 use App\Security\PermissionResolver;
 use App\Security\UserEffectivePermissionService;
+use App\Security\UserPackageResolver;
 use App\Entity\Users\Personnel;
 use App\Entity\Users\Etudiant;
 use App\Utils\LooseValue;
@@ -32,6 +33,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+#[\App\AnneeUniversitaire\ContexteAnnuel('independant', 'Identité, paramétrage partagé ou données sans année universitaire.')]
 class SecurityController extends AbstractController
 {
     public function __construct(
@@ -238,11 +240,13 @@ class SecurityController extends AbstractController
     }
 
     #[Route(path: '/api/me/security-context', name: 'api_me_security_context', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function getSecurityContext(
         DepartmentPermissionChecker $checker,
         StructureDepartementPersonnelRepository $sdpRepo,
         PermissionResolver $resolver,
-        UserEffectivePermissionService $effectivePermissionService
+        UserEffectivePermissionService $effectivePermissionService,
+        UserPackageResolver $packageResolver
     ): JsonResponse {
         $user = $this->getUser();
         if (!$user instanceof Etudiant && !$user instanceof Personnel) {
@@ -275,8 +279,7 @@ class SecurityController extends AbstractController
                         'libelle' => $dept->getLibelle(),
                         'couleur' => $dept->getCouleur(),
                     ];
-                    $activePackages = $dp->getPackages();
-                    $resolvedPermissions = $resolver->resolve($dp->getPermissions(), $activePackages);
+                    $resolvedPermissions = $resolver->resolveForDepartment($dp);
                 }
             }
 
@@ -289,10 +292,10 @@ class SecurityController extends AbstractController
                         'libelle' => $dept->getLibelle(),
                         'couleur' => $dept->getCouleur(),
                     ];
-                    $activePackages = $dp->getPackages();
-                    $resolvedPermissions = $resolver->resolve($dp->getPermissions(), $activePackages);
+                    $resolvedPermissions = $resolver->resolveForDepartment($dp);
                 }
             }
+            $activePackages = $packageResolver->packages($user);
         } elseif ($user instanceof Etudiant) {
             $studentDept = $checker->getStudentDepartment($user);
             if ($studentDept instanceof StructureDepartement) {
@@ -304,8 +307,7 @@ class SecurityController extends AbstractController
                 $departmentsData[] = $currentDepartment;
             }
 
-            // The intranet and the documents stay open to every student; the staff grants the rest.
-            $activePackages = array_values(array_unique(['intranet', 'documents', ...$user->getPackageCodes()]));
+            $activePackages = $packageResolver->packages($user);
             $resolvedPermissions = [];
         }
 

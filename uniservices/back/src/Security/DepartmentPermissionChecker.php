@@ -22,40 +22,22 @@ class DepartmentPermissionChecker
             return false;
         }
 
-        // 1. Super Admins have global access
-        if ($user instanceof Personnel) {
-            $superAdminInDepartment = $this->departementPersonnelRepository->findOneBy([
-                'personnel' => $user,
-                'departement' => $departement,
-            ]);
-
-            if ($superAdminInDepartment instanceof StructureDepartementPersonnel) {
-                $resolvedPermissions = $this->resolver->resolveForDepartment($superAdminInDepartment);
-
-                if (in_array('SUPER_ADMIN', $resolvedPermissions, true)) {
-                    return true;
-                }
-            }
-        }
-
-        // Identity is checked by UserTypeVoter; students have no personnel business roles.
-        if ($user instanceof Etudiant) {
+        if (!$user instanceof Personnel) {
             return false;
         }
 
-        // 3. Personnel have resolved rights within a department
-        $dp = $this->departementPersonnelRepository->findOneBy([
+        // Ce contrôle utilise l’affectation du département demandé.
+        $assignment = $this->departementPersonnelRepository->findOneBy([
             'personnel' => $user,
-            'departement' => $departement
+            'departement' => $departement,
         ]);
-
-        if (!$dp instanceof StructureDepartementPersonnel) {
+        if ($assignment === null) {
             return false;
         }
 
-        $resolvedPermissions = $this->resolver->resolveForDepartment($dp);
+        $permissions = $this->resolver->resolveForDepartment($assignment);
 
-        return in_array($permission, $resolvedPermissions, true);
+        return in_array('SUPER_ADMIN', $permissions, true) || in_array($permission, $permissions, true);
     }
 
     public function getStudentDepartment(Etudiant $etudiant): ?StructureDepartement

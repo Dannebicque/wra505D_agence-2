@@ -30,9 +30,8 @@ class UserPackageResolver
     public function packages(Personnel|Etudiant $user): array
     {
         if ($user instanceof Etudiant) {
-            $brutes = array_map(static fn ($a) => (string) $a, $user->getApplications() ?? ['Intranet']);
-
-            return $this->normaliser($brutes === [] ? ['intranet'] : $brutes);
+            // L'intranet et les documents restent ouverts à tout étudiant ; le personnel ouvre le reste.
+            return $this->normaliser(['intranet', 'documents', ...$user->getPackageCodes()]);
         }
 
         $dps = $this->affectations->findBy(['personnel' => $user]);

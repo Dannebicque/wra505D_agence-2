@@ -50,9 +50,14 @@ class ScolariteVoter extends Voter
     ) {
     }
 
-    protected function supports(string $attribute, mixed $subject): bool
+    public function supportsAttribute(string $attribute): bool
     {
         return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
+    }
+
+    protected function supports(string $attribute, mixed $subject): bool
+    {
+        return $this->supportsAttribute($attribute);
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
@@ -91,12 +96,6 @@ class ScolariteVoter extends Voter
     private function isSuperAdmin(Personnel|Etudiant $user): bool
     {
         return $this->effectivePermissionService->isSuperAdmin($user);
-    }
-
-    /** @param list<string> $roles */
-    private function hasAnyRole(Personnel $user, array $roles, mixed $subject = null): bool
-    {
-        return $this->effectivePermissionService->hasAnyPermission($user, $roles, $subject);
     }
 
     // ========== Enseignement ==========

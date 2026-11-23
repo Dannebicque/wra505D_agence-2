@@ -18,6 +18,24 @@ final class DiplomeScope
             return null;
         }
 
+        if ($subject instanceof ScolEnseignementUe) {
+            return $subject->getUe()?->getSemestre()?->getDiplome();
+        }
+
+        if ($subject instanceof ScolEnseignement) {
+            // Les accesseurs getDiplome() et getSemestre() ne suivent que la première UE.
+            $diplome = null;
+            foreach ($subject->getEnseignementUes() as $link) {
+                $candidate = self::fromSubject($link);
+                if ($candidate === null || ($diplome !== null && $diplome !== $candidate)) {
+                    return null;
+                }
+                $diplome = $candidate;
+            }
+
+            return $diplome;
+        }
+
         // Only follow the owning academic relationships, never a department's diploma list.
         foreach (['getDiplome', 'getSemestre', 'getPn', 'getAnnee', 'getEvaluation', 'getUe', 'getNiveau', 'getEnseignementUes', 'getEnseignement', 'getReferentiel'] as $getter) {
             $read = [$subject, $getter];

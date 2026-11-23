@@ -16,11 +16,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Listings d'émargement, trombinoscopes et exports personnalisés des étudiants d'un semestre.
  */
 #[Route('/api/intranet/export')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('ressource', 'Opération rattachée à une ressource identifiée et contrôlée par le métier.')]
 class ListingEtudiantExportController extends AbstractController
 {
     public function __construct(
@@ -56,6 +59,9 @@ class ListingEtudiantExportController extends AbstractController
         }
 
         $this->denyAccessUnlessGranted(SemestreListingVoter::CAN_EXPORT_LISTING, $semestre);
+        if (!$groupe->getSemestres()->contains($semestre)) {
+            return new JsonResponse(['error' => 'Ce groupe ne fait pas partie du semestre demandé'], Response::HTTP_BAD_REQUEST);
+        }
 
         return $this->exportService->exportListing($semestre, [$groupe], $request->query->getString('format', 'pdf'));
     }

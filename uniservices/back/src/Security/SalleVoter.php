@@ -32,9 +32,14 @@ class SalleVoter extends Voter
     ) {
     }
 
-    protected function supports(string $attribute, mixed $subject): bool
+    public function supportsAttribute(string $attribute): bool
     {
         return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
+    }
+
+    protected function supports(string $attribute, mixed $subject): bool
+    {
+        return $this->supportsAttribute($attribute);
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
@@ -63,33 +68,9 @@ class SalleVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
-    /** @param list<string> $roles */
-    private function hasAnyRole(Personnel $user, array $roles): bool
-    {
-        return $this->effectivePermissionService->hasAnyPermission($user, $roles);
-    }
-
     private function canViewSalle(Personnel|Etudiant $user): bool
     {
         return true; // Tout le monde peut voir les salles
     }
 
-    private function canEditSalle(Personnel|Etudiant $user): bool
-    {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
-            'SUPER_ADMIN',
-            'ROLE_ADMIN',
-            'ROLE_CHEF_DEPT',
-            'ROLE_EDT',
-            'ROLE_ASSISTANT'
-        ]);
-    }
-
-    private function canDeleteSalle(Personnel|Etudiant $user): bool
-    {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
-            'SUPER_ADMIN',
-            'ROLE_ADMIN'
-        ]);
-    }
 }

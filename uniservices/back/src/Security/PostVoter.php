@@ -100,12 +100,17 @@ class PostVoter extends Voter
     ) {
     }
 
+    public function supportsAttribute(string $attribute): bool
+    {
+        return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
+    }
+
     /**
      * @inheritDoc
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
+        return $this->supportsAttribute($attribute);
     }
 
     /**
@@ -513,27 +518,28 @@ class PostVoter extends Voter
 
     private function canEditJustificatif(mixed $subject, Personnel|Etudiant $user): bool
     {
-        if ($user instanceof Personnel) {
-            return $this->hasAnyRole($user, [
-                'SUPER_ADMIN',
-                'ROLE_ADMIN',
-                'ROLE_SCOLARITE',
-                'ROLE_CHEF_DEPT',
-                'ROLE_DIRECTEUR_ETUDES'
-            ]);
+        if (!$subject instanceof EtudiantAbsenceJustificatif) {
+            return false;
         }
 
-        // Un étudiant peut soumettre un justificatif pour ses propres absences
-        return true;
+        if ($user instanceof Personnel) {
+            return $this->effectivePermissionService->hasAnyPermissionForResource($user, [
+                'ROLE_ADMIN', 'ROLE_SCOLARITE', 'ROLE_CHEF_DEPT', 'ROLE_DIRECTEUR_ETUDES',
+            ], $subject);
+        }
+
+        // L’étudiant soumet un justificatif pour sa propre scolarité.
+        return $subject->getId() === null && $subject->getScolariteSemestre()?->getScolarite()?->getEtudiant() === $user;
     }
 
-    private function canDeleteJustificatif(Personnel|Etudiant $user): bool
+    private function canDeleteJustificatif(mixed $subject, Personnel|Etudiant $user): bool
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
-            'SUPER_ADMIN',
-            'ROLE_ADMIN',
-            'ROLE_SCOLARITE'
-        ]);
+        return $user instanceof Personnel && $subject instanceof EtudiantAbsenceJustificatif
+            && $this->effectivePermissionService->hasAnyPermissionForResource(
+                $user,
+                ['ROLE_ADMIN', 'ROLE_SCOLARITE'],
+                $subject,
+            );
     }
 
     // ========== Scolarité Etudiant ==========

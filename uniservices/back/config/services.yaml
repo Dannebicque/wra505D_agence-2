@@ -68,11 +68,8 @@ services:
       - "../src/Entity/"
       - "../src/Kernel.php"
       - "../src/Services/Dashboard/Provider/"
-
-  App\DataProvider\SingleRecordDataProvider:
-    arguments:
-      $entityManager: "@doctrine.orm.entity_manager"
-    tags: ["api_platform.state_provider"]
+      - "../src/Notification/NotificationType.php"
+      - "../src/Notification/NotificationEmailDefinition.php"
 
   _instanceof:
     App\Domain\Dashboard\DashboardDefinitionInterface:

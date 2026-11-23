@@ -100,12 +100,17 @@ class StructureVoter extends Voter
     ) {
     }
 
+    public function supportsAttribute(string $attribute): bool
+    {
+        return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
+    }
+
     /**
      * @inheritDoc
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
+        return $this->supportsAttribute($attribute);
     }
 
     /**

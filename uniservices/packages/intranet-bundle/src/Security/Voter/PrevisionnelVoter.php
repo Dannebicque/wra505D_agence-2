@@ -44,9 +44,14 @@ class PrevisionnelVoter extends Voter
     /**
      * @inheritDoc
      */
-    protected function supports(string $attribute, mixed $subject): bool
+    public function supportsAttribute(string $attribute): bool
     {
         return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
+    }
+
+    protected function supports(string $attribute, mixed $subject): bool
+    {
+        return $this->supportsAttribute($attribute);
     }
 
     /**

@@ -452,7 +452,7 @@ class MessageController extends AbstractController
                 'ordreLmd' => $s->getOrdreLmd(),
             ];
 
-            // Groupes rattachés aux semestres actifs
+            // Groupes rattachés aux semestres de l’année
             foreach ($s->getGroupes() as $g) {
                 $gId = $g->getId();
                 $typeStr = $g->getType()->value ?? LooseValue::castString($g->getType());
