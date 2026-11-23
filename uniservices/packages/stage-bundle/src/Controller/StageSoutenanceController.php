@@ -50,10 +50,17 @@ class StageSoutenanceController extends AbstractController
         return $duree >= self::DUREE_MIN && $duree <= self::DUREE_MAX;
     }
 
+    /** Équivalent de (bool) sur une valeur JSON dont le type exact n'est pas garanti. */
+    private static function estRenseignee(mixed $valeur): bool
+    {
+        return !\in_array($valeur, [null, false, 0, 0.0, '', '0', []], true);
+    }
+
     #[Route('/api/stage_soutenances/validate-conflict', name: 'api_stage_soutenances_validate_conflict', methods: ['POST'])]
     public function validateConflict(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $decoded = json_decode($request->getContent(), true);
+        $data = \is_array($decoded) ? LooseValue::row($decoded) : [];
         $stageEtudiantId = Iri::id($data['stageEtudiantId'] ?? null);
         $enseignantJuryId = Iri::id($data['enseignantJuryId'] ?? null);
         $dateStr = $data['dateSoutenance'] ?? null;
@@ -61,7 +68,7 @@ class StageSoutenanceController extends AbstractController
         $soutenanceId = Iri::id($data['soutenanceId'] ?? null);
         $stagePeriodeId = Iri::id($data['stagePeriodeId'] ?? null);
 
-        if (!(bool) $dateStr || (($stageEtudiantId === null || $stageEtudiantId === 0) && ($stagePeriodeId === null || $stagePeriodeId === 0))) {
+        if (!self::estRenseignee($dateStr) || (($stageEtudiantId === null || $stageEtudiantId === 0) && ($stagePeriodeId === null || $stagePeriodeId === 0))) {
             return new JsonResponse(['error' => 'Paramètres requis manquants.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -73,7 +80,7 @@ class StageSoutenanceController extends AbstractController
         }
         $this->denyAccessUnlessGranted(StageVoter::STAGE_PERIODE_MANAGE, $stagePeriode);
 
-        $enseignantJury = $enseignantJuryId ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
+        $enseignantJury = $enseignantJuryId !== null && $enseignantJuryId !== 0 ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
         $start = $this->parseDate($dateStr);
         if ($start === null || !$this->dureeValide($duree)) {
             return new JsonResponse(['error' => 'Date ou durée invalide.'], Response::HTTP_BAD_REQUEST);
@@ -91,7 +98,8 @@ class StageSoutenanceController extends AbstractController
     #[Route('/api/stage_soutenances/save', name: 'api_stage_soutenances_save', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $decoded = json_decode($request->getContent(), true);
+        $data = \is_array($decoded) ? LooseValue::row($decoded) : [];
         $soutenanceId = Iri::id($data['id'] ?? null);
         $stageEtudiantId = Iri::id($data['stageEtudiantId'] ?? null);
         $enseignantJuryId = Iri::id($data['enseignantJuryId'] ?? null);
@@ -100,7 +108,7 @@ class StageSoutenanceController extends AbstractController
         $duree = LooseValue::castInt($data['duree'] ?? 30);
         $stagePeriodeId = Iri::id($data['stagePeriodeId'] ?? null);
 
-        if (!(bool) $dateStr) {
+        if (!self::estRenseignee($dateStr)) {
             return new JsonResponse(['error' => 'Paramètres requis manquants (date).'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -116,7 +124,7 @@ class StageSoutenanceController extends AbstractController
             return new JsonResponse(['error' => 'L\'étudiant n\'appartient pas à cette période de stage.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $enseignantJury = $enseignantJuryId ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
+        $enseignantJury = $enseignantJuryId !== null && $enseignantJuryId !== 0 ? $this->em->getRepository(Personnel::class)->find($enseignantJuryId) : null;
         $start = $this->parseDate($dateStr);
         if ($start === null || !$this->dureeValide($duree)) {
             return new JsonResponse(['error' => 'Date ou durée invalide.'], Response::HTTP_BAD_REQUEST);
@@ -148,7 +156,7 @@ class StageSoutenanceController extends AbstractController
         }
 
         // If assigning a student, verify they don't already have another defense
-        if ($stageEtudiant) {
+        if ($stageEtudiant !== null) {
             $this->denyAccessUnlessGranted('CAN_EDIT_STAGE', $stageEtudiant);
             $existing = $this->em->getRepository(StageSoutenance::class)->findOneBy(['stageEtudiant' => $stageEtudiant]);
             if ($existing instanceof StageSoutenance && $existing->getId() !== $soutenance->getId()) {
@@ -188,7 +196,8 @@ class StageSoutenanceController extends AbstractController
     #[Route('/api/stage_soutenances/bulk-generate', name: 'api_stage_soutenances_bulk_generate', methods: ['POST'])]
     public function bulkGenerate(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $decoded = json_decode($request->getContent(), true);
+        $data = \is_array($decoded) ? LooseValue::row($decoded) : [];
         $stagePeriodeId = Iri::id($data['stagePeriodeId'] ?? null);
         $dateStr = $data['date'] ?? null; // YYYY-MM-DD
         $startTimeStr = $data['startTime'] ?? null; // HH:MM
@@ -197,7 +206,7 @@ class StageSoutenanceController extends AbstractController
         $pauseDuree = LooseValue::castInt($data['pauseDuree'] ?? 0);
         $salle = $data['salle'] ?? '';
 
-        if ($stagePeriodeId === null || $stagePeriodeId === 0 || !(bool) $dateStr || !(bool) $startTimeStr || !(bool) $endTimeStr) {
+        if ($stagePeriodeId === null || $stagePeriodeId === 0 || !self::estRenseignee($dateStr) || !self::estRenseignee($startTimeStr) || !self::estRenseignee($endTimeStr)) {
             return new JsonResponse(['error' => 'Paramètres requis manquants.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -207,8 +216,8 @@ class StageSoutenanceController extends AbstractController
         }
         $this->denyAccessUnlessGranted(StageVoter::STAGE_PERIODE_MANAGE, $periode);
 
-        $start = $this->parseDate($dateStr . ' ' . $startTimeStr);
-        $endLimit = $this->parseDate($dateStr . ' ' . $endTimeStr);
+        $start = $this->parseDate(LooseValue::castString($dateStr).' '.LooseValue::castString($startTimeStr));
+        $endLimit = $this->parseDate(LooseValue::castString($dateStr).' '.LooseValue::castString($endTimeStr));
         // Une durée nulle ou négative bouclerait indéfiniment.
         if ($start === null || $endLimit === null || !$this->dureeValide($duree) || $pauseDuree < 0 || $pauseDuree > self::PAUSE_MAX) {
             return new JsonResponse(['error' => 'Date, horaires, durée ou pause invalides.'], Response::HTTP_BAD_REQUEST);

@@ -28,11 +28,13 @@ final class QuestionnaireStructureService
                 continue;
             }
 
-            // Les options ont des valeurs par défaut vides : « ?: » plutôt que « ?? ».
+            // Les options ont des valeurs par défaut vides : chaîne vide (ou « 0 ») plutôt que « ?? ».
             $opts = $st->getOpt();
-            $type = LooseValue::castString($opts['sourceType'] ?: 'matiere');
-            $patron = LooseValue::castString($opts['titleTemplate'] ?: 'Évaluation de {element}');
-            foreach ($opts['elements'] ?? [] as $element) {
+            $sourceType = LooseValue::castString($opts['sourceType'] ?? null);
+            $type = $sourceType !== '' && $sourceType !== '0' ? $sourceType : 'matiere';
+            $titleTemplate = LooseValue::castString($opts['titleTemplate'] ?? null);
+            $patron = $titleTemplate !== '' && $titleTemplate !== '0' ? $titleTemplate : 'Évaluation de {element}';
+            foreach (LooseValue::row($opts['elements'] ?? []) as $element) {
                 if (!\is_array($element)) {
                     continue;
                 }

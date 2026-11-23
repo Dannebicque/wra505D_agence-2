@@ -11,6 +11,9 @@ use QuestionnaireBundle\Security\QuestionnaireVoter;
 use QuestionnaireBundle\ApiDto\Questionnaire\Publish\PublishInputDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Publish\PublishOutputDto;
 
+/**
+ * @implements ProcessorInterface<PublishInputDto, PublishOutputDto>
+ */
 final class PublishProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -27,8 +30,8 @@ final class PublishProcessor implements ProcessorInterface
         $result = $this->service->publish($q, $data->recipients);
 
         return new PublishOutputDto(
-            questionnaireUuid: $q->getUuid(),
-            status: $q->getStatus(),
+            questionnaireUuid: (string) $q->getUuid(),
+            status: $q->getStatus() ?? throw new \LogicException('Le questionnaire publié n\'a pas de statut.'),
             publishedAt: $result['publishedAt'],
             sectionsCount: $result['sectionsCount'],
             invitationsCount: $result['invitationsCount'],

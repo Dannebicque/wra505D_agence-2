@@ -12,8 +12,12 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Duplicate\DuplicateInputDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Duplicate\DuplicateOutputDto;
 use QuestionnaireBundle\Domain\Questionnaire\Duplicate\DuplicateQuestionnaireService;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 
+/**
+ * @implements ProcessorInterface<DuplicateInputDto, DuplicateOutputDto>
+ */
 final class DuplicateProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -37,13 +41,17 @@ final class DuplicateProcessor implements ProcessorInterface
 
         /** @var Questionnaire $duplicate */
         $duplicate = $result['questionnaire'];
+        $status = $duplicate->getStatus();
+        if ($status === null) {
+            throw new \LogicException('Le questionnaire dupliqué n\'a pas de statut.');
+        }
 
         return new DuplicateOutputDto(
             uuid: (string)$duplicate->getUuid(),
-            title: $duplicate->getTitle(),
-            status: $duplicate->getStatus()->value,
-            sectionsCount: $result['sectionsCount'],
-            questionsCount: $result['questionsCount']
+            title: (string) $duplicate->getTitle(),
+            status: $status->value,
+            sectionsCount: LooseValue::int($result['sectionsCount']),
+            questionsCount: LooseValue::int($result['questionsCount'])
         );
     }
 }

@@ -5,6 +5,7 @@ namespace QuestionnaireBundle\Domain\Questionnaire\Runtime;
 use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Domain\Questionnaire\Mapping\QuestionRuntimeMapper;
+use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireQuestion;
@@ -39,11 +40,22 @@ final class InvitationRuntime
         return $invitation;
     }
 
+    /** Questionnaire de l'invitation : toujours présent, contrôlé à l'entrée par invitation(). */
+    private function questionnaire(QuestionnaireInvitation $invitation): Questionnaire
+    {
+        $questionnaire = $invitation->getQuestionnaire();
+        if (!$questionnaire instanceof Questionnaire) {
+            throw new NotFoundHttpException('Invitation introuvable.');
+        }
+
+        return $questionnaire;
+    }
+
     /** Section publiée appartenant au questionnaire de l'invitation (404 sinon). */
     public function section(QuestionnaireInvitation $invitation, mixed $id): QuestionnaireSectionInstance
     {
         $section = is_numeric($id) ? $this->em->getRepository(QuestionnaireSectionInstance::class)->find((int) $id) : null;
-        if (!$section instanceof QuestionnaireSectionInstance || $section->getQuestionnaire()?->getId() !== $invitation->getQuestionnaire()->getId()) {
+        if (!$section instanceof QuestionnaireSectionInstance || $section->getQuestionnaire()?->getId() !== $this->questionnaire($invitation)->getId()) {
             throw new NotFoundHttpException('Section introuvable.');
         }
 
@@ -53,7 +65,7 @@ final class InvitationRuntime
     /** Le répondant peut-il (encore) enregistrer des réponses ? */
     public function estModifiable(QuestionnaireInvitation $invitation): bool
     {
-        $questionnaire = $invitation->getQuestionnaire();
+        $questionnaire = $this->questionnaire($invitation);
 
         return $questionnaire->estOuvert() && (!$invitation->isSubmitted() || $questionnaire->autoriseModificationReponses());
     }
@@ -61,10 +73,10 @@ final class InvitationRuntime
     /** Peut-on encore enregistrer des réponses ? (409 sinon) */
     public function verifierModifiable(QuestionnaireInvitation $invitation): void
     {
-        if (!$invitation->getQuestionnaire()->estOuvert()) {
+        if (!$this->questionnaire($invitation)->estOuvert()) {
             throw new ConflictHttpException('Ce questionnaire n\'est pas ouvert aux réponses.');
         }
-        if ($invitation->isSubmitted() && !$invitation->getQuestionnaire()->autoriseModificationReponses()) {
+        if ($invitation->isSubmitted() && !$this->questionnaire($invitation)->autoriseModificationReponses()) {
             throw new ConflictHttpException('Vos réponses ont déjà été envoyées.');
         }
     }
@@ -73,7 +85,7 @@ final class InvitationRuntime
     public function toutesLesQuestions(QuestionnaireInvitation $invitation): array
     {
         $questions = [];
-        foreach ($invitation->getQuestionnaire()->getSections() as $section) {
+        foreach ($this->questionnaire($invitation)->getSections() as $section) {
             foreach ($section->getQuestions() as $question) {
                 $questions[] = $question;
             }
@@ -100,7 +112,7 @@ final class InvitationRuntime
         $sections = $this->em->getRepository(QuestionnaireSectionInstance::class)->findBy(['questionnaire' => $invitation->getQuestionnaire()], ['sortOrder' => 'ASC']);
         foreach ($sections as $section) {
             foreach ($section->getSection()?->getQuestions() ?? [] as $question) {
-                if (!$question->isObligatoire() || $this->mapper->map($question, null, $toutes)->visibility !== null) {
+                if ($question->isObligatoire() !== true || $this->mapper->map($question, null, $toutes)->visibility !== null) {
                     continue;
                 }
                 if (self::estVide($reponses[$section->getId()][$question->getId()] ?? null)) {

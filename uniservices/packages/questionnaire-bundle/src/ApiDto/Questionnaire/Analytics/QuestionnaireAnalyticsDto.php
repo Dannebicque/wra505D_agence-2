@@ -77,7 +77,7 @@ final class QuestionnaireAnalyticsDto
     public static function depuisArchive(array $archive, ?array $sections, ?string $archiveLe): self
     {
         $lesSections = [];
-        foreach ($archive['sections'] ?? [] as $s) {
+        foreach (LooseValue::rows($archive['sections'] ?? []) as $s) {
             if ($sections !== null && !\in_array(LooseValue::castInt($s['sectionInstanceId']), $sections, true)) {
                 continue;
             }
@@ -87,18 +87,27 @@ final class QuestionnaireAnalyticsDto
                 sectionType: LooseValue::castString($s['sectionType']),
                 repeatItemType: LooseValue::nullableString($s['repeatItemType'] ?? null),
                 repeatItemId: LooseValue::nullableString($s['repeatItemId'] ?? null),
-                questions: array_map(static fn (array $q) => new QuestionStatsDto(
-                    (string) $q['questionId'],
-                    (string) $q['questionLabel'],
-                    (string) $q['questionType'],
-                    (int) $q['totalResponses'],
-                    (array) $q['stats'],
-                ), $s['questions'] ?? []),
+                questions: array_values(array_map(static fn (array $q) => new QuestionStatsDto(
+                    LooseValue::castString($q['questionId']),
+                    LooseValue::castString($q['questionLabel']),
+                    LooseValue::castString($q['questionType']),
+                    LooseValue::castInt($q['totalResponses']),
+                    LooseValue::assoc($q['stats'] ?? []),
+                ), LooseValue::rows($s['questions'] ?? []))),
                 reponses: LooseValue::castInt($s['reponses'] ?? 0),
                 masquee: (bool) ($s['masquee'] ?? false),
                 enseignement: LooseValue::nullableString($s['enseignement'] ?? null),
                 intervenant: LooseValue::nullableString($s['intervenant'] ?? null),
             );
+        }
+
+        $responsesByDate = [];
+        foreach (LooseValue::assoc($archive['responsesByDate'] ?? []) as $date => $nombre) {
+            $responsesByDate[$date] = LooseValue::castInt($nombre);
+        }
+        $statusCounts = [];
+        foreach (LooseValue::assoc($archive['statusCounts'] ?? []) as $statut => $nombre) {
+            $statusCounts[$statut] = LooseValue::castInt($nombre);
         }
 
         return new self(
@@ -107,8 +116,8 @@ final class QuestionnaireAnalyticsDto
             totalResponses: LooseValue::castInt($archive['totalResponses']),
             completionRate: LooseValue::castFloat($archive['completionRate']),
             averageTimeSpent: LooseValue::castFloat($archive['averageTimeSpent']),
-            responsesByDate: (array) ($archive['responsesByDate'] ?? []),
-            statusCounts: (array) ($archive['statusCounts'] ?? []),
+            responsesByDate: $responsesByDate,
+            statusCounts: $statusCounts,
             sections: $lesSections,
             seuilMinReponses: LooseValue::castInt($archive['seuilMinReponses'] ?? 0),
             seuilAtteint: (bool) ($archive['seuilAtteint'] ?? true),

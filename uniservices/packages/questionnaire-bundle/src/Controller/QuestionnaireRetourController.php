@@ -17,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -66,7 +67,8 @@ class QuestionnaireRetourController extends AbstractController
         $q = $this->questionnaires->charger($uuid, QuestionnaireVoter::SYNTHESE);
         $user = $this->getUser();
         $donnees = json_decode($request->getContent(), true);
-        $sectionId = \is_array($donnees) ? LooseValue::castInt($donnees['section'] ?? 0) : 0;
+        $donnees = \is_array($donnees) ? $donnees : [];
+        $sectionId = LooseValue::castInt($donnees['section'] ?? 0);
         if (!$user instanceof Personnel || !\in_array($sectionId, $this->access->sectionsDestinataire($user, $q), true)) {
             throw new AccessDeniedHttpException('Seul un destinataire des résultats de cette section peut y répondre.');
         }
@@ -77,6 +79,9 @@ class QuestionnaireRetourController extends AbstractController
         }
 
         $section = $this->em->find(QuestionnaireSectionInstance::class, $sectionId);
+        if (!$section instanceof QuestionnaireSectionInstance) {
+            throw new NotFoundHttpException('Section introuvable.');
+        }
         $retour = $this->em->getRepository(QuestionnaireRetour::class)->findOneBy(['sectionInstance' => $section, 'personnel' => $user])
             ?? new QuestionnaireRetour($section, $user);
         $retour->modifier($commentaire, $plan);

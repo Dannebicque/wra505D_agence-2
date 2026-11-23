@@ -3,6 +3,8 @@
 namespace StageBundle\Doctrine;
 
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use App\Utils\LooseValue;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 
 /** Jointures partagées par les filtres et extensions du package (réutilisation des jointures déjà présentes). */
@@ -11,10 +13,10 @@ trait JointuresStageTrait
     /** Alias de la jointure « $depuis.$association », créée (LEFT JOIN) si la requête ne l'a pas déjà. */
     private function jointure(QueryBuilder $qb, QueryNameGeneratorInterface $noms, string $depuis, string $association): string
     {
-        foreach ($qb->getDQLPart('join') as $jointures) {
-            foreach ($jointures as $jointure) {
-                if ($jointure->getJoin() === "$depuis.$association") {
-                    return (string) $jointure->getAlias();
+        foreach (LooseValue::row($qb->getDQLPart('join')) as $jointures) {
+            foreach (LooseValue::row($jointures) as $jointure) {
+                if ($jointure instanceof Join && $jointure->getJoin() === "$depuis.$association" && $jointure->getAlias() !== null) {
+                    return $jointure->getAlias();
                 }
             }
         }

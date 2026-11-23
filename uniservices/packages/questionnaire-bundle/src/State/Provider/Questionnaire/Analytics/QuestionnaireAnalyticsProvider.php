@@ -11,6 +11,9 @@ use QuestionnaireBundle\Security\QuestionnaireVoter;
 use QuestionnaireBundle\Services\Analytics\QuestionnaireAnalyticsService;
 use QuestionnaireBundle\ApiDto\Questionnaire\Analytics\QuestionnaireAnalyticsDto;
 
+/**
+ * @implements ProviderInterface<QuestionnaireAnalyticsDto>
+ */
 final class QuestionnaireAnalyticsProvider implements ProviderInterface
 {
     public function __construct(

@@ -10,6 +10,7 @@ use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 use QuestionnaireBundle\Enum\QuestStatutEnum;
 
+/** @extends ServiceEntityRepository<QuestionnaireInvitation> */
 class QuestionnaireInvitationRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -46,7 +47,7 @@ class QuestionnaireInvitationRepository extends ServiceEntityRepository
             ->setParameter('questionnaire', $questionnaire)
             ->setParameter('submitted', QuestInvitationStatusEnum::SUBMITTED);
 
-        $res = $qb->getQuery()->getSingleResult();
+        $res = LooseValue::assoc($qb->getQuery()->getSingleResult());
         $total = LooseValue::castInt($res['total'] ?? 0);
         $submitted = LooseValue::castInt($res['submitted'] ?? 0);
         $rate = $total > 0 ? round(($submitted / $total) * 100, 1) : 0.0;

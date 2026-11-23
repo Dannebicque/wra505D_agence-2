@@ -11,6 +11,9 @@ use QuestionnaireBundle\Security\QuestionnaireVoter;
 use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewIndexDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewSectionIndexDto;
 
+/**
+ * @implements ProviderInterface<PreviewIndexDto>
+ */
 final readonly class PreviewIndexProvider implements ProviderInterface
 {
     public function __construct(
@@ -42,7 +45,7 @@ final readonly class PreviewIndexProvider implements ProviderInterface
 
         return new PreviewIndexDto(
             $q->getUuidString(),
-            $q->getTitle(),
+            (string) $q->getTitle(),
             $q->getOpt(),
             $q->getStartText(),
             $q->getEndText(),

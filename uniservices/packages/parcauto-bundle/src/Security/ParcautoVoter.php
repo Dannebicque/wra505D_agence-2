@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/** @extends Voter<string, mixed> */
 final class ParcautoVoter extends Voter
 {
     public const ACCES = 'PARCAUTO_ACCES';
@@ -35,6 +36,10 @@ final class ParcautoVoter extends Voter
         }
 
         if ($attribute === self::MISSION) {
+            if (!$subject instanceof Reservation) {
+                return false;
+            }
+
             return $subject->conducteur->getId() === $user->getId();
         }
 

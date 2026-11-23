@@ -51,8 +51,9 @@ class QuestionnaireModeleController extends AbstractController
             'departement' => $departement,
             'modele' => true,
         ]);
+        $duplicate = $resultat['questionnaire'];
 
-        return $this->reponse($resultat['questionnaire']);
+        return $this->reponse($duplicate);
     }
 
     #[Route('/api/questionnaires/{uuid}/instancier', name: 'api_questionnaire_instancier', methods: ['POST'])]
@@ -68,8 +69,9 @@ class QuestionnaireModeleController extends AbstractController
             'departement' => $departement,
             'modeleOrigine' => $modele,
         ]);
+        $duplicate = $resultat['questionnaire'];
 
-        return $this->reponse($resultat['questionnaire']);
+        return $this->reponse($duplicate);
     }
 
     /** Comparaison des campagnes du même modèle (participation, moyennes, répartitions). */
@@ -90,7 +92,7 @@ class QuestionnaireModeleController extends AbstractController
     {
         $donnees = json_decode($request->getContent(), true);
         $donnees = \is_array($donnees) ? $donnees : [];
-        $titre = trim(LooseValue::castString($donnees['title'] ?? '')) ?: null;
+        $titre = LooseValue::truthyString(trim(LooseValue::castString($donnees['title'] ?? '')));
 
         if (\array_key_exists('departement', $donnees)) {
             $departement = $donnees['departement'] === null ? null : $this->em->find(StructureDepartement::class, LooseValue::castInt($donnees['departement']));

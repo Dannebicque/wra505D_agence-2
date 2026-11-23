@@ -105,6 +105,6 @@ class StageRapportStorage
             $morceaux[] = $slugger->slug($periode)->toString();
         }
 
-        return mb_substr(implode('_', array_filter($morceaux)), 0, 150).'.pdf';
+        return mb_substr(implode('_', array_filter($morceaux, static fn (string $morceau): bool => $morceau !== '' && $morceau !== '0')), 0, 150).'.pdf';
     }
 }

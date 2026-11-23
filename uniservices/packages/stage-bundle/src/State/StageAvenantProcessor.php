@@ -22,6 +22,9 @@ use StageBundle\Enum\EtatStageEnum;
  */
 final class StageAvenantProcessor implements ProcessorInterface
 {
+    /**
+     * @param ProcessorInterface<mixed, mixed> $persist
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private readonly ProcessorInterface $persist,

@@ -84,7 +84,7 @@ class StageEvaluationEntrepriseController extends AbstractController
             return $this->json(['error' => 'Aucune adresse e-mail valide pour le tuteur en entreprise.'], Response::HTTP_CONFLICT);
         }
         $evaluation = $this->evaluation($stage);
-        if ($evaluation?->estSoumise()) {
+        if ($evaluation?->estSoumise() === true) {
             return $this->json(['error' => 'Le tuteur en entreprise a déjà rendu son évaluation.'], Response::HTTP_CONFLICT);
         }
         if ($evaluation === null) {
@@ -222,7 +222,7 @@ class StageEvaluationEntrepriseController extends AbstractController
     private function destinataire(StageEtudiant $stage): ?string
     {
         foreach ([$stage->getTuteur()?->getEmail(), $stage->getEntreprise()?->getResponsable()?->getEmail()] as $adresse) {
-            if (\is_string($adresse) && filter_var(trim($adresse), \FILTER_VALIDATE_EMAIL)) {
+            if (\is_string($adresse) && filter_var(trim($adresse), \FILTER_VALIDATE_EMAIL) !== false) {
                 return trim($adresse);
             }
         }

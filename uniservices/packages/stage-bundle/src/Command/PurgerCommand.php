@@ -53,7 +53,7 @@ final class PurgerCommand extends Command
             ->setParameter('seuil', $seuil)
             ->orderBy('s.id');
 
-        if ($input->getOption('dry-run')) {
+        if (LooseValue::bool($input->getOption('dry-run'))) {
             $nombre = (int) (clone $qb)->select('COUNT(s.id)')->resetDQLPart('orderBy')->getQuery()->getSingleScalarResult();
             $io->success(sprintf('%d dossier(s) terminé(s) avant le %s seraient anonymisés (simulation).', $nombre, $seuil->format('d/m/Y')));
 

@@ -573,7 +573,7 @@ généré.
 | E26.14 · en revue | tableau de bord enseignant : suivi d'avancement des enseignements (écran, dialogues), entrée « Pédagogie » ; l'API d'avancement est déjà reprise par la routine du 04/11 | front de `c46cebced`, `aa48a33a6`, `284c9204a`, `ae705e047`, `a1af79380` |
 | E27.1 · en revue | socle de `f5bb12d5a..e53f30040` (0.9.0 à 0.11.0) : révision des accès, contexte d'année universitaire, calendrier calculé, notifications enregistrées et préférences, université de rattachement, LDAP, prévisionnel, sous-commission restaurable, configuration des services ; hors bundles des lots 2 et 3 | `73489f21f`, `930148fad`, `646715552`, `e86c5c96a`, `bb221212e`, `5bea07ab0`, `fd540709b`, `a00067b88`, `a7ba8c6f5`, `4b6efd1de`, `ccc0d4910`, `b27c9d88e`, `1c010f86f`, `dd967f8f0`, `479007fc6`, `2437d0e84`, `e2f0c21cd`, `a47f43087` |
 | E27.2 | Unifolio v2 : portfolio de compétences de l'étudiant | `d917e09ad` (partie `unifolio-bundle`), `6a6f8bce0` |
-| E27.3 | questionnaire, stage, finance et parc auto | parties de `d917e09ad`, `155284c60`, `21023c01a`, `64854ef60`, `213d680d0`, `28d4de6f1`, `e53f30040`, `372970e9b`, `a8e7f2b1c` |
+| E27.3 · en revue | questionnaire, stage, finance et parc auto | parties de `d917e09ad`, `155284c60`, `21023c01a`, `64854ef60`, `213d680d0`, `28d4de6f1`, `e53f30040`, `372970e9b`, `a8e7f2b1c` |
 
 **Décisions de reprise**
 - Filtres (E26.1) : on adopte les `QueryParameter` du client pour nos filtres et on revient sur le
@@ -721,6 +721,20 @@ généré.
     primaire en clair, les clients de messagerie ignorant les variables CSS ;
   - dépendance ajoutée avec accord : `symfony/ldap` 8.1 ;
   - Cypress (`acces-socle-e27.cy.js`) non rejoué en local : base locale arrêtée.
+- Modules E27.3 (questionnaire, stage, finance, parc auto) :
+  - accès : règles du client par objet, plus strictes que les nôtres ; collections filtrées par
+    département. Gardé chez nous : l'étudiant ne modifie sa fiche de stage que tant qu'elle n'est ni
+    validée ni évaluée (le client reportait ce contrôle sur les transitions) ;
+  - réponses aux questionnaires par l'`InvitationRuntime` du client ; `/api/student/invitations`
+    retiré au profit de `/api/questionnaire/mes-invitations` ;
+  - finance reprise en entier (écrans du personnel, voter par circuit de validation) ; nos tests
+    unitaires des voters de finance et de stage réécrits sur les nouvelles règles ;
+  - Parc auto branché, déclaré indépendant de l'année universitaire, réservé au personnel habilité ;
+  - couleurs : les copies de `forms.css` des bundles cèdent au `forms.css` partagé sur les jetons ;
+  - non repris : les migrateurs V3 du stage déplacés par le client dans son bundle (nous gardons
+    les nôtres) et la notification d'auteur à la fin d'un questionnaire (absente de notre base) ;
+  - typage délégué à Codex puis, son quota épuisé, à OpenCode, relu ;
+  - Cypress `acces-modules-e27.cy.js` laissé à la CI.
 
 ---
 

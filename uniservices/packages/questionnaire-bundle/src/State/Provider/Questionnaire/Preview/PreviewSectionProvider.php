@@ -14,6 +14,9 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewSectionDto;
 use QuestionnaireBundle\Enum\QuestTypeRepeatEnum;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
 
+/**
+ * @implements ProviderInterface<PreviewSectionDto>
+ */
 final readonly class PreviewSectionProvider implements ProviderInterface
 {
     public function __construct(
@@ -37,7 +40,7 @@ final readonly class PreviewSectionProvider implements ProviderInterface
                 break;
             }
         }
-        if (!$sectionTemplate) {
+        if (!$sectionTemplate instanceof QuestionnaireSection) {
             throw new NotFoundHttpException('Section introuvable.');
         }
 
@@ -64,6 +67,9 @@ final readonly class PreviewSectionProvider implements ProviderInterface
         );
     }
 
+    /**
+     * @return array{0: int, 1: QuestTypeRepeatEnum|null, 2: string}
+     */
     private function parseKey(string $key): array
     {
         // "tpl:12|matiere:45"
@@ -84,11 +90,10 @@ final readonly class PreviewSectionProvider implements ProviderInterface
             return (string) $section->getTitle();
         }
         $opts = $section->getOpt();
-        $elements = $opts['elements'] ?? [];
-        foreach ($elements as $el) {
+        foreach (LooseValue::rows($opts['elements'] ?? []) as $el) {
             if (($el['id'] ?? '') === $repeatId) {
-                $titleTemplate = $opts['titleTemplate'] ?? 'Évaluation de {element}';
-                return str_replace('{element}', $el['name'] ?? '', $titleTemplate);
+                $titleTemplate = LooseValue::castString($opts['titleTemplate'] ?? 'Évaluation de {element}');
+                return str_replace('{element}', LooseValue::castString($el['name'] ?? ''), $titleTemplate);
             }
         }
         return sprintf('%s – %s %s', $section->getTitle(), $repeatType->value, $repeatId);

@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\Services\Diffusion;
 
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireDiffusion;
@@ -69,6 +70,9 @@ class DiffusionService
             $personnels = [];
             foreach ($qb->getQuery()->getResult() as $previsionnel) {
                 $personnel = $previsionnel->getPersonnel();
+                if ($personnel === null) {
+                    continue;
+                }
                 $personnels[$personnel->getId()] ??= [$personnel, QuestionnaireDiffusion::ORIGINE_PREVISIONNEL];
             }
             if ($personnels !== []) {
@@ -126,7 +130,7 @@ class DiffusionService
 
         foreach ($destinataires as $sectionId => $ids) {
             $section = $sections[(int) $sectionId] ?? throw new UnprocessableEntityHttpException(sprintf('La section %s n\'appartient pas à ce questionnaire.', $sectionId));
-            $voulus = array_values(array_unique(array_map('intval', \is_array($ids) ? $ids : [])));
+            $voulus = array_values(array_unique(array_map(static fn (mixed $id): int => LooseValue::castInt($id), \is_array($ids) ? $ids : [])));
             $personnels = $voulus === [] ? [] : $this->em->getRepository(Personnel::class)->findBy(['id' => $voulus]);
             if (\count($personnels) !== \count($voulus)) {
                 throw new UnprocessableEntityHttpException('Destinataire inconnu.');

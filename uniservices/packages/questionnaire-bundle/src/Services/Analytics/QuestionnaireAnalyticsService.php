@@ -47,7 +47,8 @@ class QuestionnaireAnalyticsService
         $responsesByDate = [];
 
         foreach ($invitations as $inv) {
-            $status = $inv->getStatus() ? $inv->getStatus()->value : 'pending';
+            $statut = $inv->getStatus();
+            $status = $statut !== null ? $statut->value : 'pending';
             $statusCounts[$status]++;
 
             if ($status === 'submitted') {
@@ -55,7 +56,7 @@ class QuestionnaireAnalyticsService
 
                 $startedAt = $inv->getStartedAt();
                 $submittedAt = $inv->getSubmittedAt();
-                if ($startedAt && $submittedAt) {
+                if ($startedAt !== null && $submittedAt !== null) {
                     $diff = $submittedAt->getTimestamp() - $startedAt->getTimestamp();
                     if ($diff > 0) {
                         $totalDuration += $diff;
@@ -63,7 +64,7 @@ class QuestionnaireAnalyticsService
                     }
                 }
 
-                if ($submittedAt) {
+                if ($submittedAt !== null) {
                     $dateStr = $submittedAt->format('Y-m-d');
                     $responsesByDate[$dateStr] = ($responsesByDate[$dateStr] ?? 0) + 1;
                 }
@@ -123,7 +124,7 @@ class QuestionnaireAnalyticsService
                 $qAnswers = $answersMap[$instance->getId()][$qId] ?? [];
                 $qTotalResponses = count($qAnswers);
                 $type = $question->getTypeQuestion();
-                $typeStr = $type ? $type->value : 'text_short';
+                $typeStr = $type !== null ? $type->value : 'text_short';
 
                 $stats = [];
 
@@ -138,7 +139,7 @@ class QuestionnaireAnalyticsService
                         }
                     }
 
-                    $counts = array_fill_keys($optionTexts, 0);
+                    $counts = array_fill_keys(array_map(static fn (mixed $text) => LooseValue::key($text), $optionTexts), 0);
                     foreach ($qAnswers as $ansVal) {
                         if (is_array($ansVal)) {
                             foreach ($ansVal as $item) {
@@ -155,7 +156,7 @@ class QuestionnaireAnalyticsService
 
                     $statsList = [];
                     foreach ($optionTexts as $text) {
-                        $cnt = $counts[$text];
+                        $cnt = $counts[LooseValue::key($text)];
                         $pct = $qTotalResponses > 0 ? ($cnt / $qTotalResponses) * 100 : 0.0;
                         $statsList[] = [
                             'text' => $text,
@@ -166,8 +167,8 @@ class QuestionnaireAnalyticsService
                     $stats = ['choices' => $statsList];
                 } elseif ($type === QuestTypeQuestionEnum::Scale) {
                     $opts = $question->getOpt();
-                    $min = $opts['min'] ?? 1;
-                    $max = $opts['max'] ?? 10;
+                    $min = LooseValue::int($opts['min'] ?? 1);
+                    $max = LooseValue::int($opts['max'] ?? 10);
 
                     $sum = 0;
                     $numCount = 0;
@@ -207,8 +208,8 @@ class QuestionnaireAnalyticsService
                         }
                     }
 
-                    $rankSums = array_fill_keys($optionTexts, 0);
-                    $rankCounts = array_fill_keys($optionTexts, 0);
+                    $rankSums = array_fill_keys(array_map(static fn (mixed $text) => LooseValue::key($text), $optionTexts), 0);
+                    $rankCounts = array_fill_keys(array_map(static fn (mixed $text) => LooseValue::key($text), $optionTexts), 0);
 
                     foreach ($qAnswers as $ansVal) {
                         if (is_array($ansVal)) {
@@ -223,8 +224,8 @@ class QuestionnaireAnalyticsService
 
                     $statsList = [];
                     foreach ($optionTexts as $text) {
-                        $cnt = $rankCounts[$text];
-                        $avgRank = $cnt > 0 ? $rankSums[$text] / $cnt : 0.0;
+                        $cnt = $rankCounts[LooseValue::key($text)];
+                        $avgRank = $cnt > 0 ? $rankSums[LooseValue::key($text)] / $cnt : 0.0;
                         $statsList[] = [
                             'text' => $text,
                             'averageRank' => round($avgRank, 1),
@@ -313,10 +314,11 @@ class QuestionnaireAnalyticsService
                 );
             }
 
+            $typeSection = $sectionTemplate->getTypeSection();
             $sectionsAnalytics[] = new SectionInstanceAnalyticsDto(
                 sectionInstanceId: (int)$instance->getId(),
                 sectionTitle: $instance->getTitleSnapshot() ?? '',
-                sectionType: $sectionTemplate->getTypeSection() ? $sectionTemplate->getTypeSection()->value : 'normal',
+                sectionType: $typeSection !== null ? $typeSection->value : 'normal',
                 repeatItemType: $instance->getRepeatSectionItemType(),
                 repeatItemId: $instance->getRepeatSectionItemId(),
                 questions: $masquee ? [] : $questionsStats,

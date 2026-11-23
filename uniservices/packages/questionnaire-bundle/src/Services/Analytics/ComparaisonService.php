@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Services\Analytics;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireQuestion;
@@ -44,7 +45,7 @@ class ComparaisonService
         $n = [];
         /** @var array<string, array<int, float>> $sommes */
         $sommes = [];
-        /** @var array<string, array<int, array<string, int>>> $choixParCle */
+        /** @var array<string, array<int, array<array-key, int>>> $choixParCle */
         $choixParCle = [];
         foreach ($campagnes as $index => $c) {
             $stats = $this->analytics->getAnalytics($c);
@@ -74,10 +75,11 @@ class ComparaisonService
                     $types[$cle] = $qs->questionType;
                     $n[$cle][$index] = ($n[$cle][$index] ?? 0) + $qs->totalResponses;
                     if (isset($qs->stats['average'])) {
-                        $sommes[$cle][$index] = ($sommes[$cle][$index] ?? 0.0) + $qs->stats['average'] * $qs->totalResponses;
+                        $sommes[$cle][$index] = ($sommes[$cle][$index] ?? 0.0) + LooseValue::castFloat($qs->stats['average']) * $qs->totalResponses;
                     }
-                    foreach ($qs->stats['choices'] ?? [] as $choix) {
-                        $choixParCle[$cle][$index][$choix['text']] = ($choixParCle[$cle][$index][$choix['text']] ?? 0) + $choix['count'];
+                    foreach (LooseValue::rows($qs->stats['choices'] ?? []) as $choix) {
+                        $cleChoix = LooseValue::key($choix['text'] ?? null);
+                        $choixParCle[$cle][$index][$cleChoix] = ($choixParCle[$cle][$index][$cleChoix] ?? 0) + LooseValue::castInt($choix['count'] ?? null);
                     }
                 }
             }
@@ -105,7 +107,7 @@ class ComparaisonService
         }
 
         return [
-            'modele' => $modele ? ['uuid' => $modele->getUuidString(), 'title' => $modele->getTitle()] : null,
+            'modele' => $modele !== null ? ['uuid' => $modele->getUuidString(), 'title' => $modele->getTitle()] : null,
             'campagnes' => $resumeCampagnes,
             'questions' => $sortie,
         ];

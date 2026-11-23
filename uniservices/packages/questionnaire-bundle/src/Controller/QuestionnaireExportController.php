@@ -62,7 +62,7 @@ class QuestionnaireExportController extends AbstractController
         if (is_array($payload) && is_array($payload['charts'] ?? null)) {
             foreach ($payload['charts'] as $key => $image) {
                 // N'accepte que des images PNG/JPEG en data URI
-                if (is_string($image) && preg_match('#^data:image/(png|jpeg);base64,[A-Za-z0-9+/=]+$#', $image)) {
+                if (is_string($image) && preg_match('#^data:image/(png|jpeg);base64,[A-Za-z0-9+/=]+$#', $image) === 1) {
                     $charts[(string) $key] = $image;
                 }
             }
@@ -92,7 +92,7 @@ class QuestionnaireExportController extends AbstractController
     {
         $q = $this->questionnaires->charger($uuid, QuestionnaireVoter::SYNTHESE);
         $sections = $this->access->sectionsVisibles($this->getUser(), $q);
-        $demandees = array_values(array_filter(array_map(static fn (string $id): int => LooseValue::castInt($id), explode(',', (string) $request->query->get('sections', ''))), static fn (int $id): bool => $id !== 0));
+        $demandees = array_values(array_filter(array_map(static fn (string $id): int => LooseValue::castInt($id), explode(',', $request->query->get('sections', ''))), static fn (int $id): bool => $id !== 0));
         if ($demandees !== []) {
             $sections = $sections === null ? $demandees : array_values(array_intersect($sections, $demandees));
         }

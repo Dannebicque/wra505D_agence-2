@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Security;
 
+use App\Entity\Structure\StructureAnnee;
+use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureDepartementPersonnel;
+use App\Entity\Structure\StructureDiplome;
+use App\Entity\Structure\StructurePn;
+use App\Entity\Structure\StructureSemestre;
+use StageBundle\Entity\Stages\StagePeriode;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Security\CorePermissionProvider;
@@ -55,41 +61,28 @@ final class StageVoterTest extends TestCase
         self::assertFalse($this->grants($student, StageVoter::CAN_DELETE_STAGE, $this->internship($student)));
     }
 
-    public function testTeacherReadsInternshipsButEditsOnlyTutoredOnes(): void
+    public function testTeacherReadsButDoesNotManageInternships(): void
     {
-        $teacher = $this->staff(['ROLE_TEACHER'], ['intranet', 'stages']);
-        $tutored = $this->internship(new Etudiant())->setTuteurUniversitaire($teacher);
+        $department = new StructureDepartement();
+        $teacher = $this->staff(['ROLE_TEACHER'], ['intranet', 'stages'], $department);
+        $tutored = $this->internship(new Etudiant(), $department)->setTuteurUniversitaire($teacher);
 
-        self::assertTrue($this->grants($teacher, StageVoter::CAN_VIEW_STAGE, $this->internship(new Etudiant())));
-        self::assertFalse($this->grants($teacher, StageVoter::CAN_EDIT_STAGE, $this->internship(new Etudiant())));
+        // Révision des accès du client : un tuteur consulte, la gestion relève des rôles stage du département.
+        self::assertTrue($this->grants($teacher, StageVoter::CAN_VIEW_STAGE, $tutored));
         self::assertFalse($this->grants($teacher, StageVoter::CAN_EDIT_STAGE, $tutored));
-        $this->persist($tutored);
-        self::assertTrue($this->grants($teacher, StageVoter::CAN_EDIT_STAGE, $tutored));
         self::assertFalse($this->grants($teacher, StageVoter::CAN_DELETE_STAGE, $tutored));
-        self::assertFalse($this->grants($teacher, StageVoter::CAN_EDIT_STAGE_PERIODE, null));
     }
 
-    public function testStaffOutsideStagesPackageSeesNoInternship(): void
+    public function testInternshipManagerManagesInternshipsOfHisDepartmentOnly(): void
     {
-        $teacher = $this->staff(['ROLE_TEACHER'], ['intranet']);
+        $department = new StructureDepartement();
+        $manager = $this->staff(['ROLE_TEACHER', 'ROLE_STAGE_MANAGER'], ['intranet', 'stages'], $department);
+        $internship = $this->internship(new Etudiant(), $department)->setEtatStage(EtatStageEnum::VALIDE);
+        $elsewhere = $this->internship(new Etudiant(), new StructureDepartement());
 
-        self::assertFalse($this->grants($teacher, StageVoter::CAN_VIEW_STAGE, $this->internship(new Etudiant())));
-    }
-
-    public function testInternshipManagerManagesInternshipsAndPeriods(): void
-    {
-        $manager = $this->staff(['ROLE_TEACHER', 'ROLE_STAGE_MANAGER'], ['intranet', 'stages']);
-        $internship = $this->internship(new Etudiant())->setEtatStage(EtatStageEnum::VALIDE);
-
-        foreach ([
-            StageVoter::CAN_VIEW_STAGE,
-            StageVoter::CAN_EDIT_STAGE,
-            StageVoter::CAN_DELETE_STAGE,
-            StageVoter::CAN_VALIDATE_STAGE,
-            StageVoter::CAN_EDIT_STAGE_PERIODE,
-            StageVoter::CAN_DELETE_STAGE_PERIODE,
-        ] as $attribute) {
+        foreach ([StageVoter::CAN_EDIT_STAGE, StageVoter::CAN_DELETE_STAGE] as $attribute) {
             self::assertTrue($this->grants($manager, $attribute, $internship), $attribute);
+            self::assertFalse($this->grants($manager, $attribute, $elsewhere), $attribute);
         }
     }
 
@@ -103,27 +96,29 @@ final class StageVoterTest extends TestCase
         return VoterInterface::ACCESS_GRANTED === $voter->vote($token, $subject, [$attribute]);
     }
 
-    private function internship(Etudiant $student): StageEtudiant
+    private function internship(Etudiant $student, ?StructureDepartement $department = null): StageEtudiant
     {
-        return (new StageEtudiant())->setEtudiant($student)->setEtatStage(EtatStageEnum::AUTORISE);
+        $internship = (new StageEtudiant())->setEtudiant($student)->setEtatStage(EtatStageEnum::AUTORISE);
+        if (null !== $department) {
+            $year = (new StructureAnnee())->setPn(new StructurePn((new StructureDiplome())->setDepartement($department)));
+            $internship->setStagePeriode((new StagePeriode())->setSemestreProgramme((new StructureSemestre())->setAnnee($year)));
+        }
+
+        return $internship;
     }
 
     /**
      * @param list<string> $permissions
      * @param list<string> $packages
      */
-    private function staff(array $permissions, array $packages): Personnel
+    private function staff(array $permissions, array $packages, ?StructureDepartement $department = null): Personnel
     {
         $assignment = (new StructureDepartementPersonnel())
             ->setPermissions($permissions)
             ->setPackages($packages)
+            ->setDepartement($department)
             ->setDefaut(true);
 
         return (new Personnel())->addDepartementPersonnel($assignment);
-    }
-
-    private function persist(StageEtudiant $internship): void
-    {
-        (new \ReflectionProperty(StageEtudiant::class, 'id'))->setValue($internship, 1);
     }
 }

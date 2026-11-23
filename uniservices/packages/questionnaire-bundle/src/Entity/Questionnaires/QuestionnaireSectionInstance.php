@@ -81,7 +81,7 @@ class QuestionnaireSectionInstance
         $this->repeatSectionItemType = $repeatItemType;
         // Les identifiants d'éléments arrivent du JSON de la section sous forme de chaîne,
         // vide quand l'élément n'en a pas.
-        $this->repeatSectionItemId = $repeatItemId !== null && $repeatItemId !== '' ? (int) $repeatItemId : null;
+        $this->repeatSectionItemId = $repeatItemId !== null && $repeatItemId !== '' ? (string) (int) $repeatItemId : null;
     }
 
     public function getId(): ?int

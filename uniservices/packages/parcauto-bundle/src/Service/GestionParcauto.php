@@ -127,7 +127,7 @@ final readonly class GestionParcauto
 
         switch ($type) {
             case JournalVehicule::CARBURANT:
-                $kilometrage = $saisie->entier('kilometrage', $mission?->kilometrageDepart ?? 0);
+                $kilometrage = $saisie->entier('kilometrage', $mission->kilometrageDepart ?? 0);
                 $volume = $saisie->entier('volumeMillilitres', 1);
                 $montant = $saisie->entier('montantCentimes');
                 $carte = $mission === null ? $this->equipement($saisie->entier('carte', 1, true), Equipement::CARTE) : null;

@@ -21,9 +21,9 @@ class QuestionnaireAccess
 
     public function __construct(
         private readonly UserEffectivePermissionService $permissions,
-        private readonly DepartmentPermissionChecker $departements,
+        public readonly DepartmentPermissionChecker $departements,
         private readonly QuestionnaireVoter $voter,
-        private readonly QuestionnaireReglages $reglages,
+        public readonly QuestionnaireReglages $reglages,
     ) {
     }
 

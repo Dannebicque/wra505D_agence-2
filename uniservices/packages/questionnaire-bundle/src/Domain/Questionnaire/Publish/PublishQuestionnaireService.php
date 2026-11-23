@@ -121,7 +121,7 @@ final class PublishQuestionnaireService
             if ($email === '') {
                 continue;
             }
-            if (!filter_var($email, \FILTER_VALIDATE_EMAIL)) {
+            if (filter_var($email, \FILTER_VALIDATE_EMAIL) === false) {
                 throw new UnprocessableEntityHttpException(sprintf('Adresse e-mail invalide : %s', $email));
             }
             $emails[$email] = true;

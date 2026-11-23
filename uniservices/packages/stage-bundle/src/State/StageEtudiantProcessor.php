@@ -41,6 +41,9 @@ final class StageEtudiantProcessor implements ProcessorInterface
     /** États dans lesquels l'étudiant ne peut plus toucher à son dossier : saisie fermée, convention signée. */
     private const VERROUILLES_ETUDIANT = [EtatStageEnum::INCOMPLET, EtatStageEnum::CONVENTION_RECUE];
 
+    /**
+     * @param ProcessorInterface<mixed, mixed> $persist
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private readonly ProcessorInterface $persist,
@@ -62,7 +65,8 @@ final class StageEtudiantProcessor implements ProcessorInterface
         $user = $this->security->getUser();
         $auteur = $user instanceof Etudiant || $user instanceof Personnel ? $user : null;
 
-        $this->controler($data, $avant, $auteur, self::clesEnvoyees($context['request'] ?? null));
+        $requete = $context['request'] ?? null;
+        $this->controler($data, $avant, $auteur, self::clesEnvoyees($requete instanceof Request ? $requete : null));
 
         $etatAvant = $avant?->getEtatStage();
         $tuteurAvant = $avant?->getTuteurUniversitaire();

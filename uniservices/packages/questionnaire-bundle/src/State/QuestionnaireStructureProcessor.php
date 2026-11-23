@@ -14,6 +14,7 @@ use QuestionnaireBundle\Security\QuestionnaireResolver;
 use QuestionnaireBundle\Security\QuestionnaireVoter;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -33,6 +34,10 @@ final class QuestionnaireStructureProcessor implements ProcessorInterface
     private const CHAMPS_SERVEUR_SECTION = ['questionnaire', 'questions', 'sectionInstances'];
     private const CHAMPS_SERVEUR_QUESTION = ['section', 'answers'];
 
+    /**
+     * @param ProcessorInterface<mixed, mixed> $persist
+     * @param ProcessorInterface<mixed, mixed> $remove
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private readonly ProcessorInterface $persist,
@@ -47,12 +52,13 @@ final class QuestionnaireStructureProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $request = $context['request'] ?? null;
+        $request = $request instanceof Request ? $request : null;
         $creation = $operation instanceof Post;
 
         if ($data instanceof QuestionnaireSection) {
             if ($creation) {
                 // L'ancien client envoie l'IRI du questionnaire : tolérée, mais c'est l'URL qui fait foi.
-                ChampsEnvoyes::refuser($request, array_diff(self::CHAMPS_SERVEUR_SECTION, ['questionnaire']), $data);
+                ChampsEnvoyes::refuser($request, array_values(array_diff(self::CHAMPS_SERVEUR_SECTION, ['questionnaire'])), $data);
                 $data->setQuestionnaire($this->questionnaires->charger($uriVariables['questionnaireId'] ?? '', QuestionnaireVoter::CAN_EDIT_QUESTIONNAIRE));
             } else {
                 ChampsEnvoyes::refuser($request, [...self::CHAMPS_SERVEUR_SECTION, 'uuid'], $data);
@@ -60,7 +66,7 @@ final class QuestionnaireStructureProcessor implements ProcessorInterface
             $questionnaire = $data->getQuestionnaire();
         } elseif ($data instanceof QuestionnaireQuestion) {
             if ($creation) {
-                ChampsEnvoyes::refuser($request, array_diff(self::CHAMPS_SERVEUR_QUESTION, ['section']), $data);
+                ChampsEnvoyes::refuser($request, array_values(array_diff(self::CHAMPS_SERVEUR_QUESTION, ['section'])), $data);
                 $data->setSection($this->section($uriVariables['questionnaireSectionId'] ?? ''));
             } else {
                 ChampsEnvoyes::refuser($request, [...self::CHAMPS_SERVEUR_QUESTION, 'uuid'], $data);

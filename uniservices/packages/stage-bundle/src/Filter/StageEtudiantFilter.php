@@ -6,6 +6,8 @@ use ApiPlatform\Doctrine\Orm\Filter\FilterInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\BackwardCompatibleFilterDescriptionTrait;
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Parameter;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
 use StageBundle\Doctrine\JointuresStageTrait;
 use StageBundle\Util\Iri;
@@ -17,19 +19,22 @@ class StageEtudiantFilter implements FilterInterface
 
     public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
-        if (isset($context['parameter'])) {
-            $parameter = $context['parameter'];
-            $property = $parameter->getProperty() ?? $parameter->getKey();
+        $parameter = $context['parameter'] ?? null;
+        if ($parameter instanceof Parameter) {
+            $property = LooseValue::castString($parameter->getProperty() ?? $parameter->getKey());
             $this->filterProperty($property, $parameter->getValue(), $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
 
             return;
         }
 
-        foreach ($context['filters'] ?? [] as $property => $value) {
-            $this->filterProperty((string) $property, $value, $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
+        foreach (LooseValue::row($context['filters'] ?? []) as $property => $value) {
+            $this->filterProperty(LooseValue::castString($property), $value, $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
         }
     }
 
+    /**
+     * @param array<string, mixed> $context
+     */
     protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
         if (null === $value || '' === $value) {

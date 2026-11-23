@@ -6,6 +6,7 @@ namespace ParcautoBundle\Service;
 
 final readonly class SaisieParcauto
 {
+    /** @param array<array-key, mixed> $valeurs */
     public function __construct(private array $valeurs)
     {
     }
@@ -20,6 +21,7 @@ final readonly class SaisieParcauto
         return trim($valeur);
     }
 
+    /** @return ($facultatif is true ? int|null : int) */
     public function entier(string $champ, int $minimum = 0, bool $facultatif = false, int $maximum = 2147483647): ?int
     {
         $valeur = $this->valeurs[$champ] ?? null;
@@ -43,6 +45,7 @@ final readonly class SaisieParcauto
         return $valeur;
     }
 
+    /** @param list<string> $options */
     public function choix(string $champ, array $options): string
     {
         $valeur = $this->texte($champ, 30);
@@ -53,6 +56,7 @@ final readonly class SaisieParcauto
         return $valeur;
     }
 
+    /** @return ($facultatif is true ? \DateTimeImmutable|null : \DateTimeImmutable) */
     public function date(string $champ, bool $facultatif = false): ?\DateTimeImmutable
     {
         $valeur = $this->texte($champ, 30, $facultatif);

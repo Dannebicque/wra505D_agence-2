@@ -82,7 +82,7 @@ class StagePdfController extends AbstractController
             // Établissement = la composante (l'IUT) ; l'université de rattachement signe la convention.
             'etablissement' => [
                 'libelle' => $etab?->getLibelle() ?? '',
-                'adresse' => $etab?->getAdresse()?->getInlineAdresse() ?? '',
+                'adresse' => Adresse::fromArray($etab?->getAdresse())?->getInlineAdresse() ?? '',
                 'telephone' => $etab?->getTelephone() ?? '',
                 'directeur' => $etab?->getDirecteurNom() ?? '',
                 'signataireNom' => $etab?->getSignataireNom() ?? '',
@@ -180,7 +180,8 @@ class StagePdfController extends AbstractController
     public function apercuModele(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('SUPER_ADMIN');
-        $data = json_decode($request->getContent(), true) ?? [];
+        $decoded = json_decode($request->getContent(), true);
+        $data = \is_array($decoded) ? LooseValue::row($decoded) : [];
         $texte = LooseValue::castString($data['texte'] ?? '');
         $repo = $this->em->getRepository(StageEtudiant::class);
         $stage = isset($data['stageEtudiantId']) && is_numeric($data['stageEtudiantId'])
@@ -245,7 +246,7 @@ class StagePdfController extends AbstractController
         }
 
         $stage = $avenant->getStageEtudiant();
-        if (!$stage) {
+        if (!$stage instanceof StageEtudiant) {
             return new Response('Stage associé à l\'avenant non trouvé', Response::HTTP_NOT_FOUND);
         }
         $this->denyAccessUnlessGranted(StageVoter::STAGE_ETUDIANT_MANAGE, $stage);
@@ -258,10 +259,10 @@ class StagePdfController extends AbstractController
         $avenant->setValide(true);
         $avenant->setDateValidation(new \DateTime());
 
-        if ($avenant->getNewDateDebut()) {
+        if ($avenant->getNewDateDebut() !== null) {
             $stage->setDateDebutStage($avenant->getNewDateDebut());
         }
-        if ($avenant->getNewDateFin()) {
+        if ($avenant->getNewDateFin() !== null) {
             $stage->setDateFinStage($avenant->getNewDateFin());
         }
         if (null !== $avenant->getNewDureeHebdomadaire()) {
@@ -270,7 +271,7 @@ class StagePdfController extends AbstractController
         if (null !== $avenant->getNewGratificationMontant()) {
             $stage->setGratificationMontant($avenant->getNewGratificationMontant());
         }
-        if ($avenant->getNewTuteur()) {
+        if ($avenant->getNewTuteur() !== null) {
             // Le contact de l'avenant reste attaché à l'avenant (historique) : on recopie ses informations dans le
             // tuteur du dossier, ou dans une copie, pour ne jamais partager un contact entre deux lignes
             // (contrainte d'unicité du tuteur, suppression en cascade avec le dossier).
@@ -286,7 +287,9 @@ class StagePdfController extends AbstractController
         $user = $this->getUser();
         $this->notifier->avenantValide($avenant, $user instanceof \App\Entity\Users\Personnel ? $user : null);
 
-        return new Response(json_encode(['success' => true]), Response::HTTP_OK, [
+        $corps = json_encode(['success' => true]);
+
+        return new Response(\is_string($corps) ? $corps : '', Response::HTTP_OK, [
             'Content-Type' => 'application/json'
         ]);
     }
@@ -367,13 +370,25 @@ class StagePdfController extends AbstractController
         }
 
         // Annee universitaire display
-        $anneeUnivStr = $periode && $periode->getAnneeUniversitaire() ? $periode->getAnneeUniversitaire()->getLibelle() : (date('Y').'/'.((int) date('Y') + 1));
+        $anneeUniv = $periode instanceof StagePeriode ? $periode->getAnneeUniversitaire() : null;
+        $anneeUnivStr = $anneeUniv instanceof StructureAnneeUniversitaire ? $anneeUniv->getLibelle() : (date('Y').'/'.((int) date('Y') + 1));
 
         // Calcule semaines
         $nbSemaines = 0;
         if ($stage->getDureeJoursStage() !== 0) {
             $nbSemaines = ceil($stage->getDureeJoursStage() / 5);
         }
+
+        $optSecu = $etu instanceof Etudiant ? ($etu->getOpt()['intitule_securite_sociale'] ?? null) : null;
+        $optSecuAdresse = $etu instanceof Etudiant ? ($etu->getOpt()['adresse_securite_sociale'] ?? null) : null;
+        $secu = LooseValue::truthyString($stage->getAssuranceCompagnie())
+            ?? LooseValue::truthyString($optSecu)
+            ?? LooseValue::truthyString($etu?->getIntituleSecuriteSociale())
+            ?? '';
+        $secuAdresse = LooseValue::truthyString($stage->getAssuranceNumero())
+            ?? LooseValue::truthyString($optSecuAdresse)
+            ?? LooseValue::truthyString($etu?->getAdresseSecuriteSociale())
+            ?? '';
 
         $replaces = [
             '{annee_universitaire}' => $anneeUnivStr,
@@ -386,17 +401,17 @@ class StagePdfController extends AbstractController
             '{etudiant.email}' => $etu instanceof Etudiant ? $etu->getMailUniv() : '',
             '{etudiant.formation}' => $formationLibelle,
             '{formation.volume_horaire}' => $volumeHoraire,
-            '{etudiant.secu}' => $stage->getAssuranceCompagnie() ?: ($etu && method_exists($etu, 'getOpt') && !empty($etu->getOpt()['intitule_securite_sociale']) ? $etu->getOpt()['intitule_securite_sociale'] : ($etu && method_exists($etu, 'getIntituleSecuriteSociale') && $etu->getIntituleSecuriteSociale() ? $etu->getIntituleSecuriteSociale() : '')),
-            '{etudiant.secu_adresse}' => $stage->getAssuranceNumero() ?: ($etu && method_exists($etu, 'getOpt') && !empty($etu->getOpt()['adresse_securite_sociale']) ? $etu->getOpt()['adresse_securite_sociale'] : ($etu && method_exists($etu, 'getAdresseSecuriteSociale') && $etu->getAdresseSecuriteSociale() ? $etu->getAdresseSecuriteSociale() : '')),
+            '{etudiant.secu}' => $secu,
+            '{etudiant.secu_adresse}' => $secuAdresse,
 
-            '{entreprise.nom}' => $ent ? $ent->getRaisonSociale() : '',
-            '{entreprise.adresse}' => $stage->getAdresseStage() ? (string) $stage->getAdresseStage() : ($ent && $ent->getAdresse() ? (string) $ent->getAdresse() : ''),
-            '{entreprise.signataire}' => $ent && $ent->getResponsable() ? $ent->getResponsable()->getDisplay() : '',
-            '{entreprise.signataire_fonction}' => $ent && $ent->getResponsable() ? $ent->getResponsable()->getFonction() : '',
-            '{entreprise.telephone}' => $ent && $ent->getResponsable() ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
-            '{entreprise.email}' => $ent && $ent->getResponsable() ? $ent->getResponsable()->getEmail() : '',
+            '{entreprise.nom}' => $ent instanceof StageEntreprise ? $ent->getRaisonSociale() : '',
+            '{entreprise.adresse}' => $stage->getAdresseStage() !== null ? (string) $stage->getAdresseStage() : ($ent instanceof StageEntreprise && $ent->getAdresse() !== null ? (string) $ent->getAdresse() : ''),
+            '{entreprise.signataire}' => $ent instanceof StageEntreprise && $ent->getResponsable() !== null ? $ent->getResponsable()->getDisplay() : '',
+            '{entreprise.signataire_fonction}' => $ent instanceof StageEntreprise && $ent->getResponsable() !== null ? $ent->getResponsable()->getFonction() : '',
+            '{entreprise.telephone}' => $ent instanceof StageEntreprise && $ent->getResponsable() !== null ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
+            '{entreprise.email}' => $ent instanceof StageEntreprise && $ent->getResponsable() !== null ? $ent->getResponsable()->getEmail() : '',
             '{stage.service}' => $stage->getServiceStageEntreprise() ?? '',
-            '{stage.adresse_different}' => $stage->getAdresseStage() ? (string) $stage->getAdresseStage() : '',
+            '{stage.adresse_different}' => $stage->getAdresseStage() !== null ? (string) $stage->getAdresseStage() : '',
             '{stage.interruptions}' => $stage->getPeriodesInterruptions() ?? '',
 
             '{stage.sujet}' => $stage->getSujetStage() ?? '',
@@ -433,7 +448,7 @@ class StagePdfController extends AbstractController
             '{universite.president}' => $etab?->getUniversite()->getPresident() ?? '',
             '{etablissement.nom}' => $etab?->getLibelle() ?? '',
             '{etablissement.directeur}' => $etab?->getDirecteurNom() ?? '',
-            '{etablissement.adresse}' => $etab?->getAdresse()?->getInlineAdresse() ?? '',
+            '{etablissement.adresse}' => Adresse::fromArray($etab?->getAdresse())?->getInlineAdresse() ?? '',
             '{etablissement.telephone}' => $etab?->getTelephone() ?? '',
             '{etablissement.signataire}' => $etab?->getSignataireNom() ?? '',
             '{etablissement.signataire_qualite}' => $etab?->getSignataireQualite() ?? '',

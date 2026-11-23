@@ -360,7 +360,7 @@ class Questionnaire implements TimestampableInterface
     #[Groups(['questionnaire:read'])]
     public function getStatutSeverity(): string
     {
-        return $this->status->getBadge();
+        return $this->status?->getBadge() ?? '';
     }
 
     /**
@@ -557,7 +557,7 @@ class Questionnaire implements TimestampableInterface
     #[Groups(['questionnaire:read'])]
     public function getModeleOrigineResume(): ?array
     {
-        return $this->modeleOrigine ? ['uuid' => $this->modeleOrigine->getUuidString(), 'title' => $this->modeleOrigine->getTitle()] : null;
+        return $this->modeleOrigine !== null ? ['uuid' => $this->modeleOrigine->getUuidString(), 'title' => $this->modeleOrigine->getTitle()] : null;
     }
 
     public function getAnneeUniversitaire(): ?StructureAnneeUniversitaire

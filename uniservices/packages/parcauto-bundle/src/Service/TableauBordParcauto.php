@@ -9,12 +9,41 @@ use ParcautoBundle\Entity\JournalVehicule;
 use ParcautoBundle\Entity\Reservation;
 use ParcautoBundle\Entity\Vehicule;
 
+/**
+ * @phpstan-type Totaux array{
+ *     secondes: int,
+ *     kilometres: int,
+ *     missions: int,
+ *     depenses: int,
+ *     pleins: list<JournalVehicule>,
+ *     pneus: array<string, list<JournalVehicule>>,
+ *     incidents: array<string, list<JournalVehicule>>,
+ * }
+ * @phpstan-type Ligne array{
+ *     vehicule: string,
+ *     immatriculation: string,
+ *     site: string,
+ *     energie: string,
+ *     disponible: bool,
+ *     utilisation: float,
+ *     missions: int,
+ *     kilometres: int,
+ *     litres: float,
+ *     consommation: float|null,
+ *     depenses: float,
+ *     coutTotal: float,
+ *     coutKm: float|null,
+ *     reforme: string|null,
+ *     alertes: string,
+ * }
+ */
 final readonly class TableauBordParcauto
 {
     public function __construct(private EntityManagerInterface $em, private PlanningParcauto $planning)
     {
     }
 
+    /** @return array{vehicules: list<Ligne>, permutations: list<string>} */
     public function calculer(\DateTimeImmutable $debut, \DateTimeImmutable $fin): array
     {
         $vehicules = $this->em->getRepository(Vehicule::class)->findBy([], ['site' => 'ASC', 'libelle' => 'ASC']);
@@ -36,20 +65,22 @@ final readonly class TableauBordParcauto
 
         $parVehicule = [];
         foreach ($vehicules as $vehicule) {
-            $parVehicule[$vehicule->id] = [
-                'secondes' => 0, 'kilometres' => 0, 'missions' => 0, 'depenses' => 0, 'pleins' => [], 'pneus' => [], 'incidents' => [],
-            ];
+            $vehiculeId = $vehicule->id;
+            if ($vehiculeId === null) {
+                continue;
+            }
+            $parVehicule[$vehiculeId] = self::nouveauxTotaux();
         }
         foreach ($missions as $mission) {
             $id = $mission->vehicule->id;
-            if (!isset($parVehicule[$id])) {
+            if ($id === null || !isset($parVehicule[$id])) {
                 continue;
             }
             $secondes = min($fin, $mission->retourLe ?? SaisieParcauto::maintenant())->getTimestamp()
                 - max($debut, $mission->departLe)->getTimestamp();
             $parVehicule[$id]['secondes'] += max(0, $secondes);
             if ($mission->retourLe !== null && $mission->retourLe < $fin) {
-                $parVehicule[$id]['kilometres'] += $mission->kilometrageRetour - $mission->kilometrageDepart;
+                $parVehicule[$id]['kilometres'] += ($mission->kilometrageRetour ?? 0) - ($mission->kilometrageDepart ?? 0);
                 ++$parVehicule[$id]['missions'];
             }
         }
@@ -57,24 +88,26 @@ final readonly class TableauBordParcauto
         $debutIncidents = min($fin, SaisieParcauto::maintenant())->modify('-90 days');
         foreach ($journal as $entree) {
             $id = $entree->vehicule->id;
-            if (!isset($parVehicule[$id])) {
+            if ($id === null || !isset($parVehicule[$id])) {
                 continue;
             }
-            $parVehicule[$id]['depenses'] += $entree->montantCentimes ?? 0;
+            $totaux = $parVehicule[$id];
+            $totaux['depenses'] += $entree->montantCentimes ?? 0;
             if ($entree->type === JournalVehicule::INCIDENT && $entree->date >= $debutIncidents) {
                 $cle = mb_strtolower($entree->libelle);
-                $parVehicule[$id]['incidents'][$cle][] = $entree;
+                $totaux['incidents'][$cle][] = $entree;
             }
             if ($entree->type === JournalVehicule::CARBURANT) {
-                $parVehicule[$id]['pleins'][] = $entree;
+                $totaux['pleins'][] = $entree;
             }
             if ($entree->type === JournalVehicule::REMPLACEMENT_PNEUS) {
-                unset($parVehicule[$id]['pneus'][$entree->libelle]);
+                unset($totaux['pneus'][$entree->libelle]);
             }
             if ($entree->type === JournalVehicule::PNEUS) {
                 // Utiliser le même libellé pour les mesures successives d’un même train.
-                $parVehicule[$id]['pneus'][$entree->libelle][] = $entree;
+                $totaux['pneus'][$entree->libelle][] = $entree;
             }
+            $parVehicule[$id] = $totaux;
         }
 
         $duree = max(1, $fin->getTimestamp() - $debut->getTimestamp());
@@ -82,7 +115,11 @@ final readonly class TableauBordParcauto
         $maintenant = SaisieParcauto::maintenant();
         $plans = $this->planning->echeancesParVehicule();
         foreach ($vehicules as $vehicule) {
-            $donnees = $parVehicule[$vehicule->id];
+            $vehiculeId = $vehicule->id;
+            if ($vehiculeId === null) {
+                continue;
+            }
+            $donnees = $parVehicule[$vehiculeId];
             $distance = $donnees['kilometres'];
             $depenses = $donnees['depenses'] / 100;
             $amortissement = 0;
@@ -97,7 +134,7 @@ final readonly class TableauBordParcauto
             $premier = $pleins[0] ?? null;
             $dernier = $pleins[array_key_last($pleins)] ?? null;
             $distancePleins = ($dernier->kilometrage ?? 0) - ($premier->kilometrage ?? 0);
-            $consommation = $premier !== null && $distancePleins > 0 ? round(100 * ($litres - $premier->volumeMillilitres / 1000) / $distancePleins, 2) : null;
+            $consommation = $premier !== null && $distancePleins > 0 ? round(100 * ($litres - ($premier->volumeMillilitres ?? 0) / 1000) / $distancePleins, 2) : null;
             $reforme = $vehicule->reformePrevueLe;
             if ($distance > 0 && $vehicule->reformeKm !== null) {
                 $secondesRestantes = (int) min(3155760000, $duree * max(0, $vehicule->reformeKm - $vehicule->kilometrage) / $distance);
@@ -151,9 +188,21 @@ final readonly class TableauBordParcauto
         return ['vehicules' => $lignes, 'permutations' => $this->permutations($lignes)];
     }
 
+    /** @return Totaux */
+    private static function nouveauxTotaux(): array
+    {
+        return [
+            'secondes' => 0, 'kilometres' => 0, 'missions' => 0, 'depenses' => 0, 'pleins' => [], 'pneus' => [], 'incidents' => [],
+        ];
+    }
+
+    /** @param list<JournalVehicule> $releves */
     private function projectionPneus(array $releves, int $kilometrage): ?int
     {
         $dernier = array_pop($releves);
+        if ($dernier === null) {
+            return null;
+        }
         $precedent = array_pop($releves);
         if ($dernier->usureDixiemesMm === null) {
             return null;
@@ -165,12 +214,17 @@ final readonly class TableauBordParcauto
             return null;
         }
 
-        $distance = ($dernier->usureDixiemesMm - 20) * ($dernier->kilometrage - $precedent->kilometrage)
+        $distance = ($dernier->usureDixiemesMm - 20) * (($dernier->kilometrage ?? 0) - ($precedent->kilometrage ?? 0))
             / ($precedent->usureDixiemesMm - $dernier->usureDixiemesMm);
 
-        return max(0, (int) ($distance + $dernier->kilometrage - $kilometrage));
+        return max(0, (int) ($distance + ($dernier->kilometrage ?? 0) - $kilometrage));
     }
 
+    /**
+     * @param list<Ligne> $lignes
+     *
+     * @return list<string>
+     */
     private function permutations(array $lignes): array
     {
         $resultat = [];

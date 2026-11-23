@@ -77,7 +77,7 @@ class QuestionnaireInvitation implements TimestampableInterface
     private int $remindersCount = 0;
 
     /**
-     * @var array<int, array{id: string, sentAt: string, subject?: string, message?: string, type?: string}>|null
+     * @var array<int, array{id: string, sentAt: string, subject?: string, message?: string|null, type?: string}>|null
      */
     #[ORM\Column(type: 'json', nullable: true)]
     #[Groups(['invitation:read'])]
@@ -304,7 +304,7 @@ class QuestionnaireInvitation implements TimestampableInterface
     }
 
     /**
-     * @return array<int, array{id: string, sentAt: string, subject?: string, message?: string, type?: string}>
+     * @return array<int, array{id: string, sentAt: string, subject?: string, message?: string|null, type?: string}>
      */
     public function getRemindersHistory(): array
     {
@@ -312,7 +312,7 @@ class QuestionnaireInvitation implements TimestampableInterface
     }
 
     /**
-     * @param array<int, array{id: string, sentAt: string, subject?: string, message?: string, type?: string}>|null $remindersHistory
+     * @param array<int, array{id: string, sentAt: string, subject?: string, message?: string|null, type?: string}>|null $remindersHistory
      */
     public function setRemindersHistory(?array $remindersHistory): static
     {

@@ -162,6 +162,22 @@ final class ParcautoController extends AbstractController
         return $this->json($resultat);
     }
 
+    /**
+     * @return array{
+     *     id: int|null,
+     *     vehicule: int|null,
+     *     debut: string,
+     *     fin: string,
+     *     statut: string,
+     *     proprietaire: bool,
+     *     enCours: bool,
+     *     nomConducteur?: string,
+     *     ordreMission?: string,
+     *     ordreVerifie?: bool,
+     *     kilometrageDepart?: int|null,
+     *     kilometrageRetour?: int|null,
+     * }
+     */
     private function reservationData(Reservation $reservation, bool $gestion): array
     {
         $proprietaire = $this->isGranted(ParcautoVoter::MISSION, $reservation);
@@ -358,11 +374,16 @@ final class ParcautoController extends AbstractController
                 ->setParameter('date', $date)
                 ->getQuery()->getArrayResult();
 
-            return array_map(static fn (array $mission) => [
-                ...$mission,
-                'departLe' => $mission['departLe']->format(DATE_ATOM),
-                'retourLe' => $mission['retourLe']?->format(DATE_ATOM),
-            ], $missions);
+            return array_map(static function (array $mission) {
+                $departLe = LooseValue::nullableInstance($mission['departLe'] ?? null, \DateTimeImmutable::class);
+                $retourLe = LooseValue::nullableInstance($mission['retourLe'] ?? null, \DateTimeImmutable::class);
+
+                return [
+                    ...$mission,
+                    'departLe' => $departLe?->format(DATE_ATOM),
+                    'retourLe' => $retourLe?->format(DATE_ATOM),
+                ];
+            }, LooseValue::rows($missions));
         });
     }
 
@@ -400,7 +421,7 @@ final class ParcautoController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        return LooseValue::castInt($vehiculeId['vehiculeId']);
+        return LooseValue::castInt(LooseValue::row($vehiculeId)['vehiculeId']);
     }
 
     private function missionVerrouillee(int $id, int $vehiculeId): Reservation
@@ -421,6 +442,7 @@ final class ParcautoController extends AbstractController
         return $date?->setTimezone(new \DateTimeZone('Europe/Paris'))->format('Y-m-d');
     }
 
+    /** @param callable(SaisieParcauto): object{id: int|null} $operation */
     private function ecrire(Request $request, callable $operation, int $statut = 200): JsonResponse
     {
         return $this->executer(function () use ($request, $operation): array {

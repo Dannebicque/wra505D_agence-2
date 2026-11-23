@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\MesInvitationDto;
+use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireInvitationRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -32,6 +33,13 @@ final class MesInvitationsProvider implements ProviderInterface
         $out = [];
         foreach ($this->invitations->findPourAdresses(self::adresses($user)) as $invitation) {
             $q = $invitation->getQuestionnaire();
+            if (!$q instanceof Questionnaire) {
+                continue;
+            }
+            $status = $invitation->getStatus();
+            if ($status === null) {
+                throw new \LogicException('L\'invitation n\'a pas de statut.');
+            }
             $out[] = new MesInvitationDto(
                 uuid: $q->getUuidString(),
                 title: (string) $q->getTitle(),
@@ -39,7 +47,7 @@ final class MesInvitationsProvider implements ProviderInterface
                 estimatedTime: $q->getEstimatedTime(),
                 deadline: $q->getClosingDate()?->format('d/m/Y'),
                 token: (string) $invitation->getToken(),
-                status: $invitation->getStatus()->value,
+                status: $status->value,
                 anonymous: $q->estAnonyme(),
                 ouvert: $q->estOuvert(),
                 submittedAt: $invitation->getSubmittedAt()?->format(\DateTimeInterface::ATOM),
@@ -56,6 +64,6 @@ final class MesInvitationsProvider implements ProviderInterface
         return array_values(array_unique(array_filter(array_map(
             static fn (?string $mail) => $mail !== null && trim($mail) !== '' ? mb_strtolower(trim($mail)) : null,
             [$user->getMailUniv(), $user->getMailPerso()],
-        ))));
+        ), static fn (?string $mail): bool => $mail !== null)));
     }
 }

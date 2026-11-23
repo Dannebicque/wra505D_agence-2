@@ -8,7 +8,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SectionRuntimeDto;
 use QuestionnaireBundle\Domain\Questionnaire\Mapping\QuestionRuntimeMapper;
 use QuestionnaireBundle\Domain\Questionnaire\Runtime\InvitationRuntime;
+use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Une section publiée avec les réponses déjà enregistrées, pour le répondant (par le jeton de l'invitation).
@@ -27,6 +29,10 @@ final class InvitationSectionProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): SectionRuntimeDto
     {
         $invitation = $this->runtime->invitation($uriVariables['token'] ?? '');
+        $questionnaire = $invitation->getQuestionnaire();
+        if (!$questionnaire instanceof Questionnaire) {
+            throw new NotFoundHttpException('Invitation introuvable.');
+        }
         $section = $this->runtime->section($invitation, $uriVariables['id'] ?? null);
 
         $reponses = [];
@@ -41,7 +47,7 @@ final class InvitationSectionProvider implements ProviderInterface
         }
 
         return new SectionRuntimeDto(
-            questionnaireTitle: (string) $invitation->getQuestionnaire()->getTitle(),
+            questionnaireTitle: (string) $questionnaire->getTitle(),
             publishedSectionInstanceId: (int) $section->getId(),
             title: (string) $section->getTitleSnapshot(),
             repeatItemType: $section->getRepeatSectionItemType(),

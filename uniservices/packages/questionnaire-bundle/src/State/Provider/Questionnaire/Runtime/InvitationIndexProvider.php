@@ -8,7 +8,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\InvitationIndexDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SectionIndexDto;
 use QuestionnaireBundle\Domain\Questionnaire\Runtime\InvitationRuntime;
+use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSectionInstance;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Sommaire d'un questionnaire pour le répondant (par le jeton de l'invitation).
@@ -27,6 +29,9 @@ final class InvitationIndexProvider implements ProviderInterface
     {
         $invitation = $this->runtime->invitation($uriVariables['token'] ?? '');
         $questionnaire = $invitation->getQuestionnaire();
+        if (!$questionnaire instanceof Questionnaire) {
+            throw new NotFoundHttpException('Invitation introuvable.');
+        }
 
         // Ouvrir le questionnaire ne compte comme « commencé » que s'il est ouvert aux réponses.
         if ($questionnaire->estOuvert() && !$invitation->isSubmitted() && $invitation->getStartedAt() === null) {
@@ -46,9 +51,14 @@ final class InvitationIndexProvider implements ProviderInterface
             );
         }
 
+        $status = $invitation->getStatus();
+        if ($status === null) {
+            throw new \LogicException('L\'invitation n\'a pas de statut.');
+        }
+
         return new InvitationIndexDto(
             questionnaireTitle: (string) $questionnaire->getTitle(),
-            invitationStatus: $invitation->getStatus()->value,
+            invitationStatus: $status->value,
             startedAt: $invitation->getStartedAt(),
             modifiable: $this->runtime->estModifiable($invitation),
             submittedAt: $invitation->getSubmittedAt(),

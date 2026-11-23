@@ -13,6 +13,7 @@ use QuestionnaireBundle\Enum\QuestStatutEnum;
 use QuestionnaireBundle\Services\QuestionnaireReglages;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
@@ -33,6 +34,9 @@ final class QuestionnaireProcessor implements ProcessorInterface
         'modeleOrigine', 'modeleOrigineResume',
     ];
 
+    /**
+     * @param ProcessorInterface<mixed, mixed> $persist
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private readonly ProcessorInterface $persist,
@@ -49,6 +53,7 @@ final class QuestionnaireProcessor implements ProcessorInterface
             return $this->persist->process($data, $operation, $uriVariables, $context);
         }
         $request = $context['request'] ?? null;
+        $request = $request instanceof Request ? $request : null;
         ChampsEnvoyes::refuser($request, self::CHAMPS_SERVEUR, $data);
 
         $avant = ($context['previous_data'] ?? null) instanceof Questionnaire ? $context['previous_data'] : null;

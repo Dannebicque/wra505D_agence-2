@@ -12,6 +12,9 @@ use QuestionnaireBundle\Enum\QuestTypeQuestionEnum;
 
 final class QuestionRuntimeMapper
 {
+    /**
+     * @param iterable<mixed>|null $allQuestionsInContext
+     */
     public function map(QuestionnaireQuestion $q, mixed $answerValue, ?iterable $allQuestionsInContext = null): QuestionRuntimeDto
     {
         $config = $q->getChoices();
@@ -19,24 +22,24 @@ final class QuestionRuntimeMapper
         $choices = null;
         if (in_array($q->getTypeQuestion(), [QuestTypeQuestionEnum::MultipleChoice, QuestTypeQuestionEnum::SingleChoice], true)) {
             $choices = [];
-            foreach ($config ?? [] as $c) {
-                $choices[] = new ChoiceDto((string) $c['id'], (string) $c['text'], (string) ($c['value'] ?? $c['text']));
+            foreach (LooseValue::rows($config ?? []) as $c) {
+                $choices[] = new ChoiceDto(LooseValue::castString($c['id'] ?? null), LooseValue::castString($c['text'] ?? null), LooseValue::castString($c['value'] ?? $c['text'] ?? null));
             }
         }
 
         $scale = null;
         if ($q->getTypeQuestion() === QuestTypeQuestionEnum::Scale) {
             $scale = new ScaleDto(
-                min: (int)($config['min'] ?? 1),
-                max: (int)($config['max'] ?? 5),
-                minLabel: $config['minLabel'] ?? null,
-                maxLabel: $config['maxLabel'] ?? null,
+                min: LooseValue::castInt($config['min'] ?? 1),
+                max: LooseValue::castInt($config['max'] ?? 5),
+                minLabel: LooseValue::nullableString($config['minLabel'] ?? null),
+                maxLabel: LooseValue::nullableString($config['maxLabel'] ?? null),
             );
         }
 
         $visibility = null;
         $qId = (string) $q->getId();
-        $qUuid = $q->getUuid() ? (string) $q->getUuid() : null;
+        $qUuid = $q->getUuid() !== null ? (string) $q->getUuid() : null;
 
         $searchQuestions = [];
         if ($allQuestionsInContext !== null) {
@@ -46,14 +49,14 @@ final class QuestionRuntimeMapper
                 }
             }
         }
-        if (empty($searchQuestions)) {
+        if ($searchQuestions === []) {
             $searchQuestions = [$q];
         }
 
         $targetedRule = null;
         foreach ($searchQuestions as $sq) {
             $rules = $sq->getConditionalRules();
-            if (empty($rules)) {
+            if ($rules === null || $rules === []) {
                 continue;
             }
 
@@ -66,7 +69,7 @@ final class QuestionRuntimeMapper
                 $targetIds = $r['targetQuestionIds'] ?? [];
                 $isTargeted = false;
 
-                if (!empty($targetIds) && is_array($targetIds)) {
+                if (is_array($targetIds) && $targetIds !== []) {
                     foreach ($targetIds as $tid) {
                         $tidStr = LooseValue::castString($tid);
                         if ($tidStr === $qId || ($qUuid !== null && $tidStr === $qUuid)) {
@@ -93,8 +96,9 @@ final class QuestionRuntimeMapper
             $logicalOperator = LooseValue::castString($targetedRule['logicalOperator'] ?? 'AND');
             $action = LooseValue::castString($targetedRule['action'] ?? 'show');
 
-            if (!empty($targetedRule['conditions']) && is_array($targetedRule['conditions'])) {
-                foreach ($targetedRule['conditions'] as $cond) {
+            $ruleConditions = $targetedRule['conditions'] ?? null;
+            if (is_array($ruleConditions) && $ruleConditions !== []) {
+                foreach ($ruleConditions as $cond) {
                     if (!is_array($cond)) {
                         continue;
                     }
@@ -118,7 +122,7 @@ final class QuestionRuntimeMapper
             }
 
             // Fallback for simple condition rules
-            if (empty($conditions)) {
+            if ($conditions === []) {
                 $dep = $targetedRule['dependsOnQuestionId'] ?? $targetedRule['dependsOn'] ?? null;
                 $operator = $targetedRule['operator'] ?? null;
                 if ($dep !== null && $operator !== null) {
@@ -138,7 +142,7 @@ final class QuestionRuntimeMapper
                 }
             }
 
-            if (!empty($conditions)) {
+            if ($conditions !== []) {
                 $firstCond = $conditions[0];
                 $visibility = new VisibilityRuleDto(
                     dependsOnQuestionId: $firstCond['dependsOnQuestionId'],
@@ -153,14 +157,14 @@ final class QuestionRuntimeMapper
 
         return new QuestionRuntimeDto(
             questionId: (int) $q->getId(),
-            typeQuestion: $q->getTypeQuestion(),
-            label: $q->getLabel(),
-            required: $q->isObligatoire(),
+            typeQuestion: $q->getTypeQuestion() ?? throw new \LogicException('Question type is required.'),
+            label: LooseValue::string($q->getLabel()),
+            required: LooseValue::bool($q->isObligatoire()),
             answer: $answerValue,
             choices: $choices,
             scale: $scale,
             visibility: $visibility,
-            uuid: $q->getUuid() ? (string) $q->getUuid() : null,
+            uuid: $q->getUuid() !== null ? (string) $q->getUuid() : null,
             conditionalRules: $q->getConditionalRules()
         );
     }

@@ -57,7 +57,7 @@ class QuestionnaireReminderController extends AbstractController
             if ($invitation->isSubmitted()) {
                 continue;
             }
-            if (!$this->notifier->relance($invitation, $objet ?: null, $message ?: null)) {
+            if (!$this->notifier->relance($invitation, LooseValue::truthyString($objet), LooseValue::truthyString($message))) {
                 ++$echecs;
                 continue;
             }

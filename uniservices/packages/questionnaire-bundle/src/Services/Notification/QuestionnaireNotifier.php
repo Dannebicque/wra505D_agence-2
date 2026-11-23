@@ -5,6 +5,7 @@ namespace QuestionnaireBundle\Services\Notification;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Notification\NotificationService;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use QuestionnaireBundle\Enum\TypeNotificationEnum as Type;
@@ -81,7 +82,7 @@ class QuestionnaireNotifier
      */
     public function bilan(Questionnaire $q, Personnel $destinataire, array $stats, bool $complet, bool $dateAtteinte): bool
     {
-        $adresse = $destinataire->getMailUniv() ?: $destinataire->getMailPerso();
+        $adresse = LooseValue::truthyString($destinataire->getMailUniv()) ?? $destinataire->getMailPerso();
 
         return null !== $this->notifications->notifier(
             $destinataire,
@@ -99,7 +100,7 @@ class QuestionnaireNotifier
      */
     public function resultats(Questionnaire $q, Personnel $destinataire, array $sections): bool
     {
-        $adresse = $destinataire->getMailUniv() ?: $destinataire->getMailPerso();
+        $adresse = LooseValue::truthyString($destinataire->getMailUniv()) ?? $destinataire->getMailPerso();
 
         return null !== $this->notifications->notifier(
             $destinataire,

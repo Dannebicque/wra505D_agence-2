@@ -42,6 +42,9 @@ final class TableauBordParcautoController extends AbstractController
 
         return new StreamedResponse(static function () use ($donnees): void {
             $flux = fopen('php://output', 'wb');
+            if ($flux === false) {
+                return;
+            }
             fwrite($flux, "\xEF\xBB\xBF");
             fputcsv($flux, [
                 'Véhicule', 'Immatriculation', 'Site', 'Énergie', 'Disponible', 'Utilisation (%)', 'Missions',
@@ -49,8 +52,8 @@ final class TableauBordParcautoController extends AbstractController
                 'Coût total estimé (€)', 'Coût au km (€)', 'Réforme estimée', 'Alertes',
             ], ';', '"', '');
             foreach ($donnees['vehicules'] as $ligne) {
-                $valeurs = array_map(static fn (mixed $valeur) =>
-                    is_string($valeur) && preg_match('/^[\s\p{C}]*[=+@\-]/u', $valeur) ? "'".$valeur : $valeur, $ligne);
+                $valeurs = array_map(static fn (bool|float|int|string|null $valeur) =>
+                    is_string($valeur) && preg_match('/^[\s\p{C}]*[=+@\-]/u', $valeur) === 1 ? "'".$valeur : $valeur, $ligne);
                 fputcsv($flux, $valeurs, ';', '"', '');
             }
             fclose($flux);

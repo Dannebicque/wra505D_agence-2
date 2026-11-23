@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ParcautoBundle\Service;
 
+use App\Utils\LooseValue;
 use ParcautoBundle\Entity\Reservation;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
@@ -22,10 +23,10 @@ final readonly class OrdreMissionOmer
 
     public function verifier(Reservation $reservation): bool
     {
-        if (!$this->url) {
+        if ($this->url === null || !LooseValue::bool($this->url)) {
             return false;
         }
-        if (parse_url($this->url, PHP_URL_SCHEME) !== 'https' || !$this->jeton) {
+        if (parse_url($this->url, PHP_URL_SCHEME) !== 'https' || $this->jeton === null || !LooseValue::bool($this->jeton)) {
             throw new \DomainException('La connexion OMER doit être configurée avec une URL HTTPS et un jeton.');
         }
 

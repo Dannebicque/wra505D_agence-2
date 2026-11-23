@@ -52,7 +52,7 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
         $items = [];
         foreach ($this->invitations->findPourAdresses(MesInvitationsProvider::adresses($user)) as $invitation) {
             $q = $invitation->getQuestionnaire();
-            if ($invitation->isSubmitted() || !$q->estOuvert()) {
+            if ($invitation->isSubmitted() || $q === null || !$q->estOuvert()) {
                 continue;
             }
             $items[] = [
@@ -76,10 +76,13 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
         if (!$this->restreindre($qb, 'q', $user)) {
             return $stats;
         }
-        foreach ($qb->getQuery()->getArrayResult() as $ligne) {
+        foreach (LooseValue::rows($qb->getQuery()->getArrayResult()) as $ligne) {
             $statut = $ligne['statut'] instanceof QuestStatutEnum ? $ligne['statut']->value : LooseValue::castString($ligne['statut']);
-            $stats[$statut] = LooseValue::castInt($ligne['nombre']);
-            $stats['total'] += LooseValue::castInt($ligne['nombre']);
+            $nombre = LooseValue::castInt($ligne['nombre']);
+            if (in_array($statut, ['published', 'draft', 'closed'], true)) {
+                $stats[$statut] = $nombre;
+            }
+            $stats['total'] += $nombre;
         }
 
         return $stats;

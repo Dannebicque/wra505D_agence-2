@@ -5,6 +5,7 @@ namespace StageBundle\Service\Notification;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Notification\NotificationService;
+use App\Utils\LooseValue;
 use StageBundle\Entity\Stages\StageAvenant;
 use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StageSoutenance;
@@ -36,7 +37,8 @@ class StageNotifier
         $etudiant = $stage->getEtudiant();
         $etat = $stage->getEtatStage();
         $periode = $stage->getStagePeriode()?->getLibelle() ?? 'votre période de stage';
-        $entreprise = $stage->getEntreprise()?->getRaisonSociale();
+        $entreprise = LooseValue::truthyString($stage->getEntreprise()?->getRaisonSociale());
+        $motif = LooseValue::truthyString($stage->getMotifRefus());
 
         // Dépôt (ou nouvelle version) d'une demande par l'étudiant, ou passage « en attente » par un responsable.
         if ($etat === EtatStageEnum::DEPOSE && ($etatAvant !== EtatStageEnum::DEPOSE || $auteur instanceof Etudiant) && $etudiant !== null) {
@@ -44,7 +46,7 @@ class StageNotifier
                 '%s a %s sa demande de convention%s (%s).',
                 $etudiant->getDisplay(),
                 $etatAvant === EtatStageEnum::DEPOSE ? 'modifié' : 'déposé',
-                $entreprise ? ' chez '.$entreprise : '',
+                $entreprise !== null ? ' chez '.$entreprise : '',
                 $periode
             );
             foreach ($this->responsables($stage, $auteur) as $responsable) {
@@ -55,11 +57,11 @@ class StageNotifier
         if ($etudiant !== null && $etat !== $etatAvant && !StageAccess::memePersonne($etudiant, $auteur)) {
             $notif = match ($etat) {
                 EtatStageEnum::AUTORISE => [Type::SAISIE_OUVERTE, sprintf('Vous pouvez saisir votre demande de convention de stage (%s).', $periode)],
-                EtatStageEnum::VALIDE => [Type::CONVENTION_VALIDEE, sprintf('Votre demande de convention%s a été validée (%s).', $entreprise ? ' chez '.$entreprise : '', $periode)],
+                EtatStageEnum::VALIDE => [Type::CONVENTION_VALIDEE, sprintf('Votre demande de convention%s a été validée (%s).', $entreprise !== null ? ' chez '.$entreprise : '', $periode)],
                 EtatStageEnum::REFUS => [Type::CONVENTION_REFUSEE, sprintf(
                     'Votre demande de convention%s a été refusée%s Corrigez-la puis redéposez-la (%s).',
-                    $entreprise ? ' chez '.$entreprise : '',
-                    $stage->getMotifRefus() ? ' : « '.mb_strimwidth($stage->getMotifRefus(), 0, 300, '…').' ».' : '.',
+                    $entreprise !== null ? ' chez '.$entreprise : '',
+                    $motif !== null ? ' : « '.mb_strimwidth($motif, 0, 300, '…').' ».' : '.',
                     $periode
                 )],
                 EtatStageEnum::CONVENTION_IMPRIMEE, EtatStageEnum::CONVENTION_ENVOYEE => \in_array($etatAvant, [EtatStageEnum::CONVENTION_IMPRIMEE, EtatStageEnum::CONVENTION_ENVOYEE], true)
@@ -78,7 +80,7 @@ class StageNotifier
             $this->notifications->notifier(
                 $tuteur,
                 Type::TUTEUR_AFFECTE->cle(),
-                sprintf('Vous êtes tuteur universitaire du stage de %s%s (%s).', $etudiant->getDisplay(), $entreprise ? ' chez '.$entreprise : '', $periode),
+                sprintf('Vous êtes tuteur universitaire du stage de %s%s (%s).', $etudiant->getDisplay(), $entreprise !== null ? ' chez '.$entreprise : '', $periode),
                 self::URL_TUTEUR
             );
         }
@@ -119,7 +121,8 @@ class StageNotifier
         if ($stage === null || $etudiant === null || $date === null) {
             return;
         }
-        $quand = sprintf('le %s à %s%s', $date->format('d/m/Y'), $date->format('H:i'), $soutenance->getSalle() ? ' (salle '.$soutenance->getSalle().')' : '');
+        $salle = LooseValue::truthyString($soutenance->getSalle());
+        $quand = sprintf('le %s à %s%s', $date->format('d/m/Y'), $date->format('H:i'), $salle !== null ? ' (salle '.$salle.')' : '');
 
         if (!StageAccess::memePersonne($etudiant, $auteur)) {
             $this->notifications->notifier($etudiant, Type::SOUTENANCE_PLANIFIEE->cle(), sprintf('Votre soutenance de stage est planifiée %s.', $quand), self::URL_ETUDIANT);

@@ -20,7 +20,11 @@ final readonly class PlanningParcauto
     {
         $echeances = [];
         foreach ($this->entityManager->getRepository(EcheanceEntretien::class)->findAll() as $plan) {
-            $echeances[$plan->vehicule->id][] = $plan;
+            $vehiculeId = $plan->vehicule->id;
+            if ($vehiculeId === null) {
+                continue;
+            }
+            $echeances[$vehiculeId][] = $plan;
         }
 
         return $echeances;

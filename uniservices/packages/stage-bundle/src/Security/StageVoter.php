@@ -206,9 +206,16 @@ class StageVoter extends Voter
     private function canEditStage(mixed $subject, Personnel|Etudiant $user): bool
     {
         if ($user instanceof Etudiant) {
-            // Les soutenances et la validation restent des opérations de gestion.
-            return ($subject instanceof StageEtudiant || $subject instanceof StageAvenant)
-                && $this->resolveStage($subject)?->getEtudiant() === $user;
+            // L'étudiant ne modifie sa fiche que tant qu'elle n'est ni validée ni évaluée ; les soutenances
+            // et la validation restent des opérations de gestion.
+            if ($subject instanceof StageEtudiant) {
+                return $subject->getEtudiant() === $user
+                    && in_array($subject->getEtatStage(), [EtatStageEnum::AUTORISE, EtatStageEnum::DEPOSE, EtatStageEnum::INCOMPLET], true)
+                    && null === $subject->getDateValidation()
+                    && null === $subject->getEvaluationNote();
+            }
+
+            return $subject instanceof StageAvenant && $this->resolveStage($subject)?->getEtudiant() === $user;
         }
 
         return $this->canManageStage($subject, $user);
