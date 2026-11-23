@@ -7,7 +7,6 @@ namespace App\Tests\Service\Celcat;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Scolarite\ScolEnseignement;
 use App\Entity\Structure\StructureAnneeUniversitaire;
-use App\Entity\Structure\StructureCalendrier;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Users\Personnel;
 use App\Enum\TypeGroupeEnum;
@@ -43,7 +42,6 @@ final class CelcatSynchronizerTest extends TestCase
             StructureGroupe::class => [$this->group('MMICM', TypeGroupeEnum::TYPE_GROUPE_CM), $this->group('MMITDAB', TypeGroupeEnum::TYPE_GROUPE_TD)],
             Personnel::class => [],
             ScolEnseignement::class => [],
-            StructureCalendrier::class => [],
         ];
     }
 
@@ -139,27 +137,13 @@ final class CelcatSynchronizerTest extends TestCase
         return $this->synchronizer()->synchronize($this->academicYear, 123);
     }
 
-    public function testRestoresCalendarWithIsoWeekNumber(): void
+    public function testSetsTrainingWeekOneFromCelcat(): void
     {
         $weeks = $this->synchronizer()->synchronizeCalendar($this->academicYear);
 
-        /** @var list<StructureCalendrier> $calendar */
-        $calendar = $this->persisted;
         self::assertSame(2, $weeks);
-        self::assertSame(1, $calendar[1]->getSemaineFormation());
-        self::assertSame('2026-09-07', $calendar[1]->getDateLundi()?->format('Y-m-d'));
-        self::assertSame(37, $calendar[1]->getSemaineReelle());
-    }
-
-    public function testDoesNotDuplicateKnownWeek(): void
-    {
-        $existing = (new StructureCalendrier())->setAnneeUniversitaire($this->academicYear)->setSemaineFormation(0)->setSemaineReelle(1);
-        $this->inDatabase[StructureCalendrier::class] = [$existing];
-
-        $this->synchronizer()->synchronizeCalendar($this->academicYear);
-
-        self::assertCount(1, $this->persisted);
-        self::assertSame(36, $existing->getSemaineReelle());
+        self::assertSame('2026-09-07', $this->academicYear->getDateDebutSemaineFormation()?->format('Y-m-d'));
+        self::assertSame([], $this->persisted);
     }
 
     public function testCreatesSlotPerWeekAndGroup(): void

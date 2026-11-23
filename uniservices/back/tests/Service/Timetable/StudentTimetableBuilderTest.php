@@ -7,12 +7,13 @@ namespace App\Tests\Service\Timetable;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Scolarite\ScolEnseignement;
-use App\Entity\Structure\StructureCalendrier;
+use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Users\Etudiant;
 use App\Enum\TypeEnseignementEnum;
 use App\Repository\Edt\EdtEventRepository;
-use App\Repository\Structure\StructureCalendrierRepository;
+use App\Repository\Structure\StructureAnneeUniversitaireRepository;
+use App\Service\Calendrier\CalendrierUniversitaireService;
 use App\Service\Notification\StudentSemesters;
 use App\Service\Timetable\StudentTimetableBuilder;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -25,18 +26,18 @@ final class StudentTimetableBuilderTest extends TestCase
 
     private EdtEventRepository&MockObject $edtEvents;
 
-    private StructureCalendrierRepository&MockObject $calendar;
+    private StructureAnneeUniversitaireRepository&MockObject $academicYears;
 
     protected function setUp(): void
     {
         $this->semesters = $this->createMock(StudentSemesters::class);
         $this->edtEvents = $this->createMock(EdtEventRepository::class);
-        $this->calendar = $this->createMock(StructureCalendrierRepository::class);
+        $this->academicYears = $this->createMock(StructureAnneeUniversitaireRepository::class);
     }
 
     private function builder(): StudentTimetableBuilder
     {
-        return new StudentTimetableBuilder($this->semesters, $this->edtEvents, $this->calendar);
+        return new StudentTimetableBuilder($this->semesters, $this->edtEvents, $this->academicYears, new CalendrierUniversitaireService());
     }
 
     /**
@@ -77,10 +78,10 @@ final class StudentTimetableBuilderTest extends TestCase
         $this->semesters->method('forStudent')->willReturn([]);
         $this->edtEvents->method('findByGroupesAndRange')->willReturn([]);
         $this->edtEvents->method('findTimesByGroupes')->willReturn([]);
-        $this->calendar->expects(self::once())
+        $this->academicYears->expects(self::once())
             ->method('findOneBy')
-            ->with(['dateLundi' => new \DateTime('2026-10-12')])
-            ->willReturn((new StructureCalendrier())->setSemaineFormation(6));
+            ->with(['actif' => true])
+            ->willReturn((new StructureAnneeUniversitaire())->setAnnee(2026)->setDateDebutSemaineFormation(new \DateTimeImmutable('2026-09-07')));
 
         self::assertSame(6, $this->builder()->build(new Etudiant(), new \DateTimeImmutable('2026-10-16'))->getTrainingWeek());
     }

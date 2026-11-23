@@ -7,7 +7,6 @@ namespace App\Service\Celcat;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Scolarite\ScolEnseignement;
 use App\Entity\Structure\StructureAnneeUniversitaire;
-use App\Entity\Structure\StructureCalendrier;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Structure\StructureSemestre;
 use App\Entity\Users\Personnel;
@@ -29,35 +28,20 @@ final class CelcatSynchronizer
     }
 
     /**
-     * Reprend les semaines de Celcat dans le calendrier d'uniServices, comme
-     * MyCelcat::getCalendar() de l'intranet V3. L'écran étudiant en a besoin pour passer
-     * d'une semaine du calendrier à une semaine de formation.
+     * Fixe le début de la semaine de formation n°1 de l'année d'après les semaines de Celcat :
+     * le calendrier d'uniServices se calcule depuis cette seule date (CalendrierUniversitaireService).
      *
-     * L'intranet V3 ajoutait des lignes à chaque appel ; on met à jour celle de chaque
-     * semaine, pour qu'une relance ne crée pas de doublon.
-     *
-     * @return int nombre de semaines écrites
+     * @return int nombre de semaines lues dans Celcat
      */
     public function synchronizeCalendar(StructureAnneeUniversitaire $academicYear): int
     {
-        /** @var array<int, StructureCalendrier> $existing */
-        $existing = [];
-        foreach ($this->entityManager->getRepository(StructureCalendrier::class)->findBy(['anneeUniversitaire' => $academicYear]) as $week) {
-            $existing[(int) $week->getSemaineFormation()] = $week;
-        }
-
         $mondays = $this->source->readWeeks();
-        foreach ($mondays as $number => $monday) {
-            $week = $existing[$number] ?? null;
-            if (null === $week) {
-                $week = (new StructureCalendrier())->setAnneeUniversitaire($academicYear)->setSemaineFormation($number);
-                $this->entityManager->persist($week);
-            }
-            // Numéro ISO 8601 : c'est celui que l'écran calcule côté navigateur.
-            $week->setDateLundi(\DateTime::createFromImmutable($monday))->setSemaineReelle((int) $monday->format('W'));
+        if ([] !== $mondays) {
+            // Celcat numérote ses semaines à partir de 0 ; la semaine de formation n°1 est la sienne n°1.
+            $first = min(array_keys($mondays));
+            $academicYear->setDateDebutSemaineFormation($mondays[$first]->modify(sprintf('%+d weeks', 1 - $first)));
+            $this->entityManager->flush();
         }
-
-        $this->entityManager->flush();
 
         return \count($mondays);
     }
