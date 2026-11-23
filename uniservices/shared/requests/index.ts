@@ -33,6 +33,7 @@ export * from './etudiant_services/etudiantNoteService.js';
 export * from './etudiant_services/etudiantAbsenceService.js';
 export * from './etudiant_services/absenceJustificatifService.js';
 export * from './etudiant_services/cahierDeTexteService.js';
+export * from './etudiant_services/ficheMatiereService.js';
 
 export * from './personnel_services/personnelHrsService.js';
 export * from './personnel_services/typeHrsService.js';
