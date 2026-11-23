@@ -63,3 +63,4 @@ packages/*/assets/node_modules/
 # Déclarations générées par unplugin-vue-components au démarrage de Vite : suivies, elles
 # changeaient à chaque lancement et bloquaient les changements de branche.
 components.d.ts
+/packages/unifolio-bundle/renderer/dist/

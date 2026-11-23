@@ -28,7 +28,7 @@ twig:
         '%kernel.project_dir%/../packages/questionnaire-bundle/templates': Questionnaire
         '%kernel.project_dir%/../packages/stage-bundle/templates': Stage
 #        '%kernel.project_dir%/../packages/shell/templates': ~
-#        '%kernel.project_dir%/../packages/unifolio-bundle/templates': ~
+        '%kernel.project_dir%/../packages/unifolio-bundle/templates': ~
 
 when@test:
     twig:
