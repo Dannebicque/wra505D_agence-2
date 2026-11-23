@@ -12,6 +12,7 @@ use App\Repository\Structure\StructureSemestreRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use IntranetBundle\Commission\Service\CommissionWriteContext;
 use Symfony\Component\Uid\Uuid;
 
 class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterface
@@ -27,6 +28,7 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         StructureAnneeUniversitaireRepository $anneeUniversitaireRepository,
         private readonly StructureGroupeRepository $groupeRepository,
         private readonly StructureDepartementRepository $departementRepository,
+        private readonly CommissionWriteContext $commissionWriteContext,
     ) {
         $this->semestreRepository = $semestreRepository;
         $this->etudiantRepository = $etudiantRepository;
@@ -75,8 +77,6 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         $scolariteSemestre1->setProposition($semestre2);
 
         $scolarite1->addScolariteSemestre($scolariteSemestre1);
-        $manager->persist($scolarite1);
-        $manager->persist($scolariteSemestre1);
 
         // Scolarité en cours, sur l'année et les groupes de l'emploi du temps simulé par Celcat.
         $scolarite2 = new EtudiantScolarite();
@@ -105,7 +105,14 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         $scolarite2->addScolariteSemestre($scolariteSemestre2);
         $manager->persist($scolarite2);
         $manager->persist($scolariteSemestre2);
-
         $manager->flush();
+
+        // Moyenne, rang et décision ne s'écrivent que pendant une validation de sous-commission :
+        // la fixture se place dans ce contexte, comme le ferait le service de validation.
+        $this->commissionWriteContext->run(static function () use ($manager, $scolarite1, $scolariteSemestre1): void {
+            $manager->persist($scolarite1);
+            $manager->persist($scolariteSemestre1);
+            $manager->flush();
+        });
     }
 }
