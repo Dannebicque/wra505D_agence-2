@@ -27,6 +27,8 @@ class DemissionEtudiantController extends AbstractController
         if (!$etudiantScolarite instanceof EtudiantScolarite) {
             return $this->json(['message' => 'Scolarité non trouvée'], Response::HTTP_NOT_FOUND);
         }
+        $this->denyAccessUnlessGranted('CAN_EDIT_ETUDIANT_SCOLARITE', $etudiantScolarite);
+
         $etudiantScolarite->setActif(false);
         $this->etudiantScolariteRepository->save($etudiantScolarite, true);
 

@@ -148,7 +148,7 @@ class PrevisionnelAllPersonnelsProvider implements ProviderInterface
 
                     $totalHeures = $cmHours + $tdHours + $tpHours;
 
-                    $statutValue = $statut->value;
+                    $statutValue = $statut?->value;
                     if (in_array($statutValue, ['MCF', 'PU', 'ENSAM', 'PRAG', 'PRCE', 'CDD'], true)) {
                         $totalPermanent += $totalHeures;
                     } elseif (in_array($statutValue, ['vacataire'], true)) {

@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Etudiant\EtudiantScolarite;
+use App\Entity\Users\Personnel;
 use App\Entity\Personnel\PersonnelEnseignantHrs;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 use App\Entity\Scolarite\ScolEvaluation;
@@ -28,6 +29,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: StructureAnneeUniversitaireRepository::class)]
 #[ApiFilter(BooleanFilter::class, properties: ['actif'])]

@@ -306,7 +306,36 @@ class Etablissement
                 // Taux légal horaire en vigueur, faute de réglage de l'établissement.
                 'gratification_minimale' => (is_int($gratification) || is_float($gratification)) && $gratification > 0 ? (float) $gratification : self::GRATIFICATION_MINIMALE,
             ],
+            'emails' => self::HABILLAGE_EMAILS_DEFAUT,
         ];
+    }
+
+    /**
+     * Habillage des e-mails de l'établissement (écran « Habillage des e-mails ») : couleur, expéditeur, signature et
+     * mentions imposées dans le pied de page de tous les e-mails (non modifiables par l'éditeur des modèles).
+     */
+    public const HABILLAGE_EMAILS_DEFAUT = [
+        'couleur' => 'var(--primary-color)',
+        'expediteur_nom' => null,
+        'reply_to' => null,
+        'signature' => '',
+        'mentions_legales' => '',
+        'contact_rgpd' => null,
+    ];
+
+    /** @return array{couleur: string, expediteur_nom: ?string, reply_to: ?string, signature: string, mentions_legales: string, contact_rgpd: ?string} */
+    public function getHabillageEmails(): array
+    {
+        return $this->getSettings()['emails'];
+    }
+
+    /** @param array<string, mixed> $habillage */
+    public function setHabillageEmails(array $habillage): static
+    {
+        $settings = $this->getSettings();
+        $settings['emails'] = array_merge($settings['emails'], array_intersect_key($habillage, self::HABILLAGE_EMAILS_DEFAUT));
+
+        return $this->setSettings($settings);
     }
 
     private static function nonEmptyString(mixed $value): ?string

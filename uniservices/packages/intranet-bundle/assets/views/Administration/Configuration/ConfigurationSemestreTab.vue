@@ -157,7 +157,7 @@ const updateDirectField = async (fieldName, value) => {
 
     <div v-if="!selectedSemestre" class="card p-12 text-center text-muted-color">
       <i class="pi pi-info-circle text-3xl mb-3 text-muted-color block" />
-      <p class="font-medium">Aucun semestre actif n'est disponible pour ce département.</p>
+      <p class="font-medium">Aucun semestre de l’année universitaire n'est disponible pour ce département.</p>
     </div>
 
     <template v-else>

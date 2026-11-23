@@ -248,6 +248,13 @@ const optionsProfil = [
         }
       },
       {
+        label: 'Notifications',
+        icon: 'pi pi-bell',
+        command: () => {
+          router.push('/auth/notifications');
+        }
+      },
+      {
         label: 'Paramètres',
         icon: 'pi pi-cog',
         mortPourEtudiant: true

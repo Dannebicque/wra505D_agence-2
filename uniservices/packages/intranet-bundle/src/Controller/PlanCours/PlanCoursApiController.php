@@ -21,6 +21,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Travail sur la maquette ou les données de l’année demandée.')]
 #[IsGranted(new Expression("is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')"))]
 class PlanCoursApiController extends AbstractController
 {
@@ -51,8 +53,10 @@ class PlanCoursApiController extends AbstractController
         if (!in_array($anneeUniversitaireId, [null, '', '0', 0], true)) {
             $anneeUniversitaire = $this->entityManager->getRepository(StructureAnneeUniversitaire::class)->find($anneeUniversitaireId);
         } else {
-            $anneeUniversitaire = $this->entityManager->getRepository(StructureAnneeUniversitaire::class)->findOneBy(['actif' => true]);
+            throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Une année universitaire doit être fournie par le contexte annuel.');
         }
+
+        $this->denyAccessUnlessGranted('CAN_EDIT_DIPLOME', $diplome);
 
         $semestres = $diplome->getSemestres();
         $enseignementsData = [];
@@ -183,6 +187,7 @@ class PlanCoursApiController extends AbstractController
         $user = $this->getUser();
         $personnelId = !in_array($request->query->get('personnel'), [null, '', '0', 0], true) ? $request->query->get('personnel') : ($user instanceof Personnel ? $user->getId() : null);
         $anneeUniversitaireId = $request->query->get('anneeUniversitaire');
+        $semestreId = $request->query->getInt('semestre');
 
         if (in_array($personnelId, [null, '', '0', 0], true)) {
             return new JsonResponse(['message' => 'Personnel non spécifié.'], Response::HTTP_BAD_REQUEST);
@@ -384,7 +389,7 @@ class PlanCoursApiController extends AbstractController
         $payload = json_decode($request->getContent(), true);
         $payload = is_array($payload) ? $payload : [];
         $enseignementId = $payload['enseignementId'] ?? null;
-        $anneeUniversitaireId = $payload['anneeUniversitaireId'] ?? null;
+        $anneeUniversitaireId = $request->attributes->get('_annee_universitaire_id') ?? ($payload['anneeUniversitaireId'] ?? null);
 
         if (in_array($enseignementId, [null, '', '0', 0], true) || in_array($anneeUniversitaireId, [null, '', '0', 0], true)) {
             return new JsonResponse(['message' => 'enseignementId et anneeUniversitaireId sont requis.'], Response::HTTP_BAD_REQUEST);

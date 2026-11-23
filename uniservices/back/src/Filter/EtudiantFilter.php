@@ -110,6 +110,13 @@ class EtudiantFilter implements FilterInterface
         }
     }
 
+    private function getAnneeFormationAlias(QueryBuilder $qb, QueryNameGeneratorInterface $names, string $scolarite): string
+    {
+        $inscription = $this->getOrCreateJoin($qb, $names, $scolarite, 'scolariteSemestre');
+        $semestre = $this->getOrCreateJoin($qb, $names, $inscription, 'semestre');
+        return $this->getOrCreateJoin($qb, $names, $semestre, 'annee');
+    }
+
     private function getOrCreateJoin(QueryBuilder $qb, QueryNameGeneratorInterface $queryNameGenerator, string $fromAlias, string $association): string
     {
         // Try to find an existing join for the association

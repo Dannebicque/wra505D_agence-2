@@ -8,8 +8,8 @@ use ApiPlatform\Metadata\BackwardCompatibleFilterDescriptionTrait;
 use ApiPlatform\Metadata\Parameter;
 use App\Utils\LooseValue;
 use ApiPlatform\Metadata\Operation;
-use App\Entity\Structure\StructureAnnee;
 use Doctrine\ORM\QueryBuilder;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class SemestreFilter implements FilterInterface
 {

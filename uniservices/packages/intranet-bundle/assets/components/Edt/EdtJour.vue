@@ -3,9 +3,8 @@ import {onMounted, ref} from 'vue';
 import EdtEvent from './EdtEvent.vue';
 import {getEdtEventsService, getEtudiantScolariteSemestresService, getSemaineUniversitaireService} from "@requests";
 import {useUsersStore} from "@stores";
-import {getISOWeekNumber} from "@helpers/date.js";
 import {adjustColor, colorNameToRgb, darkenColor} from "@helpers/colors.js";
-import {PhotoUser, ErrorView} from "@components";
+import {PhotoUser, ErrorState} from "@components";
 
 const usersStore = useUsersStore();
 const user = usersStore.user;

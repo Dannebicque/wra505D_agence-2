@@ -4,7 +4,7 @@ import { useToast } from "primevue/usetoast";
 import { formatAdresse } from "@helpers/adresse.js";
 import { formatNaissance } from "@helpers/date.js";
 import { updateEtudiantService, getEtudiantService, getGroupesService } from "@requests";
-import { ValidatedInput, validationRules, ErrorView, PermissionGuard, ApplicationBadge } from "@components";
+import { ValidatedInput, validationRules, ErrorState, PermissionGuard, ApplicationBadge } from "@components";
 import { PhotoUser } from "@components";
 import { useUsersStore } from "@stores";
 import { SimpleSkeleton } from "@components";

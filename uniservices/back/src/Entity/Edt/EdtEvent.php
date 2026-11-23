@@ -23,6 +23,7 @@ use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\UuidTrait;
 use IntranetBundle\Entity\Edt\EdtAppel;
 use App\Entity\Users\Personnel;
+use App\Enum\TypeEvenementEdt;
 use App\Filter\EdtFilter;
 use App\Repository\Edt\EdtEventRepository;
 use App\State\Provider\Edt\EdtStatsProvider;
@@ -38,6 +39,7 @@ use Symfony\Component\Uid\UuidV4;
 #[ORM\Entity(repositoryClass: EdtEventRepository::class)]
 #[ApiFilter(BooleanFilter::class, properties: ['aPlacer'])]
 #[ApiResource(
+    security: "is_granted('IS_AUTHENTICATED_FULLY')",
     paginationEnabled: false,
     operations: [
         // Un créneau nomme son enseignant, sa salle et son groupe : rien pour un visiteur anonyme.

@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {useEtablissementStore} from "@stores";
-import {ValidatedInput, ErrorView, ListSkeleton} from "@components";
+import {ValidatedInput, ErrorState, ListSkeleton} from "@components";
 import {getEtablissementSettingsService, updateEtablissementService} from "@requests";
 
 const etablissementStore = useEtablissementStore();

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { rememberServerError } from './serverError.js';
+import { prepareContexteAnnuel, reponseAnnuelleObsolete } from './contexteAnnuel.js';
 
 const baseURL = import.meta.env.VITE_BASE_URL || '';
 

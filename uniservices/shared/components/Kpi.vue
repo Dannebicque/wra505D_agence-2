@@ -8,7 +8,12 @@ const props = withDefaults(defineProps<{
   color: string;
   description?: string;
   loading?: boolean;
+  /** Tuile compacte : libellé discret, valeur, et une alerte facultative en rouge. */
+  compact?: boolean;
+  alerte?: string;
 }>(), {
+  compact: false,
+  alerte: '',
   loading: false,
 });
 </script>

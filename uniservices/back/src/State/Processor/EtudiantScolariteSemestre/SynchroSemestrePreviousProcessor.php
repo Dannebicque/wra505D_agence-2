@@ -54,6 +54,12 @@ class SynchroSemestrePreviousProcessor implements ProcessorInterface
             return $this->result('semester_not_found', 'Semestre courant introuvable.');
         }
 
+        if (!$this->security->isGranted('CAN_EDIT_SEMESTRE', $currentSemestre)
+            && ($currentSemestre->getDepartement() === null
+                || !$this->security->isGranted('ROLE_SCOLARITE', $currentSemestre->getDepartement()))) {
+            throw new AccessDeniedException();
+        }
+
         $previousSemestre = $this->semestreRepository->findOneBy([
             'annee' => $currentSemestre->getAnnee(),
             'ordreAnnee' => ($currentSemestre->getOrdreAnnee() ?? 0) - 1,

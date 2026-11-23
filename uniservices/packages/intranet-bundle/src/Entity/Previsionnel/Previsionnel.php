@@ -9,7 +9,6 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Utils\LooseValue;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelAllPersonnelsDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
@@ -107,7 +106,7 @@ class Previsionnel
 
     #[ORM\Column]
     #[Groups(['previsionnel:read'])]
-    private ?bool $referent = null;
+    private ?bool $referent = false;
 
     /** @var array<string, float> */
     #[ORM\Column(type: Types::JSON)]
@@ -117,10 +116,11 @@ class Previsionnel
     /** @var array<string, int>|null */
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read'])]
-    private ?array $groupes = [];
+    private array $groupes = [];
 
     #[ORM\ManyToOne(inversedBy: 'previsionnels')]
     #[Groups(['previsionnel:read', 'previsionnel_semestre:read', 'previsionnel_all_personnels:read', 'previsionnel_personnel:read'])]
+    #[Assert\NotNull]
     private ?ScolEnseignement $enseignement = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'], fetch: 'EAGER')]

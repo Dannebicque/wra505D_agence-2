@@ -94,9 +94,9 @@ export default {
         ...trombinoscopeRoutes,
         ...scolariteRoutes,
         ...notificationsRoutes,
-        ...cahierDeTexteRoutes,
         ...profilRoutes,
-        ...planCoursRoutes,
+        ...pedagogieRoutes,
+        ...configurationRoutes,
         ...administrationRoutes,
         ...superAdministrationRoutes,
       ]

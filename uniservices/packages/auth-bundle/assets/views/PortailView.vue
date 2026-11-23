@@ -27,11 +27,16 @@ defineProps({
   },
 });
 
-const activatedBundles = computed(() => tools
-    .filter((bundle) => userStore.applications.includes(bundle.urlSlug))
+const activatedBundles = computed(() => {
+  const userApps = (userStore.applications || []).map(normalizeAppSlug);
+  return (tools || [])
+    .filter((bundle) => {
+      const slug = normalizeAppSlug(bundle.urlSlug || bundle.name);
+      return userApps.includes(slug);
+    })
     .map((bundle) => ({ ...bundle, meta: getApplicationMeta(bundle.urlSlug) }))
-    .sort((a, b) => Number(b.urlSlug === 'intranet') - Number(a.urlSlug === 'intranet'))
-);
+    .sort((a, b) => Number(b.urlSlug === 'intranet') - Number(a.urlSlug === 'intranet'));
+});
 const isLoadingBundles = ref(false);
 const widgets = ref([]);
 const isLoadingWidgets = ref(false);
