@@ -112,6 +112,7 @@ final readonly class TranscriptBuilder
                 $penalizingCount = $penalty['active'] ? $penalizing['penalisantes'] : 0;
 
                 $teachings[] = [
+                    'id' => $id,
                     'code' => $teaching->getCodeEnseignement(),
                     'libelle' => $teaching->getLibelle(),
                     'type' => $teaching->getType()->getLibelle(),

@@ -101,6 +101,33 @@ class EdtEventRepository extends ServiceEntityRepository
     }
 
     /**
+     * Les prochains créneaux d'un enseignement pour ces groupes, à partir d'un instant.
+     *
+     * @param list<int> $groupeIds
+     *
+     * @return list<EdtEvent>
+     */
+    public function findUpcomingByGroupesAndEnseignement(array $groupeIds, int $enseignementId, \DateTimeInterface $from, int $limit): array
+    {
+        if ([] === $groupeIds) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('e')
+            ->join('e.groupe', 'g')
+            ->andWhere('g.id IN (:groupes)')
+            ->andWhere('IDENTITY(e.enseignement) = :enseignement')
+            ->andWhere('e.fin > :from')
+            ->setParameter('groupes', $groupeIds)
+            ->setParameter('enseignement', $enseignementId)
+            ->setParameter('from', $from)
+            ->orderBy('e.debut', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Début et fin de chaque créneau de ces groupes, sans hydrater les créneaux : de quoi
      * calculer une plage horaire sur toute une année.
      *

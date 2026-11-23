@@ -127,4 +127,26 @@ final class StudentTimetableBuilderTest extends TestCase
             $this->builder()->build(new Etudiant(), new \DateTimeImmutable('2026-09-14'))->getTimeRange(),
         );
     }
+
+    public function testLitLesProchainsCoursDUneMatiereDansLesGroupesDeLEtudiant(): void
+    {
+        $now = new \DateTimeImmutable('2026-11-23 16:30', new \DateTimeZone('Europe/Paris'));
+        $this->semesters->method('forStudent')->willReturn([$this->semester([3, 4]), $this->semester([4, 7])]);
+        $this->edtEvents->expects(self::once())
+            ->method('findUpcomingByGroupesAndEnseignement')
+            ->with([3, 4, 7], 13, $now, 5)
+            ->willReturn([
+                (new EdtEvent())
+                    ->setDebut(new \DateTime('2026-11-27 09:00'))
+                    ->setFin(new \DateTime('2026-11-27 11:00'))
+                    ->setType('TP')
+                    ->setLibGroupe('A'),
+            ]);
+
+        $courses = $this->builder()->upcoming(new Etudiant(), 13, 5, $now);
+
+        self::assertCount(1, $courses);
+        self::assertSame('2026-11-27T09:00:00+01:00', $courses[0]['debut']);
+        self::assertSame('TP', $courses[0]['type']);
+    }
 }
