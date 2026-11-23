@@ -41,7 +41,7 @@ onMounted( () => {
       :description="description"
   />
   <!-- Sans fil d'Ariane, rien ne le sépare plus de la barre du haut, qui le recouvre en mobile. -->
-  <div class="card" :class="{ 'mt-10 md:mt-0': store.isEtudiant }">
+  <div class="card" :class="{ 'agenda-etudiant mt-10 md:mt-0': store.isEtudiant }">
     <component v-if="tabs.length === 1" :is="tabs[0].component" />
     <Tabs v-else value="0">
       <TabList>
@@ -58,3 +58,13 @@ onMounted( () => {
 
   </div>
 </template>
+
+<style scoped>
+/* La surface des blocs de l'accueil : `.card` du client reste blanche en mode sombre. */
+.agenda-etudiant {
+  border: none;
+  border-radius: 18px;
+  background: var(--p-content-background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px -4px rgb(0 0 0 / 0.06);
+}
+</style>

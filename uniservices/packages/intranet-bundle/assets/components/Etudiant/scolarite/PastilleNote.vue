@@ -22,7 +22,7 @@ defineProps({
 }
 
 .pastille--petite {
-  font-size: 0.875rem;
+  font-size: 1rem;
   line-height: 1.5rem;
 }
 

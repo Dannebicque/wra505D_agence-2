@@ -51,6 +51,12 @@ describe('dernieresNotes', () => {
         expect(libelles(dernieresNotes(releve, 2))).toEqual(['TP formulaires', 'Expression écrite']);
     });
 
+    it('ne répète pas la note d\'une matière qui compte dans plusieurs UE', () => {
+        const ue = releve.semestres[0].ues[0];
+        const deuxUes = {semestres: [{...releve.semestres[0], ues: [ue, {...ue, libelle: 'UE 1.3 Exprimer'}]}]};
+        expect(libelles(dernieresNotes(deuxUes, 10))).toEqual(libelles(dernieresNotes(releve, 10)));
+    });
+
     it('renvoie une liste vide sans relevé', () => {
         expect(dernieresNotes(null)).toEqual([]);
         expect(dernieresNotes({semestres: []})).toEqual([]);

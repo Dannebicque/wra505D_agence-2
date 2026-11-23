@@ -33,8 +33,17 @@ class StructureEnseignementFixtures extends Fixture implements OrderedFixtureInt
         'SAE1.01' => 'Recommandation de communication numérique',
     ];
 
-    /** Coefficient de chaque matière dans l'UE : la SAÉ pèse plus que les ressources. */
+    /** Coefficient de chaque matière dans l'UE 1.1 : la SAÉ pèse plus que les ressources. */
     private const COEFFICIENTS = ['SAE1.01' => 3.0, 'R1.11' => 2.0, 'R1.06' => 2.0];
+
+    /**
+     * Les autres UE du S1, chacune avec ses matières et leurs coefficients. Comme en BUT, une
+     * matière compte dans plusieurs UE : les graphiques de la page Scolarité en comparent trois.
+     */
+    private const AUTRES_UES = [
+        ['UE 1.2 Concevoir', 2, 'MMI1UE12', ['R1.03' => 2.0, 'R1.05' => 2.0, 'R1.06' => 1.0, 'SAE1.01' => 3.0]],
+        ['UE 1.3 Exprimer', 3, 'MMI1UE13', ['R1.01' => 3.0, 'R1.05' => 1.0, 'R1.06' => 2.0, 'R1.11' => 1.0]],
+    ];
 
     public function __construct(
         private readonly StructureSemestreRepository $semestreRepository,
@@ -58,6 +67,7 @@ class StructureEnseignementFixtures extends Fixture implements OrderedFixtureInt
             ->setSemestre($s1);
         $manager->persist($ue);
 
+        $parCode = [];
         foreach (self::MATIERES_S1 as $code => $libelle) {
             $enseignement = new ScolEnseignement();
             $enseignement->setLibelle($libelle)
@@ -69,11 +79,28 @@ class StructureEnseignementFixtures extends Fixture implements OrderedFixtureInt
                     'TP' => ['PN' => 0, 'IUT' => 0],
                 ]);
             $manager->persist($enseignement);
+            $parCode[$code] = $enseignement;
 
             $lien = new ScolEnseignementUe($enseignement, $ue);
             $lien->setCoefficient(self::COEFFICIENTS[$code] ?? 1.0);
             $ue->addEnseignementUe($lien);
             $manager->persist($lien);
+        }
+
+        foreach (self::AUTRES_UES as [$libelle, $numero, $codeElement, $coefficients]) {
+            $autreUe = new StructureUe();
+            $autreUe->setLibelle($libelle)
+                ->setNumero($numero)
+                ->setCodeElement($codeElement)
+                ->setSemestre($s1);
+            $manager->persist($autreUe);
+
+            foreach ($coefficients as $code => $coefficient) {
+                $lien = new ScolEnseignementUe($parCode[$code], $autreUe);
+                $lien->setCoefficient($coefficient);
+                $autreUe->addEnseignementUe($lien);
+                $manager->persist($lien);
+            }
         }
 
         $departement = $this->departementRepository->findOneBy(['libelle' => 'MMI']);

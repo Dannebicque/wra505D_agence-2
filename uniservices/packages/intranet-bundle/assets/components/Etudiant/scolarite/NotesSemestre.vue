@@ -1,35 +1,68 @@
 <script setup>
-import {computed} from 'vue';
-import {detailPenalite, formatDate, formatNote, resultatEvaluation, resumeNotes, statutUe, tonEvaluation} from '@/utils/scolarite.js';
+import {computed, provide, ref} from 'vue';
+import {detailPenalite, formatDate, formatNote, notesDuSemestre, poidsMatiere, resultatEvaluation, statutUe, tonEvaluation} from '@/utils/scolarite.js';
 import {tonNote} from '@/utils/accueil.js';
+import GraphiqueEvolution from './GraphiqueEvolution.vue';
+import GraphiqueUes from './GraphiqueUes.vue';
 import JaugeNote from './JaugeNote.vue';
 import PastilleNote from './PastilleNote.vue';
+import SyntheseNotes from './SyntheseNotes.vue';
 
 const props = defineProps({
   semestre: {type: Object, required: true},
 });
 
-const resume = computed(() => resumeNotes(props.semestre));
+const aDesNotes = computed(() => notesDuSemestre(props.semestre).length > 0);
+
+// Les deux graphiques côte à côte partagent leur hauteur. Quand l'un passe en tableau, la hauteur
+// commune est figée : la carte restée en graphique ne bouge pas, celle en tableau peut grandir
+// mais pas rapetisser. Plus aucun tableau ouvert, elles redeviennent liées.
+const hauteurFigee = ref(null);
+let tableauxOuverts = 0;
+provide('ligneGraphiques', {
+  ouvrirTableau(hauteur) {
+    if (tableauxOuverts === 0) {
+      hauteurFigee.value = hauteur;
+    }
+    tableauxOuverts++;
+  },
+  fermerTableau() {
+    tableauxOuverts = Math.max(0, tableauxOuverts - 1);
+    if (tableauxOuverts === 0) {
+      hauteurFigee.value = null;
+    }
+  },
+});
 </script>
 
 <template>
   <div class="notes">
-    <div class="resume">
-      <p v-for="phrase in resume" :key="phrase" class="resume__phrase">{{ phrase }}</p>
+    <p v-if="!aDesNotes" class="resume__phrase">Aucune note publiée pour ce semestre.</p>
+    <template v-else>
+      <SyntheseNotes :semestre="semestre"/>
       <p class="resume__aide">
-        Moyennes provisoires, calculées sur les notes publiées jusqu'à la sous-commission.
-        Une UE se valide à 10.
+        <span class="texte-long">Moyennes provisoires, calculées sur les notes publiées jusqu'à la sous-commission. Une UE se valide à 10.</span>
+        <span class="texte-court">Moyennes provisoires. Une UE se valide à 10.</span>
       </p>
-    </div>
+      <div
+          :class="['graphiques', {'graphiques--figees': hauteurFigee}]"
+          :style="hauteurFigee ? {'--hauteur-ligne': `${hauteurFigee}px`} : null"
+      >
+        <GraphiqueUes :ues="semestre.ues"/>
+        <GraphiqueEvolution :ues="semestre.ues"/>
+      </div>
+    </template>
 
+    <h2 v-if="semestre.ues.length" class="detail__titre">Détail par UE</h2>
     <p v-if="!semestre.ues.length" class="m-0!">Aucune UE pour ce semestre.</p>
 
-    <Accordion v-else multiple class="ues">
+    <!-- Monté à chaque ouverture (lazy) : les matières entrent l'une après l'autre, à chaque fois. -->
+    <Accordion v-else multiple lazy class="ues">
       <AccordionPanel v-for="ue in semestre.ues" :key="ue.libelle" :value="ue.libelle" class="ue">
         <AccordionHeader class="ue__entete">
           <span class="ue__ligne">
             <span class="ue__nom">{{ ue.libelle }}</span>
-            <span class="ue__jauge"><JaugeNote :moyenne="ue.moyenne" :sans-penalite="ue.moyenneSansPenalite"/></span>
+            <span class="ue__jauge"><JaugeNote :moyenne="ue.moyenne"/></span>
             <span class="ue__chiffre">
               <strong :class="['ue__moyenne', `ue__moyenne--${statutUe(ue).ton ?? 'vide'}`]">{{ formatNote(ue.moyenne) }}</strong>
               <span class="ue__statut">{{ statutUe(ue).texte }}</span>
@@ -39,11 +72,11 @@ const resume = computed(() => resumeNotes(props.semestre));
         <AccordionContent>
           <p v-if="!ue.enseignements.length" class="m-0!">Aucune ressource ni SAÉ dans cette UE.</p>
           <ul v-else class="matieres">
-            <li v-for="enseignement in ue.enseignements" :key="enseignement.code" class="matiere">
+            <li v-for="(enseignement, rang) in ue.enseignements" :key="enseignement.code" class="matiere" :style="{'--rang': rang}">
               <div class="matiere__ligne">
                 <span class="matiere__nom">
-                  <span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}
-                  <span class="matiere__coef">coef. {{ formatNote(enseignement.coefficient) }}</span>
+                  <span class="matiere__titre"><span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}</span>
+                  <span class="matiere__poids">coef. {{ formatNote(enseignement.coefficient) }} · {{ poidsMatiere(ue, enseignement) }} % de l'UE</span>
                 </span>
                 <PastilleNote :ton="tonNote(enseignement.moyennePenalisee)">
                   {{ enseignement.moyennePenalisee === null ? 'Pas de note' : formatNote(enseignement.moyennePenalisee) }}
@@ -51,7 +84,7 @@ const resume = computed(() => resumeNotes(props.semestre));
               </div>
               <p v-if="detailPenalite(enseignement)" class="matiere__penalite">
                 <i class="pi pi-calendar-times" aria-hidden="true"></i>
-                {{ detailPenalite(enseignement) }}<span v-if="enseignement.absencesEnAttente"> · levable si le justificatif est accepté</span>
+                <span>{{ detailPenalite(enseignement) }}<template v-if="enseignement.absencesEnAttente"> · levable si le justificatif est accepté</template></span>
               </p>
               <ul v-if="enseignement.evaluations.length" class="evaluations" :aria-label="`Évaluations de ${enseignement.code}`">
                 <li v-for="evaluation in enseignement.evaluations" :key="`${evaluation.libelle}-${evaluation.date}`" class="evaluation">
@@ -72,13 +105,7 @@ const resume = computed(() => resumeNotes(props.semestre));
 .notes {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-}
-
-.resume {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  gap: 1.5rem;
 }
 
 .resume__phrase {
@@ -88,45 +115,76 @@ const resume = computed(() => resumeNotes(props.semestre));
 }
 
 .resume__aide {
-  margin: 0.25rem 0 0;
-  font-size: 0.875rem;
+  margin: -0.5rem 0 0;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
+}
+
+.graphiques {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 1.25rem;
+}
+
+.graphiques--figees {
+  align-items: start;
+}
+
+.graphiques--figees > * {
+  min-height: var(--hauteur-ligne);
+}
+
+.detail__titre {
+  margin: 0.5rem 0 -0.5rem !important;
+  font-size: 1.0625rem !important;
+  font-weight: 600;
 }
 
 .ues {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 /* Chaque UE est une carte qui se déplie : le panneau de PrimeVue garde le clavier et l'animation. */
 .ue {
-  border: 1px solid var(--p-content-border-color) !important;
-  border-radius: 14px;
+  border: none !important;
+  border-radius: 18px;
   overflow: hidden;
+  background: var(--p-content-background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px -4px rgb(0 0 0 / 0.06);
 }
 
 .ue :deep(.p-accordionheader) {
   min-height: 44px;
-  padding: 0.875rem 1rem;
+  padding: 1.125rem 1.25rem;
+  border-radius: 18px;
   background: transparent;
 }
 
+/* Le contour de focus suit l'arrondi de la carte, au lieu d'un rectangle rogné par ses coins. */
+.ue :deep(.p-accordionheader:focus-visible) {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: -3px;
+  box-shadow: none;
+}
+
 .ue :deep(.p-accordioncontent-content) {
-  padding: 0 1rem 1rem;
+  padding: 0 1.25rem 1.25rem;
 }
 
 .ue__ligne {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(6rem, 14rem) auto;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
   margin-right: 0.75rem;
   text-align: left;
 }
 
 .ue__nom {
+  font-size: 1.0625rem;
   font-weight: 600;
   color: var(--p-text-color);
 }
@@ -153,14 +211,16 @@ const resume = computed(() => resumeNotes(props.semestre));
 }
 
 .ue__statut {
-  font-size: 0.8125rem;
+  font-size: 1rem;
   font-weight: 400;
   color: var(--p-text-muted-color);
 }
 
+/* Chaque matière dans son encart pâle : on lit une matière à la fois. */
 .matieres {
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -169,9 +229,25 @@ const resume = computed(() => resumeNotes(props.semestre));
 .matiere {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  padding: 0.75rem 0;
-  border-top: 1px solid var(--p-content-border-color);
+  gap: 0.75rem;
+  padding: 1rem 1.125rem;
+  border-radius: 14px;
+  background: var(--p-content-hover-background);
+  animation: deplier 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--rang, 0) * 45ms);
+}
+
+@keyframes deplier {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .matiere {
+    animation: none;
+  }
 }
 
 .matiere__ligne {
@@ -181,32 +257,46 @@ const resume = computed(() => resumeNotes(props.semestre));
   gap: 1rem;
 }
 
-.matiere__code {
-  font-weight: 600;
+.matiere__nom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
 }
 
-.matiere__coef {
-  margin-left: 0.5rem;
-  font-size: 0.8125rem;
+.matiere__titre {
+  font-size: 1.0625rem;
+  color: var(--p-text-color);
+}
+
+.matiere__code {
+  font-weight: 700;
+}
+
+.matiere__poids {
+  font-size: 1rem;
   color: var(--p-text-muted-color);
 }
 
 .matiere__penalite {
   display: flex;
-  align-items: center;
-  gap: 0.375rem;
+  align-items: baseline;
+  gap: 0.5rem;
   margin: 0;
-  font-size: 0.875rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: var(--p-seance-evaluation-background);
   color: var(--p-seance-evaluation-color);
 }
 
 .evaluations {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
   margin: 0;
-  padding: 0 0 0 0.75rem;
-  border-left: 2px solid var(--p-content-border-color);
+  padding: 0;
+  border-radius: 10px;
+  background: var(--p-content-background);
   list-style: none;
 }
 
@@ -214,8 +304,13 @@ const resume = computed(() => resumeNotes(props.semestre));
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.125rem 0.75rem;
-  font-size: 0.9375rem;
+  gap: 0.25rem 1rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 1rem;
+}
+
+.evaluation + .evaluation {
+  border-top: 1px solid var(--p-content-border-color);
 }
 
 .evaluation__nom {
@@ -223,8 +318,15 @@ const resume = computed(() => resumeNotes(props.semestre));
 }
 
 .evaluation__meta {
-  font-size: 0.8125rem;
+  font-size: 1rem;
   color: var(--p-text-muted-color);
+}
+
+/* Les deux graphiques côte à côte demandent de la place : en dessous, ils s'empilent. */
+@media (max-width: 1199px) {
+  .graphiques {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Sur téléphone, la jauge passe sous le nom de l'UE. */
@@ -236,6 +338,21 @@ const resume = computed(() => resumeNotes(props.semestre));
   .ue__jauge {
     grid-column: 1 / -1;
     grid-row: 2;
+  }
+}
+/* Sur téléphone, les explications passent en version courte : une seule des deux est affichée, et
+   donc lue par un lecteur d'écran. */
+.texte-court {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .texte-long {
+    display: none;
+  }
+
+  .texte-court {
+    display: inline;
   }
 }
 </style>

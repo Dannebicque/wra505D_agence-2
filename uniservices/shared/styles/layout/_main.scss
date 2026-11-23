@@ -12,7 +12,9 @@
     box-shadow: rgba(0, 0, 0, 0.06) 0px 4px 4px 1px inset;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--primary-color) var(--surface-ground);
+    // Un gris neutre plutôt que la primaire : la barre se voit (3,49:1 en clair, 3,15:1 en sombre)
+    // sans attirer l'œil comme un élément de la page.
+    scrollbar-color: var(--p-ui-border-color) var(--surface-ground);
     scrollbar-track-color: var(--surface-card);
 }
 

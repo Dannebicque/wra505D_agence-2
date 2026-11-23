@@ -4,6 +4,7 @@ import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router';
 import {getMaScolariteService} from '@requests';
 import {absencesParEtat, semestreParDefaut} from '@/utils/scolarite.js';
 import SelecteurSemestre from '@/components/Etudiant/scolarite/SelecteurSemestre.vue';
+import SemestreFlottant from '@/components/Etudiant/scolarite/SemestreFlottant.vue';
 import NotesSemestre from '@/components/Etudiant/scolarite/NotesSemestre.vue';
 import AbsencesSemestre from '@/components/Etudiant/scolarite/AbsencesSemestre.vue';
 import JustificatifDrawer from '@/components/Etudiant/scolarite/JustificatifDrawer.vue';
@@ -65,15 +66,24 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
 </script>
 
 <template>
-  <section class="scolarite col-span-12 mt-10 md:mt-0">
-    <div class="scolarite__entete">
-      <h1 class="scolarite__titre">Notes et absences</h1>
-      <SelecteurSemestre v-if="semestres.length" v-model="idSemestre" :semestres="semestres"/>
-    </div>
+  <!-- Comme l'agenda : le titre reste pour les lecteurs d'écran, les onglets disent déjà la page,
+       et le semestre se choisit dans la carte, au même niveau qu'eux. -->
+  <section class="scolarite col-span-12 mt-16 md:mt-0">
+    <h1 class="sr-only">Notes et absences</h1>
 
-    <div v-if="chargement" class="flex flex-col gap-4" aria-hidden="true">
-      <Skeleton height="3rem" border-radius="14px"/>
-      <Skeleton height="24rem" border-radius="18px"/>
+    <div v-if="chargement" class="scolarite__chargement" aria-hidden="true">
+      <div class="scolarite__barre">
+        <Skeleton width="15rem" height="3.25rem" border-radius="999px"/>
+        <Skeleton width="13rem" height="2.75rem" border-radius="999px"/>
+      </div>
+      <div class="scolarite__squelette">
+        <Skeleton height="8.5rem" border-radius="18px" class="scolarite__squelette-phare"/>
+        <Skeleton v-for="rang in 2" :key="rang" height="8.5rem" border-radius="18px"/>
+      </div>
+      <div class="scolarite__squelette scolarite__squelette--graphiques">
+        <Skeleton height="22rem" border-radius="18px"/>
+        <Skeleton height="22rem" border-radius="18px"/>
+      </div>
     </div>
 
     <div v-else-if="erreur" class="scolarite__message" role="alert">
@@ -83,31 +93,38 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
 
     <p v-else-if="!semestre" class="scolarite__message">Aucune inscription n'est enregistrée pour l'instant.</p>
 
-    <div v-else class="scolarite__carte">
-      <Tabs v-model:value="onglet">
-        <TabList>
-          <Tab value="notes" class="scolarite__onglet">
-            <i class="pi pi-chart-bar" aria-hidden="true"></i> Notes
-          </Tab>
-          <Tab value="absences" class="scolarite__onglet">
-            <i class="pi pi-calendar-times" aria-hidden="true"></i> Absences
-            <span v-if="aJustifier" class="scolarite__compte">{{ aJustifier }}<span class="sr-only"> à justifier</span></span>
-          </Tab>
-        </TabList>
+    <div v-else>
+      <Tabs v-model:value="onglet" class="scolarite__onglets">
+        <div class="scolarite__barre">
+          <TabList>
+            <Tab value="notes" class="scolarite__onglet">
+              <i class="pi pi-chart-bar" aria-hidden="true"></i> Notes
+            </Tab>
+            <Tab value="absences" class="scolarite__onglet">
+              <i class="pi pi-calendar-times" aria-hidden="true"></i> Absences
+              <span v-if="aJustifier" class="scolarite__compte">{{ aJustifier }}<span class="sr-only"> à justifier</span></span>
+            </Tab>
+          </TabList>
+          <SelecteurSemestre v-model="idSemestre" :semestres="semestres" class="scolarite__semestre"/>
+        </div>
+        <!-- Seul l'onglet ouvert est monté : en changer, ou changer de semestre, rejoue l'entrée des
+             chiffres et des graphiques. -->
         <TabPanels>
           <TabPanel value="notes">
             <Transition name="onglet" appear>
-              <NotesSemestre :key="semestre.id" :semestre="semestre"/>
+              <NotesSemestre v-if="onglet === 'notes'" :key="semestre.id" :semestre="semestre"/>
             </Transition>
           </TabPanel>
           <TabPanel value="absences">
             <Transition name="onglet" appear>
-              <AbsencesSemestre :key="semestre.id" :semestre="semestre" @justifier="absenceAJustifier = $event"/>
+              <AbsencesSemestre v-if="onglet === 'absences'" :key="semestre.id" :semestre="semestre" @justifier="absenceAJustifier = $event"/>
             </Transition>
           </TabPanel>
         </TabPanels>
       </Tabs>
     </div>
+
+    <SemestreFlottant v-if="semestres.length" v-model="idSemestre" :semestres="semestres"/>
 
     <JustificatifDrawer :absence="absenceAJustifier" @fermer="absenceAJustifier = null" @depose="apresDepot"/>
   </section>
@@ -120,20 +137,6 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
   gap: 1.25rem;
 }
 
-.scolarite__entete {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.scolarite__titre {
-  margin: 0 !important;
-  font-size: 1.75rem !important;
-  font-weight: 700;
-}
-
 .scolarite__message {
   display: flex;
   flex-direction: column;
@@ -142,35 +145,127 @@ watch([idSemestre, onglet], ([semestreChoisi, ongletChoisi]) => {
   margin: 0;
 }
 
-.scolarite__carte {
-  padding: 0.5rem 1.25rem 1.25rem;
+/* La barre de la page, une carte comme celles de l'accueil : les onglets en pilule à gauche, comme
+   Jour / Semaine dans l'agenda, et le semestre à droite. */
+.scolarite__barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.625rem 0.75rem 0.625rem 0.625rem;
   border-radius: 18px;
   background: var(--p-content-background);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px -4px rgb(0 0 0 / 0.06);
 }
 
-.scolarite__carte :deep(.p-tablist-tab-list) {
+.scolarite__onglets,
+.scolarite__onglets :deep(.p-tablist),
+.scolarite__onglets :deep(.p-tablist-content),
+.scolarite__onglets :deep(.p-tabpanels) {
   background: transparent;
 }
 
-.scolarite__carte :deep(.p-tabpanels) {
-  padding: 1.25rem 0 0;
-  background: transparent;
+.scolarite__onglets :deep(.p-tablist-tab-list) {
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--p-content-hover-background);
 }
 
+.scolarite__onglets :deep(.p-tablist-active-bar) {
+  display: none;
+}
+
+/* L'onglet ouvert se détache en pastille blanche, texte violet : on sait où l'on est. */
 .scolarite__onglet {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   min-height: 44px;
+  padding: 0 1.125rem;
+  border: none !important;
+  border-radius: 999px;
   font-size: 1rem;
+  transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.scolarite__onglet[data-p-active="true"] {
+  background: var(--p-pastille-active-background);
+  color: var(--p-pastille-active-color);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+}
+
+.scolarite__onglet:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}
+
+.scolarite__chargement {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.scolarite__squelette {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.scolarite__squelette--graphiques {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+}
+
+@media (max-width: 1199px) {
+  .scolarite__squelette {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scolarite__squelette--graphiques {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scolarite__squelette-phare {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Sur téléphone, le semestre se choisit depuis le bouton flottant : la barre ne garde que les
+   onglets. */
+@media (max-width: 639px) {
+  .scolarite__semestre {
+    display: none;
+  }
+
+  .scolarite__barre :deep(.p-tablist),
+  .scolarite__barre :deep(.p-tablist-tab-list) {
+    width: 100%;
+  }
+
+  .scolarite__onglet {
+    flex: 1;
+    justify-content: center;
+  }
+
+}
+
+.scolarite__onglets :deep(.p-tabpanels) {
+  padding: 1.25rem 0 0;
+}
+
+.scolarite__onglets :deep(.p-tabpanel:focus-visible) {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 4px;
+  border-radius: 18px;
 }
 
 .scolarite__compte {
   min-width: 1.5rem;
   padding: 0 0.4rem;
   border-radius: 999px;
-  font-size: 0.8125rem;
+  font-size: 1rem;
   line-height: 1.5rem;
   text-align: center;
   background: var(--p-seance-evaluation-background);

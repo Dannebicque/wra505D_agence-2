@@ -34,6 +34,7 @@ const refonte = [
 
 .pied-de-page {
   @apply flex flex-wrap justify-between items-baseline gap-x-6 gap-y-1 border-t pt-3 text-xs text-muted-color;
+  margin-top: var(--ui-space-3);
   p {
     @apply m-0;
   }
