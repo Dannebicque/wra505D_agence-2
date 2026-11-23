@@ -2,6 +2,7 @@
 
 namespace UnifolioBundle\Security;
 
+use App\Security\UserPackageResolver;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Security\UserEffectivePermissionService;
@@ -34,6 +35,7 @@ class UnifolioVoter extends Voter
     public function __construct(
         private readonly UserEffectivePermissionService $permissions,
         private readonly UnifolioPerimetre $perimetre,
+        private readonly UserPackageResolver $packages,
     ) {
     }
 
@@ -47,10 +49,12 @@ class UnifolioVoter extends Voter
         $user = $token->getUser();
 
         if ($user instanceof Etudiant) {
+            // Le personnel ouvre UniFolio à l'étudiant (paquet) ; le périmètre du client le réserve au BUT.
             $eligible = \in_array($attribute, [self::ACCES, self::ESPACE_ETUDIANT], true)
+                && $this->packages->hasPackage($user, 'unifolio')
                 && $this->perimetre->isEtudiantEligible($user);
             if (!$eligible) {
-                $vote?->addReason('UniFolio est réservé aux étudiants de BUT.');
+                $vote?->addReason('UniFolio n\'est pas ouvert à cet étudiant.');
             }
 
             return $eligible;

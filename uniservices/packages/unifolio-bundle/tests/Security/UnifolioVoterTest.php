@@ -2,6 +2,7 @@
 
 namespace UnifolioBundle\Tests\Security;
 
+use App\Security\UserPackageResolver;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Security\UserEffectivePermissionService;
@@ -36,6 +37,15 @@ class UnifolioVoterTest extends TestCase
     public function testEtudiantHorsBUTRefuse(): void
     {
         $voter = $this->voter(eligible: false, roles: []);
+        $token = $this->token($this->createMock(Etudiant::class));
+
+        $this->assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($token, null, [UnifolioVoter::ACCES]));
+        $this->assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($token, null, [UnifolioVoter::ESPACE_ETUDIANT]));
+    }
+
+    public function testEtudiantSansLePaquetRefuse(): void
+    {
+        $voter = $this->voter(eligible: true, roles: [], paquet: false);
         $token = $this->token($this->createMock(Etudiant::class));
 
         $this->assertSame(VoterInterface::ACCESS_DENIED, $voter->vote($token, null, [UnifolioVoter::ACCES]));
@@ -78,7 +88,7 @@ class UnifolioVoterTest extends TestCase
     }
 
     /** @param string[] $roles */
-    private function voter(bool $eligible, array $roles): UnifolioVoter
+    private function voter(bool $eligible, array $roles, bool $paquet = true): UnifolioVoter
     {
         $permissions = $this->createMock(UserEffectivePermissionService::class);
         $permissions->method('isSuperAdmin')->willReturn(\in_array(UnifolioRoles::SUPER_ADMIN, $roles, true));
@@ -89,7 +99,10 @@ class UnifolioVoterTest extends TestCase
         $perimetre = $this->createMock(UnifolioPerimetre::class);
         $perimetre->method('isEtudiantEligible')->willReturn($eligible);
 
-        return new UnifolioVoter($permissions, $perimetre);
+        $packages = $this->createMock(UserPackageResolver::class);
+        $packages->method('hasPackage')->willReturn($paquet);
+
+        return new UnifolioVoter($permissions, $perimetre, $packages);
     }
 
     private function token(mixed $user): TokenInterface

@@ -154,9 +154,9 @@ class UserEffectivePermissionService
     ): bool {
         $department = DepartmentScope::fromSubject($subject);
 
-        // Une nouvelle entité locale sans rattachement utilise l’affectation active.
-        // Une entité persistée sans périmètre reste réservée au super administrateur.
-        if ($department === null && is_object($subject) && is_callable([$subject, 'getId']) && $subject->getId() === null) {
+        // Une nouvelle entité locale sans rattachement, ou un droit demandé sans sujet (import, création),
+        // utilise l’affectation active. Une entité persistée sans périmètre reste réservée au super administrateur.
+        if ($department === null && ($subject === null || (is_object($subject) && is_callable([$subject, 'getId']) && $subject->getId() === null))) {
             $department = $this->getActiveDepartementPersonnel($user)?->getDepartement();
         }
 
