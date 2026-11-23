@@ -1,7 +1,6 @@
 import dashboardRoutes from './router/modules/dashboardRoutes.js';
 import Logo from "@images/logo/logo_intranet_iut_troyes.svg";
 import LayoutComponent from '@components/components/layout/AppLayout.vue';
-import './assets/forms.css';
 
 const stageMenu = {
   label: 'Stages',
