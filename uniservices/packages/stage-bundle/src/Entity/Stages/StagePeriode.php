@@ -2,6 +2,7 @@
 
 namespace StageBundle\Entity\Stages;
 
+use App\Entity\Users\Personnel;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -13,7 +14,7 @@ use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureSemestre;
 use App\Entity\Traits\OldIdTrait;
-use App\Filter\StagePeriodeFilter;
+use StageBundle\Filter\StagePeriodeFilter;
 use StageBundle\Repository\Stages\StagePeriodeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -24,17 +25,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: StagePeriodeRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(
-            normalizationContext: ['groups' => ['stage_periode:read']],
-            security: "is_granted('CAN_VIEW_STAGE_PERIODE')"
-        ),
-        new GetCollection(
-            normalizationContext: ['groups' => ['stage_periode:read']],
-            security: "is_granted('CAN_VIEW_STAGE_PERIODE')"
-        ),
-        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_STAGE_PERIODE')"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_STAGE_PERIODE')"),
-        new Delete(security: "is_granted('CAN_DELETE_STAGE_PERIODE')"),
+        new Get(normalizationContext: ['groups' => ['stage_periode:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['stage_periode:read']]),
+        // Gestion réservée au responsable des stages du département de la période (StageAccess::estGestionnaire)
+        new Post(securityPostDenormalize: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)"),
+        new Patch(security: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)", securityPostDenormalize: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)"),
+        new Delete(security: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)"),
     ],
     parameters: [
         'departement' => new QueryParameter(filter: StagePeriodeFilter::class),
@@ -42,6 +38,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
         'actif' => new QueryParameter(filter: StagePeriodeFilter::class),
         'annee' => new QueryParameter(filter: StagePeriodeFilter::class),
         'semestre' => new QueryParameter(filter: StagePeriodeFilter::class),
+        // geres=1 : seulement les périodes que l'utilisateur gère (cf. StagePeriodeFilter)
+        'geres' => new QueryParameter(filter: StagePeriodeFilter::class),
     ]
 )]
 class StagePeriode
@@ -147,6 +145,12 @@ class StagePeriode
     #[ORM\OneToMany(targetEntity: StageEtudiant::class, mappedBy: 'stagePeriode', orphanRemoval: true, cascade: ['remove'])]
     private Collection $stageEtudiants;
 
+    /** @var Collection<int, StageEvaluationCritere> grille d'évaluation par le tuteur en entreprise */
+    #[ORM\OneToMany(targetEntity: StageEvaluationCritere::class, mappedBy: 'stagePeriode', cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['ordre' => 'ASC', 'id' => 'ASC'])]
+    #[Groups(['stage_periode:read'])]
+    private Collection $criteresEvaluation;
+
     public function __construct()
     {
         $this->semestresSaisie = new ArrayCollection();
@@ -154,6 +158,7 @@ class StagePeriode
         $this->periodesInterruption = new ArrayCollection();
         $this->periodesSoutenance = new ArrayCollection();
         $this->stageEtudiants = new ArrayCollection();
+        $this->criteresEvaluation = new ArrayCollection();
     }
     public function getId(): ?int
     {
@@ -405,6 +410,18 @@ class StagePeriode
     public function getStageEtudiants(): Collection
     {
         return $this->stageEtudiants;
+    }
+    /** @return Collection<int, StageEvaluationCritere> */
+    public function getCriteresEvaluation(): Collection
+    {
+        return $this->criteresEvaluation;
+    }
+    public function addCritereEvaluation(StageEvaluationCritere $c): static
+    {
+        if (!$this->criteresEvaluation->contains($c)) {
+            $this->criteresEvaluation->add($c);
+            $c->setStagePeriode($this);
+        } return $this;
     }
     public function addStageEtudiant(StageEtudiant $v): static
     {

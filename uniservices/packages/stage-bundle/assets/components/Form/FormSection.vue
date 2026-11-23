@@ -25,12 +25,12 @@ const toneClasses = computed(() => TONE_CLASSES[props.tone] || TONE_CLASSES.teal
       </div>
       <div class="flex-1 min-w-0">
         <div class="flex items-center justify-between gap-2">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+          <h3 class="text-sm font-bold text-color -contrast leading-tight">
             {{ title }}
           </h3>
           <slot name="badge" />
         </div>
-        <p v-if="description" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+        <p v-if="description" class="text-xs text-muted-color  mt-0.5 leading-relaxed">
           {{ description }}
         </p>
       </div>

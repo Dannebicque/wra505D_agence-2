@@ -4,17 +4,25 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Duplicate;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use Doctrine\ORM\EntityManagerInterface;
+use QuestionnaireBundle\Security\QuestionnaireResolver;
+use QuestionnaireBundle\Security\QuestionnaireVoter;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use QuestionnaireBundle\ApiDto\Questionnaire\Duplicate\DuplicateInputDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Duplicate\DuplicateOutputDto;
 use QuestionnaireBundle\Domain\Questionnaire\Duplicate\DuplicateQuestionnaireService;
+use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 
-/** @implements ProcessorInterface<DuplicateInputDto, DuplicateOutputDto> */
+/**
+ * @implements ProcessorInterface<DuplicateInputDto, DuplicateOutputDto>
+ */
 final class DuplicateProcessor implements ProcessorInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
+        private readonly QuestionnaireResolver $questionnaires,
+        private readonly Security $security,
         private readonly DuplicateQuestionnaireService $service
     ) {
     }
@@ -22,29 +30,28 @@ final class DuplicateProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): DuplicateOutputDto
     {
         /** @var DuplicateInputDto $data */
-        $uuidStr = $uriVariables['questionnaireUuid'];
-
-        $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $uuidStr]);
-        if (!$q instanceof Questionnaire) {
-            throw new \RuntimeException('Questionnaire not found');
+        $q = $this->questionnaires->charger($uriVariables['questionnaireUuid'] ?? '', QuestionnaireVoter::CAN_EDIT_QUESTIONNAIRE);
+        // La copie reste dans le département de l'original : il faut pouvoir y créer un questionnaire.
+        if (!$this->security->isGranted(QuestionnaireVoter::CREATE, $q)) {
+            throw new AccessDeniedHttpException('Vous ne pouvez pas créer de questionnaire dans ce département.');
         }
 
-        $result = $this->service->duplicate($q, $data->newTitle ?? null);
+        $user = $this->security->getUser();
+        $result = $this->service->duplicate($q, $data->newTitle ?? null, $user instanceof Personnel ? $user : null);
 
         /** @var Questionnaire $duplicate */
         $duplicate = $result['questionnaire'];
-        $title = $duplicate->getTitle();
         $status = $duplicate->getStatus();
-        if ($title === null || $status === null) {
-            throw new \LogicException('Duplicated questionnaire fields are required');
+        if ($status === null) {
+            throw new \LogicException('Le questionnaire dupliqué n\'a pas de statut.');
         }
 
         return new DuplicateOutputDto(
             uuid: (string)$duplicate->getUuid(),
-            title: $title,
+            title: (string) $duplicate->getTitle(),
             status: $status->value,
-            sectionsCount: $result['sectionsCount'],
-            questionsCount: $result['questionsCount']
+            sectionsCount: LooseValue::int($result['sectionsCount']),
+            questionsCount: LooseValue::int($result['questionsCount'])
         );
     }
 }

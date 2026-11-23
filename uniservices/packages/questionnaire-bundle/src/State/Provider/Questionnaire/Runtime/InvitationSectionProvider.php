@@ -4,78 +4,55 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Runtime;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Utils\LooseValue;
-use QuestionnaireBundle\Domain\Questionnaire\Mapping\QuestionRuntimeMapper;
-use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
-use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
-use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSectionInstance;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SectionRuntimeDto;
+use QuestionnaireBundle\Domain\Questionnaire\Mapping\QuestionRuntimeMapper;
+use QuestionnaireBundle\Domain\Questionnaire\Runtime\InvitationRuntime;
+use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
+use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/** @implements ProviderInterface<SectionRuntimeDto> */
+/**
+ * Une section publiée avec les réponses déjà enregistrées, pour le répondant (par le jeton de l'invitation).
+ *
+ * @implements ProviderInterface<SectionRuntimeDto>
+ */
 final class InvitationSectionProvider implements ProviderInterface
 {
     public function __construct(
-        private EntityManagerInterface $em,
-        private QuestionRuntimeMapper $mapper
+        private readonly EntityManagerInterface $em,
+        private readonly QuestionRuntimeMapper $mapper,
+        private readonly InvitationRuntime $runtime,
     ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): SectionRuntimeDto
     {
-        $token = LooseValue::castString($uriVariables['token']);
-        $id = LooseValue::castInt($uriVariables['id']);
+        $invitation = $this->runtime->invitation($uriVariables['token'] ?? '');
+        $questionnaire = $invitation->getQuestionnaire();
+        if (!$questionnaire instanceof Questionnaire) {
+            throw new NotFoundHttpException('Invitation introuvable.');
+        }
+        $section = $this->runtime->section($invitation, $uriVariables['id'] ?? null);
 
-        $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv instanceof QuestionnaireInvitation) {
-            throw new \RuntimeException('Invitation not found');
+        $reponses = [];
+        foreach ($this->em->getRepository(QuestionnaireAnswer::class)->findBy(['invitation' => $invitation, 'section' => $section]) as $reponse) {
+            $reponses[$reponse->getQuestion()?->getId()] = $reponse->getValue();
         }
 
-        $psi = $this->em->getRepository(QuestionnaireSectionInstance::class)->find($id);
-        $questionnaire = $inv->getQuestionnaire();
-        if (!$psi instanceof QuestionnaireSectionInstance || $questionnaire === null || $psi->getQuestionnaire()?->getId() !== $questionnaire->getId()) {
-            throw new \RuntimeException('Section not found');
-        }
-        $section = $psi->getSection();
-        $title = $psi->getTitleSnapshot();
-        $publishedSectionInstanceId = $psi->getId();
-        if ($section === null || $title === null || $publishedSectionInstanceId === null) {
-            throw new \LogicException('Section instance fields are required');
-        }
-
-        // Charger answers existantes pour cette section
-        $answers = $this->em->getRepository(QuestionnaireAnswer::class)->findBy([
-            'invitation' => $inv,
-            'section' => $psi,
-        ]);
-
-        $answersByQid = [];
-        foreach ($answers as $a) {
-            $question = $a->getQuestion();
-            if ($question === null) {
-                throw new \LogicException('Answer question is required');
-            }
-            $answersByQid[$question->getId()] = $a->getValue();
-        }
-
-        $allQuestions = [];
-        foreach ($inv->getQuestionnaire()?->getSections() ?? [] as $st) {
-            foreach ($st->getQuestions() as $sqt) {
-                $allQuestions[] = $sqt;
-            }
-        }
+        $toutes = $this->runtime->toutesLesQuestions($invitation);
         $questions = [];
-        foreach ($section->getQuestions() as $qt) {
-            $questions[] = $this->mapper->map($qt, $answersByQid[$qt->getId()] ?? null, $allQuestions);
+        foreach ($section->getSection()?->getQuestions() ?? [] as $question) {
+            $questions[] = $this->mapper->map($question, $reponses[$question->getId()] ?? null, $toutes);
         }
 
         return new SectionRuntimeDto(
-            questionnaireTitle: $questionnaire->getTitle() ?? throw new \LogicException('Questionnaire title is required'),
-            publishedSectionInstanceId: $publishedSectionInstanceId,
-            title: $title,
-            repeatItemType: $psi->getRepeatSectionItemType(),
-            repeatItemId: !in_array($psi->getRepeatSectionItemId(), [null, 0], true) ? (string) $psi->getRepeatSectionItemId() : null,
-            questions: $questions
+            questionnaireTitle: (string) $questionnaire->getTitle(),
+            publishedSectionInstanceId: (int) $section->getId(),
+            title: (string) $section->getTitleSnapshot(),
+            repeatItemType: $section->getRepeatSectionItemType(),
+            repeatItemId: $section->getRepeatSectionItemId(),
+            questions: $questions,
         );
     }
 }

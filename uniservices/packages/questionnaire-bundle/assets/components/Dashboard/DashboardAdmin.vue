@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useConfirmation } from '@composables/useConfirmation';
+import { showDanger, showSuccess } from '@helpers/toast.js';
+import { useEtablissement } from '@/composables/useEtablissement';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
@@ -10,11 +13,8 @@ import {
   ChatBubbleLeftRightIcon,
   RocketLaunchIcon,
   DocumentDuplicateIcon,
-  HeartIcon,
   BuildingOfficeIcon,
-  UserGroupIcon,
   ShoppingBagIcon,
-  AcademicCapIcon,
   ChartBarIcon,
   PencilIcon,
   TrashIcon,
@@ -22,28 +22,25 @@ import {
   CheckCircleIcon
 } from '@heroicons/vue/24/outline';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
-import Dialog from 'primevue/dialog';
 import Select from 'primevue/select';
 import Tag from 'primevue/tag';
 import Button from 'primevue/button';
 import { useSurveyStore } from '@/stores/survey';
 import { useResponseStore } from '@/stores/responses';
-import { useUIStore } from '@/stores/ui';
 import { useUsersStore } from '@stores';
 import { hasPermission } from '@utils/permissions';
 import { formatDate, formatRelativeTime } from '@/utils/date';
-import { Kpi, QuickActionCard, EmptyState, Card } from '@components';
+import { Card, EmptyState, Kpi, QuickActionCard } from '@components';
 import DuplicateSurveyModal from '@/components/Questionnaire/DuplicateSurveyModal.vue';
 import { getAllDepartementsService } from '@requests';
 import type { Survey } from '@types';
+const { libelle: libelleEtablissement, libelleGlobal } = useEtablissement();
 
 const router = useRouter();
 const surveyStore = useSurveyStore();
 const responseStore = useResponseStore();
-const uiStore = useUIStore();
 const userStore = useUsersStore();
 
-const showTemplates = ref(false);
 const showDuplicateModal = ref(false);
 const selectedSurveyToDuplicate = ref<Survey | null>(null);
 
@@ -78,8 +75,8 @@ const departementOptions = computed(() => {
     ? allDepartements.value
     : (Array.isArray(userStore?.departements) ? userStore.departements : []);
   const options = [
-    { label: 'Tous les départements (Vue Globale IUT)', value: 'all' },
-    { label: 'Uniquement IUT (Global)', value: 'global' }
+    { label: `Tous les départements (${libelleEtablissement.value})`, value: 'all' },
+    { label: `Uniquement ${libelleGlobal.value}`, value: 'global' }
   ];
   list.forEach(dept => {
     if (dept && (dept.id || dept.libelle)) {
@@ -106,43 +103,6 @@ onMounted(async () => {
   }
 });
 
-const templates = [
-  {
-    id: 'satisfaction',
-    title: 'Satisfaction globale',
-    description: 'Évaluez la satisfaction globale des étudiants et usagers sur la formation.',
-    questions: 8,
-    icon: HeartIcon
-  },
-  {
-    id: 'employee',
-    title: 'Enquête collaborateurs',
-    description: 'Recueillez les avis et feedbacks de vos équipes pédagogiques et administratives.',
-    questions: 12,
-    icon: BuildingOfficeIcon
-  },
-  {
-    id: 'event',
-    title: 'Feedback événement',
-    description: 'Évaluez le déroulement et l\'organisation d\'un projet, stage ou événement.',
-    questions: 10,
-    icon: UserGroupIcon
-  },
-  {
-    id: 'education',
-    title: 'Évaluation des enseignements',
-    description: 'Évaluez l\'efficacité pédagogique, le contenu et l\'organisation des cours.',
-    questions: 9,
-    icon: AcademicCapIcon
-  },
-  {
-    id: 'market',
-    title: 'Besoins & Débouchés',
-    description: 'Analysez l\'insertion professionnelle et les opportunités d\'évolution.',
-    questions: 18,
-    icon: ChartBarIcon
-  }
-];
 
 // Scoped Surveys
 const scopedSurveys = computed<Survey[]>(() => {
@@ -257,12 +217,12 @@ const recentActivity = computed<ActivityItem[]>(() => {
 
 function getActivityColor(type: string): string {
   const colors: Record<string, string> = {
-    survey_created: 'bg-blue-600 dark:bg-blue-500',
-    survey_published: 'bg-emerald-600 dark:bg-emerald-500',
-    survey_closed: 'bg-amber-600 dark:bg-amber-500',
-    response_received: 'bg-purple-600 dark:bg-purple-500'
+    survey_created: 'bg-primary ',
+    survey_published: 'bg-emphasis ',
+    survey_closed: 'bg-emphasis ',
+    response_received: 'bg-primary '
   };
-  return colors[type] || 'bg-gray-600';
+  return colors[type] || 'bg-emphasis';
 }
 
 function getActivityIcon(type: string) {
@@ -291,31 +251,32 @@ async function confirmDuplicateSurvey(payload: { newTitle: string }) {
     showDuplicateModal.value = false;
     selectedSurveyToDuplicate.value = null;
     if (duplicate) {
-      uiStore.addNotification('success', 'Questionnaire dupliqué', `"${duplicate.title}" et ses paramètres ont été dupliqués.`);
+      showSuccess(`"${duplicate.title}" et ses paramètres ont été dupliqués.`, 'Questionnaire dupliqué');
     }
   } catch (error) {
     console.error('Failed to duplicate survey:', error);
-    uiStore.addNotification('danger', 'Erreur', 'Une erreur est survenue lors de la duplication.');
+    showDanger('Une erreur est survenue lors de la duplication.', 'Erreur');
   }
 }
 
-function deleteSurvey(survey: Survey) {
-  if (confirm(`Êtes-vous sûr de vouloir supprimer définitivement "${survey.title}" ?`)) {
-    surveyStore.deleteSurvey(survey.uuid);
-    uiStore.addNotification('success', 'Questionnaire supprimé', 'Le questionnaire a été supprimé.');
+const { confirmer } = useConfirmation();
+
+async function deleteSurvey(survey: Survey) {
+  const ok = await confirmer({
+    titre: 'Supprimer le questionnaire',
+    message: `Supprimer définitivement « ${survey.title} » et toutes ses réponses ?`,
+    libelle: 'Supprimer',
+    danger: true,
+  });
+  if (!ok) return;
+  try {
+    await surveyStore.deleteSurvey(survey.uuid);
+    showSuccess('Le questionnaire a été supprimé.', 'Questionnaire supprimé');
+  } catch (e) {
+    // apiCall a déjà affiché l'erreur du serveur.
   }
 }
 
-async function createFromTemplate(template: any) {
-  const survey = await surveyStore.createSurvey(template.title, template.description);
-  showTemplates.value = false;
-  uiStore.addNotification(
-    'success',
-    'Questionnaire créé',
-    `L'enquête "${template.title}" a été créée à partir du modèle.`
-  );
-  router.push({ name: 'questionnaire_builder', params: { id: survey.uuid } });
-}
 
 function getSurveyStats(surveyUuid: string) {
   const survey = surveyStore.surveys?.find(s => s.uuid === surveyUuid);
@@ -333,22 +294,22 @@ function getSurveyStats(surveyUuid: string) {
 <template>
   <div class="space-y-8">
     <!-- Scope / Périmètre de Pilotage Bar -->
-    <div class="bg-surface-0 dark:bg-surface-900 border border-surface rounded-2xl p-4.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="bg-surface-0 -900 border border-surface rounded-2xl p-4.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <div class="w-11 h-11 rounded-xl bg-primary-50 dark:bg-primary-950/50 border border-primary-200 dark:border-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
+        <div class="w-11 h-11 rounded-xl bg-primary-50 -950/50 border border-primary-200 -800 flex items-center justify-center -primary -400 shrink-0">
           <BuildingOfficeIcon aria-hidden="true" class="w-6 h-6" />
         </div>
         <div>
-          <div class="text-xs font-semibold text-muted-color uppercase tracking-wider">
+          <div class="text-sm font-semibold text-muted-color  uppercase tracking-wider">
             Périmètre de pilotage qualité
           </div>
-          <div class="text-base font-bold text-color flex items-center gap-2 mt-0.5">
-            <span v-if="isGlobalQuality">Démarche Qualité — Vue Globale IUT</span>
+          <div class="text-base font-bold text-color -contrast flex items-center gap-2 mt-0.5">
+            <span v-if="isGlobalQuality">Démarche qualité — {{ libelleEtablissement }}</span>
             <span v-else>Département {{ currentDepartmentName }}</span>
             <Tag 
               :value="isGlobalQuality ? 'Tous départements' : 'Département'" 
               :severity="isGlobalQuality ? 'info' : 'secondary'"
-              class="text-xs font-semibold"
+              class="text-sm font-semibold"
             />
           </div>
         </div>
@@ -356,7 +317,7 @@ function getSurveyStats(surveyUuid: string) {
 
       <!-- Scope Selector for Global Quality Managers -->
       <div v-if="isGlobalQuality && departementOptions.length > 1" class="flex items-center gap-2.5">
-        <label for="dept-scope-select" class="text-xs font-semibold text-muted-color whitespace-nowrap">
+        <label for="dept-scope-select" class="text-sm font-semibold text-muted-color  whitespace-nowrap">
           Filtrer par département :
         </label>
         <Select 
@@ -368,7 +329,7 @@ function getSurveyStats(surveyUuid: string) {
           class="w-72 text-sm" 
         />
       </div>
-      <div v-else class="text-xs text-muted-color italic">
+      <div v-else class="text-sm text-muted-color  italic">
         Vue restreinte aux enquêtes et formations de votre département
       </div>
     </div>
@@ -393,12 +354,12 @@ function getSurveyStats(surveyUuid: string) {
       />
 
       <QuickActionCard
-        title="Modèles pré-définis"
-        description="Créer depuis un modèle qualité prêt à l'emploi"
+        title="Modèles"
+        description="Créer un questionnaire depuis la bibliothèque de modèles"
         :icon="DocumentDuplicateIcon"
         color="green"
         button-label="Parcourir les modèles"
-        @action="showTemplates = true"
+        @action="router.push({ name: 'questionnaire_modeles' })"
       />
 
       <QuickActionCard
@@ -424,17 +385,17 @@ function getSurveyStats(surveyUuid: string) {
           <template #header-actions>
             <router-link 
               :to="{ name: 'questionnaire_enquetes-liste' }" 
-              class="text-xs font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1.5 py-0.5"
+              class="text-sm font-semibold -primary hover:-primary -400 flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1.5 py-0.5"
             >
               <span>Voir toute la liste</span>
-              <i class="pi pi-arrow-right text-[10px]" aria-hidden="true"></i>
+              <i class="pi pi-arrow-right text-sm" aria-hidden="true"></i>
             </router-link>
           </template>
 
           <div v-if="scopedSurveys.length > 0" class="overflow-x-auto -mx-5 -mb-5">
             <table class="w-full text-left text-sm border-collapse">
               <thead>
-                <tr class="border-b border-surface text-xs font-bold text-muted-color uppercase tracking-wider bg-emphasis dark:bg-surface-900">
+                <tr class="border-b border-surface  text-sm font-bold text-muted-color  uppercase tracking-wider bg-emphasis ">
                   <th scope="col" class="py-3 px-5">Enquête / Campagne</th>
                   <th scope="col" class="py-3 px-4">Portée</th>
                   <th scope="col" class="py-3 px-4">Statut</th>
@@ -443,43 +404,48 @@ function getSurveyStats(surveyUuid: string) {
                   <th scope="col" class="py-3 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-surface-200 dark:divide-surface-700 bg-surface-0 dark:bg-surface-900">
+              <tbody class="divide-y divide-surface-200 -700 bg-surface-0 -900">
                 <tr 
                   v-for="survey in scopedSurveys" 
                   :key="survey.uuid" 
                   class="hover:bg-emphasis dark:hover:bg-emphasis transition-colors"
                 >
                   <td class="py-3.5 px-5">
-                    <div class="font-bold text-color">{{ survey.title }}</div>
-                    <div v-if="survey.description" class="text-xs text-muted-color truncate max-w-xs mt-0.5">
+                    <div class="font-bold text-color -contrast">{{ survey.title }}</div>
+                    <div v-if="survey.description" class="text-sm text-muted-color  truncate max-w-xs mt-0.5">
                       {{ survey.description }}
                     </div>
                   </td>
                   <td class="py-3.5 px-4 whitespace-nowrap">
                     <span
                       v-if="survey.departement"
-                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border shadow-2xs bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-200 border-primary-200 dark:border-primary-800"
+                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-sm font-semibold border shadow-2xs"
+                      :style="{
+                        backgroundColor: survey.departement.couleur ? `${survey.departement.couleur}15` : 'var(--p-highlight-background)',
+                        color: survey.departement.couleur || 'var(--p-primary-color)',
+                        borderColor: survey.departement.couleur ? `${survey.departement.couleur}40` : 'var(--p-highlight-border)'
+                      }"
                     >
-                      <span class="w-1.5 h-1.5 rounded-full shrink-0 bg-primary-500" aria-hidden="true"></span>
+                      <span class="w-1.5 h-1.5 rounded-full shrink-0 -primary" aria-hidden="true"></span>
                       <span>{{ survey.departement.libelle || `Dpt ${survey.departement.id}` }}</span>
                     </span>
                     <span
                       v-else
-                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-muted-color bg-emphasis dark:bg-surface-900 border border-surface"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium text-muted-color  bg-emphasis  border border-surface "
                     >
-                      <span>IUT (Global)</span>
+                      <span>{{ libelleGlobal }}</span>
                     </span>
                   </td>
                   <td class="py-3.5 px-4 whitespace-nowrap">
                     <Tag 
                       :value="survey.status === 'published' ? 'Publiée' : survey.status === 'closed' ? 'Clôturée' : 'Brouillon'"
                       :severity="survey.status === 'published' ? 'success' : survey.status === 'closed' ? 'secondary' : 'warn'"
-                      class="text-xs font-semibold"
+                      class="text-sm font-semibold"
                     />
                   </td>
                   <td class="py-3.5 px-4 min-w-[170px]">
-                    <div class="flex items-center justify-between text-xs mb-1">
-                      <span class="text-muted-color font-medium">
+                    <div class="flex items-center justify-between text-sm mb-1">
+                      <span class="text-muted-color  font-medium">
                         {{ getSurveyStats(survey.uuid).responded }} / {{ getSurveyStats(survey.uuid).invited }}
                       </span>
                       <span class="font-bold text-color">
@@ -496,14 +462,14 @@ function getSurveyStats(surveyUuid: string) {
                       <div 
                         class="h-1.5 rounded-full transition-all duration-500"
                         :class="[
-                          getSurveyStats(survey.uuid).rate >= 60 ? 'bg-primary-500' :
-                          getSurveyStats(survey.uuid).rate >= 30 ? 'bg-primary-500' : 'bg-primary-500'
+                          getSurveyStats(survey.uuid).rate >= 60 ? '-primary' :
+                          getSurveyStats(survey.uuid).rate >= 30 ? '-primary' : '-primary'
                         ]"
                         :style="{ width: `${getSurveyStats(survey.uuid).rate}%` }"
                       ></div>
                     </div>
                   </td>
-                  <td class="py-3.5 px-4 text-xs text-muted-color whitespace-nowrap">
+                  <td class="py-3.5 px-4 text-sm text-muted-color  whitespace-nowrap">
                     <span v-if="survey.closingDate">Jusqu'au {{ formatDate(survey.closingDate) }}</span>
                     <span v-else-if="survey.publishedAt">Publiée le {{ formatDate(survey.publishedAt) }}</span>
                     <span v-else>Créée le {{ formatDate(survey.createdAt) }}</span>
@@ -515,10 +481,9 @@ function getSurveyStats(surveyUuid: string) {
                         v-if="survey.status === 'published'"
                         :to="{ name: 'questionnaire_responses', params: { id: survey.uuid } }"
                         v-tooltip.top="'Suivi des répondants & Relances'"
-                        aria-label="Suivi &amp; Relances"
-                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/40 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-300 dark:border-primary-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-semibold rounded-lg text-color  bg-emphasis  hover:bg-emphasis dark:hover:bg-emphasis border border-surface  transition-colors focus:outline-none focus:ring-2 focus:ring-surface"
                       >
-                        <i class="pi pi-users text-xs" aria-hidden="true"></i>
+                        <i class="pi pi-users text-sm" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Suivi & Relances</span>
                       </router-link>
 
@@ -527,10 +492,9 @@ function getSurveyStats(surveyUuid: string) {
                         v-if="survey.status === 'published'"
                         :to="{ name: 'questionnaire_analytics', params: { id: survey.uuid } }"
                         v-tooltip.top="'Synthèse des résultats'"
-                        aria-label="Résultats"
-                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/40 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-300 dark:border-primary-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-semibold rounded-lg text-primary  bg-emphasis  hover:bg-emphasis dark:hover:bg-primary border border-primary  transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                       >
-                        <i class="pi pi-chart-pie text-xs" aria-hidden="true"></i>
+                        <i class="pi pi-chart-pie text-sm" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Résultats</span>
                       </router-link>
 
@@ -539,7 +503,7 @@ function getSurveyStats(surveyUuid: string) {
                         :to="{ name: 'questionnaire_builder', params: { id: survey.uuid } }"
                         v-tooltip.top="'Modifier le questionnaire'"
                         aria-label="Modifier le questionnaire"
-                        class="p-1.5 text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/40 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-200 dark:border-primary-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        class="p-1.5 -primary -300 bg-primary-50 -950/40 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-200 -800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
                         <PencilIcon class="w-4 h-4" aria-hidden="true" />
                       </router-link>
@@ -557,7 +521,7 @@ function getSurveyStats(surveyUuid: string) {
                           <MenuItem v-slot="{ active }">
                             <button 
                               @click="openDuplicateModal(survey)"
-                              :class="[active ? 'bg-emphasis dark:bg-surface-900' : '', 'menu-item w-full']"
+                              :class="[active ? 'bg-emphasis -900' : '', 'menu-item w-full']"
                               role="menuitem"
                             >
                               <DocumentDuplicateIcon class="w-4 h-4 text-color" aria-hidden="true" />
@@ -567,10 +531,10 @@ function getSurveyStats(surveyUuid: string) {
                           <MenuItem v-slot="{ active }">
                             <button 
                               @click="deleteSurvey(survey)"
-                              :class="[active ? 'bg-red-50 dark:bg-red-950/40' : '', 'menu-item w-full text-red-700 dark:text-red-400 font-medium']"
+                              :class="[active ? 'bg-emphasis ' : '', 'menu-item w-full text-color  font-medium']"
                               role="menuitem"
                             >
-                              <TrashIcon class="w-4 h-4 text-red-700 dark:text-red-400" aria-hidden="true" />
+                              <TrashIcon class="w-4 h-4 text-color " aria-hidden="true" />
                               <span>Supprimer</span>
                             </button>
                           </MenuItem>
@@ -601,46 +565,44 @@ function getSurveyStats(surveyUuid: string) {
       <aside aria-label="Informations et activités" class="space-y-6">
         <!-- Published Feedback Stats Manager Card -->
         <Card title="Synthèse étudiants" subtitle="Configuration des synthèses de résultats" icon="pi pi-chart-pie" color="blue">
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4 leading-relaxed">
+          <p class="text-color  text-sm mb-4 leading-relaxed">
             Configurez les synthèses de résultats publiées et visibles par les étudiants.
           </p>
-          <div v-if="lastPublishedSurvey" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-center space-y-1">
-            <p class="text-xs text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wider">Dernière publication</p>
-            <p class="font-bold text-gray-900 dark:text-white text-sm">{{ lastPublishedSurvey.title }}</p>
-            <p class="text-xs text-gray-600 dark:text-gray-300">
+          <div v-if="lastPublishedSurvey" class="p-4 rounded-xl bg-emphasis  border border-surface  text-center space-y-1">
+            <p class="text-sm text-muted-color  font-semibold uppercase tracking-wider">Dernière publication</p>
+            <p class="font-bold text-color -contrast text-sm">{{ lastPublishedSurvey.title }}</p>
+            <p class="text-sm text-muted-color ">
               Publié le {{ formatDate(lastPublishedSurvey.publishedAt || lastPublishedSurvey.updatedAt) }}
             </p>
             <div class="pt-2">
               <router-link 
                 :to="{ name: 'questionnaire_analytics', params: { id: lastPublishedSurvey.uuid } }" 
-                class="inline-flex items-center gap-1.5 text-xs bg-primary-100 dark:bg-primary-950 text-primary-800 dark:text-primary-200 hover:bg-primary-200 dark:hover:bg-primary-900 border border-primary-300 dark:border-primary-800 px-3 py-1.5 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="inline-flex items-center gap-1.5 text-sm bg-primary-100 -950 text-primary-800 -200 hover:bg-primary-200 dark:hover:bg-primary-900 border -primary -800 px-3 py-1.5 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <ChartBarIcon class="w-3.5 h-3.5" aria-hidden="true" />
                 Voir les résultats
               </router-link>
             </div>
           </div>
-          <div v-else class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-center">
-            <p class="text-sm text-gray-600 dark:text-gray-400">Aucun questionnaire publié pour le moment.</p>
-          </div>
+          <EmptyState v-else compact icon="pi pi-send" title="Aucun questionnaire publié pour le moment" />
         </Card>
 
         <!-- Recent Activity Card -->
         <section aria-labelledby="recent-activity-title" class="space-y-4">
-          <h2 id="recent-activity-title" class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ClockIcon class="w-5 h-5 text-purple-600 dark:text-purple-400" aria-hidden="true" />
+          <h2 id="recent-activity-title" class="text-xl font-bold text-color -contrast flex items-center gap-2">
+            <ClockIcon class="w-5 h-5 text-primary " aria-hidden="true" />
             Activité récente
           </h2>
 
-          <div class="card p-4 space-y-3 max-h-[380px] overflow-y-auto border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-2xl">
+          <div class="card p-4 space-y-3 max-h-[380px] overflow-y-auto border border-surface  bg-surface-0  rounded-2xl">
             <div 
               v-for="activity in recentActivity" 
               :key="activity.id"
-              class="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-750/50 hover:bg-gray-100 dark:hover:bg-gray-700/60 rounded-xl border border-gray-150 dark:border-gray-700/80 transition-colors"
+              class="flex items-start space-x-3 p-3 bg-emphasis  hover:bg-emphasis dark:hover:bg-emphasis rounded-xl border border-surface  transition-colors"
             >
               <div 
                 :class="[
-                  'w-8 h-8 rounded-full flex items-center justify-center text-white text-xs shrink-0 shadow-sm',
+                  'w-8 h-8 rounded-full flex items-center justify-center text-primary-contrast text-sm shrink-0 shadow-sm',
                   getActivityColor(activity.type)
                 ]"
                 aria-hidden="true"
@@ -648,10 +610,10 @@ function getSurveyStats(surveyUuid: string) {
                 <component :is="getActivityIcon(activity.type)" class="w-4 h-4" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm text-gray-900 dark:text-white font-medium leading-snug">
+                <p class="text-sm text-color -contrast font-medium leading-snug">
                   {{ activity.message }}
                 </p>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5 font-medium">
+                <p class="text-sm text-muted-color  mt-0.5 font-medium">
                   {{ formatRelativeTime(activity.timestamp) }}
                 </p>
               </div>
@@ -668,43 +630,6 @@ function getSurveyStats(surveyUuid: string) {
       </aside>
     </div>
 
-    <!-- Templates Modal via PrimeVue Dialog for full A11Y -->
-    <Dialog 
-      v-model:visible="showTemplates" 
-      modal 
-      header="Modèles de questionnaires pré-définis" 
-      class="w-full max-w-4xl"
-      :dismissableMask="true"
-    >
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-        <button 
-          v-for="template in templates" 
-          :key="template.id"
-          type="button"
-          :aria-label="`Créer un questionnaire basé sur le modèle ${template.title}`"
-          class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-primary-500 hover:shadow-md transition-all duration-200 text-left flex flex-col justify-between bg-white dark:bg-gray-800 hover:bg-primary-50/20 dark:hover:bg-primary-950/20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
-          @click="createFromTemplate(template)"
-        >
-          <div>
-            <div class="flex items-center space-x-3 mb-3">
-              <component :is="template.icon" class="w-6 h-6 text-primary-600 dark:text-primary-400 shrink-0" aria-hidden="true" />
-              <h3 class="font-bold text-gray-900 dark:text-white text-base">{{ template.title }}</h3>
-            </div>
-            <p class="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-normal">
-              {{ template.description }}
-            </p>
-          </div>
-          <div class="flex items-center justify-between border-t border-gray-150 dark:border-gray-700 pt-3 mt-2">
-            <span class="text-xs text-gray-700 dark:text-gray-300 font-semibold bg-gray-100 dark:bg-gray-750 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600">
-              {{ template.questions }} questions
-            </span>
-            <span class="text-primary-700 dark:text-primary-400 text-xs font-bold flex items-center gap-1 group-hover:underline">
-              Utiliser ce modèle →
-            </span>
-          </div>
-        </button>
-      </div>
-    </Dialog>
 
     <!-- Duplicate Survey Modal -->
     <DuplicateSurveyModal
@@ -724,11 +649,10 @@ function getSurveyStats(surveyUuid: string) {
 }
 
 .survey-menu {
-  @apply absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 py-1;
+  @apply absolute right-0 mt-2 w-48 bg-surface-0  rounded-lg shadow-lg border border-surface  z-50 py-1;
 }
 
 .menu-item {
-  @apply flex items-center space-x-2 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border-0 bg-transparent text-left cursor-pointer;
+  @apply flex items-center space-x-2 px-3 py-2 text-sm text-color  hover:bg-emphasis dark:hover:bg-emphasis transition-colors border-0 bg-transparent text-left cursor-pointer;
 }
 </style>
-

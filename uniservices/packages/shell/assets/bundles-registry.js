@@ -10,6 +10,7 @@ import stage from '../../stage-bundle/assets/manifest.ts';
 import document from '../../document-bundle/assets/manifest.ts';
 import finance from '../../finance-bundle/assets/manifest.ts';
 import message from '../../message-bundle/assets/manifest.ts';
+import ParcautoBundle from '../../parcauto-bundle/assets/manifest.ts';
 
 export const bundles = [
   auth,
@@ -20,6 +21,7 @@ helpdesk,
   stage,
   document,
   finance,
-  message
+  message,
+  ParcautoBundle,
 ];
 

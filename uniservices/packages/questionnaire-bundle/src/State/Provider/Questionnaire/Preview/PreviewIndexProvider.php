@@ -6,27 +6,25 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use QuestionnaireBundle\Domain\Questionnaire\Structure\QuestionnaireStructureService;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
-use Doctrine\ORM\EntityManagerInterface;
+use QuestionnaireBundle\Security\QuestionnaireResolver;
+use QuestionnaireBundle\Security\QuestionnaireVoter;
 use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewIndexDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewSectionIndexDto;
 
-/** @implements ProviderInterface<PreviewIndexDto> */
+/**
+ * @implements ProviderInterface<PreviewIndexDto>
+ */
 final readonly class PreviewIndexProvider implements ProviderInterface
 {
     public function __construct(
-        private EntityManagerInterface $em,
+        private readonly QuestionnaireResolver $questionnaires,
         private readonly QuestionnaireStructureService $structureService,
     ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PreviewIndexDto
     {
-        $uuid = $uriVariables['questionnaireUuid'];
-        $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $uuid]);
-
-        if (!$q instanceof Questionnaire) {
-            throw new \RuntimeException('Questionnaire not found');
-        }
+        $q = $this->questionnaires->charger($uriVariables['questionnaireUuid'] ?? '', QuestionnaireVoter::CAN_EDIT_QUESTIONNAIRE);
 
         $plan = $this->structureService->buildPlan($q);
 
@@ -45,14 +43,9 @@ final readonly class PreviewIndexProvider implements ProviderInterface
             );
         }
 
-        $title = $q->getTitle();
-        if ($title === null) {
-            throw new \LogicException('Questionnaire title is required');
-        }
-
         return new PreviewIndexDto(
             $q->getUuidString(),
-            $title,
+            (string) $q->getTitle(),
             $q->getOpt(),
             $q->getStartText(),
             $q->getEndText(),

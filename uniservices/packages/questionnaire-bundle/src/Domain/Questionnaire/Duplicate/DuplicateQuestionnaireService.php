@@ -2,6 +2,9 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Duplicate;
 
+use App\Entity\Structure\StructureAnneeUniversitaire;
+use App\Entity\Structure\StructureDepartement;
+use App\Entity\Users\Personnel;
 use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
@@ -13,24 +16,42 @@ use Symfony\Component\Uid\Uuid;
 final class DuplicateQuestionnaireService
 {
     public function __construct(
-        private readonly EntityManagerInterface $em
+        private readonly EntityManagerInterface $em,
+        private readonly \App\AnneeUniversitaire\AnneeUniversitaireContext $anneeContext
     ) {
     }
 
-    /** @return array{questionnaire: Questionnaire, sectionsCount: int, questionsCount: int} */
-    public function duplicate(Questionnaire $source, ?string $newTitle = null): array
+    /**
+     * Copie complète (sections, questions, règles conditionnelles réécrites). La copie est un brouillon de l'année
+     * universitaire du contexte cible ; chaque question garde la trace de sa question d'origine (comparaison entre campagnes).
+     *
+     * Options : 'departement' (département de la copie, sinon celui de la source), 'modele' (la copie est un modèle),
+     * 'modeleOrigine' (modèle dont la copie est une campagne), 'anneeUniversitaireId' (cible explicite hors HTTP).
+     *
+     * @param array{departement?: ?StructureDepartement, modele?: bool, modeleOrigine?: ?Questionnaire, anneeUniversitaireId?: int} $options
+     *
+     * @return array{questionnaire: Questionnaire, sectionsCount: int, questionsCount: int}
+     */
+    public function duplicate(Questionnaire $source, ?string $newTitle = null, ?Personnel $auteur = null, array $options = []): array
     {
         $this->em->beginTransaction();
         try {
             $duplicate = new Questionnaire();
             $duplicate->setUuid(Uuid::v4());
-            $duplicate->setTitle($newTitle !== null && $newTitle !== '' && $newTitle !== '0' && trim($newTitle) !== '' ? trim($newTitle) : ($source->getTitle() . ' (Copie)'));
+            $duplicate->setTitle($newTitle !== null && $newTitle !== '0' && trim($newTitle) !== '' ? trim($newTitle) : ($source->getTitle() . ' (Copie)'));
             $duplicate->setDescription($source->getDescription());
             $duplicate->setStatus(QuestStatutEnum::DRAFT);
             $duplicate->setOpeningDate(null);
             $duplicate->setClosingDate(null);
             $duplicate->setOpt($source->getOpt());
-            $duplicate->setDepartement($source->getDepartement());
+            $duplicate->setDepartement(\array_key_exists('departement', $options) ? $options['departement'] : $source->getDepartement());
+            $duplicate->setEstModele($options['modele'] ?? false);
+            $duplicate->setModeleOrigine($options['modeleOrigine'] ?? ($source->isEstModele() ? null : $source->getModeleOrigine()));
+            $duplicate->setAnneeUniversitaire($duplicate->isEstModele() ? null : $this->em->getReference(StructureAnneeUniversitaire::class, $options['anneeUniversitaireId'] ?? $this->anneeContext->requireId()));
+            // La copie appartient à la personne qui la crée.
+            $duplicate->setAuthor($auteur ?? $source->getAuthor());
+            $duplicate->setCompletionNotified(false);
+            $duplicate->setCompletionNotifiedAt(null);
 
             $this->em->persist($duplicate);
 
@@ -47,21 +68,16 @@ final class DuplicateQuestionnaireService
             foreach ($source->getSections() as $section) {
                 $sectionsCount++;
                 $newSection = new QuestionnaireSection();
-                $sectionTitle = $section->getTitle();
-                $sectionSortOrder = $section->getSortOrder();
-                if ($sectionSortOrder === null) {
-                    throw new \LogicException('Section fields are required');
-                }
                 $newSection->setUuid(Uuid::v4());
-                $newSection->setTitle($sectionTitle);
+                $newSection->setTitle($section->getTitle());
                 $newSection->setDescription($section->getDescription());
-                $newSection->setSortOrder($sectionSortOrder);
+                $newSection->setSortOrder(LooseValue::int($section->getSortOrder()));
                 $newSection->setTypeSection($section->getTypeSection());
                 $newSection->setOpt($section->getOpt());
                 $newSection->setQuestionnaire($duplicate);
 
                 $sectionUuidMap[(string)$section->getUuid()] = (string)$newSection->getUuid();
-                if (!in_array($section->getId(), [null, 0], true)) {
+                if ($section->getId() !== null) {
                     $sectionUuidMap[(string)$section->getId()] = (string)$newSection->getUuid();
                 }
 
@@ -70,24 +86,20 @@ final class DuplicateQuestionnaireService
                 foreach ($section->getQuestions() as $q) {
                     $questionsCount++;
                     $newQ = new QuestionnaireQuestion();
-                    $label = $q->getLabel();
-                    $sortOrder = $q->getSortOrder();
-                    if ($label === null || $sortOrder === null) {
-                        throw new \LogicException('Question fields are required');
-                    }
                     $newQ->setUuid(Uuid::v4());
-                    $newQ->setLabel($label);
+                    $newQ->setLabel(LooseValue::string($q->getLabel()));
                     $newQ->setTypeQuestion($q->getTypeQuestion());
                     $newQ->setRequired((bool)$q->isObligatoire());
                     $newQ->setHelp($q->getHelp());
                     $newQ->setChoices($q->getChoices());
                     $newQ->setConditionalRules($q->getConditionalRules());
-                    $newQ->setSortOrder($sortOrder);
+                    $newQ->setSortOrder(LooseValue::int($q->getSortOrder()));
+                    $newQ->setOrigine($q->cleComparaison());
                     $newQ->setOpt($q->getOpt());
                     $newQ->setSection($newSection);
 
                     $questionUuidMap[(string)$q->getUuid()] = (string)$newQ->getUuid();
-                    if (!in_array($q->getId(), [null, 0], true)) {
+                    if ($q->getId() !== null) {
                         $questionUuidMap[(string)$q->getId()] = (string)$newQ->getUuid();
                     }
 

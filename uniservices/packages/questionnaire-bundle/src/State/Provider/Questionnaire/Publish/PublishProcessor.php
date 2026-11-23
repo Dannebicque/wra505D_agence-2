@@ -6,15 +6,18 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use QuestionnaireBundle\Domain\Questionnaire\Publish\PublishQuestionnaireService;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
-use Doctrine\ORM\EntityManagerInterface;
+use QuestionnaireBundle\Security\QuestionnaireResolver;
+use QuestionnaireBundle\Security\QuestionnaireVoter;
 use QuestionnaireBundle\ApiDto\Questionnaire\Publish\PublishInputDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Publish\PublishOutputDto;
 
-/** @implements ProcessorInterface<PublishInputDto, PublishOutputDto> */
+/**
+ * @implements ProcessorInterface<PublishInputDto, PublishOutputDto>
+ */
 final class PublishProcessor implements ProcessorInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface      $em,
+        private readonly QuestionnaireResolver       $questionnaires,
         private readonly PublishQuestionnaireService $service
     ) {
     }
@@ -22,25 +25,17 @@ final class PublishProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): PublishOutputDto
     {
         /** @var PublishInputDto $data */
-        $id = $uriVariables['questionnaireUuid'];
-
-        $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $id]);
-        if (!$q instanceof Questionnaire) {
-            throw new \RuntimeException('Questionnaire not found');
-        }
+        $q = $this->questionnaires->charger($uriVariables['questionnaireUuid'] ?? '', QuestionnaireVoter::CAN_PUBLISH_QUESTIONNAIRE);
 
         $result = $this->service->publish($q, $data->recipients);
-        $status = $q->getStatus();
-        if ($status === null) {
-            throw new \LogicException('Questionnaire status is required');
-        }
 
         return new PublishOutputDto(
-            questionnaireUuid: $q->getUuidString(),
-            status: $status,
+            questionnaireUuid: (string) $q->getUuid(),
+            status: $q->getStatus() ?? throw new \LogicException('Le questionnaire publié n\'a pas de statut.'),
             publishedAt: $result['publishedAt'],
             sectionsCount: $result['sectionsCount'],
-            invitationsCount: $result['invitationsCount']
+            invitationsCount: $result['invitationsCount'],
+            emailsCount: $result['emailsCount']
         );
     }
 }

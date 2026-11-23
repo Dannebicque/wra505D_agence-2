@@ -67,6 +67,12 @@ doctrine:
                         dir: 'src/Entity'
                         prefix: 'UnifolioBundle\Entity'
                         alias: Unifolio
+                    ParcautoBundle:
+                        is_bundle: true
+                        type: attribute
+                        dir: 'src/Entity'
+                        prefix: 'ParcautoBundle\Entity'
+                        alias: Parcauto
 
 when@test:
     doctrine:

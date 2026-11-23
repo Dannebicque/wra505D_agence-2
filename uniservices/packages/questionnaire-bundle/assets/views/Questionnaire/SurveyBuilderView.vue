@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useConfirmation } from '@composables/useConfirmation';
+import { showDanger, showSuccess, showWarn } from '@helpers/toast.js';
+import { useEtablissement } from '@/composables/useEtablissement';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -12,11 +15,10 @@ import {
   ClockIcon
 } from '@heroicons/vue/24/outline';
 import ActionDropdown from '@components/components/ActionDropdown.vue';
-import {HeaderComponent} from '@components';
+import { EmptyState, HeaderComponent } from '@components';
 import { VueDraggableNext as draggable } from 'vue-draggable-next';
 
 import { useSurveyStore } from '@/stores/survey';
-import { useUIStore } from '@/stores/ui';
 import type { Section, Question, QuestionType } from '@types';
 
 // Components (these would be separate files)
@@ -31,11 +33,11 @@ import { FormField } from '@/components/Form';
 import { calculateEstimatedTime, formatEstimatedTime } from '@/utils/survey';
 import { getAllDepartementsService } from '@requests';
 import { useUsersStore } from '@stores';
+const { libelleGlobal } = useEtablissement();
 
 const route = useRoute();
 const router = useRouter();
 const surveyStore = useSurveyStore();
-const uiStore = useUIStore();
 const userStore = useUsersStore();
 
 const showSettings = ref(false);
@@ -52,7 +54,7 @@ const departements = ref<{ id: number; libelle: string }[]>([]);
 const surveyDepartementId = ref<number | null>(null);
 
 const departementOptions = computed(() => [
-  { label: 'IUT (Global)', value: null },
+  { label: libelleGlobal.value, value: null, couleur: 'var(--p-text-muted-color)' },
   ...departements.value.map(d => ({
     label: d.libelle || `Département ${d.id}`,
     value: d.id
@@ -60,7 +62,7 @@ const departementOptions = computed(() => [
 ]);
 
 function getDeptLabel(deptId: number | null) {
-  if (!deptId) return 'IUT (Global)';
+  if (!deptId) return libelleGlobal.value;
   const found = departements.value.find(d => d.id === deptId);
   return found?.libelle || `Département ${deptId}`;
 }
@@ -152,7 +154,7 @@ function updateSurveySettings(payload: any) {
     surveyStore.updateSurvey({ opt: payload });
   }
   showSettings.value = false;
-  uiStore.addNotification('success', 'Paramètres enregistrés', 'Les paramètres du questionnaire ont été mis à jour.');
+  showSuccess('Les paramètres du questionnaire ont été mis à jour.', 'Paramètres enregistrés');
 }
 
 // Section management
@@ -166,7 +168,7 @@ async function saveSection(section: Section) {
   }
 
   closeSectionModal();
-  uiStore.addNotification('success', 'Section sauvegardée', 'La section a été sauvegardée avec succès.');
+  showSuccess('La section a été sauvegardée avec succès.', 'Section sauvegardée');
 }
 
 function closeSectionModal() {
@@ -195,17 +197,28 @@ async function confirmDuplicateSection(payload: { newTitle: string; duplicateQue
     await surveyStore.duplicateSection(duplicatingSection.value.uuid, payload);
     showDuplicateSectionModal.value = false;
     duplicatingSection.value = null;
-    uiStore.addNotification('success', 'Section dupliquée', 'La section et sa logique conditionnelle ont été dupliquées avec succès.');
+    showSuccess('La section et sa logique conditionnelle ont été dupliquées avec succès.', 'Section dupliquée');
   } catch (error) {
     console.error('Failed to duplicate section:', error);
-    uiStore.addNotification('danger', 'Erreur de duplication', 'Une erreur est survenue lors de la duplication.');
+    showDanger('Une erreur est survenue lors de la duplication.', 'Erreur de duplication');
   }
 }
 
-function deleteSection(section: Section) {
-  if (confirm('Êtes-vous sûr de vouloir supprimer cette section ?')) {
-    surveyStore.deleteSection(section.uuid);
-    uiStore.addNotification('success', 'Section supprimée', 'La section a été supprimée avec succès.');
+const { confirmer } = useConfirmation();
+
+async function deleteSection(section: Section) {
+  const ok = await confirmer({
+    titre: 'Supprimer la section',
+    message: `Supprimer la section « ${section.title} » et ses questions ?`,
+    libelle: 'Supprimer',
+    danger: true,
+  });
+  if (!ok) return;
+  try {
+    await surveyStore.deleteSection(section.uuid);
+    showSuccess('La section a été supprimée.', 'Section supprimée');
+  } catch (e) {
+    // apiCall a affiché l'erreur du serveur (structure figée après publication…).
   }
 }
 
@@ -245,10 +258,10 @@ async function confirmDuplicateQuestion(payload: { newLabel: string; copyRulesMo
     await surveyStore.duplicateQuestion(currentSection.value.uuid, duplicatingQuestion.value, payload);
     showDuplicateQuestionModal.value = false;
     duplicatingQuestion.value = null;
-    uiStore.addNotification('success', 'Question dupliquée', 'La question a été dupliquée avec succès.');
+    showSuccess('La question a été dupliquée avec succès.', 'Question dupliquée');
   } catch (error) {
     console.error('Failed to duplicate question:', error);
-    uiStore.addNotification('danger', 'Erreur de duplication', 'Une erreur est survenue lors de la duplication.');
+    showDanger('Une erreur est survenue lors de la duplication.', 'Erreur de duplication');
   }
 }
 
@@ -280,18 +293,23 @@ async function confirmPublish(payload: string[] | { recipients: string[]; openin
       });
     }
 
-    await surveyStore.publishSurvey(currentSurvey.value.uuid, recipients);
+    const result = await surveyStore.publishSurvey(currentSurvey.value.uuid, recipients);
     showPublishModal.value = false;
-    uiStore.addNotification('success', 'Questionnaire publié', 'Le questionnaire a été publié avec succès.');
+    const invites = result?.invitationsCount ?? 0;
+    const envoyes = result?.emailsCount ?? 0;
+    if (envoyes < invites) {
+      showWarn(`${invites} invitation(s) créée(s), mais seulement ${envoyes} e-mail(s) envoyé(s) : relancez les participants depuis le suivi.`, 'Questionnaire publié');
+    } else {
+      showSuccess(`${invites} invitation(s) envoyée(s) par e-mail.`, 'Questionnaire publié');
+    }
 
     // Redirect to responses view
     router.push({
       name: 'questionnaire_responses',
       params: { id: currentSurvey.value.uuid }
     });
-  } catch (error) {
-    console.error('Failed to publish survey:', error);
-    uiStore.addNotification('danger', 'Erreur de publication', 'Une erreur est survenue lors de la publication.');
+  } catch (error: any) {
+    showDanger(error?.response?.data?.detail || 'Une erreur est survenue lors de la publication.', 'Erreur de publication');
   }
 }
 
@@ -331,11 +349,11 @@ onMounted(async () => {
 
 .section-menu,
 .question-type-menu {
-  @apply absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50;
+  @apply absolute right-0 mt-2 w-48 bg-surface-0  rounded-lg shadow-lg border border-surface  z-50;
 }
 
 .menu-item {
-  @apply flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
+  @apply flex items-center space-x-2 px-3 py-2 text-sm text-color  hover:bg-emphasis dark:hover:bg-emphasis transition-colors;
 }
 </style>
 
@@ -346,11 +364,11 @@ onMounted(async () => {
       description="Concevez, configurez et publiez vos enquêtes d'évaluation"
     />
 
-  <div class="flex  dark:bg-gray-900">
+  <div class="flex ">
     <!-- Left Panel - Survey Structure -->
-    <div class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col me-3">
+    <div class="w-80 bg-surface-0  border-r border-surface  flex flex-col me-3">
       <!-- Survey Info -->
-      <div class="p-4 border-b border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 space-y-3">
+      <div class="p-4 border-b border-surface  bg-emphasis  space-y-3">
         <div class="space-y-3">
           <FormField label="Titre du questionnaire">
             <input
@@ -365,37 +383,40 @@ onMounted(async () => {
             <textarea
               v-model="surveyDescription"
               @blur="updateSurveyDescription"
-              class="q-input text-xs resize-none"
+              class="q-input text-sm resize-none"
               placeholder="Description ou consignes (optionnelle)..."
               rows="2"
             />
           </FormField>
 
-          <FormField label="Département ou portée" hint="Associez un département ou laissez global pour tout l'IUT">
+          <FormField label="Département ou portée" hint="Associez un département ou laissez vide pour tout l'établissement (réservé au super administrateur)">
             <Select
               v-model="surveyDepartementId"
               :options="departementOptions"
               optionLabel="label"
               optionValue="value"
               placeholder="Sélectionner..."
-              class="w-full text-xs"
+              class="w-full text-sm"
               @change="updateSurveyDepartement"
             >
               <template #value="slotProps">
                 <div v-if="slotProps.value !== null && slotProps.value !== undefined" class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full shrink-0 bg-primary-500" aria-hidden="true"></span>
-                  <span class="truncate text-xs font-semibold">{{ getDeptLabel(slotProps.value) }}</span>
+                  <span
+                    class="w-2.5 h-2.5 rounded-full shrink-0"
+                    :style="{ backgroundColor: getDeptColor(slotProps.value) }"
+                  ></span>
+                  <span class="truncate text-sm font-semibold">{{ getDeptLabel(slotProps.value) }}</span>
                 </div>
-                <div v-else class="flex items-center gap-2 text-xs font-semibold text-color">
-                  <span class="w-2.5 h-2.5 rounded-full bg-surface-400 shrink-0" aria-hidden="true"></span>
-                  <span>IUT (Global)</span>
+                <div v-else class="flex items-center gap-2 text-sm font-semibold text-color ">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emphasis shrink-0"></span>
+                  <span>{{ libelleGlobal }}</span>
                 </div>
               </template>
               <template #option="slotProps">
-                <div class="flex items-center gap-2 text-xs py-0.5">
+                <div class="flex items-center gap-2 text-sm py-0.5">
                   <span
                     class="w-2.5 h-2.5 rounded-full shrink-0"
-                    :class="slotProps.option.value === null ? 'bg-surface-400' : 'bg-primary-500'"
+                    :class="slotProps.option.value === null ? 'bg-surface-400' : '-primary'"
                     aria-hidden="true"
                   ></span>
                   <span :class="slotProps.option.value === null ? 'font-medium text-muted-color' : 'font-semibold text-color'">
@@ -407,9 +428,9 @@ onMounted(async () => {
           </FormField>
         </div>
 
-        <div class="pt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-          <ClockIcon class="w-3.5 h-3.5 text-slate-400 shrink-0" />
-          <span>Temps estimé : <strong class="text-slate-700 dark:text-slate-300 font-semibold">{{ formatEstimatedTime(estimatedTime) }}</strong></span>
+        <div class="pt-1 flex items-center gap-1.5 text-sm text-muted-color ">
+          <ClockIcon class="w-3.5 h-3.5 text-muted-color shrink-0" />
+          <span>Temps estimé : <strong class="text-color  font-semibold">{{ formatEstimatedTime(estimatedTime) }}</strong></span>
         </div>
       </div>
 
@@ -419,8 +440,8 @@ onMounted(async () => {
       <div class="flex-1 overflow-y-auto">
         <div class="p-4">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Sections</h3>
-            <Button @click="showSectionModal = true" severity="primary" class="text-xs">
+            <h3 class="text-sm font-semibold text-color -contrast">Sections</h3>
+            <Button @click="showSectionModal = true" severity="primary" class="text-sm">
               <PlusIcon class="w-3 h-3" />
             </Button>
           </div>
@@ -429,8 +450,8 @@ onMounted(async () => {
             <div v-for="(section, index) in sections" :key="section.uuid" :class="[
               'border rounded-lg p-3 cursor-pointer transition-colors',
               currentSection?.uuid === section.uuid
-                ? 'border-primary-300 bg-primary-50 dark:border-primary-600 dark:bg-primary-900'
-                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                ? '-primary bg-primary-50 -600 -900'
+                : 'border-surface  hover:border-surface dark:hover:border-surface'
             ]" @click="selectSection(section)">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2 flex-1">
@@ -438,10 +459,10 @@ onMounted(async () => {
                     <Bars3Icon class="w-4 h-4" />
                   </div>
                   <div class="flex-1">
-                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                    <h4 class="text-sm font-medium text-color -contrast">
                       {{ section.title }}
                     </h4>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-sm text-muted-color ">
                       {{ section.questions.length }} question{{ section.questions.length > 1 ? 's' : '' }}
                     </p>
                   </div>
@@ -453,8 +474,8 @@ onMounted(async () => {
 
               <!-- Section Type Indicator -->
               <div v-if="section.typeSection === 'configurable' && section.opt" class="mt-2 flex items-center space-x-1">
-                <Cog6ToothIcon class="w-3 h-3 text-blue-500" />
-                <span class="text-xs text-blue-600 dark:text-blue-400">
+                <Cog6ToothIcon class="w-3 h-3 text-primary" />
+                <span class="text-sm text-primary ">
                   {{ section.opt.elements?.length || 0 }} {{ section.opt.sourceLabel?.toLowerCase() }}
                 </span>
               </div>
@@ -464,12 +485,13 @@ onMounted(async () => {
       </div>
 
       <!-- Survey Settings -->
-      <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div class="p-4 border-t border-surface ">
         <Button severity="secondary" @click="showSettings = true" class="w-full text-sm">
           <Cog6ToothIcon class="w-4 h-4" />
           Paramètres du questionnaire
         </Button>
-        <Button v-if="currentSurvey && currentSurvey.status === 'draft'" @click="publishSurvey" severity="primary"
+        <Tag v-if="currentSurvey?.estModele" severity="info" value="Modèle" icon="pi pi-bookmark" />
+        <Button v-if="currentSurvey && currentSurvey.status === 'draft' && !currentSurvey.estModele" @click="publishSurvey" severity="primary"
           class="w-full mt-2 text-sm">
           <RocketLaunchIcon class="w-4 h-4" />
           <span class="hidden sm:inline">Publier</span>
@@ -480,13 +502,13 @@ onMounted(async () => {
     <!-- Main Content - Question Builder -->
     <div class="flex-1 flex flex-col">
       <!-- Toolbar -->
-      <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+      <div class="bg-surface-0  border-b border-surface  p-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 class="text-lg font-semibold text-color -contrast">
               {{ currentSection?.title || 'Sélectionnez une section' }}
             </h2>
-            <span class="text-sm text-gray-500 dark:text-gray-400">
+            <span class="text-sm text-muted-color ">
               {{ currentSection?.questions.length || 0 }} question{{ (currentSection?.questions.length || 0) > 1 ? 's' :
                 '' }}
             </span>
@@ -504,24 +526,12 @@ onMounted(async () => {
 
       <!-- Questions Area -->
       <div class="flex-1 overflow-y-auto mt-3">
-        <div v-if="!currentSection" class="text-center py-12">
-          <DocumentTextIcon class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Sélectionnez une section
-          </h3>
-          <p class="text-gray-600 dark:text-gray-400">
-            Choisissez une section dans le panneau de gauche pour commencer à ajouter des questions.
-          </p>
-        </div>
+        <EmptyState v-if="!currentSection" :icon="DocumentTextIcon" title="Sélectionnez une section"
+          description="Choisissez une section dans le panneau de gauche pour commencer à ajouter des questions." />
 
-        <div v-else-if="currentSection.questions.length === 0" class="text-center py-12">
-          <QuestionMarkCircleIcon class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Aucune question
-          </h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4">
-            Commencez par ajouter votre première question à cette section.
-          </p>
+        <div v-else-if="currentSection.questions.length === 0" class="text-center py-6">
+          <EmptyState :icon="QuestionMarkCircleIcon" title="Aucune question"
+            description="Commencez par ajouter votre première question à cette section." />
           <ActionDropdown :actions="questionTypes" button-label="Ajouter une question" button-icon="pi pi-plus"
             button-severity="primary" size="small" />
         </div>

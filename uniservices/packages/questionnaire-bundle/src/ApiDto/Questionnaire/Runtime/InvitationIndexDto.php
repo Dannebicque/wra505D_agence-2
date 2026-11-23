@@ -10,6 +10,7 @@ use QuestionnaireBundle\State\Provider\Questionnaire\Runtime\InvitationIndexProv
     operations: [
         new Get(
             uriTemplate: '/invitations/{token}',
+            security: "is_granted(\'PUBLIC_ACCESS\')",
             provider: InvitationIndexProvider::class
         ),
     ],
@@ -21,8 +22,15 @@ final class InvitationIndexDto
         public string              $questionnaireTitle,
         public string              $invitationStatus,
         public ?\DateTimeImmutable $startedAt,
+        /** Le répondant peut (encore) enregistrer ou modifier ses réponses. */
+        public bool                $modifiable,
         public ?\DateTimeImmutable $submittedAt,
-        public array               $sections
+        public array               $sections,
+        public ?string             $description = null,
+        /** Durée estimée en secondes (calculée par l'éditeur), null si inconnue. */
+        public ?int                $estimatedTime = null,
+        public ?string             $startText = null,
+        public ?string             $endText = null,
     ) {
     }
 }

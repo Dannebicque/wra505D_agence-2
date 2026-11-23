@@ -19,7 +19,6 @@ withDefaults(defineProps<{
 
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
 </script>
-
 <template>
   <label :class="['q-choice', modelValue ? toneActiveClasses[tone] : '', disabled ? 'opacity-60 !cursor-not-allowed' : '']">
     <div class="flex items-start gap-2.5 min-w-0 flex-1">

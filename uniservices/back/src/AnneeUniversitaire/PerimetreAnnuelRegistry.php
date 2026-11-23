@@ -75,6 +75,8 @@ final class PerimetreAnnuelRegistry
         'ParametrageFormation', 'MigrationV1Lien', 'ReponseCritere',
         // Données personnelles de l'étudiant, sans année universitaire.
         'ReadNotification', 'SentMessage', 'FavoriteDocument',
+        // Parc automobile : véhicules et réservations sans année universitaire.
+        'Vehicule', 'Reservation', 'JournalVehicule', 'EcheanceEntretien', 'Equipement',
     ];
 
     private const DTO_MODES = [
@@ -86,7 +88,6 @@ final class PerimetreAnnuelRegistry
         // Vues de l'étudiant connecté : le serveur lit l'année de son inscription, pas la sélection de l'interface.
         'StudentTimetable' => 'transversal', 'StudentWeeks' => 'transversal', 'Transcript' => 'transversal',
         'NotificationFeed' => 'transversal', 'SearchResult' => 'transversal', 'CourseLog' => 'transversal',
-        'StudentInvitationDto' => 'transversal',
     ];
 
     public function mode(string $class): string

@@ -1,12 +1,13 @@
 <script setup>
+import { updateEtudiantService } from '@requests/user_services/etudiantService';
+import { messageErreurApi } from '@/utils/erreurApi';
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { getStagePeriodesService } from '../../requests/stage_service';
 import { getStageEtudiantsService, createStageEtudiantService, updateStageEtudiantService } from '../../requests/stage_etudiant';
 import { useUsersStore, useEtablissementStore } from '@stores';
-import api from '@helpers/axios';
-import { ValidatedInput, validationRules } from '@components';
+import { HeaderComponent, ValidatedInput, validationRules } from '@components';
 import { FormSection, ToggleCard } from '../../components/Form';
 import {
   UserIcon,
@@ -492,10 +493,7 @@ const submitRequest = async () => {
   isSubmitting.value = true;
   try {
     // 1. Mise à jour du profil étudiant
-    await api.patch(`/api/etudiants/${userStore.userId}`, {
-      tel1:      form.value.phone,
-      mailPerso: form.value.emailPerso,
-    }, { headers: { 'Content-Type': 'application/merge-patch+json' } });
+    await updateEtudiantService(userStore.userId, { tel1: form.value.phone, mailPerso: form.value.emailPerso }, '', false);
 
     // 2. Résolution du maître de stage
     const tuteur = form.value.tuteurSameAsSignatory
@@ -539,7 +537,6 @@ const submitRequest = async () => {
       gratificationPeriode:  'H',
       assuranceCompagnie:    form.value.insuranceCompany       || null,
       assuranceNumero:       form.value.insurancePolicyNumber  || null,
-      dateDepotFormulaire:   new Date().toISOString(),
       etatStage:             'ETAT_STAGE_DEPOSE',
       entreprise: {
         raisonSociale: form.value.companyName,
@@ -580,37 +577,23 @@ const submitRequest = async () => {
 
   } catch (error) {
     console.error('Erreur lors de la soumission:', error);
-    toast.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de soumettre la demande. Veuillez vérifier vos saisies.', life: 5000 });
+    toast.add({ severity: 'error', summary: 'Demande non déposée', detail: messageErreurApi(error, 'Impossible de soumettre la demande. Veuillez vérifier vos saisies.'), life: 8000 });
   } finally {
     isSubmitting.value = false;
   }
 };
 
-const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
 </script>
 
 <template>
   <div class="mx-auto space-y-6">
-    <Toast />
 
     <!-- ── En-tête ─────────────────────────────────────────────────────────── -->
-    <div class="flex items-center gap-4 justify-between border-b border-slate-200 dark:border-slate-800 pb-5">
-      <div>
-        <h1 class="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-          <i class="pi pi-file-edit text-primary-500 dark:text-primary-400" aria-hidden="true"></i>
-          <span>{{ existingStageId ? 'Compléter / Modifier ma convention' : 'Demande de Convention de Stage' }}</span>
-        </h1>
-        <p class="text-xs text-muted-color mt-1">
-          {{ existingStageId ? 'Modifiez et déposez à nouveau votre convention de stage auprès du responsable pédagogique.' : 'Remplissez les informations nécessaires pour la validation et l\'édition de votre convention de stage.' }}
-        </p>
-      </div>
-      <button
-        @click="cancelRequest"
-        class="min-h-[44px] text-xs font-semibold px-4 py-2 border border-(--ui-border-color) text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
-      >
-        Annuler
-      </button>
-    </div>
+    <HeaderComponent icon="pi pi-file-edit" color="teal" :back-url="{ name: 'EtudiantDashboard' }"
+      :titre="existingStageId ? 'Compléter / Modifier ma convention' : 'Demande de convention de stage'"
+      :description="existingStageId
+        ? 'Modifiez et déposez à nouveau votre convention de stage auprès du responsable pédagogique.'
+        : 'Remplissez les informations nécessaires pour la validation et l\'édition de votre convention de stage.'" />
 
     <!-- ── Stepper ─────────────────────────────────────────────────────────── -->
     <ol class="grid grid-cols-2 md:grid-cols-4 gap-3" aria-label="Étapes de la demande">
@@ -621,20 +604,20 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
         :class="[
           'flex flex-col items-center text-center p-3 rounded-2xl border transition-all duration-300',
           currentStep === step.id
-            ? 'bg-primary-50 dark:bg-primary-950/30 border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-300 shadow-2xs'
+            ? 'bg-primary-50 -950/30 -primary -400 -primary -300 shadow-2xs'
             : currentStep > step.id
-            ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-primary-600 dark:text-primary-400'
-            : 'bg-white dark:bg-slate-800/20 border-slate-200 dark:border-slate-800 text-muted-color'
+            ? 'bg-emphasis  border-surface  -primary -400'
+            : 'bg-surface-0  border-surface  text-muted-color'
         ]"
       >
         <div
           :class="[
             'w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs border mb-1.5 transition-all shadow-2xs',
             currentStep === step.id
-              ? 'border-primary-500 bg-primary-500 text-white'
+              ? '-primary -primary text-primary-contrast'
               : currentStep > step.id
-              ? 'border-primary-600 bg-primary-600 text-white'
-              : 'border-(--ui-border-color) bg-white dark:bg-slate-800 text-muted-color'
+              ? '-primary -primary text-primary-contrast'
+              : 'border-(--ui-border-color) bg-surface-0  text-muted-color'
           ]"
         >
           <i v-if="currentStep > step.id" class="pi pi-check text-xs" aria-hidden="true"></i>
@@ -645,7 +628,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
     </ol>
 
     <!-- ── Carte principale ───────────────────────────────────────────────── -->
-    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
+    <div class="bg-surface-0  border border-surface  rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
 
       <!-- ═══════════════════════════════════════════════════════════════════
            ÉTAPE 1 : Profil étudiant & Assurances
@@ -990,7 +973,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
                 <div
                   v-for="inter in selectedPeriod.periodesInterruption"
                   :key="inter.id"
-                  class="bg-surface-0 dark:bg-surface-900 border border-surface rounded-xl p-3 flex items-start justify-between gap-2 shadow-2xs"
+                  class="bg-surface-0 -900 border border-surface rounded-xl p-3 flex items-start justify-between gap-2 shadow-2xs"
                 >
                   <div>
                     <span class="font-bold text-color block text-xs">
@@ -1093,74 +1076,74 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
           title="Récapitulatif et validation"
           description="Vérifiez l'ensemble des informations avant d'envoyer votre demande pour signature."
         >
-          <div class="bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 space-y-4">
+          <div class="bg-emphasis  border border-surface  rounded-2xl p-5 space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <!-- Période & contact -->
               <div>
                 <span class="text-muted-color block font-medium">Période du stage :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedPeriodLabel || '-' }}</span>
+                <span class="font-bold text-color ">{{ selectedPeriodLabel || '-' }}</span>
               </div>
               <div>
                 <span class="text-muted-color block font-medium">Téléphone / e-mail étudiant :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ form.phone || '-' }} — {{ form.emailPerso || '-' }}</span>
+                <span class="font-bold text-color ">{{ form.phone || '-' }} — {{ form.emailPerso || '-' }}</span>
               </div>
               <div>
                 <span class="text-muted-color block font-medium">Sécurité sociale :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">
+                <span class="font-bold text-color ">
                   {{ form.insuranceCompany || 'Non renseigné' }}
-                  <span v-if="form.insurancePolicyNumber" class="text-xs text-slate-500 font-normal block mt-0.5">
+                  <span v-if="form.insurancePolicyNumber" class="text-xs text-muted-color font-normal block mt-0.5">
                     {{ form.insurancePolicyNumber }}
                   </span>
                 </span>
               </div>
 
-              <div class="md:col-span-2 border-t border-slate-200 dark:border-slate-700/60 pt-3 mt-1">
+              <div class="md:col-span-2 border-t border-surface  pt-3 mt-1">
                 <span class="text-2xs font-bold uppercase tracking-wider text-muted-color block mb-2">Entreprise</span>
               </div>
               <div class="md:col-span-2">
                 <span class="text-muted-color block font-medium">Raison sociale &amp; SIRET :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ form.companyName || '-' }} <span class="font-normal">({{ form.companySiret || 'SIRET non renseigné' }})</span></span>
+                <span class="font-bold text-color ">{{ form.companyName || '-' }} <span class="font-normal">({{ form.companySiret || 'SIRET non renseigné' }})</span></span>
               </div>
               <div class="md:col-span-2">
                 <span class="text-muted-color block font-medium">Adresse :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">
+                <span class="font-bold text-color ">
                   {{ form.companyAddress.adresse || '-' }}, {{ form.companyAddress.codePostal }} {{ form.companyAddress.ville }}
                 </span>
               </div>
               <div>
                 <span class="text-muted-color block font-medium">Représentant légal :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ form.signatoryCivilite }} {{ form.signatoryPrenom }} {{ form.signatoryNom || '-' }}</span>
-                <span class="text-slate-500 block">{{ form.signatoryTitle }}</span>
+                <span class="font-bold text-color ">{{ form.signatoryCivilite }} {{ form.signatoryPrenom }} {{ form.signatoryNom || '-' }}</span>
+                <span class="text-muted-color block">{{ form.signatoryTitle }}</span>
               </div>
               <div>
                 <span class="text-muted-color block font-medium">Maître de stage :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ supervisorDisplay }}</span>
-                <span v-if="form.tuteurSameAsSignatory" class="text-2xs text-primary-600 dark:text-primary-400 block">(idem représentant légal)</span>
+                <span class="font-bold text-color ">{{ supervisorDisplay }}</span>
+                <span v-if="form.tuteurSameAsSignatory" class="text-2xs -primary -400 block">(idem représentant légal)</span>
               </div>
 
-              <div class="md:col-span-2 border-t border-slate-200 dark:border-slate-700/60 pt-3 mt-1">
+              <div class="md:col-span-2 border-t border-surface  pt-3 mt-1">
                 <span class="text-2xs font-bold uppercase tracking-wider text-muted-color block mb-2">Mission</span>
               </div>
               <div>
                 <span class="text-muted-color block font-medium">Dates :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">
+                <span class="font-bold text-color ">
                   Du {{ formatDate(form.startDate) }} au {{ formatDate(form.endDate) }}
                 </span>
-                <span v-if="!areDatesEditable" class="text-2xs text-slate-500 block mt-0.5">(dates fixes de la période)</span>
-                <span v-else class="text-2xs text-primary-600 dark:text-primary-400 block mt-0.5">(dates flexibles adaptées)</span>
+                <span v-if="!areDatesEditable" class="text-2xs text-muted-color block mt-0.5">(dates fixes de la période)</span>
+                <span v-else class="text-2xs -primary -400 block mt-0.5">(dates flexibles adaptées)</span>
               </div>
               <div>
                 <span class="text-muted-color block font-medium">Gratification :</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ form.salaryAmount }} €/h — {{ form.weeklyHours }}h/semaine</span>
-                <span class="text-2xs text-slate-500 block mt-0.5">(min. établissement : {{ minGratification }} €/h)</span>
+                <span class="font-bold text-color ">{{ form.salaryAmount }} €/h — {{ form.weeklyHours }}h/semaine</span>
+                <span class="text-2xs text-muted-color block mt-0.5">(min. établissement : {{ minGratification }} €/h)</span>
               </div>
               <div class="md:col-span-2">
                 <span class="text-muted-color block font-medium">Sujet :</span>
-                <p class="font-bold text-slate-800 dark:text-slate-200 mt-1">{{ form.subject || '-' }}</p>
+                <p class="font-bold text-color  mt-1">{{ form.subject || '-' }}</p>
               </div>
               <div class="md:col-span-2">
                 <span class="text-muted-color block font-medium">Activités :</span>
-                <p class="font-medium text-slate-700 dark:text-slate-300 mt-1 leading-relaxed whitespace-pre-line">{{ form.activities || '-' }}</p>
+                <p class="font-medium text-color  mt-1 leading-relaxed whitespace-pre-line">{{ form.activities || '-' }}</p>
               </div>
             </div>
           </div>
@@ -1195,7 +1178,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
                 <span
                   v-for="b in currentStepBlockers"
                   :key="b.field"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-0 dark:bg-surface-900 text-color font-semibold text-[11px]"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-0 -900 text-color font-semibold text-[11px]"
                 >
                   <span class="font-bold">{{ b.label }}</span>
                   <span>({{ b.message }})</span>
@@ -1219,11 +1202,11 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
       </div>
 
       <!-- ── Boutons de navigation ──────────────────────────────────────── -->
-      <div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700/80 pt-5 mt-6">
+      <div class="flex items-center justify-between border-t border-surface  pt-5 mt-6">
         <button
           v-if="currentStep > 1"
           @click="prevStep"
-          class="min-h-[44px] text-xs font-semibold px-4 py-2.5 rounded-xl border border-(--ui-border-color) text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2 cursor-pointer"
+          class="min-h-[44px] text-xs font-semibold px-4 py-2.5 rounded-xl border border-(--ui-border-color) text-color  hover:bg-emphasis dark:hover:bg-emphasis transition-all flex items-center gap-2 cursor-pointer"
         >
           <i class="pi pi-arrow-left text-[10px]" aria-hidden="true"></i>
           <span>Précédent</span>
@@ -1235,7 +1218,7 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
             v-if="currentStep < totalSteps"
             type="button"
             @click="nextStep"
-            class="min-h-[44px] text-xs font-bold px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+            class="min-h-[44px] text-xs font-bold px-5 py-2.5 rounded-xl -primary hover:-primary disabled:opacity-50 disabled:cursor-not-allowed text-primary-contrast transition-all flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <span>Suivant</span>
             <i class="pi pi-arrow-right text-[10px]" aria-hidden="true"></i>
@@ -1244,10 +1227,9 @@ const cancelRequest = () => { router.push({ name: 'EtudiantDashboard' }); };
             v-else
             @click="submitRequest"
             :disabled="isSubmitting || stepHasErrors"
-            class="min-h-[44px] text-xs font-bold px-5 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+            class="min-h-[44px] text-xs font-bold px-5 py-2.5 rounded-xl -primary hover:-primary disabled:opacity-50 disabled:cursor-not-allowed text-primary-contrast transition-all flex items-center gap-2 cursor-pointer shadow-xs"
           >
-            <i v-if="isSubmitting" class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-            <i v-else class="pi pi-check" aria-hidden="true"></i>
+            <i class="pi pi-check" aria-hidden="true"></i>
             <span>{{ isSubmitting ? 'Dépôt en cours…' : (existingStageId ? 'Mettre à jour et déposer ma convention' : 'Déposer ma demande de convention') }}</span>
           </button>
         </div>

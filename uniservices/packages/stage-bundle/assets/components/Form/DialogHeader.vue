@@ -22,7 +22,7 @@ const toneClasses = computed(() => TONE_CLASSES[props.tone] || TONE_CLASSES.teal
 </script>
 
 <template>
-  <div class="flex items-start justify-between gap-4 w-full pb-4 border-b border-slate-200 dark:border-slate-700/80">
+  <div class="flex items-start justify-between gap-4 w-full pb-4 border-b border-surface ">
     <div class="flex items-center gap-3">
       <div
         v-if="icon"
@@ -31,10 +31,10 @@ const toneClasses = computed(() => TONE_CLASSES[props.tone] || TONE_CLASSES.teal
         <component :is="icon" :class="['w-5 h-5', toneClasses.icon]" />
       </div>
       <div>
-        <h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight">
+        <h3 class="text-base font-bold text-color -contrast leading-tight">
           {{ title }}
         </h3>
-        <p v-if="subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        <p v-if="subtitle" class="text-xs text-muted-color  mt-0.5">
           {{ subtitle }}
         </p>
       </div>
@@ -44,7 +44,7 @@ const toneClasses = computed(() => TONE_CLASSES[props.tone] || TONE_CLASSES.teal
       <button
         v-if="closable"
         type="button"
-        class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+        class="p-1.5 text-muted-color hover:text-muted-color dark:hover:text-color rounded-lg hover:bg-emphasis dark:hover:bg-emphasis transition-colors cursor-pointer"
         aria-label="Fermer"
         @click="$emit('close')"
       >

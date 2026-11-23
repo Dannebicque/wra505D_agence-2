@@ -9,11 +9,12 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\QuestionRuntimeDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\ScaleDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\VisibilityRuleDto;
 use QuestionnaireBundle\Enum\QuestTypeQuestionEnum;
-use Symfony\Component\Uid\Uuid;
 
 final class QuestionRuntimeMapper
 {
-    /** @param iterable<object>|null $allQuestionsInContext */
+    /**
+     * @param iterable<mixed>|null $allQuestionsInContext
+     */
     public function map(QuestionnaireQuestion $q, mixed $answerValue, ?iterable $allQuestionsInContext = null): QuestionRuntimeDto
     {
         $config = $q->getChoices();
@@ -22,7 +23,7 @@ final class QuestionRuntimeMapper
         if (in_array($q->getTypeQuestion(), [QuestTypeQuestionEnum::MultipleChoice, QuestTypeQuestionEnum::SingleChoice], true)) {
             $choices = [];
             foreach (LooseValue::rows($config ?? []) as $c) {
-                $choices[] = new ChoiceDto(LooseValue::castString($c['id']), LooseValue::castString($c['text']), LooseValue::castString($c['value'] ?? $c['text']));
+                $choices[] = new ChoiceDto(LooseValue::castString($c['id'] ?? null), LooseValue::castString($c['text'] ?? null), LooseValue::castString($c['value'] ?? $c['text'] ?? null));
             }
         }
 
@@ -38,7 +39,7 @@ final class QuestionRuntimeMapper
 
         $visibility = null;
         $qId = (string) $q->getId();
-        $qUuid = $q->getUuid() instanceof Uuid ? (string) $q->getUuid() : null;
+        $qUuid = $q->getUuid() !== null ? (string) $q->getUuid() : null;
 
         $searchQuestions = [];
         if ($allQuestionsInContext !== null) {
@@ -68,7 +69,7 @@ final class QuestionRuntimeMapper
                 $targetIds = $r['targetQuestionIds'] ?? [];
                 $isTargeted = false;
 
-                if ((bool) $targetIds && is_array($targetIds)) {
+                if (is_array($targetIds) && $targetIds !== []) {
                     foreach ($targetIds as $tid) {
                         $tidStr = LooseValue::castString($tid);
                         if ($tidStr === $qId || ($qUuid !== null && $tidStr === $qUuid)) {
@@ -95,8 +96,9 @@ final class QuestionRuntimeMapper
             $logicalOperator = LooseValue::castString($targetedRule['logicalOperator'] ?? 'AND');
             $action = LooseValue::castString($targetedRule['action'] ?? 'show');
 
-            if ((bool) ($targetedRule['conditions'] ?? false) && is_array($targetedRule['conditions'])) {
-                foreach ($targetedRule['conditions'] as $cond) {
+            $ruleConditions = $targetedRule['conditions'] ?? null;
+            if (is_array($ruleConditions) && $ruleConditions !== []) {
+                foreach ($ruleConditions as $cond) {
                     if (!is_array($cond)) {
                         continue;
                     }
@@ -111,7 +113,7 @@ final class QuestionRuntimeMapper
                             }
                         }
                         $conditions[] = [
-                            'dependsOnQuestionId' => $resolvedId ?? (is_numeric($dep) ? LooseValue::castInt($dep) : $depStr),
+                            'dependsOnQuestionId' => $resolvedId ?? (is_numeric($dep) ? (int) $dep : $depStr),
                             'operator' => LooseValue::castString($cond['operator'] ?? ''),
                             'value' => $cond['value'] ?? null,
                         ];
@@ -133,7 +135,7 @@ final class QuestionRuntimeMapper
                         }
                     }
                     $conditions[] = [
-                        'dependsOnQuestionId' => $resolvedId ?? (is_numeric($dep) ? LooseValue::castInt($dep) : $depStr),
+                        'dependsOnQuestionId' => $resolvedId ?? (is_numeric($dep) ? (int) $dep : $depStr),
                         'operator' => LooseValue::castString($operator),
                         'value' => $targetedRule['value'] ?? null,
                     ];
@@ -153,18 +155,11 @@ final class QuestionRuntimeMapper
             }
         }
 
-        $typeQuestion = $q->getTypeQuestion();
-        $label = $q->getLabel();
-        $required = $q->isObligatoire();
-        if ($typeQuestion === null || $label === null || $required === null) {
-            throw new \LogicException('Question runtime fields are required');
-        }
-
         return new QuestionRuntimeDto(
             questionId: (int) $q->getId(),
-            typeQuestion: $typeQuestion,
-            label: $label,
-            required: $required,
+            typeQuestion: $q->getTypeQuestion() ?? throw new \LogicException('Question type is required.'),
+            label: LooseValue::string($q->getLabel()),
+            required: LooseValue::bool($q->isObligatoire()),
             answer: $answerValue,
             choices: $choices,
             scale: $scale,

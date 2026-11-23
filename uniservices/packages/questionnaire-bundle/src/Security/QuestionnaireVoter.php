@@ -5,6 +5,10 @@ namespace QuestionnaireBundle\Security;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Security\UserEffectivePermissionService;
+use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
+use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
+use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireQuestion;
+use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -12,10 +16,23 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 /**
  * Voter pour les opérations sur les entités Questionnaire
  * Gère les droits d'accès pour : Questionnaire, Section, Question, Invitation, Réponses
+ *
+ * @extends Voter<string, mixed>
  */
-/** @extends Voter<string, mixed> */
 class QuestionnaireVoter extends Voter
 {
+    /** Consulter le questionnaire, sa structure, ses invitations et ses résultats. */
+    public const VIEW = 'QUESTIONNAIRE_VIEW';
+    /** Modifier les paramètres et la structure, publier, inviter, relancer. */
+    public const MANAGE = 'QUESTIONNAIRE_MANAGE';
+    public const DELETE = 'QUESTIONNAIRE_DELETE';
+    /** Lire les résultats agrégés (statistiques, exports) : y compris les destinataires de la synthèse partagée. */
+    public const SYNTHESE = 'QUESTIONNAIRE_SYNTHESE';
+    /** Créer le questionnaire dans son département (ou l'y déplacer). */
+    public const CREATE = 'QUESTIONNAIRE_CREATE';
+
+    private const ATTRIBUTS = [self::VIEW, self::MANAGE, self::DELETE, self::CREATE, self::SYNTHESE];
+
     // Permissions Questionnaire
     public const CAN_VIEW_QUESTIONNAIRE = 'CAN_VIEW_QUESTIONNAIRE';
     public const CAN_EDIT_QUESTIONNAIRE = 'CAN_EDIT_QUESTIONNAIRE';
@@ -67,9 +84,14 @@ class QuestionnaireVoter extends Voter
     /**
      * @inheritDoc
      */
+    public function supportsAttribute(string $attribute): bool
+    {
+        return in_array($attribute, [...self::SUPPORTED_ATTRIBUTES, ...self::ATTRIBUTS], true);
+    }
+
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
+        return $this->supportsAttribute($attribute);
     }
 
     /**
@@ -77,11 +99,34 @@ class QuestionnaireVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
-        $user = $token->getUser();
+        return $this->allows($attribute, $subject, $token->getUser());
+    }
+
+    /** Même décision pour les opérations API et les services métier. */
+    public function allows(string $attribute, mixed $subject, mixed $user): bool
+    {
+        $attribute = match ($attribute) {
+            self::VIEW => $subject instanceof QuestionnaireInvitation ? self::CAN_EDIT_QUESTIONNAIRE : self::CAN_VIEW_QUESTIONNAIRE,
+            self::MANAGE => match (true) {
+                $subject instanceof QuestionnaireQuestion => self::CAN_EDIT_QUESTION,
+                $subject instanceof QuestionnaireSection => self::CAN_EDIT_QUESTION_SECTION,
+                default => self::CAN_EDIT_QUESTIONNAIRE,
+            },
+            self::DELETE => match (true) {
+                $subject instanceof QuestionnaireQuestion => self::CAN_DELETE_QUESTION,
+                $subject instanceof QuestionnaireSection => self::CAN_DELETE_QUESTION_SECTION,
+                default => self::CAN_DELETE_QUESTIONNAIRE,
+            },
+            self::CREATE, self::SYNTHESE => self::CAN_EDIT_QUESTIONNAIRE,
+            default => $attribute,
+        };
+        if ($subject instanceof QuestionnaireInvitation) {
+            $subject = $subject->getQuestionnaire();
+        }
+
 
         // L'utilisateur doit être connecté
         if (!($user instanceof Etudiant || $user instanceof Personnel)) {
-            $vote?->addReason('L\'utilisateur n\'est pas connecté.');
             return false;
         }
 
@@ -94,18 +139,18 @@ class QuestionnaireVoter extends Voter
             // Questionnaire
             self::CAN_VIEW_QUESTIONNAIRE => $this->canViewQuestionnaire($subject, $user),
             self::CAN_EDIT_QUESTIONNAIRE => $this->canEditQuestionnaire($user, $subject),
-            self::CAN_DELETE_QUESTIONNAIRE => $this->canDeleteQuestionnaire($user),
-            self::CAN_PUBLISH_QUESTIONNAIRE => $this->canPublishQuestionnaire($user),
+            self::CAN_DELETE_QUESTIONNAIRE => $this->canDeleteQuestionnaire($user, $subject),
+            self::CAN_PUBLISH_QUESTIONNAIRE => $this->canPublishQuestionnaire($user, $subject),
 
             // Section
             self::CAN_VIEW_QUESTION_SECTION => $this->canViewSection($user),
             self::CAN_EDIT_QUESTION_SECTION => $this->canEditSection($user, $subject),
-            self::CAN_DELETE_QUESTION_SECTION => $this->canDeleteSection($user),
+            self::CAN_DELETE_QUESTION_SECTION => $this->canDeleteSection($user, $subject),
 
             // Question
             self::CAN_VIEW_QUESTION => $this->canViewQuestion($user),
             self::CAN_EDIT_QUESTION => $this->canEditQuestion($user, $subject),
-            self::CAN_DELETE_QUESTION => $this->canDeleteQuestion($user),
+            self::CAN_DELETE_QUESTION => $this->canDeleteQuestion($user, $subject),
 
             // Invitation
             self::CAN_VIEW_INVITATION => $this->canViewInvitation($subject, $user),
@@ -150,39 +195,55 @@ class QuestionnaireVoter extends Voter
             ], $subject);
         }
 
-        // Un étudiant peut voir les questionnaires auxquels il est invité
-        // Cette vérification plus fine serait faite avec l'invitation
+        // La consultation du questionnaire est ouverte aux étudiants connectés.
         return true;
     }
 
     private function canEditQuestionnaire(Personnel|Etudiant $user, mixed $subject = null): bool
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
+        return $user instanceof Personnel && $subject instanceof Questionnaire
+            && $this->hasQuestionnairePermission($user, $subject, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_CHEF_DEPT',
             'ROLE_QUALITE',
             'ROLE_RESP_PARCOURS'
-        ], $subject);
+        ]);
     }
 
-    private function canDeleteQuestionnaire(Personnel|Etudiant $user): bool
+    private function canDeleteQuestionnaire(Personnel|Etudiant $user, mixed $subject): bool
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
+        return $user instanceof Personnel && $subject instanceof Questionnaire
+            && $this->hasQuestionnairePermission($user, $subject, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_QUALITE'
         ]);
     }
 
-    private function canPublishQuestionnaire(Personnel|Etudiant $user): bool
+    private function canPublishQuestionnaire(Personnel|Etudiant $user, mixed $subject): bool
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
+        return $user instanceof Personnel && $subject instanceof Questionnaire
+            && $this->hasQuestionnairePermission($user, $subject, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_CHEF_DEPT',
             'ROLE_QUALITE'
         ]);
+    }
+
+    /** @param string[] $roles */
+    private function hasQuestionnairePermission(Personnel $user, Questionnaire $questionnaire, array $roles): bool
+    {
+        $department = $questionnaire->getDepartement();
+
+        // Certains questionnaires ont une portée institutionnelle.
+        return $this->effectivePermissionService->hasAnyPermissionInDepartment(
+            $user,
+            $roles,
+            $department,
+            $questionnaire,
+        );
     }
 
     // ========== Section ==========
@@ -195,17 +256,23 @@ class QuestionnaireVoter extends Voter
 
     private function canEditSection(Personnel|Etudiant $user, mixed $subject = null): bool
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
+        $questionnaire = $subject instanceof QuestionnaireSection ? $subject->getQuestionnaire() : null;
+
+        return $user instanceof Personnel && $questionnaire !== null
+            && $this->hasQuestionnairePermission($user, $questionnaire, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_QUALITE',
             'ROLE_RESP_PARCOURS'
-        ], $subject);
+        ]);
     }
 
-    private function canDeleteSection(Personnel|Etudiant $user): bool
+    private function canDeleteSection(Personnel|Etudiant $user, mixed $subject): bool
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
+        $questionnaire = $subject instanceof QuestionnaireSection ? $subject->getQuestionnaire() : null;
+
+        return $user instanceof Personnel && $questionnaire !== null
+            && $this->hasQuestionnairePermission($user, $questionnaire, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_QUALITE'
@@ -221,17 +288,23 @@ class QuestionnaireVoter extends Voter
 
     private function canEditQuestion(Personnel|Etudiant $user, mixed $subject = null): bool
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
+        $questionnaire = $subject instanceof QuestionnaireQuestion ? $subject->getSection()?->getQuestionnaire() : null;
+
+        return $user instanceof Personnel && $questionnaire !== null
+            && $this->hasQuestionnairePermission($user, $questionnaire, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_QUALITE',
             'ROLE_RESP_PARCOURS'
-        ], $subject);
+        ]);
     }
 
-    private function canDeleteQuestion(Personnel|Etudiant $user): bool
+    private function canDeleteQuestion(Personnel|Etudiant $user, mixed $subject): bool
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
+        $questionnaire = $subject instanceof QuestionnaireQuestion ? $subject->getSection()?->getQuestionnaire() : null;
+
+        return $user instanceof Personnel && $questionnaire !== null
+            && $this->hasQuestionnairePermission($user, $questionnaire, [
             'SUPER_ADMIN',
             'ROLE_ADMIN',
             'ROLE_QUALITE'
@@ -297,5 +370,15 @@ class QuestionnaireVoter extends Voter
 
         // Le personnel peut aussi répondre aux questionnaires s'ils y sont invités
         return true;
+    }
+    public static function questionnaire(mixed $subject): ?Questionnaire
+    {
+        return match (true) {
+            $subject instanceof Questionnaire => $subject,
+            $subject instanceof QuestionnaireSection => $subject->getQuestionnaire(),
+            $subject instanceof QuestionnaireQuestion => $subject->getSection()?->getQuestionnaire(),
+            $subject instanceof QuestionnaireInvitation => $subject->getQuestionnaire(),
+            default => null,
+        };
     }
 }

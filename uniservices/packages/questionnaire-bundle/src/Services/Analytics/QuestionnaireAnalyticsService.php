@@ -20,8 +20,20 @@ class QuestionnaireAnalyticsService
     {
     }
 
-    public function getAnalytics(Questionnaire $q): QuestionnaireAnalyticsDto
+    /**
+     * Statistiques agrégées. $sections limite le détail à ces sections publiées (destinataire des résultats) ; le seuil
+     * d'anonymat s'applique au questionnaire entier et à chaque section (une matière peut n'avoir que 3 réponses).
+     *
+     * @param list<int>|null $sections
+     */
+    public function getAnalytics(Questionnaire $q, ?array $sections = null): QuestionnaireAnalyticsDto
     {
+        // Réponses purgées : on restitue les statistiques archivées au moment de la purge.
+        if ($q->getResultatsArchives() !== null) {
+            return QuestionnaireAnalyticsDto::depuisArchive($q->getResultatsArchives(), $sections, $q->getPurgeLe()?->format(\DateTimeInterface::ATOM));
+        }
+
+        $seuil = $q->seuilResultats();
         $invitations = $q->getInvitations();
         $totalInvited = count($invitations);
         $totalResponses = 0;
@@ -35,7 +47,8 @@ class QuestionnaireAnalyticsService
         $responsesByDate = [];
 
         foreach ($invitations as $inv) {
-            $status = $inv->getStatus() instanceof QuestInvitationStatusEnum ? $inv->getStatus()->value : 'pending';
+            $statut = $inv->getStatus();
+            $status = $statut !== null ? $statut->value : 'pending';
             $statusCounts[$status]++;
 
             if ($status === 'submitted') {
@@ -43,7 +56,7 @@ class QuestionnaireAnalyticsService
 
                 $startedAt = $inv->getStartedAt();
                 $submittedAt = $inv->getSubmittedAt();
-                if ($startedAt instanceof \DateTimeImmutable && $submittedAt instanceof \DateTimeImmutable) {
+                if ($startedAt !== null && $submittedAt !== null) {
                     $diff = $submittedAt->getTimestamp() - $startedAt->getTimestamp();
                     if ($diff > 0) {
                         $totalDuration += $diff;
@@ -51,7 +64,7 @@ class QuestionnaireAnalyticsService
                     }
                 }
 
-                if ($submittedAt instanceof \DateTimeImmutable) {
+                if ($submittedAt !== null) {
                     $dateStr = $submittedAt->format('Y-m-d');
                     $responsesByDate[$dateStr] = ($responsesByDate[$dateStr] ?? 0) + 1;
                 }
@@ -61,21 +74,26 @@ class QuestionnaireAnalyticsService
         $completionRate = $totalInvited > 0 ? ($totalResponses / $totalInvited) * 100 : 0.0;
         $averageTimeSpent = $durationCount > 0 ? $totalDuration / $durationCount : 0.0;
 
-        // Fetch all answers for the questionnaire in a single query
+        // Réponses envoyées uniquement : un brouillon de réponse (questionnaire commencé, non soumis) ne compte pas.
         $answers = $this->em->getRepository(QuestionnaireAnswer::class)->createQueryBuilder('a')
             ->join('a.section', 's')
+            ->join('a.invitation', 'i')
             ->where('s.questionnaire = :questionnaire')
+            ->andWhere('i.status = :soumise')
             ->setParameter('questionnaire', $q)
+            ->setParameter('soumise', QuestInvitationStatusEnum::SUBMITTED)
             ->getQuery()
             ->getResult();
 
         // Group answers by Section Instance and Question
         $answersMap = []; // [sectionInstanceId][questionId][] = value
+        $repondants = []; // [sectionInstanceId][invitationId] = true
         foreach ($answers as $ans) {
             if ($ans->getSection() === null || $ans->getQuestion() === null) {
                 continue;
             }
             $secId = $ans->getSection()->getId();
+            $repondants[$secId][$ans->getInvitation()?->getId()] = true;
             $qId = $ans->getQuestion()->getId();
             $val = $ans->getValue();
 
@@ -94,9 +112,11 @@ class QuestionnaireAnalyticsService
 
         foreach ($sectionInstances as $instance) {
             $sectionTemplate = $instance->getSection();
-            if ($sectionTemplate === null) {
+            if ($sectionTemplate === null || ($sections !== null && !\in_array($instance->getId(), $sections, true))) {
                 continue;
             }
+            $nbRepondants = \count($repondants[$instance->getId()] ?? []);
+            $masquee = $nbRepondants < $seuil;
 
             $questionsStats = [];
             foreach ($sectionTemplate->getQuestions() as $question) {
@@ -104,7 +124,7 @@ class QuestionnaireAnalyticsService
                 $qAnswers = $answersMap[$instance->getId()][$qId] ?? [];
                 $qTotalResponses = count($qAnswers);
                 $type = $question->getTypeQuestion();
-                $typeStr = $type instanceof QuestTypeQuestionEnum ? $type->value : 'text_short';
+                $typeStr = $type !== null ? $type->value : 'text_short';
 
                 $stats = [];
 
@@ -113,13 +133,13 @@ class QuestionnaireAnalyticsService
                     $optionTexts = [];
                     foreach ($choices as $choice) {
                         if (is_array($choice)) {
-                            $optionTexts[] = LooseValue::key($choice['text'] ?? $choice['label'] ?? '');
+                            $optionTexts[] = $choice['text'] ?? $choice['label'] ?? '';
                         } elseif (is_string($choice)) {
                             $optionTexts[] = $choice;
                         }
                     }
 
-                    $counts = array_fill_keys($optionTexts, 0);
+                    $counts = array_fill_keys(array_map(static fn (mixed $text) => LooseValue::key($text), $optionTexts), 0);
                     foreach ($qAnswers as $ansVal) {
                         if (is_array($ansVal)) {
                             foreach ($ansVal as $item) {
@@ -136,7 +156,7 @@ class QuestionnaireAnalyticsService
 
                     $statsList = [];
                     foreach ($optionTexts as $text) {
-                        $cnt = $counts[$text];
+                        $cnt = $counts[LooseValue::key($text)];
                         $pct = $qTotalResponses > 0 ? ($cnt / $qTotalResponses) * 100 : 0.0;
                         $statsList[] = [
                             'text' => $text,
@@ -147,12 +167,12 @@ class QuestionnaireAnalyticsService
                     $stats = ['choices' => $statsList];
                 } elseif ($type === QuestTypeQuestionEnum::Scale) {
                     $opts = $question->getOpt();
-                    $min = LooseValue::castInt($opts['min'] ?? 1);
-                    $max = LooseValue::castInt($opts['max'] ?? 10);
+                    $min = LooseValue::int($opts['min'] ?? 1);
+                    $max = LooseValue::int($opts['max'] ?? 10);
 
                     $sum = 0;
                     $numCount = 0;
-                    $distribution = array_fill($min, $max - $min + 1, 0);
+                    $distribution = array_fill(LooseValue::castInt($min), $max - $min + 1, 0);
 
                     foreach ($qAnswers as $ansVal) {
                         $val = LooseValue::castInt($ansVal);
@@ -182,14 +202,14 @@ class QuestionnaireAnalyticsService
                     $optionTexts = [];
                     foreach ($choices as $choice) {
                         if (is_array($choice)) {
-                            $optionTexts[] = LooseValue::key($choice['text'] ?? $choice['label'] ?? '');
+                            $optionTexts[] = $choice['text'] ?? $choice['label'] ?? '';
                         } elseif (is_string($choice)) {
                             $optionTexts[] = $choice;
                         }
                     }
 
-                    $rankSums = array_fill_keys($optionTexts, 0);
-                    $rankCounts = array_fill_keys($optionTexts, 0);
+                    $rankSums = array_fill_keys(array_map(static fn (mixed $text) => LooseValue::key($text), $optionTexts), 0);
+                    $rankCounts = array_fill_keys(array_map(static fn (mixed $text) => LooseValue::key($text), $optionTexts), 0);
 
                     foreach ($qAnswers as $ansVal) {
                         if (is_array($ansVal)) {
@@ -204,8 +224,8 @@ class QuestionnaireAnalyticsService
 
                     $statsList = [];
                     foreach ($optionTexts as $text) {
-                        $cnt = $rankCounts[$text];
-                        $avgRank = $cnt > 0 ? $rankSums[$text] / $cnt : 0.0;
+                        $cnt = $rankCounts[LooseValue::key($text)];
+                        $avgRank = $cnt > 0 ? $rankSums[LooseValue::key($text)] / $cnt : 0.0;
                         $statsList[] = [
                             'text' => $text,
                             'averageRank' => round($avgRank, 1),
@@ -294,15 +314,23 @@ class QuestionnaireAnalyticsService
                 );
             }
 
+            $typeSection = $sectionTemplate->getTypeSection();
             $sectionsAnalytics[] = new SectionInstanceAnalyticsDto(
                 sectionInstanceId: (int)$instance->getId(),
                 sectionTitle: $instance->getTitleSnapshot() ?? '',
-                sectionType: $sectionTemplate->getTypeSection() instanceof QuestTypeSectionEnum ? $sectionTemplate->getTypeSection()->value : 'normal',
+                sectionType: $typeSection !== null ? $typeSection->value : 'normal',
                 repeatItemType: $instance->getRepeatSectionItemType(),
-                repeatItemId: !in_array($instance->getRepeatSectionItemId(), [null, 0], true) ? (string)$instance->getRepeatSectionItemId() : null,
-                questions: $questionsStats
+                repeatItemId: $instance->getRepeatSectionItemId(),
+                questions: $masquee ? [] : $questionsStats,
+                reponses: $nbRepondants,
+                masquee: $masquee,
+                enseignement: $instance->getEnseignement()?->getLibelle(),
+                intervenant: $instance->getPersonnelCible()?->getDisplay(),
             );
         }
+
+        // Seuil d'anonymat : sous ce nombre de réponses, le détail permettrait d'identifier les répondants.
+        $seuilAtteint = $totalResponses >= $seuil;
 
         return new QuestionnaireAnalyticsDto(
             surveyId: $q->getUuidString(),
@@ -312,7 +340,13 @@ class QuestionnaireAnalyticsService
             averageTimeSpent: round($averageTimeSpent),
             responsesByDate: $responsesByDate,
             statusCounts: $statusCounts,
-            sections: $sectionsAnalytics
+            sections: $seuilAtteint ? $sectionsAnalytics : [],
+            seuilMinReponses: $seuil,
+            seuilAtteint: $seuilAtteint,
+            title: (string) $q->getTitle(),
+            openingDate: $q->getOpeningDate()?->format(\DateTimeInterface::ATOM),
+            publishedAt: $q->getPublishedAt()?->format(\DateTimeInterface::ATOM),
+            status: $q->getStatus()?->value,
         );
     }
 }

@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Entity\Questionnaires;
 
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Doctrine\Orm\Filter\ExistsFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
@@ -14,16 +15,19 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Contracts\TimestampableInterface;
+use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDepartement;
+use App\Entity\Users\Personnel;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\OptionTrait;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Enum\QuestStatutEnum;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireRepository;
+use QuestionnaireBundle\State\QuestionnaireProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
-use App\Entity\Structure\StructureAnneeUniversitaire;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -33,10 +37,12 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Entity(repositoryClass: QuestionnaireRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']]),
-        new GetCollection(normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']]),
-        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)"),
+        new Get(security: "is_granted('CAN_VIEW_QUESTIONNAIRE', object)", normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']]),
+        // Accès défini par les règles locales ; invitations filtrées par DepartmentCollectionAccessExtension.
+        new GetCollection(security: "is_granted('IS_AUTHENTICATED_FULLY')", normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']]),
+        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)", processor: QuestionnaireProcessor::class),
+        // Changer de département exige d'être gestionnaire du nouveau département.
+        new Patch(security: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)", securityPostDenormalize: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)", processor: QuestionnaireProcessor::class),
         new Delete(security: "is_granted('CAN_DELETE_QUESTIONNAIRE', object)"),
     ],
     normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']],
@@ -47,6 +53,7 @@ use Symfony\Component\Uid\Uuid;
     'title' => 'partial',
 ])]
 #[ApiFilter(ExistsFilter::class, properties: ['departement'])]
+#[ApiFilter(BooleanFilter::class, properties: ['estModele'])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'title', 'openingDate', 'closingDate'], arguments: ['orderParameterName' => 'order'])]
 class Questionnaire implements TimestampableInterface
 {
@@ -80,17 +87,6 @@ class Questionnaire implements TimestampableInterface
     #[ApiProperty(identifier: false)]
     private ?int $id = null;
 
-    /** Modèle réutilisable (bibliothèque) : jamais publié, sert à créer des questionnaires. */
-    #[ORM\Column(options: ['default' => false])]
-    #[Groups(['questionnaire:read'])]
-    private bool $estModele = false;
-
-    /** Année universitaire de la campagne (comparaison d'une année sur l'autre). */
-    #[ORM\ManyToOne(targetEntity: StructureAnneeUniversitaire::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    #[Groups(['questionnaire:read'])]
-    private ?StructureAnneeUniversitaire $anneeUniversitaire = null;
-
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['questionnaire:read', 'invitation:read'])]
     private ?string $title = null;
@@ -119,6 +115,7 @@ class Questionnaire implements TimestampableInterface
      * @var Collection<int, QuestionnaireSection>
      */
     #[ORM\OneToMany(targetEntity: QuestionnaireSection::class, mappedBy: 'questionnaire', cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['sortOrder' => 'ASC'])]
     private Collection $sections;
 
     #[ORM\Column(length: 50, nullable: false, enumType: QuestStatutEnum::class)]
@@ -150,6 +147,66 @@ class Questionnaire implements TimestampableInterface
     #[Groups(['questionnaire:read', 'invitation:read'])]
     private ?StructureDepartement $departement = null;
 
+    #[ORM\ManyToOne(targetEntity: Personnel::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    #[Groups(['questionnaire:read', 'invitation:read'])]
+    private ?Personnel $author = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    #[Groups(['questionnaire:read'])]
+    private bool $completionNotified = false;
+
+    /** Modèle réutilisable (bibliothèque) : jamais publié, sert à créer des questionnaires. */
+    #[ORM\Column(options: ['default' => false])]
+    #[Groups(['questionnaire:read'])]
+    private bool $estModele = false;
+
+    /** Modèle dont ce questionnaire est issu : les campagnes d'un même modèle se comparent d'une année sur l'autre. */
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Questionnaire $modeleOrigine = null;
+
+    /** Année universitaire de la campagne (comparaison d'une année sur l'autre). */
+    #[ORM\ManyToOne(targetEntity: StructureAnneeUniversitaire::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    #[Groups(['questionnaire:read'])]
+    private ?StructureAnneeUniversitaire $anneeUniversitaire = null;
+
+    /** Date de clôture effective (début de la relecture des résultats). */
+    #[ORM\Column(nullable: true)]
+    #[Groups(['questionnaire:read'])]
+    private ?\DateTimeImmutable $clotureLe = null;
+
+    /** La diffusion a été pré-remplie (suggestions calculées au moins une fois). */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $diffusionInitialisee = false;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['questionnaire:read'])]
+    private ?\DateTimeImmutable $diffusionValideeLe = null;
+
+    #[ORM\ManyToOne(targetEntity: Personnel::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Personnel $diffusionValideePar = null;
+
+    /** Purge des réponses (durée de conservation dépassée) : seuls les résultats agrégés restent, archivés ici. */
+    #[ORM\Column(nullable: true)]
+    #[Groups(['questionnaire:read'])]
+    private ?\DateTimeImmutable $purgeLe = null;
+
+    /** @var array<string, mixed>|null statistiques agrégées figées au moment de la purge */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $resultatsArchives = null;
+
+    /** Publication des résultats aux collègues destinataires. */
+    #[ORM\Column(nullable: true)]
+    #[Groups(['questionnaire:read'])]
+    private ?\DateTimeImmutable $resultatsPubliesLe = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Groups(['questionnaire:read'])]
+    private ?\DateTimeImmutable $completionNotifiedAt = null;
+
     public function __construct()
     {
         $this->uuid = Uuid::v4();
@@ -167,6 +224,9 @@ class Questionnaire implements TimestampableInterface
             'allowBack' => true,
             'showProgress' => true,
             'requireCompletion' => false,
+            // Recopiés depuis les réglages du département à la création (QuestionnaireReglages) :
+            'modificationReponses' => true,   // modifier ses réponses envoyées tant que le questionnaire est ouvert
+            'seuilMinReponses' => 0,          // questionnaire anonyme : résultats masqués sous ce nombre de réponses (0 = aucun seuil)
         ]);
 
         $resolver->setAllowedTypes('anonymous', 'bool');
@@ -174,6 +234,8 @@ class Questionnaire implements TimestampableInterface
         $resolver->setAllowedTypes('allowBack', 'bool');
         $resolver->setAllowedTypes('showProgress', 'bool');
         $resolver->setAllowedTypes('requireCompletion', 'bool');
+        $resolver->setAllowedTypes('modificationReponses', 'bool');
+        $resolver->setAllowedTypes('seuilMinReponses', 'int');
     }
 
     public function getId(): ?int
@@ -298,11 +360,7 @@ class Questionnaire implements TimestampableInterface
     #[Groups(['questionnaire:read'])]
     public function getStatutSeverity(): string
     {
-        if ($this->status === null) {
-            throw new \LogicException('Questionnaire status is required');
-        }
-
-        return $this->status->getBadge();
+        return $this->status?->getBadge() ?? '';
     }
 
     /**
@@ -371,6 +429,37 @@ class Questionnaire implements TimestampableInterface
         return $this->getStatus() === QuestStatutEnum::PUBLISHED;
     }
 
+    public function estBrouillon(): bool
+    {
+        return $this->status === null || $this->status === QuestStatutEnum::DRAFT;
+    }
+
+    public function estAnonyme(): bool
+    {
+        return (bool) ($this->getOpt()['anonymous'] ?? true);
+    }
+
+    public function autoriseModificationReponses(): bool
+    {
+        return (bool) ($this->getOpt()['modificationReponses'] ?? true);
+    }
+
+    /** Seuil d'anonymat : nombre minimal de réponses envoyées pour consulter les résultats (0 si sans objet). */
+    public function seuilResultats(): int
+    {
+        return $this->estAnonyme() ? max(0, LooseValue::castInt($this->getOpt()['seuilMinReponses'] ?? 0)) : 0;
+    }
+
+    /** Ouvert aux réponses : publié, et dans la période d'ouverture si elle est fixée. */
+    public function estOuvert(?\DateTimeInterface $maintenant = null): bool
+    {
+        $maintenant ??= new \DateTime();
+
+        return $this->status === QuestStatutEnum::PUBLISHED
+            && ($this->openingDate === null || $this->openingDate <= $maintenant)
+            && ($this->closingDate === null || $this->closingDate >= $maintenant);
+    }
+
     public function publishNow(): void
     {
         $this->setStatus(QuestStatutEnum::PUBLISHED);
@@ -428,6 +517,18 @@ class Questionnaire implements TimestampableInterface
         return $this;
     }
 
+    public function getAuthor(): ?Personnel
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?Personnel $author): static
+    {
+        $this->author = $author;
+
+        return $this;
+    }
+
     public function isEstModele(): bool
     {
         return $this->estModele;
@@ -440,6 +541,25 @@ class Questionnaire implements TimestampableInterface
         return $this;
     }
 
+    public function getModeleOrigine(): ?Questionnaire
+    {
+        return $this->modeleOrigine;
+    }
+
+    public function setModeleOrigine(?Questionnaire $modele): static
+    {
+        $this->modeleOrigine = $modele;
+
+        return $this;
+    }
+
+    /** @return array{uuid: string, title: ?string}|null */
+    #[Groups(['questionnaire:read'])]
+    public function getModeleOrigineResume(): ?array
+    {
+        return $this->modeleOrigine !== null ? ['uuid' => $this->modeleOrigine->getUuidString(), 'title' => $this->modeleOrigine->getTitle()] : null;
+    }
+
     public function getAnneeUniversitaire(): ?StructureAnneeUniversitaire
     {
         return $this->anneeUniversitaire;
@@ -448,6 +568,114 @@ class Questionnaire implements TimestampableInterface
     public function setAnneeUniversitaire(?StructureAnneeUniversitaire $annee): static
     {
         $this->anneeUniversitaire = $annee;
+
+        return $this;
+    }
+
+    /** Clôture (manuelle ou automatique) : plus de réponses, début de la relecture des résultats. */
+    public function cloturer(): void
+    {
+        $this->status = QuestStatutEnum::CLOSED;
+        $this->clotureLe ??= new \DateTimeImmutable();
+    }
+
+    public function getClotureLe(): ?\DateTimeImmutable
+    {
+        return $this->clotureLe;
+    }
+
+    public function isDiffusionInitialisee(): bool
+    {
+        return $this->diffusionInitialisee;
+    }
+
+    public function setDiffusionInitialisee(bool $initialisee): static
+    {
+        $this->diffusionInitialisee = $initialisee;
+
+        return $this;
+    }
+
+    public function getDiffusionValideeLe(): ?\DateTimeImmutable
+    {
+        return $this->diffusionValideeLe;
+    }
+
+    public function getDiffusionValideePar(): ?Personnel
+    {
+        return $this->diffusionValideePar;
+    }
+
+    public function validerDiffusion(?Personnel $par): void
+    {
+        $this->diffusionValideeLe = new \DateTimeImmutable();
+        $this->diffusionValideePar = $par;
+    }
+
+    public function getPurgeLe(): ?\DateTimeImmutable
+    {
+        return $this->purgeLe;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function getResultatsArchives(): ?array
+    {
+        return $this->resultatsArchives;
+    }
+
+    /** @param array<string, mixed> $resultats statistiques agrégées (aucune réponse individuelle) */
+    public function archiverResultats(array $resultats): void
+    {
+        $this->resultatsArchives = $resultats;
+        $this->purgeLe = new \DateTimeImmutable();
+    }
+
+    public function getResultatsPubliesLe(): ?\DateTimeImmutable
+    {
+        return $this->resultatsPubliesLe;
+    }
+
+    public function resultatsPublies(): bool
+    {
+        return $this->resultatsPubliesLe !== null;
+    }
+
+    public function publierResultats(): void
+    {
+        $this->resultatsPubliesLe ??= new \DateTimeImmutable();
+    }
+
+    /** Étape des résultats : en cours (questionnaire ouvert), en relecture (clôturé), publiés. */
+    #[Groups(['questionnaire:read'])]
+    public function getEtapeResultats(): string
+    {
+        return match (true) {
+            $this->resultatsPublies() => 'publies',
+            $this->status === QuestStatutEnum::CLOSED => 'relecture',
+            default => 'collecte',
+        };
+    }
+
+    public function isCompletionNotified(): bool
+    {
+        return $this->completionNotified;
+    }
+
+    public function setCompletionNotified(bool $completionNotified): static
+    {
+        $this->completionNotified = $completionNotified;
+
+        return $this;
+    }
+
+    public function getCompletionNotifiedAt(): ?\DateTimeImmutable
+    {
+        return $this->completionNotifiedAt;
+    }
+
+    public function setCompletionNotifiedAt(?\DateTimeImmutable $completionNotifiedAt): static
+    {
+        $this->completionNotifiedAt = $completionNotifiedAt;
 
         return $this;
     }

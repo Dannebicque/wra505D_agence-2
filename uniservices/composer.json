@@ -18,10 +18,10 @@
             "HelpdeskBundle\\": "packages/helpdesk-bundle/src/",
             "IntranetBundle\\": "packages/intranet-bundle/src/",
             "MessageBundle\\": "packages/message-bundle/src/",
+            "ParcautoBundle\\": "packages/parcauto-bundle/src/",
             "QuestionnaireBundle\\": "packages/questionnaire-bundle/src/",
             "StageBundle\\": "packages/stage-bundle/src/",
-            "UnifolioBundle\\": "packages/unifolio-bundle/src/",
-            "ParcautoBundle\\": "packages/parcauto-bundle/src/"
+            "UnifolioBundle\\": "packages/unifolio-bundle/src/"
         }
     },
     "autoload-dev": {

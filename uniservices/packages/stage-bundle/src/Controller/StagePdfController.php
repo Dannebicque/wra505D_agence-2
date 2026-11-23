@@ -14,21 +14,28 @@ use App\Entity\Users\Personnel;
 use App\Utils\LooseValue;
 use App\ValueObject\Adresse;
 use Doctrine\ORM\EntityManagerInterface;
+use StageBundle\Entity\Stages\StagePeriode;
 use StageBundle\Entity\Stages\StageContact;
 use StageBundle\Entity\Stages\StageEntreprise;
 use App\Service\Pdf\PdfExportOptions;
 use App\Service\Pdf\PdfExportService;
+use Psr\Log\LoggerInterface;
+use App\Repository\EtablissementRepository;
 use StageBundle\Adapter\StageConventionAdapter;
 use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StageAvenant;
 use StageBundle\Entity\Stages\StageConventionTemplate;
-use StageBundle\Entity\Stages\StagePeriode;
+use StageBundle\Security\StageVoter;
+use StageBundle\Service\Notification\StageNotifier;
 use StageBundle\Services\GotenbergService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 //todo: a déplacer dans le bundle stage
+#[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
 #[\App\AnneeUniversitaire\ContexteAnnuel('ressource', 'Opération rattachée à une ressource identifiée et contrôlée par le métier.')]
 class StagePdfController extends AbstractController
 {
@@ -36,6 +43,9 @@ class StagePdfController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly GotenbergService $gotenbergService,
         private readonly PdfExportService $pdfExportService,
+        private readonly StageNotifier $notifier,
+        private readonly LoggerInterface $logger,
+        private readonly EtablissementRepository $etablissements,
     ) {
     }
 
@@ -46,12 +56,12 @@ class StagePdfController extends AbstractController
         if (!$stage instanceof StageEtudiant) {
             return new Response('Stage étudiant non trouvé', Response::HTTP_NOT_FOUND);
         }
+        $this->denyAccessUnlessGranted(StageVoter::STAGE_ETUDIANT_VIEW, $stage);
 
         $this->denyAccessUnlessGranted('CAN_VIEW_STAGE', $stage);
 
         // Get main establishment
-        $etab = $this->em->getRepository(Etablissement::class)->findOneBy(['isMain' => true])
-            ?? $this->em->getRepository(Etablissement::class)->findOneBy([]);
+        $etab = $this->etablissements->findPrincipal();
 
         $periode = $stage->getStagePeriode();
         $semestre = $periode?->getSemestreProgramme();
@@ -63,11 +73,27 @@ class StagePdfController extends AbstractController
         $anneeUnivStr = $periode?->getAnneeUniversitaire()?->getLibelle()
             ?? (date('Y') . '/' . ((int) date('Y') + 1));
 
-        $deptTel = $dept?->getTelContact() ?? ($etab?->getTelephone() ?? '03.26.91.34.68');
-        $directeurNom = 'Martial Martin';
+        // Coordonnées et signataire : table établissement (configuration de l'établissement principal).
+        $universite = $etab?->getUniversite();
+        $deptTel = $dept?->getTelContact() ?? $etab?->getTelephone() ?? '';
 
         $userData = [
             'displayAnneeUniversitaire' => $anneeUnivStr,
+            // Établissement = la composante (l'IUT) ; l'université de rattachement signe la convention.
+            'etablissement' => [
+                'libelle' => $etab?->getLibelle() ?? '',
+                'adresse' => Adresse::fromArray($etab?->getAdresse())?->getInlineAdresse() ?? '',
+                'telephone' => $etab?->getTelephone() ?? '',
+                'directeur' => $etab?->getDirecteurNom() ?? '',
+                'signataireNom' => $etab?->getSignataireNom() ?? '',
+                'signataireQualite' => $etab?->getSignataireQualite() ?? '',
+            ],
+            'universite' => [
+                'libelle' => $universite?->getLibelle() ?? $etab?->getLibelle() ?? '',
+                'adresse' => $universite?->getAdresse()?->getInlineAdresse() ?? '',
+                'telephone' => $universite?->getTelephone() ?? '',
+                'president' => $universite?->getPresident() ?? '',
+            ],
             'departement' => [
                 'telcontact' => $deptTel,
                 'ufr' => [
@@ -75,7 +101,7 @@ class StagePdfController extends AbstractController
                         'adresse' => Adresse::fromArray($etab?->getAdresse()),
                     ],
                     'responsable' => [
-                        'display' => $directeurNom,
+                        'display' => $etab?->getSignataireNom() ?? '',
                     ],
                 ],
             ],
@@ -92,6 +118,22 @@ class StagePdfController extends AbstractController
             ->setInline(true)
             ->setTitle('Convention de stage - ' . ($stage->getEtudiant()?->getDisplay() ?? 'Étudiant'));
 
+        // 1. Modèle en base (édité par le super administrateur), s'il existe et n'est pas vide.
+        $modele = $this->em->getRepository(StageConventionTemplate::class)->findOneBy(['code' => StageConventionTemplate::CODE_CONVENTION]);
+        if ($modele !== null && trim((string) $modele->getTexte()) !== '') {
+            try {
+                $html = $this->renderConventionHtml($this->replacePlaceholders((string) $modele->getTexte(), $stage), $stage);
+
+                return new Response($this->gotenbergService->convertHtmlToPdf($html), Response::HTTP_OK, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="'.$nomFichier.'"',
+                ]);
+            } catch (\Throwable $e) {
+                $this->logger->error('Convention : échec du rendu du modèle en base, repli sur le gabarit intégré.', ['stage' => $stage->getId(), 'erreur' => $e->getMessage()]);
+            }
+        }
+
+        // 2. Secours : gabarit Twig intégré au package.
         try {
             return $this->pdfExportService->generateStreamedResponse(
                 '@Stage/pdf/conventionStagePDF.html.twig',
@@ -102,22 +144,57 @@ class StagePdfController extends AbstractController
                 $nomFichier,
                 $options
             );
-        } catch (\Exception $e) {
-            // En cas d'erreur de rendu Gotenberg, fallback avec template texte brut
-            $template = $this->em->getRepository(StageConventionTemplate::class)->findOneBy(['code' => 'default_convention']);
-            $templateText = $template?->getTexte() ?? "CONVENTION DE STAGE\n(Modèle par défaut non configuré en base)";
-            $text = $this->replacePlaceholders($templateText, $stage);
-            $html = $this->renderConventionHtml($text, $stage);
-            try {
-                $pdfBytes = $this->gotenbergService->convertHtmlToPdf($html);
-                return new Response($pdfBytes, Response::HTTP_OK, [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="' . $nomFichier . '"',
-                ]);
-            } catch (\Exception) {
-                return new Response('Erreur lors de la génération PDF de la convention.', Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
+        } catch (\Throwable $e) {
+            $this->logger->error('Convention : échec de la génération PDF.', ['stage' => $stage->getId(), 'erreur' => $e->getMessage()]);
+
+            return new Response('La convention n\'a pas pu être générée. Réessayez plus tard ou contactez le service des stages.', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    // ---------- Éditeur du modèle de convention (super administrateur) ----------
+
+    /** Modèle de convention livré avec le package, point de départ de l'édition. */
+    #[Route('/api/stage/modele-convention/defaut', name: 'api_stage_modele_convention_defaut', methods: ['GET'])]
+    public function modeleConventionDefaut(): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('SUPER_ADMIN');
+
+        return $this->json([
+            'code' => StageConventionTemplate::CODE_CONVENTION,
+            'libelle' => 'Convention de stage',
+            'texte' => (string) file_get_contents(\dirname(__DIR__).'/Resources/templates/default_convention.html'),
+        ]);
+    }
+
+    /** Balises disponibles dans les modèles. */
+    #[Route('/api/stage/modele-convention/balises', name: 'api_stage_modele_convention_balises', methods: ['GET'])]
+    public function balisesModele(): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('SUPER_ADMIN');
+
+        return $this->json(array_keys($this->valeursBalises(new StageEtudiant(), new StageAvenant())));
+    }
+
+    /** Aperçu HTML d'un modèle avec les données d'un vrai dossier (le dossier indiqué, sinon le plus récent). */
+    #[Route('/api/stage/modele-convention/apercu', name: 'api_stage_modele_convention_apercu', methods: ['POST'])]
+    public function apercuModele(Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('SUPER_ADMIN');
+        $decoded = json_decode($request->getContent(), true);
+        $data = \is_array($decoded) ? LooseValue::row($decoded) : [];
+        $texte = LooseValue::castString($data['texte'] ?? '');
+        $repo = $this->em->getRepository(StageEtudiant::class);
+        $stage = isset($data['stageEtudiantId']) && is_numeric($data['stageEtudiantId'])
+            ? $repo->find((int) $data['stageEtudiantId'])
+            : $repo->createQueryBuilder('s')->where('s.etudiant IS NOT NULL')->orderBy('s.id', 'DESC')->setMaxResults(1)->getQuery()->getOneOrNullResult();
+        if (!$stage instanceof StageEtudiant) {
+            return $this->json(['error' => 'Aucun dossier de stage pour construire l\'aperçu.'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json([
+            'html' => $this->rendreModeleConvention($texte, $stage),
+            'dossier' => $stage->getEtudiant()?->getDisplay() ?? 'dossier #'.$stage->getId(),
+        ]);
     }
 
     #[Route('/api/stage_avenants/{id}/pdf', name: 'api_stage_avenants_pdf', methods: ['GET'])]
@@ -132,6 +209,7 @@ class StagePdfController extends AbstractController
         if (!$stage instanceof StageEtudiant) {
             return new Response('Stage associé à l\'avenant non trouvé', Response::HTTP_NOT_FOUND);
         }
+        $this->denyAccessUnlessGranted(StageVoter::STAGE_ETUDIANT_VIEW, $stage);
 
         $this->denyAccessUnlessGranted('CAN_VIEW_STAGE', $stage);
 
@@ -167,36 +245,75 @@ class StagePdfController extends AbstractController
             return new Response('Avenant non trouvé', Response::HTTP_NOT_FOUND);
         }
 
+        $stage = $avenant->getStageEtudiant();
+        if (!$stage instanceof StageEtudiant) {
+            return new Response('Stage associé à l\'avenant non trouvé', Response::HTTP_NOT_FOUND);
+        }
+        $this->denyAccessUnlessGranted(StageVoter::STAGE_ETUDIANT_MANAGE, $stage);
+
+        // Idempotent : un avenant déjà validé n'est ni ré-appliqué ni re-notifié.
+        if ($avenant->isValide()) {
+            return $this->json(['success' => true, 'dejaValide' => true]);
+        }
+
         $avenant->setValide(true);
         $avenant->setDateValidation(new \DateTime());
 
-        $stage = $avenant->getStageEtudiant();
-        if ($stage instanceof StageEtudiant) {
-            if ($avenant->getNewDateDebut() instanceof \DateTimeInterface) {
-                $stage->setDateDebutStage($avenant->getNewDateDebut());
-            }
-            if ($avenant->getNewDateFin() instanceof \DateTimeInterface) {
-                $stage->setDateFinStage($avenant->getNewDateFin());
-            }
-            if (null !== $avenant->getNewDureeHebdomadaire()) {
-                $stage->setDureeHebdomadaire($avenant->getNewDureeHebdomadaire());
-            }
-            if (null !== $avenant->getNewGratificationMontant()) {
-                $stage->setGratificationMontant($avenant->getNewGratificationMontant());
-            }
-            if ($avenant->getNewTuteur() instanceof StageContact) {
-                $stage->setTuteur($avenant->getNewTuteur());
+        if ($avenant->getNewDateDebut() !== null) {
+            $stage->setDateDebutStage($avenant->getNewDateDebut());
+        }
+        if ($avenant->getNewDateFin() !== null) {
+            $stage->setDateFinStage($avenant->getNewDateFin());
+        }
+        if (null !== $avenant->getNewDureeHebdomadaire()) {
+            $stage->setDureeHebdomadaire($avenant->getNewDureeHebdomadaire());
+        }
+        if (null !== $avenant->getNewGratificationMontant()) {
+            $stage->setGratificationMontant($avenant->getNewGratificationMontant());
+        }
+        if ($avenant->getNewTuteur() !== null) {
+            // Le contact de l'avenant reste attaché à l'avenant (historique) : on recopie ses informations dans le
+            // tuteur du dossier, ou dans une copie, pour ne jamais partager un contact entre deux lignes
+            // (contrainte d'unicité du tuteur, suppression en cascade avec le dossier).
+            if ($stage->getTuteur() !== null) {
+                $stage->getTuteur()->copierDepuis($avenant->getNewTuteur());
+            } else {
+                $stage->setTuteur($avenant->getNewTuteur()->dupliquer());
             }
         }
 
         $this->em->flush();
 
-        return new Response((string) json_encode(['success' => true]), Response::HTTP_OK, [
+        $user = $this->getUser();
+        $this->notifier->avenantValide($avenant, $user instanceof \App\Entity\Users\Personnel ? $user : null);
+
+        $corps = json_encode(['success' => true]);
+
+        return new Response(\is_string($corps) ? $corps : '', Response::HTTP_OK, [
             'Content-Type' => 'application/json'
         ]);
     }
 
     private function replacePlaceholders(string $templateText, StageEtudiant $stage, ?StageAvenant $avenant = null): string
+    {
+        $replaces = $this->valeursBalises($stage, $avenant);
+
+        // Modèle HTML : les valeurs (saisies par l'étudiant, l'entreprise…) sont échappées, pour qu'aucune balise ne soit
+        // interprétée lors du rendu (ni mise en page détournée, ni chargement de ressource externe par Gotenberg).
+        // Modèle texte : c'est le texte complet qui est échappé ensuite (renderConventionHtml / renderAvenantHtml).
+        if (self::estHtml($templateText)) {
+            $replaces = array_map(static fn ($v) => nl2br(htmlspecialchars((string) $v, \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8')), $replaces);
+        }
+
+        return strtr($templateText, array_map('strval', $replaces));
+    }
+
+    /**
+     * Valeurs des balises « {objet.champ} » des modèles de convention et d'avenant.
+     *
+     * @return array<string, string|int|float|null>
+     */
+    public function valeursBalises(StageEtudiant $stage, ?StageAvenant $avenant = null): array
     {
         $etu = $stage->getEtudiant();
         $ent = $stage->getEntreprise();
@@ -205,10 +322,7 @@ class StagePdfController extends AbstractController
         $periode = $stage->getStagePeriode();
 
         // Get main establishment
-        $etab = $this->em->getRepository(Etablissement::class)->findOneBy(['isMain' => true]);
-        if (!$etab instanceof Etablissement) {
-            $etab = $this->em->getRepository(Etablissement::class)->findOneBy([]);
-        }
+        $etab = $this->etablissements->findPrincipal();
 
         // Safe format helper for dates
         $fmtDate = function (?\DateTimeInterface $d) {
@@ -256,13 +370,25 @@ class StagePdfController extends AbstractController
         }
 
         // Annee universitaire display
-        $anneeUnivStr = $periode instanceof StagePeriode && $periode->getAnneeUniversitaire() instanceof StructureAnneeUniversitaire ? $periode->getAnneeUniversitaire()->getLibelle() : '2025/2026';
+        $anneeUniv = $periode instanceof StagePeriode ? $periode->getAnneeUniversitaire() : null;
+        $anneeUnivStr = $anneeUniv instanceof StructureAnneeUniversitaire ? $anneeUniv->getLibelle() : (date('Y').'/'.((int) date('Y') + 1));
 
         // Calcule semaines
         $nbSemaines = 0;
         if ($stage->getDureeJoursStage() !== 0) {
             $nbSemaines = ceil($stage->getDureeJoursStage() / 5);
         }
+
+        $optSecu = $etu instanceof Etudiant ? ($etu->getOpt()['intitule_securite_sociale'] ?? null) : null;
+        $optSecuAdresse = $etu instanceof Etudiant ? ($etu->getOpt()['adresse_securite_sociale'] ?? null) : null;
+        $secu = LooseValue::truthyString($stage->getAssuranceCompagnie())
+            ?? LooseValue::truthyString($optSecu)
+            ?? LooseValue::truthyString($etu?->getIntituleSecuriteSociale())
+            ?? '';
+        $secuAdresse = LooseValue::truthyString($stage->getAssuranceNumero())
+            ?? LooseValue::truthyString($optSecuAdresse)
+            ?? LooseValue::truthyString($etu?->getAdresseSecuriteSociale())
+            ?? '';
 
         $replaces = [
             '{annee_universitaire}' => $anneeUnivStr,
@@ -275,16 +401,18 @@ class StagePdfController extends AbstractController
             '{etudiant.email}' => $etu instanceof Etudiant ? $etu->getMailUniv() : '',
             '{etudiant.formation}' => $formationLibelle,
             '{formation.volume_horaire}' => $volumeHoraire,
-            '{etudiant.secu}' => LooseValue::truthyString($stage->getAssuranceCompagnie()) ?? ($etu instanceof Etudiant ? LooseValue::truthyString($etu->getOpt()['intitule_securite_sociale'] ?? null) : null) ?? 'CPAM de l\'Aube',
-            '{etudiant.secu_adresse}' => LooseValue::truthyString($stage->getAssuranceNumero()) ?? ($etu instanceof Etudiant ? LooseValue::truthyString($etu->getOpt()['adresse_securite_sociale'] ?? null) : null) ?? '',
+            '{etudiant.secu}' => $secu,
+            '{etudiant.secu_adresse}' => $secuAdresse,
 
             '{entreprise.nom}' => $ent instanceof StageEntreprise ? $ent->getRaisonSociale() : '',
-            '{entreprise.adresse}' => (string) ($stage->getAdresseStage() ?? ($ent instanceof StageEntreprise ? $ent->getAdresse() : null) ?? ''),
-            '{entreprise.signataire}' => $ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getDisplay() : '',
-            '{entreprise.signataire_fonction}' => $ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getFonction() : '',
-            '{entreprise.telephone}' => $ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
-            '{entreprise.email}' => $ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getEmail() : '',
-            '{stage.service}' => $stage->getServiceStageEntreprise() ?? 'Service Technique',
+            '{entreprise.adresse}' => $stage->getAdresseStage() !== null ? (string) $stage->getAdresseStage() : ($ent instanceof StageEntreprise && $ent->getAdresse() !== null ? (string) $ent->getAdresse() : ''),
+            '{entreprise.signataire}' => $ent instanceof StageEntreprise && $ent->getResponsable() !== null ? $ent->getResponsable()->getDisplay() : '',
+            '{entreprise.signataire_fonction}' => $ent instanceof StageEntreprise && $ent->getResponsable() !== null ? $ent->getResponsable()->getFonction() : '',
+            '{entreprise.telephone}' => $ent instanceof StageEntreprise && $ent->getResponsable() !== null ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : '',
+            '{entreprise.email}' => $ent instanceof StageEntreprise && $ent->getResponsable() !== null ? $ent->getResponsable()->getEmail() : '',
+            '{stage.service}' => $stage->getServiceStageEntreprise() ?? '',
+            '{stage.adresse_different}' => $stage->getAdresseStage() !== null ? (string) $stage->getAdresseStage() : '',
+            '{stage.interruptions}' => $stage->getPeriodesInterruptions() ?? '',
 
             '{stage.sujet}' => $stage->getSujetStage() ?? '',
             '{stage.date_debut}' => $fmtDate($stage->getDateDebutStage()),
@@ -314,7 +442,16 @@ class StagePdfController extends AbstractController
             '{tuteur_entreprise.telephone}' => $tut instanceof StageContact ? ($tut->getTelephone() ?? $tut->getPortable() ?? '') : ($ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? ($ent->getResponsable()->getTelephone() ?? $ent->getResponsable()->getPortable() ?? '') : ''),
             '{tuteur_entreprise.email}' => $tut instanceof StageContact ? $tut->getEmail() : ($ent instanceof StageEntreprise && $ent->getResponsable() instanceof StageContact ? $ent->getResponsable()->getEmail() : ''),
 
-            '{etablissement.signataire}' => 'Martial Martin',
+            '{universite.nom}' => $etab?->getUniversite()->getLibelle() ?? $etab?->getLibelle() ?? '',
+            '{universite.adresse}' => $etab?->getUniversite()->getAdresse()?->getInlineAdresse() ?? '',
+            '{universite.telephone}' => $etab?->getUniversite()->getTelephone() ?? '',
+            '{universite.president}' => $etab?->getUniversite()->getPresident() ?? '',
+            '{etablissement.nom}' => $etab?->getLibelle() ?? '',
+            '{etablissement.directeur}' => $etab?->getDirecteurNom() ?? '',
+            '{etablissement.adresse}' => Adresse::fromArray($etab?->getAdresse())?->getInlineAdresse() ?? '',
+            '{etablissement.telephone}' => $etab?->getTelephone() ?? '',
+            '{etablissement.signataire}' => $etab?->getSignataireNom() ?? '',
+            '{etablissement.signataire_qualite}' => $etab?->getSignataireQualite() ?? '',
             '{date_creation}' => date('d/m/Y'),
             '{dept.tel}' => $deptTel,
             '{dept.mail}' => $deptMail,
@@ -327,16 +464,40 @@ class StagePdfController extends AbstractController
             $replaces['{avenant.date_creation}'] = $avenant->getDateCreation() instanceof \DateTimeInterface ? $avenant->getDateCreation()->format('d/m/Y') : '';
         }
 
-        return strtr($templateText, $replaces);
+        return $replaces;
+    }
+
+    /** Rendu HTML d'un modèle de convention pour un dossier (aperçu de l'éditeur). */
+    public function rendreModeleConvention(string $texte, StageEtudiant $stage): string
+    {
+        return $this->renderConventionHtml($this->replacePlaceholders($texte, $stage), $stage);
+    }
+
+    /** @return array{string, string} noms (échappés) de l'établissement et de son université */
+    private function nomsEtablissement(): array
+    {
+        $etab = $this->etablissements->findPrincipal();
+
+        return [
+            htmlspecialchars($etab?->getLibelle() ?? ''),
+            htmlspecialchars($etab?->getUniversite()->getLibelle() ?? ''),
+        ];
+    }
+
+    /** Modèle HTML complet (document) plutôt que texte brut. */
+    public static function estHtml(string $texte): bool
+    {
+        return stripos($texte, '<html') !== false;
     }
 
     private function renderConventionHtml(string $text, StageEtudiant $stage): string
     {
-        if (str_contains($text, '<html') || str_contains($text, '<HTML')) {
+        if (self::estHtml($text)) {
             return $text;
         }
 
         $paragraphs = nl2br(htmlspecialchars($text));
+        [$nomEtab, $nomUniv] = $this->nomsEtablissement();
 
         return <<<HTML
 <!DOCTYPE html>
@@ -401,15 +562,15 @@ class StagePdfController extends AbstractController
     <table style="width: 100%; margin-bottom: 20px;">
         <tr>
             <td>
-                <div class="logo">IUT de Troyes</div>
-                <div class="subheader">Université de Reims Champagne-Ardenne</div>
+                <div class="logo">{$nomEtab}</div>
+                <div class="subheader">{$nomUniv}</div>
             </td>
             <td style="text-align: right; vertical-align: top; font-size: 9pt; color: #999; font-family: monospace;">
                 Réf: CONV-STAGE-{$stage->getId()}
             </td>
         </tr>
     </table>
-    
+
     <div style="border-bottom: 2px solid #b3002d; margin-bottom: 30px;"></div>
 
     <div class="content">{$text}</div>
@@ -430,7 +591,7 @@ class StagePdfController extends AbstractController
             </td>
             <td>
                 <div class="sig-box">
-                    <strong>Pour l'IUT de Troyes</strong><br>
+                    <strong>Pour l'établissement : {$nomEtab}</strong><br>
                     <span style="font-size: 8pt; color: #888;">Le Directeur</span>
                 </div>
             </td>
@@ -443,6 +604,8 @@ HTML;
 
     private function renderAvenantHtml(string $text, StageEtudiant $stage, StageAvenant $avenant): string
     {
+        [$nomEtab] = $this->nomsEtablissement();
+
         return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -506,7 +669,7 @@ HTML;
     <table style="width: 100%; margin-bottom: 20px;">
         <tr>
             <td>
-                <div class="logo">IUT de Troyes</div>
+                <div class="logo">{$nomEtab}</div>
                 <div class="subheader">Avenant à la convention CONV-STAGE-{$stage->getId()}</div>
             </td>
             <td style="text-align: right; vertical-align: top; font-size: 9pt; color: #999; font-family: monospace;">
@@ -514,7 +677,7 @@ HTML;
             </td>
         </tr>
     </table>
-    
+
     <div style="border-bottom: 2px solid #3c8dbc; margin-bottom: 30px;"></div>
 
     <div class="content">{$text}</div>
@@ -535,7 +698,7 @@ HTML;
             </td>
             <td>
                 <div class="sig-box">
-                    <strong>Pour l'IUT de Troyes</strong><br>
+                    <strong>Pour l'établissement : {$nomEtab}</strong><br>
                     <span style="font-size: 8pt; color: #888;">Le Directeur</span>
                 </div>
             </td>

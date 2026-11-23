@@ -11,7 +11,6 @@ withDefaults(defineProps<{
   tone: 'primary'
 });
 </script>
-
 <template>
   <section class="q-section">
     <header class="flex items-center justify-between gap-3">
@@ -23,8 +22,8 @@ withDefaults(defineProps<{
           <component :is="icon" class="w-4 h-4" />
         </div>
         <div class="min-w-0">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white">{{ title }}</h3>
-          <p v-if="subtitle" class="text-xs text-slate-500 dark:text-slate-400">{{ subtitle }}</p>
+          <h3 class="text-sm font-bold text-color -contrast">{{ title }}</h3>
+          <p v-if="subtitle" class="text-sm text-muted-color ">{{ subtitle }}</p>
         </div>
       </div>
       <div v-if="$slots.actions" class="shrink-0">

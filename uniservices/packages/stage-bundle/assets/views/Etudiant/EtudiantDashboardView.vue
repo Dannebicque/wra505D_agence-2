@@ -1,4 +1,5 @@
 <script setup>
+import { dateFr } from '@/utils/stage';
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
@@ -9,7 +10,9 @@ import BlocHelp from '@components/components/BlocHelp.vue';
 
 // Import Services for real API platform requests
 import { getStagePeriodesService, getStageEtudiantsService } from '@/requests/stage_service';
+import RapportStage from '@/components/RapportStage.vue';
 import { fetchStageOfferDocuments } from '@/requests/stage_documents';
+import AvenantsEtudiant from '@/components/AvenantsEtudiant.vue';
 import { useUsersStore } from '@stores';
 
 // Import Heroicons for KPIs and UI icons
@@ -26,7 +29,6 @@ import {
   ExclamationTriangleIcon,
   PencilSquareIcon,
   CloudArrowUpIcon,
-  TrashIcon,
   EyeIcon,
   CheckBadgeIcon,
   LockClosedIcon,
@@ -53,10 +55,6 @@ const studentDepartmentName = ref('');
 const showArchives = ref(false);
 
 // Upload state simulation
-const fileInput = ref(null);
-const isUploading = ref(false);
-const uploadProgress = ref(0);
-const activeUploadPeriodId = ref(null);
 
 // Modal state for offer details
 const selectedOffer = ref(null);
@@ -94,17 +92,10 @@ const mapStudentStageData = (matchedStage, respName) => {
   if (!matchedStage) return null;
 
   const etat = matchedStage.etatStage || 'ETAT_STAGE_DEPOSE';
-  const formatDate = (isoStr) => {
-    if (!isoStr) return '';
-    const parts = isoStr.substring(0, 10).split('-');
-    if (parts.length === 3) {
-      return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-    return isoStr;
-  };
+  const formatDate = dateFr;
 
   let status = 'En attente de validation';
-  let statusClass = 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50';
+  let statusClass = 'bg-emphasis text-color   border border-surface ';
   let statusHeaderLabel = 'Demande déposée — En attente de validation';
   let statusBadgeSeverity = 'warn';
 
@@ -125,20 +116,20 @@ const mapStudentStageData = (matchedStage, respName) => {
 
   if (etat === 'ETAT_STAGE_DEPOSE') {
     status = 'En attente de validation';
-    statusClass = 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50';
+    statusClass = 'bg-emphasis text-color   border border-surface ';
     statusHeaderLabel = 'Demande déposée — En attente de validation pédagogique';
     statusBadgeSeverity = 'warn';
     step2Date = 'En cours d\'examen';
   } else if (etat === 'ETAT_STAGE_REFUS') {
     status = 'Demande rejetée';
-    statusClass = 'bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50';
+    statusClass = 'bg-emphasis text-color   border border-surface ';
     statusHeaderLabel = 'Demande rejetée par le responsable';
     statusBadgeSeverity = 'danger';
     step2Completed = false;
     step2Date = 'Rejetée';
   } else if (etat === 'ETAT_STAGE_VALIDE') {
     status = 'Convention validée';
-    statusClass = 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50';
+    statusClass = 'bg-emphasis text-primary   border border-primary ';
     statusHeaderLabel = 'Convention validée — En attente d\'édition';
     statusBadgeSeverity = 'info';
     step2Completed = true;
@@ -146,7 +137,7 @@ const mapStudentStageData = (matchedStage, respName) => {
     step3Date = 'En attente d\'édition';
   } else if (etat === 'ETAT_STAGE_CONVENTION_IMPRIMEE' || etat === 'ETAT_STAGE_CONVENTION_ENVOYEE') {
     status = 'En cours de signature';
-    statusClass = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/50';
+    statusClass = 'bg-emphasis text-primary   border border-primary ';
     statusHeaderLabel = 'Convention éditée — Signatures en cours';
     statusBadgeSeverity = 'info';
     step2Completed = true;
@@ -164,17 +155,17 @@ const mapStudentStageData = (matchedStage, respName) => {
 
     if (matchedStage.evaluationNote) {
       status = 'Terminé';
-      statusClass = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50';
+      statusClass = 'bg-emphasis text-color   border border-surface ';
       statusHeaderLabel = 'Stage terminé & noté';
       statusBadgeSeverity = 'success';
     } else if (matchedStage.reportUploaded) {
       status = 'Rapport déposé';
-      statusClass = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50';
+      statusClass = 'bg-emphasis text-color   border border-surface ';
       statusHeaderLabel = 'Rapport déposé — En attente d\'évaluation';
       statusBadgeSeverity = 'success';
     } else {
       status = 'Convention signée';
-      statusClass = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50';
+      statusClass = 'bg-emphasis text-color   border border-surface ';
       statusHeaderLabel = 'Convention signée & validée';
       statusBadgeSeverity = 'success';
     }
@@ -212,8 +203,10 @@ const mapStudentStageData = (matchedStage, respName) => {
     statusHeaderLabel,
     statusBadgeSeverity,
     reportUploaded: !!matchedStage.reportUploaded,
-    reportName: matchedStage.reportName || (matchedStage.reportUploaded ? 'Rapport_Stage_Final.pdf' : ''),
-    reportDate: matchedStage.reportDate || '',
+    reportName: matchedStage.reportName || '',
+    motifRefus: matchedStage.motifRefus || '',
+    avenants: matchedStage.avenants || [],
+    reportDate: matchedStage.reportDate ? new Date(matchedStage.reportDate).toLocaleDateString('fr-FR') : '',
     grade: matchedStage.evaluationNote ? `${matchedStage.evaluationNote} / 20` : null,
     workflowSteps: [
       { id: 1, label: 'Demande déposée', completed: step1Completed, date: step1Date },
@@ -504,81 +497,23 @@ const summaryKpis = computed(() => {
 });
 
 // Actions & Handlers
-const triggerFileUpload = (periodId) => {
-  activeUploadPeriodId.value = periodId;
-  if (fileInput.value) {
-    fileInput.value.click();
-  }
-};
-
-const handleFileChange = (e) => {
-  const file = e.target.files[0];
-  if (!file || activeUploadPeriodId.value === null) return;
-
-  const targetId = activeUploadPeriodId.value;
-  isUploading.value = true;
-  uploadProgress.value = 10;
-  
-  const interval = setInterval(() => {
-    uploadProgress.value += 30;
-    if (uploadProgress.value >= 100) {
-      clearInterval(interval);
-      isUploading.value = false;
-      
-      for (const year of Object.keys(studentAcademicHistory.value)) {
-        const period = studentAcademicHistory.value[year].periods.find(p => p.id === targetId);
-        if (period && period.stage) {
-          period.stage.reportUploaded = true;
-          period.stage.reportName = file.name;
-          period.stage.reportDate = new Date().toLocaleDateString('fr-FR');
-          
-          if (period.stage.workflowSteps) {
-            const reportStep = period.stage.workflowSteps.find(s => s.id === 5);
-            if (reportStep) {
-              reportStep.completed = true;
-              reportStep.date = new Date().toLocaleDateString('fr-FR');
-            }
-          }
-          break;
-        }
-      }
-
-      toast.add({
-        severity: 'success',
-        summary: 'Fichier déposé',
-        detail: `Le document "${file.name}" a été transmis avec succès.`,
-        life: 4000
-      });
-      activeUploadPeriodId.value = null;
-    }
-  }, 400);
-};
-
-const deleteReport = (periodId) => {
+// Met à jour la carte de la période après un dépôt ou un retrait (état renvoyé par le serveur).
+const appliquerEtatRapport = (periodId, etat) => {
   for (const year of Object.keys(studentAcademicHistory.value)) {
     const period = studentAcademicHistory.value[year].periods.find(p => p.id === periodId);
     if (period && period.stage) {
-      period.stage.reportUploaded = false;
-      period.stage.reportName = '';
-      period.stage.reportDate = '';
-      
-      if (period.stage.workflowSteps) {
-        const reportStep = period.stage.workflowSteps.find(s => s.id === 5);
-        if (reportStep) {
-          reportStep.completed = false;
-          reportStep.date = 'En attente';
-        }
+      period.stage.reportUploaded = !!etat.reportUploaded;
+      period.stage.reportName = etat.reportName || '';
+      period.stage.reportDate = etat.reportDate ? new Date(etat.reportDate).toLocaleDateString('fr-FR') : '';
+      const reportStep = period.stage.workflowSteps?.find(s => s.id === 5);
+      if (reportStep) {
+        reportStep.completed = !!etat.reportUploaded;
+        reportStep.date = etat.reportUploaded ? period.stage.reportDate : 'En attente';
       }
-      break;
+      return period;
     }
   }
-
-  toast.add({
-    severity: 'info',
-    summary: 'Dépôt annulé',
-    detail: 'Votre rapport de stage a été retiré.',
-    life: 3000
-  });
+  return null;
 };
 
 const navigateToRequest = (periodId) => {
@@ -602,7 +537,6 @@ const openOfferModal = (offer) => {
 
 <template>
   <div class="mx-auto space-y-6 pb-12">
-    <Toast />
 
     <!-- Main Header Component from Shared Library -->
     <HeaderComponent
@@ -614,7 +548,7 @@ const openOfferModal = (offer) => {
     >
       <template #actions>
         <!-- Period / Academic Year Navigation Bar -->
-        <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex gap-1 shadow-inner border border-slate-200 dark:border-slate-700">
+        <div class="bg-emphasis  p-1 rounded-xl flex gap-1 shadow-inner border border-surface ">
           <button
             v-for="year in visibleYears"
             :key="year"
@@ -622,13 +556,13 @@ const openOfferModal = (offer) => {
             :class="[
               'px-4 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5',
               activePeriodTab === year
-                ? 'bg-white dark:bg-slate-700 text-violet-600 dark:text-violet-300 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-surface-0  text-primary  shadow-sm'
+                : 'text-muted-color hover:text-color dark:hover:text-color'
             ]"
           >
             <AcademicCapIcon class="w-4 h-4" />
             <span>{{ year }}</span>
-            <span v-if="year === currentStudentYear" class="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
+            <span v-if="year === currentStudentYear" class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           </button>
         </div>
       </template>
@@ -674,11 +608,11 @@ const openOfferModal = (offer) => {
       </div>
 
       <!-- Active Year Subtitle Info & Filters -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/50">
-        <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
-          <i class="pi pi-calendar text-violet-500"></i>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emphasis  p-3 rounded-2xl border border-surface ">
+        <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-color ">
+          <i class="pi pi-calendar text-primary"></i>
           <span>{{ currentYearData?.yearLabel }}</span>
-          <span v-if="studentDepartmentName" class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+          <span v-if="studentDepartmentName" class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emphasis text-color  ">
             Département {{ studentDepartmentName }}
           </span>
         </div>
@@ -688,17 +622,17 @@ const openOfferModal = (offer) => {
           <button
             v-if="activePeriodTab === currentStudentYear && archivedPeriodsCountInCurrentTab > 0"
             @click="showArchives = !showArchives"
-            class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
-            :class="showArchives ? 'bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300 border-violet-200' : 'text-slate-600 dark:text-slate-300'"
+            class="px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-surface  hover:bg-emphasis dark:hover:bg-emphasis cursor-pointer"
+            :class="showArchives ? 'bg-emphasis text-primary   border-primary' : 'text-muted-color '"
           >
             <i class="pi pi-history text-xs"></i>
             <span>{{ showArchives ? 'Masquer les archives' : `Afficher les archives (${archivedPeriodsCountInCurrentTab})` }}</span>
           </button>
 
-          <span v-if="activePeriodTab === currentStudentYear" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300">
+          <span v-if="activePeriodTab === currentStudentYear" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emphasis text-primary  ">
             Année Active
           </span>
-          <span v-else class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+          <span v-else class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emphasis text-color  ">
             Historique Archivé
           </span>
         </div>
@@ -719,138 +653,138 @@ const openOfferModal = (offer) => {
         <div
           v-for="period in currentPeriods"
           :key="period.id"
-          class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700/60 shadow-sm overflow-hidden"
+          class="bg-surface-0  rounded-3xl border border-surface  shadow-sm overflow-hidden"
         >
           <!-- En-tête de la Période -->
-          <div class="p-6 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-700/40 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div class="p-6 bg-emphasis  border-b border-surface  flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <div class="flex flex-wrap items-center gap-2 mb-1">
-                <span class="text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                <span class="text-[10px] font-black uppercase tracking-wider text-primary ">
                   Période de Stage Académique
                 </span>
 
                 <!-- Badge Année active ou Archive -->
-                <span v-if="period.isCurrentUniv" class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40 flex items-center gap-1">
-                  <SparklesIcon class="w-3.5 h-3.5 text-emerald-600" />
+                <span v-if="period.isCurrentUniv" class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emphasis text-color   border border-surface  flex items-center gap-1">
+                  <SparklesIcon class="w-3.5 h-3.5 text-muted-color" />
                   <span>Année active {{ period.anneeUnivLibelle ? `(${period.anneeUnivLibelle})` : '' }}</span>
                 </span>
-                <span v-else class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 flex items-center gap-1">
-                  <ClockIcon class="w-3.5 h-3.5 text-slate-500" />
+                <span v-else class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emphasis text-color   flex items-center gap-1">
+                  <ClockIcon class="w-3.5 h-3.5 text-muted-color" />
                   <span>Archive {{ period.anneeUnivLibelle ? `(${period.anneeUnivLibelle})` : '' }}</span>
                 </span>
 
                 <!-- Statut global du stage ou de la demande -->
                 <span v-if="period.hasStage" :class="['px-2.5 py-0.5 text-[10px] font-bold rounded-full flex items-center gap-1', period.stage.statusClass]">
-                  <CheckCircleIcon v-if="period.stage.etatStage === 'ETAT_STAGE_CONVENTION_RECUE'" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <ClockIcon v-else-if="period.stage.etatStage === 'ETAT_STAGE_DEPOSE'" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                  <XCircleIcon v-else-if="period.stage.etatStage === 'ETAT_STAGE_REFUS'" class="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                  <DocumentCheckIcon v-else class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <CheckCircleIcon v-if="period.stage.etatStage === 'ETAT_STAGE_CONVENTION_RECUE'" class="w-3.5 h-3.5 text-muted-color " />
+                  <ClockIcon v-else-if="period.stage.etatStage === 'ETAT_STAGE_DEPOSE'" class="w-3.5 h-3.5 text-muted-color " />
+                  <XCircleIcon v-else-if="period.stage.etatStage === 'ETAT_STAGE_REFUS'" class="w-3.5 h-3.5 text-muted-color " />
+                  <DocumentCheckIcon v-else class="w-3.5 h-3.5 text-primary " />
                   <span>{{ period.stage.statusHeaderLabel }}</span>
                 </span>
-                <span v-else-if="period.inputAuthorized" class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300 flex items-center gap-1">
-                  <LockOpenIcon class="w-3.5 h-3.5 text-indigo-600" />
+                <span v-else-if="period.inputAuthorized" class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emphasis text-primary   flex items-center gap-1">
+                  <LockOpenIcon class="w-3.5 h-3.5 text-primary" />
                   <span>Demande non complétée (Saisie Ouverte)</span>
                 </span>
-                <span v-else class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 flex items-center gap-1">
-                  <LockClosedIcon class="w-3.5 h-3.5 text-amber-600" />
+                <span v-else class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-emphasis text-color   flex items-center gap-1">
+                  <LockClosedIcon class="w-3.5 h-3.5 text-muted-color" />
                   <span>En attente de l'ouverture des saisies</span>
                 </span>
               </div>
 
-              <h2 class="text-lg font-black text-slate-900 dark:text-white">{{ period.periodName }}</h2>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
-                <span>Durée requise : <strong class="text-slate-700 dark:text-slate-200">{{ period.duration }}</strong></span>
-                <span>Dates universitaires : <strong class="text-slate-700 dark:text-slate-200">{{ period.dates }}</strong></span>
-                <span>Responsable : <strong class="text-slate-700 dark:text-slate-200">{{ period.responsible || period.responsablePrincipal }}</strong></span>
+              <h2 class="text-lg font-black text-color -contrast">{{ period.periodName }}</h2>
+              <p class="text-xs text-muted-color  mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                <span>Durée requise : <strong class="text-color ">{{ period.duration }}</strong></span>
+                <span>Dates universitaires : <strong class="text-color ">{{ period.dates }}</strong></span>
+                <span>Responsable : <strong class="text-color ">{{ period.responsible || period.responsablePrincipal }}</strong></span>
               </p>
             </div>
 
             <!-- Bouton Consignes & Directives -->
             <button 
               @click="togglePeriodDetails(period.id)"
-              class="text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center gap-2 shrink-0"
+              class="text-xs font-bold px-3.5 py-2 rounded-xl border border-surface  text-color  hover:bg-emphasis dark:hover:bg-emphasis transition-all flex items-center gap-2 shrink-0"
             >
-              <i class="pi pi-info-circle text-violet-500"></i>
+              <i class="pi pi-info-circle text-primary"></i>
               <span>{{ isDetailsOpen(period.id, period.hasStage) ? 'Masquer directives' : 'Consignes & Directives' }}</span>
               <i :class="['pi text-[9px] transition-transform duration-200', isDetailsOpen(period.id, period.hasStage) ? 'pi-chevron-up' : 'pi-chevron-down']"></i>
             </button>
           </div>
 
           <!-- Section Collapsible des Directives IUT (Mise à jour selon StagePeriode.php) -->
-          <div v-show="isDetailsOpen(period.id, period.hasStage)" class="p-6 bg-slate-50/40 dark:bg-slate-800/20 border-b border-slate-100 dark:border-slate-700/40 space-y-4">
+          <div v-show="isDetailsOpen(period.id, period.hasStage)" class="p-6 bg-emphasis  border-b border-surface  space-y-4">
             <BlocHelp :message="period.description || period.instructions" />
 
             <!-- Grille des modalités détaillées de la StagePeriode -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs pt-3 border-t border-slate-100 dark:border-slate-700/30">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs pt-3 border-t border-surface ">
               <!-- 1. Enseignants responsables & Co-responsables -->
-              <div class="bg-white dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                <span class="text-slate-400 font-semibold flex items-center gap-1.5 mb-1">
-                  <i class="pi pi-user text-violet-500"></i>
+              <div class="bg-surface-0  p-3 rounded-xl border border-surface ">
+                <span class="text-muted-color font-semibold flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-user text-primary"></i>
                   <span>Responsable(s) de la période :</span>
                 </span>
-                <span class="font-extrabold text-slate-800 dark:text-slate-200 block">{{ period.responsablePrincipal || period.responsible }}</span>
-                <div v-if="period.coResponsables && period.coResponsables.length > 0" class="mt-1 pt-1 border-t border-slate-100 dark:border-slate-700/40">
-                  <span class="text-[10px] text-slate-400 font-semibold block">Co-responsable(s) :</span>
-                  <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">{{ period.coResponsables.join(', ') }}</span>
+                <span class="font-extrabold text-color  block">{{ period.responsablePrincipal || period.responsible }}</span>
+                <div v-if="period.coResponsables && period.coResponsables.length > 0" class="mt-1 pt-1 border-t border-surface ">
+                  <span class="text-[10px] text-muted-color font-semibold block">Co-responsable(s) :</span>
+                  <span class="text-[11px] font-bold text-muted-color ">{{ period.coResponsables.join(', ') }}</span>
                 </div>
               </div>
 
               <!-- 2. Compétences visées -->
-              <div v-if="period.competencesVisees" class="bg-white dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                <span class="text-slate-400 font-semibold flex items-center gap-1.5 mb-1">
-                  <i class="pi pi-compass text-emerald-500"></i>
+              <div v-if="period.competencesVisees" class="bg-surface-0  p-3 rounded-xl border border-surface ">
+                <span class="text-muted-color font-semibold flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-compass text-muted-color"></i>
                   <span>Compétences visées :</span>
                 </span>
-                <p class="font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{{ period.competencesVisees }}</p>
+                <p class="font-medium text-color  leading-relaxed">{{ period.competencesVisees }}</p>
               </div>
 
               <!-- 3. Évaluation pédagogique -->
-              <div v-if="period.modalitesEvaluationPedagogique" class="bg-white dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                <span class="text-slate-400 font-semibold flex items-center gap-1.5 mb-1">
-                  <i class="pi pi-graduation-cap text-indigo-500"></i>
+              <div v-if="period.modalitesEvaluationPedagogique" class="bg-surface-0  p-3 rounded-xl border border-surface ">
+                <span class="text-muted-color font-semibold flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-graduation-cap text-primary"></i>
                   <span>Évaluation pédagogique (IUT) :</span>
                 </span>
-                <p class="font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{{ period.modalitesEvaluationPedagogique }}</p>
+                <p class="font-medium text-color  leading-relaxed">{{ period.modalitesEvaluationPedagogique }}</p>
               </div>
 
               <!-- 4. Évaluation entreprise -->
-              <div v-if="period.modalitesEvaluationEntreprise" class="bg-white dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                <span class="text-slate-400 font-semibold flex items-center gap-1.5 mb-1">
-                  <i class="pi pi-building text-amber-500"></i>
+              <div v-if="period.modalitesEvaluationEntreprise" class="bg-surface-0  p-3 rounded-xl border border-surface ">
+                <span class="text-muted-color font-semibold flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-building text-muted-color"></i>
                   <span>Évaluation entreprise :</span>
                 </span>
-                <p class="font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{{ period.modalitesEvaluationEntreprise }}</p>
+                <p class="font-medium text-color  leading-relaxed">{{ period.modalitesEvaluationEntreprise }}</p>
               </div>
 
               <!-- 5. Modalités d'encadrement -->
-              <div v-if="period.modalitesEncadrement" class="bg-white dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                <span class="text-slate-400 font-semibold flex items-center gap-1.5 mb-1">
-                  <i class="pi pi-users text-blue-500"></i>
+              <div v-if="period.modalitesEncadrement" class="bg-surface-0  p-3 rounded-xl border border-surface ">
+                <span class="text-muted-color font-semibold flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-users text-primary"></i>
                   <span>Encadrement &amp; Suivi :</span>
                 </span>
-                <p class="font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{{ period.modalitesEncadrement }}</p>
+                <p class="font-medium text-color  leading-relaxed">{{ period.modalitesEncadrement }}</p>
               </div>
 
               <!-- 6. Livrables & Documents à rendre -->
-              <div v-if="period.documentsRendre" class="bg-white dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                <span class="text-slate-400 font-semibold flex items-center gap-1.5 mb-1">
-                  <i class="pi pi-file-pdf text-rose-500"></i>
+              <div v-if="period.documentsRendre" class="bg-surface-0  p-3 rounded-xl border border-surface ">
+                <span class="text-muted-color font-semibold flex items-center gap-1.5 mb-1">
+                  <i class="pi pi-file-pdf text-muted-color"></i>
                   <span>Livrables à rendre :</span>
                 </span>
-                <p class="font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{{ period.documentsRendre }}</p>
+                <p class="font-medium text-color  leading-relaxed">{{ period.documentsRendre }}</p>
               </div>
             </div>
           </div>
 
           <!-- Sous-Onglets d'accès de la période (Vue globale, Documents types, Offres, Rapport) -->
-          <div class="px-6 pt-4 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700/40 flex flex-wrap gap-2 text-xs">
+          <div class="px-6 pt-4 bg-surface-0  border-b border-surface  flex flex-wrap gap-2 text-xs">
             <button
               @click="setSubTab(period.id, 'overview')"
               :class="[
                 'px-3.5 py-2 rounded-t-xl font-bold transition-all border-b-2 flex items-center gap-2',
                 getSubTab(period.id) === 'overview'
-                  ? 'border-violet-600 text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-950/20'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                  ? 'border-primary text-primary  bg-emphasis '
+                  : 'border-transparent text-muted-color hover:text-color dark:hover:text-color'
               ]"
             >
               <BriefcaseIcon class="w-4 h-4" />
@@ -862,13 +796,13 @@ const openOfferModal = (offer) => {
               :class="[
                 'px-3.5 py-2 rounded-t-xl font-bold transition-all border-b-2 flex items-center gap-2',
                 getSubTab(period.id) === 'documents'
-                  ? 'border-violet-600 text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-950/20'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                  ? 'border-primary text-primary  bg-emphasis '
+                  : 'border-transparent text-muted-color hover:text-color dark:hover:text-color'
               ]"
             >
               <DocumentTextIcon class="w-4 h-4" />
               <span>Documents Types &amp; Consignes</span>
-              <span class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+              <span class="bg-emphasis  text-color  text-[10px] px-1.5 py-0.2 rounded-full font-bold">
                 {{ period.documents?.length || 0 }}
               </span>
             </button>
@@ -878,13 +812,13 @@ const openOfferModal = (offer) => {
               :class="[
                 'px-3.5 py-2 rounded-t-xl font-bold transition-all border-b-2 flex items-center gap-2',
                 getSubTab(period.id) === 'offers'
-                  ? 'border-violet-600 text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-950/20'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                  ? 'border-primary text-primary  bg-emphasis '
+                  : 'border-transparent text-muted-color hover:text-color dark:hover:text-color'
               ]"
             >
-              <SparklesIcon class="w-4 h-4 text-amber-500" />
+              <SparklesIcon class="w-4 h-4 text-muted-color" />
               <span>Offres de Stage</span>
-              <span class="bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+              <span class="bg-emphasis text-color   text-[10px] px-1.5 py-0.2 rounded-full font-bold">
                 {{ period.offers?.length || 0 }}
               </span>
             </button>
@@ -895,13 +829,13 @@ const openOfferModal = (offer) => {
               :class="[
                 'px-3.5 py-2 rounded-t-xl font-bold transition-all border-b-2 flex items-center gap-2',
                 getSubTab(period.id) === 'report'
-                  ? 'border-violet-600 text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-950/20'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                  ? 'border-primary text-primary  bg-emphasis '
+                  : 'border-transparent text-muted-color hover:text-color dark:hover:text-color'
               ]"
             >
               <CloudArrowUpIcon class="w-4 h-4" />
               <span>Dépôt du Rapport</span>
-              <span v-if="period.stage?.reportUploaded" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span v-if="period.stage?.reportUploaded" class="w-2 h-2 rounded-full bg-emphasis"></span>
             </button>
           </div>
 
@@ -916,64 +850,67 @@ const openOfferModal = (offer) => {
                 
                 <div class="lg:col-span-2 space-y-6">
                   <!-- Alerte contextuelle selon l'état réel de la convention -->
-                  <div v-if="period.stage.etatStage === 'ETAT_STAGE_DEPOSE'" class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-3">
-                    <ClockIcon class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div v-if="period.stage.etatStage === 'ETAT_STAGE_DEPOSE'" class="p-4 rounded-2xl bg-emphasis  border border-surface  flex items-start gap-3">
+                    <ClockIcon class="w-5 h-5 text-muted-color  shrink-0 mt-0.5" />
                     <div class="text-xs space-y-1">
-                      <h4 class="font-extrabold text-amber-900 dark:text-amber-200">Demande déposée — En attente de validation pédagogique</h4>
-                      <p class="text-amber-700 dark:text-amber-300 leading-relaxed">
+                      <h4 class="font-extrabold text-color ">Demande déposée — En attente de validation pédagogique</h4>
+                      <p class="text-color  leading-relaxed">
                         Votre demande de convention a bien été enregistrée. Elle est actuellement transmise au responsable pédagogique (<strong>{{ period.responsible || period.responsablePrincipal }}</strong>) pour vérification des missions et attribution de votre tuteur enseignant.
                       </p>
                     </div>
                   </div>
 
-                  <div v-else-if="period.stage.etatStage === 'ETAT_STAGE_VALIDE'" class="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 flex items-start gap-3">
-                    <CheckCircleIcon class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                  <div v-else-if="period.stage.etatStage === 'ETAT_STAGE_VALIDE'" class="p-4 rounded-2xl bg-emphasis  border border-primary  flex items-start gap-3">
+                    <CheckCircleIcon class="w-5 h-5 text-primary  shrink-0 mt-0.5" />
                     <div class="text-xs space-y-1">
-                      <h4 class="font-extrabold text-blue-900 dark:text-blue-200">Convention validée par le responsable pédagogique</h4>
-                      <p class="text-blue-700 dark:text-blue-300 leading-relaxed">
+                      <h4 class="font-extrabold text-primary ">Convention validée par le responsable pédagogique</h4>
+                      <p class="text-primary  leading-relaxed">
                         Votre sujet et votre structure d'accueil ont été validés avec succès ! Tuteur universitaire : <strong>{{ period.stage.academicTutor }}</strong>. Le secrétariat va désormais procéder à l'édition de votre convention.
                       </p>
                     </div>
                   </div>
 
-                  <div v-else-if="period.stage.etatStage === 'ETAT_STAGE_CONVENTION_IMPRIMEE' || period.stage.etatStage === 'ETAT_STAGE_CONVENTION_ENVOYEE'" class="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 flex items-start justify-between gap-3">
+                  <div v-else-if="period.stage.etatStage === 'ETAT_STAGE_CONVENTION_IMPRIMEE' || period.stage.etatStage === 'ETAT_STAGE_CONVENTION_ENVOYEE'" class="p-4 rounded-2xl bg-emphasis  border border-primary  flex items-start justify-between gap-3">
                     <div class="flex items-start gap-3">
-                      <DocumentCheckIcon class="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                      <DocumentCheckIcon class="w-5 h-5 text-primary  shrink-0 mt-0.5" />
                       <div class="text-xs space-y-1">
-                        <h4 class="font-extrabold text-indigo-900 dark:text-indigo-200">Convention éditée — Signatures en cours</h4>
-                        <p class="text-indigo-700 dark:text-indigo-300 leading-relaxed">
+                        <h4 class="font-extrabold text-primary ">Convention éditée — Signatures en cours</h4>
+                        <p class="text-primary  leading-relaxed">
                           Votre convention de stage a été générée. Elle est en cours de diffusion pour recueil des signatures des différentes parties.
                         </p>
                       </div>
                     </div>
-                    <a :href="'/api/stage_etudiants/' + period.stage.id + '/pdf'" target="_blank" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shrink-0 shadow-xs">
+                    <a :href="'/api/stage_etudiants/' + period.stage.id + '/pdf'" target="_blank" class="px-3 py-1.5 bg-primary hover:bg-primary text-primary-contrast text-xs font-bold rounded-lg flex items-center gap-1.5 shrink-0 shadow-xs">
                       <i class="pi pi-file-pdf"></i>
                       <span>Voir le PDF</span>
                     </a>
                   </div>
 
-                  <div v-else-if="period.stage.etatStage === 'ETAT_STAGE_CONVENTION_RECUE'" class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-start justify-between gap-3">
+                  <div v-else-if="period.stage.etatStage === 'ETAT_STAGE_CONVENTION_RECUE'" class="p-4 rounded-2xl bg-emphasis  border border-surface  flex items-start justify-between gap-3">
                     <div class="flex items-start gap-3">
-                      <CheckBadgeIcon class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                      <CheckBadgeIcon class="w-5 h-5 text-muted-color  shrink-0 mt-0.5" />
                       <div class="text-xs space-y-1">
-                        <h4 class="font-extrabold text-emerald-900 dark:text-emerald-200">Convention signée &amp; enregistrée</h4>
-                        <p class="text-emerald-700 dark:text-emerald-300 leading-relaxed">
+                        <h4 class="font-extrabold text-color ">Convention signée &amp; enregistrée</h4>
+                        <p class="text-color  leading-relaxed">
                           Toutes les signatures ont été enregistrées. Votre convention est en règle pour le déroulement de votre stage.
                         </p>
                       </div>
                     </div>
-                    <a :href="'/api/stage_etudiants/' + period.stage.id + '/pdf'" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shrink-0 shadow-xs">
+                    <a :href="'/api/stage_etudiants/' + period.stage.id + '/pdf'" target="_blank" class="px-3 py-1.5 bg-emphasis hover:bg-emphasis text-primary-contrast text-xs font-bold rounded-lg flex items-center gap-1.5 shrink-0 shadow-xs">
                       <i class="pi pi-file-pdf"></i>
                       <span>Télécharger PDF</span>
                     </a>
                   </div>
 
-                  <div v-else-if="period.stage.etatStage === 'ETAT_STAGE_REFUS'" class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 flex items-start gap-3">
-                    <XCircleIcon class="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                  <div v-else-if="period.stage.etatStage === 'ETAT_STAGE_REFUS'" class="p-4 rounded-2xl bg-emphasis  border border-surface  flex items-start gap-3">
+                    <XCircleIcon class="w-5 h-5 text-muted-color  shrink-0 mt-0.5" />
                     <div class="text-xs space-y-1">
-                      <h4 class="font-extrabold text-rose-900 dark:text-rose-200">Demande rejetée par le responsable pédagogique</h4>
-                      <p class="text-rose-700 dark:text-rose-300 leading-relaxed">
+                      <h4 class="font-extrabold text-color ">Demande rejetée par le responsable pédagogique</h4>
+                      <p class="text-color  leading-relaxed">
                         Des modifications ou précisions sont demandées sur votre déclaration. Veuillez corriger les informations nécessaires et déposer à nouveau votre demande.
+                      </p>
+                      <p v-if="period.stage.motifRefus" class="text-color  font-semibold whitespace-pre-line">
+                        Motif : {{ period.stage.motifRefus }}
                       </p>
                     </div>
                   </div>
@@ -987,42 +924,42 @@ const openOfferModal = (offer) => {
                     :badgeSeverity="period.stage.statusBadgeSeverity"
                   >
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                      <div class="bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <span class="text-slate-400 block font-semibold">Entreprise d'accueil :</span>
-                        <span class="font-extrabold text-slate-800 dark:text-white block mt-1 text-sm">{{ period.stage.company }}</span>
-                        <span class="text-[11px] text-slate-500 flex items-center gap-1 mt-1">
-                          <MapPinIcon class="w-3.5 h-3.5 text-violet-500" />
+                      <div class="bg-emphasis  p-3 rounded-xl border border-surface ">
+                        <span class="text-muted-color block font-semibold">Entreprise d'accueil :</span>
+                        <span class="font-extrabold text-color -contrast block mt-1 text-sm">{{ period.stage.company }}</span>
+                        <span class="text-[11px] text-muted-color flex items-center gap-1 mt-1">
+                          <MapPinIcon class="w-3.5 h-3.5 text-primary" />
                           {{ period.stage.address }}
                         </span>
                       </div>
 
-                      <div class="bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <span class="text-slate-400 block font-semibold">Dates effectives de réalisation :</span>
-                        <span class="font-extrabold text-slate-800 dark:text-white block mt-1 text-sm">{{ period.stage.dates }}</span>
-                        <span class="text-[11px] text-slate-500 flex items-center gap-1 mt-1">
-                          <ClockIcon class="w-3.5 h-3.5 text-violet-500" />
+                      <div class="bg-emphasis  p-3 rounded-xl border border-surface ">
+                        <span class="text-muted-color block font-semibold">Dates effectives de réalisation :</span>
+                        <span class="font-extrabold text-color -contrast block mt-1 text-sm">{{ period.stage.dates }}</span>
+                        <span class="text-[11px] text-muted-color flex items-center gap-1 mt-1">
+                          <ClockIcon class="w-3.5 h-3.5 text-primary" />
                           Durée : {{ period.duration }}
                         </span>
                       </div>
 
-                      <div class="bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <span class="text-slate-400 block font-semibold">Tuteur Académique (IUT) :</span>
-                        <span class="font-bold text-slate-800 dark:text-slate-200 block mt-1">{{ period.stage.academicTutor }}</span>
+                      <div class="bg-emphasis  p-3 rounded-xl border border-surface ">
+                        <span class="text-muted-color block font-semibold">Tuteur Académique (IUT) :</span>
+                        <span class="font-bold text-color  block mt-1">{{ period.stage.academicTutor }}</span>
                       </div>
 
-                      <div class="bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <span class="text-slate-400 block font-semibold">Maître de Stage (Entreprise) :</span>
-                        <span class="font-bold text-slate-800 dark:text-slate-200 block mt-1">{{ period.stage.companySupervisor }}</span>
+                      <div class="bg-emphasis  p-3 rounded-xl border border-surface ">
+                        <span class="text-muted-color block font-semibold">Maître de Stage (Entreprise) :</span>
+                        <span class="font-bold text-color  block mt-1">{{ period.stage.companySupervisor }}</span>
                       </div>
 
-                      <div class="sm:col-span-2 bg-slate-50 dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <span class="text-slate-400 block font-semibold">Sujet &amp; Objectifs du stage :</span>
-                        <p class="font-medium text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">{{ period.stage.subject }}</p>
+                      <div class="sm:col-span-2 bg-emphasis  p-3.5 rounded-xl border border-surface ">
+                        <span class="text-muted-color block font-semibold">Sujet &amp; Objectifs du stage :</span>
+                        <p class="font-medium text-color  mt-1 leading-relaxed">{{ period.stage.subject }}</p>
                       </div>
                     </div>
 
-                    <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 flex flex-wrap justify-between items-center gap-3">
-                      <span class="text-xs text-slate-400 font-medium">
+                    <div class="mt-4 pt-4 border-t border-surface  flex flex-wrap justify-between items-center gap-3">
+                      <span class="text-xs text-muted-color font-medium">
                         {{ period.stage.etatStage === 'ETAT_STAGE_CONVENTION_RECUE' ? 'Votre convention est définitivement enregistrée.' : 'Vous pouvez consulter ou corriger votre demande tant qu\'elle n\'est pas définitivement signée.' }}
                       </span>
                       <div class="flex items-center gap-2">
@@ -1030,7 +967,7 @@ const openOfferModal = (offer) => {
                           v-if="period.stage && period.stage.id && ['ETAT_STAGE_VALIDE', 'ETAT_STAGE_CONVENTION_IMPRIMEE', 'ETAT_STAGE_CONVENTION_ENVOYEE', 'ETAT_STAGE_CONVENTION_RECUE'].includes(period.stage.etatStage)"
                           :href="'/api/stage_etudiants/' + period.stage.id + '/pdf'"
                           target="_blank"
-                          class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-1.5 cursor-pointer"
+                          class="px-3.5 py-2 bg-emphasis hover:bg-emphasis text-primary-contrast font-bold text-xs rounded-xl shadow transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                           <i class="pi pi-file-pdf"></i>
                           <span>Télécharger la convention PDF</span>
@@ -1038,12 +975,16 @@ const openOfferModal = (offer) => {
                         <button 
                           v-if="period.stage.etatStage !== 'ETAT_STAGE_CONVENTION_RECUE'"
                           @click="navigateToRequest(period.id)"
-                          class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2 cursor-pointer"
+                          class="px-4 py-2 bg-primary hover:bg-primary text-primary-contrast font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2 cursor-pointer"
                         >
                           <PencilSquareIcon class="w-4 h-4" />
                           <span>{{ period.stage.etatStage === 'ETAT_STAGE_DEPOSE' ? 'Consulter / Corriger ma demande' : 'Compléter / Modifier ma convention' }}</span>
                         </button>
                       </div>
+                    </div>
+
+                    <div>
+                      <AvenantsEtudiant :stage="period.stage" @cree="fetchDashboardData" />
                     </div>
                   </Card>
                 </div>
@@ -1056,7 +997,7 @@ const openOfferModal = (offer) => {
                     icon="pi pi-sliders-h"
                     color="emerald"
                   >
-                    <div v-if="period.stage.workflowSteps" class="relative pl-6 border-l-2 border-slate-100 dark:border-slate-700 space-y-4 py-1">
+                    <div v-if="period.stage.workflowSteps" class="relative pl-6 border-l-2 border-surface  space-y-4 py-1">
                       <div 
                         v-for="step in period.stage.workflowSteps" 
                         :key="step.id"
@@ -1064,29 +1005,29 @@ const openOfferModal = (offer) => {
                       >
                         <span 
                           :class="[
-                            'absolute -left-[31px] top-0 w-4 h-4 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center transition-all',
+                            'absolute -left-[31px] top-0 w-4 h-4 rounded-full border-2 border-surface  flex items-center justify-center transition-all',
                             step.completed 
-                              ? 'bg-emerald-500 scale-110 shadow-sm shadow-emerald-400' 
-                              : 'bg-slate-200 dark:bg-slate-700'
+                              ? 'bg-emphasis scale-110 shadow-sm'
+                              : 'bg-emphasis '
                           ]"
                         >
-                          <i v-if="step.completed" class="pi pi-check text-[8px] text-white"></i>
+                          <i v-if="step.completed" class="pi pi-check text-[8px] text-primary-contrast"></i>
                         </span>
                         <div>
-                          <h4 :class="['text-xs font-bold', step.completed ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500']">
+                          <h4 :class="['text-xs font-bold', step.completed ? 'text-color ' : 'text-muted-color ']">
                             {{ step.label }}
                           </h4>
-                          <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">{{ step.date }}</p>
+                          <p class="text-[9px] text-muted-color  mt-0.5">{{ step.date }}</p>
                         </div>
                       </div>
                     </div>
 
                     <div v-else class="text-center py-4">
-                      <div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <div class="w-10 h-10 bg-emphasis  text-muted-color rounded-full flex items-center justify-center mx-auto mb-2">
                         <CheckBadgeIcon class="w-6 h-6" />
                       </div>
-                      <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">Stage Clôturé</h4>
-                      <p class="text-[10px] text-slate-400 mt-1">Toutes les étapes administratives ont été validées.</p>
+                      <h4 class="text-xs font-bold text-color ">Stage Clôturé</h4>
+                      <p class="text-[10px] text-muted-color mt-1">Toutes les étapes administratives ont été validées.</p>
                     </div>
                   </Card>
                 </div>
@@ -1108,23 +1049,23 @@ const openOfferModal = (offer) => {
                     <!-- Blocs d'informations et de téléchargement des documents types -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <!-- Informations de la période -->
-                      <div class="bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl p-4 space-y-2">
-                        <h4 class="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                          <i class="pi pi-info-circle text-violet-500"></i>
+                      <div class="bg-emphasis  border border-surface  rounded-2xl p-4 space-y-2">
+                        <h4 class="text-xs font-extrabold text-color -contrast uppercase tracking-wider flex items-center gap-2">
+                          <i class="pi pi-info-circle text-primary"></i>
                           <span>Informations de la période</span>
                         </h4>
-                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                          Cette période nécessite un stage de <strong class="text-slate-800 dark:text-white">{{ period.duration }}</strong> du <strong class="text-slate-800 dark:text-white">{{ period.dates }}</strong> sous la responsabilité de <strong class="text-slate-800 dark:text-white">{{ period.responsible || period.responsablePrincipal }}</strong>.
+                        <p class="text-xs text-muted-color  leading-relaxed">
+                          Cette période nécessite un stage de <strong class="text-color -contrast">{{ period.duration }}</strong> du <strong class="text-color -contrast">{{ period.dates }}</strong> sous la responsabilité de <strong class="text-color -contrast">{{ period.responsible || period.responsablePrincipal }}</strong>.
                         </p>
                       </div>
 
                       <!-- Téléchargement du Document Type & Consignes -->
-                      <div class="bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl p-4 space-y-3">
-                        <h4 class="text-xs font-extrabold text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                          <i class="pi pi-file-pdf text-red-500"></i>
+                      <div class="bg-emphasis  border border-surface  rounded-2xl p-4 space-y-3">
+                        <h4 class="text-xs font-extrabold text-color -contrast uppercase tracking-wider flex items-center gap-2">
+                          <i class="pi pi-file-pdf text-muted-color"></i>
                           <span>Document type &amp; Fiche de liaison</span>
                         </h4>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                        <p class="text-[11px] text-muted-color ">
                           Téléchargez le document type à transmettre à votre entreprise d'accueil pour la préparation de la convention :
                         </p>
                         <div v-if="period.documents && period.documents.length > 0" class="space-y-1.5">
@@ -1132,29 +1073,29 @@ const openOfferModal = (offer) => {
                             v-for="doc in period.documents"
                             :key="doc.name"
                             @click="downloadDoc(doc.name)"
-                            class="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-violet-500 transition-all cursor-pointer group"
+                            class="flex items-center justify-between p-2 rounded-xl bg-surface-0  border border-surface  hover:border-primary transition-all cursor-pointer group"
                           >
-                            <span class="text-xs font-bold text-slate-700 dark:text-slate-200 group-hover:text-violet-600 dark:group-hover:text-violet-400 truncate max-w-[240px]">
+                            <span class="text-xs font-bold text-color  group-hover:text-primary dark:group-hover:text-primary truncate max-w-[240px]">
                               {{ doc.name }}
                             </span>
-                            <span class="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                            <span class="text-[10px] text-muted-color font-mono flex items-center gap-1">
                               {{ doc.size || 'PDF' }} <i class="pi pi-download text-[9px]"></i>
                             </span>
                           </div>
                         </div>
-                        <p v-else class="text-xs text-slate-400 italic">Aucun document type joint à cette période.</p>
+                        <p v-else class="text-xs text-muted-color italic">Aucun document type joint à cette période.</p>
                       </div>
                     </div>
 
                     <!-- État d'autorisation de la saisie & Bouton d'action -->
                     <div class="pt-2">
                       <!-- Si la saisie est AUTORISÉE -->
-                      <div v-if="period.inputAuthorized" class="bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div v-if="period.inputAuthorized" class="bg-emphasis  border border-surface  rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div class="flex items-start gap-3">
-                          <LockOpenIcon class="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
+                          <LockOpenIcon class="w-6 h-6 text-muted-color shrink-0 mt-0.5" />
                           <div>
-                            <h4 class="text-xs font-extrabold text-emerald-900 dark:text-emerald-300">Saisie des informations de convention autorisée</h4>
-                            <p class="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5 leading-relaxed">
+                            <h4 class="text-xs font-extrabold text-color ">Saisie des informations de convention autorisée</h4>
+                            <p class="text-[11px] text-color  mt-0.5 leading-relaxed">
                               Votre responsable pédagogique a ouvert la période de saisie. Vous pouvez dès maintenant créer votre demande de convention et renseigner les détails de votre entreprise d'accueil.
                             </p>
                           </div>
@@ -1162,7 +1103,7 @@ const openOfferModal = (offer) => {
 
                         <button
                           @click="navigateToRequest(period.id)"
-                          class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 shrink-0 self-end sm:self-auto"
+                          class="px-5 py-2.5 bg-emphasis hover:bg-emphasis text-primary-contrast font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 shrink-0 self-end sm:self-auto"
                         >
                           <PencilSquareIcon class="w-4 h-4" />
                           <span>Compléter ma demande de convention</span>
@@ -1170,12 +1111,12 @@ const openOfferModal = (offer) => {
                       </div>
 
                       <!-- Si la saisie N'EST PAS ENCORE AUTORISÉE -->
-                      <div v-else class="bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div v-else class="bg-emphasis  border border-surface  rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div class="flex items-start gap-3">
-                          <LockClosedIcon class="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+                          <LockClosedIcon class="w-6 h-6 text-muted-color shrink-0 mt-0.5" />
                           <div>
-                            <h4 class="text-xs font-extrabold text-amber-900 dark:text-amber-300">En attente de l'ouverture des saisies par le responsable</h4>
-                            <p class="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 leading-relaxed">
+                            <h4 class="text-xs font-extrabold text-color ">En attente de l'ouverture des saisies par le responsable</h4>
+                            <p class="text-[11px] text-color  mt-0.5 leading-relaxed">
                               La saisie des conventions n'a pas encore été déverrouillée par le responsable pédagogique pour cette période. Vous pouvez télécharger le document type ci-dessus pour préparer vos informations en attendant.
                             </p>
                           </div>
@@ -1183,7 +1124,7 @@ const openOfferModal = (offer) => {
 
                         <button
                           disabled
-                          class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-bold text-xs rounded-xl cursor-not-allowed flex items-center gap-2 shrink-0 self-end sm:self-auto"
+                          class="px-4 py-2.5 bg-emphasis  text-muted-color  font-bold text-xs rounded-xl cursor-not-allowed flex items-center gap-2 shrink-0 self-end sm:self-auto"
                         >
                           <LockClosedIcon class="w-4 h-4" />
                           <span>Saisie verrouillée par l'administration</span>
@@ -1192,10 +1133,10 @@ const openOfferModal = (offer) => {
                     </div>
 
                     <!-- Actions complémentaires : Consulter les offres de stage -->
-                    <div v-if="period.offers && period.offers.length > 0" class="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-center">
+                    <div v-if="period.offers && period.offers.length > 0" class="pt-4 border-t border-surface  flex justify-center">
                       <button
                         @click="setSubTab(period.id, 'offers')"
-                        class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow transition-all flex items-center gap-2"
+                        class="px-4 py-2 rounded-xl bg-emphasis hover:bg-emphasis text-primary-contrast text-xs font-bold shadow transition-all flex items-center gap-2"
                       >
                         <SparklesIcon class="w-4 h-4" />
                         <span>Consulter les offres de stage disponibles ({{ period.offers.length }})</span>
@@ -1220,21 +1161,21 @@ const openOfferModal = (offer) => {
                   <div
                     v-for="doc in period.documents"
                     :key="doc.name"
-                    class="bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl p-4 flex items-center justify-between gap-4 hover:border-violet-500 transition-all group"
+                    class="bg-emphasis  border border-surface  rounded-2xl p-4 flex items-center justify-between gap-4 hover:border-primary transition-all group"
                   >
                     <div class="flex items-center gap-3 min-w-0">
-                      <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                      <div class="w-10 h-10 rounded-xl bg-emphasis  text-muted-color  flex items-center justify-center shrink-0">
                         <i class="pi pi-file-pdf text-xl group-hover:scale-110 transition-transform"></i>
                       </div>
                       <div class="min-w-0">
-                        <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{{ doc.name }}</h4>
-                        <p class="text-[10px] text-slate-400 mt-0.5">Format: {{ doc.format || 'PDF' }} {{ doc.size ? `&bull; Taille: ${doc.size}` : '' }}</p>
+                        <h4 class="text-xs font-bold text-color  truncate">{{ doc.name }}</h4>
+                        <p class="text-[10px] text-muted-color mt-0.5">Format: {{ doc.format || 'PDF' }} {{ doc.size ? `&bull; Taille: ${doc.size}` : '' }}</p>
                       </div>
                     </div>
 
                     <button
                       @click="downloadDoc(doc.name)"
-                      class="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 shadow-sm"
+                      class="px-3 py-2 rounded-xl bg-surface-0  border border-surface  text-color  hover:text-primary dark:hover:text-primary text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 shadow-sm"
                     >
                       <ArrowDownTrayIcon class="w-4 h-4" />
                       <span>Télécharger</span>
@@ -1264,35 +1205,35 @@ const openOfferModal = (offer) => {
                   <div
                     v-for="offer in period.offers"
                     :key="offer.id"
-                    class="bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl p-4 flex flex-col justify-between hover:border-amber-400 dark:hover:border-amber-500 transition-all space-y-3"
+                    class="bg-emphasis  border border-surface  rounded-2xl p-4 flex flex-col justify-between hover:border-surface dark:hover:border-surface transition-all space-y-3"
                   >
                     <div>
                       <div class="flex justify-between items-start gap-2">
-                        <span class="px-2 py-0.5 text-[9px] font-black rounded-md bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
+                        <span class="px-2 py-0.5 text-[9px] font-black rounded-md bg-emphasis text-color  ">
                           {{ offer.id }}
                         </span>
-                        <span class="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                          <MapPinIcon class="w-3 h-3 text-amber-500" />
+                        <span class="text-[10px] text-muted-color font-bold flex items-center gap-1">
+                          <MapPinIcon class="w-3 h-3 text-muted-color" />
                           {{ offer.location }}
                         </span>
                       </div>
 
-                      <h4 class="text-xs font-extrabold text-slate-900 dark:text-white mt-2 leading-tight">{{ offer.title }}</h4>
-                      <p class="text-[11px] font-bold text-violet-600 dark:text-violet-400 mt-1">{{ offer.company }}</p>
-                      <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed">
+                      <h4 class="text-xs font-extrabold text-color -contrast mt-2 leading-tight">{{ offer.title }}</h4>
+                      <p class="text-[11px] font-bold text-primary  mt-1">{{ offer.company }}</p>
+                      <p class="text-[11px] text-muted-color  mt-2 line-clamp-2 leading-relaxed">
                         {{ offer.description }}
                       </p>
                     </div>
 
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                      <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
-                        <i class="pi pi-file-pdf text-red-500"></i>
+                    <div class="pt-3 border-t border-surface  flex justify-between items-center">
+                      <span class="text-[10px] text-muted-color font-semibold flex items-center gap-1">
+                        <i class="pi pi-file-pdf text-muted-color"></i>
                         <span>{{ offer.size || 'PDF' }}</span>
                       </span>
                       <div class="flex items-center gap-2">
                         <button
                           @click="downloadDoc(offer.title)"
-                          class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[11px] rounded-lg transition-all flex items-center gap-1 border border-slate-200 dark:border-slate-700"
+                          class="px-2.5 py-1.5 bg-emphasis hover:bg-emphasis  dark:hover:bg-emphasis text-color  font-bold text-[11px] rounded-lg transition-all flex items-center gap-1 border border-surface "
                           title="Télécharger l'offre"
                         >
                           <i class="pi pi-download text-[10px]"></i>
@@ -1300,7 +1241,7 @@ const openOfferModal = (offer) => {
                         </button>
                         <button
                           @click="openOfferModal(offer)"
-                          class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] rounded-lg shadow transition-all flex items-center gap-1"
+                          class="px-3 py-1.5 bg-emphasis hover:bg-emphasis text-primary-contrast font-bold text-[11px] rounded-lg shadow transition-all flex items-center gap-1"
                         >
                           <EyeIcon class="w-3.5 h-3.5" />
                           <span>Détails</span>
@@ -1322,75 +1263,7 @@ const openOfferModal = (offer) => {
 
             <!-- SOUS-ONGLET 4 : RAPPORT DE STAGE -->
             <div v-else-if="getSubTab(period.id) === 'report' && period.hasStage">
-              <Card
-                title="Dépôt &amp; Évaluation du Rapport de Stage"
-                subtitle="Transmettez votre mémoire final au format PDF"
-                icon="pi pi-cloud-upload"
-                color="emerald"
-              >
-                <div class="space-y-4">
-                  <!-- Rapport déjà déposé -->
-                  <div 
-                    v-if="period.stage.reportUploaded" 
-                    class="bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm"
-                  >
-                    <div class="flex items-center gap-3">
-                      <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                        <i class="pi pi-file-pdf text-2xl"></i>
-                      </div>
-                      <div>
-                        <span class="text-xs font-black text-slate-900 dark:text-white block truncate max-w-[250px] sm:max-w-[350px]">
-                          {{ period.stage.reportName }}
-                        </span>
-                        <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold block mt-0.5">
-                          Transmis le {{ period.stage.reportDate || 'Récemment' }} &bull; Statut : Validé pour correction
-                        </span>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 self-end sm:self-auto">
-                      <span v-if="period.stage.grade" class="text-xs font-black bg-emerald-600 text-white px-3 py-1.5 rounded-xl shadow-sm">
-                        Note attribuée : {{ period.stage.grade }}
-                      </span>
-                      <button 
-                        v-if="!period.stage.grade"
-                        @click="deleteReport(period.id)"
-                        class="text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-100/50 dark:hover:bg-rose-950/40 p-2 rounded-xl transition-all"
-                        title="Retirer le rapport"
-                      >
-                        <TrashIcon class="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Transfert en cours -->
-                  <div 
-                    v-else-if="isUploading && activeUploadPeriodId === period.id"
-                    class="border border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center bg-slate-50 dark:bg-slate-800/50"
-                  >
-                    <div class="w-10 h-10 flex items-center justify-center mx-auto text-violet-600">
-                      <i class="pi pi-spin pi-spinner text-2xl"></i>
-                    </div>
-                    <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 mt-2">Transfert du rapport en cours...</h4>
-                    <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-3 max-w-xs mx-auto overflow-hidden">
-                      <div class="bg-violet-600 h-full transition-all duration-300" :style="{ width: uploadProgress + '%' }"></div>
-                    </div>
-                  </div>
-
-                  <!-- Zone de dépôt PDF -->
-                  <div 
-                    v-else
-                    @click="triggerFileUpload(period.id)"
-                    class="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-violet-500 rounded-2xl p-8 text-center cursor-pointer hover:bg-violet-50/20 dark:hover:bg-violet-950/10 transition-all duration-300 group"
-                  >
-                    <div class="w-12 h-12 bg-violet-100 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-                      <CloudArrowUpIcon class="w-7 h-7" />
-                    </div>
-                    <h4 class="text-xs font-extrabold text-slate-800 dark:white mt-3">Déposer mon rapport de stage (PDF)</h4>
-                    <p class="text-[11px] text-slate-400 mt-1">Glissez votre fichier ici ou cliquez pour choisir sur votre ordinateur (max 15 Mo)</p>
-                  </div>
-                </div>
-              </Card>
+              <RapportStage :stage="period.stage" @change="etat => appliquerEtatRapport(period.id, etat)" />
             </div>
 
           </div>
@@ -1409,40 +1282,40 @@ const openOfferModal = (offer) => {
       class="p-dialog-custom"
     >
       <div v-if="selectedOffer" class="space-y-4 text-xs">
-        <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-4">
+        <div class="bg-emphasis  border border-surface  rounded-2xl p-4">
           <div class="flex justify-between items-start gap-2">
             <div>
-              <span class="text-[9px] font-black uppercase text-amber-700 dark:text-amber-400">Réf. {{ selectedOffer.id }}</span>
-              <h3 class="text-base font-black text-slate-900 dark:text-white mt-0.5">{{ selectedOffer.title }}</h3>
-              <p class="text-xs font-bold text-violet-600 dark:text-violet-400 mt-0.5">{{ selectedOffer.company }}</p>
+              <span class="text-[9px] font-black uppercase text-color ">Réf. {{ selectedOffer.id }}</span>
+              <h3 class="text-base font-black text-color -contrast mt-0.5">{{ selectedOffer.title }}</h3>
+              <p class="text-xs font-bold text-primary  mt-0.5">{{ selectedOffer.company }}</p>
             </div>
-            <span class="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span class="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-surface-0  text-color  border border-surface  shadow-sm">
               {{ selectedOffer.location }}
             </span>
           </div>
         </div>
 
         <div class="space-y-2">
-          <div class="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-            <ClockIcon class="w-4 h-4 text-amber-500" />
+          <div class="flex items-center gap-2 text-muted-color ">
+            <ClockIcon class="w-4 h-4 text-muted-color" />
             <span>Durée : <strong>{{ selectedOffer.duration }}</strong></span>
           </div>
-          <div class="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-            <CurrencyEuroIcon class="w-4 h-4 text-amber-500" />
+          <div class="flex items-center gap-2 text-muted-color ">
+            <CurrencyEuroIcon class="w-4 h-4 text-muted-color" />
             <span>Gratification : <strong>{{ selectedOffer.gratification }}</strong></span>
           </div>
         </div>
 
         <div>
-          <h4 class="font-extrabold text-slate-800 dark:text-white mb-1">Description du poste &amp; Missions :</h4>
-          <p class="text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+          <h4 class="font-extrabold text-color -contrast mb-1">Description du poste &amp; Missions :</h4>
+          <p class="text-muted-color  leading-relaxed whitespace-pre-line bg-emphasis  p-3 rounded-xl border border-surface ">
             {{ selectedOffer.description }}
           </p>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
-          <span class="text-slate-400 font-semibold block">Contact pour postuler :</span>
-          <a :href="`mailto:${selectedOffer.contact}`" class="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1.5 mt-1">
+        <div class="pt-3 border-t border-surface ">
+          <span class="text-muted-color font-semibold block">Contact pour postuler :</span>
+          <a :href="`mailto:${selectedOffer.contact}`" class="text-xs font-bold text-primary  hover:underline flex items-center gap-1.5 mt-1">
             <i class="pi pi-envelope"></i>
             <span>{{ selectedOffer.contact }}</span>
           </a>
@@ -1450,14 +1323,6 @@ const openOfferModal = (offer) => {
       </div>
     </Dialog>
 
-    <!-- Input fichier masqué pour les dépôts -->
-    <input 
-      type="file" 
-      ref="fileInput" 
-      @change="handleFileChange" 
-      accept=".pdf" 
-      class="hidden" 
-    />
   </div>
 </template>
 
