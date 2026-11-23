@@ -163,28 +163,18 @@ final class CelcatSynchronizer
     }
 
     /**
-     * Même règle que GetSemestreFromGroupe de l'intranet V3 : un groupe sans parcours et
-     * rattaché à un seul semestre, sinon le semestre dont le diplôme est celui du parcours.
+     * Le groupe d'un seul semestre y est rattaché. Le client a retiré le parcours des groupes : un
+     * groupe partagé entre plusieurs semestres reste sans semestre, plutôt que d'en deviner un.
      */
     private function semesterForGroup(StructureGroupe $group): ?StructureSemestre
     {
         $semesters = $group->getSemestres();
-        $track = $group->getParcours();
-
-        if (null === $track && 1 === $semesters->count()) {
-            $semester = $semesters->first();
-
-            return false === $semester ? null : $semester;
+        if (1 !== $semesters->count()) {
+            return null;
         }
+        $semester = $semesters->first();
 
-        foreach ($semesters as $semester) {
-            $degree = $semester->getAnnee()?->getDiplome();
-            if (null !== $track && null !== $degree && $track->getDiplome()->contains($degree)) {
-                return $semester;
-            }
-        }
-
-        return null;
+        return false === $semester ? null : $semester;
     }
 
     private function key(EdtEvent $event): string

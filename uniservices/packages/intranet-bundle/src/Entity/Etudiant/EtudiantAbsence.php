@@ -32,30 +32,26 @@ use Symfony\Component\Serializer\Attribute\Groups;
         // Les règles d'accès du voter du client (CAN_*_ABSENCE) : sans elles, toute absence de tout
         // étudiant était lisible, et modifiable, sans connexion.
         new GetCollection(
-            security: "is_granted('IS_PERSONNEL')",
+            security: "(is_granted('IS_PERSONNEL')) and (is_granted('CAN_VIEW_ABSENCE'))",
             uriTemplate: '/administration/etudiant_absences',
-            security: "is_granted('CAN_VIEW_ABSENCE')",
             normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
             provider: AbsenceEpisodeProvider::class,
         ),
         new GetCollection(
-            security: "is_granted('IS_PERSONNEL')",
+            security: "(is_granted('IS_PERSONNEL')) and (is_granted('CAN_VIEW_ABSENCE'))",
             uriTemplate: '/administration/last/etudiant_absences',
-            security: "is_granted('CAN_VIEW_ABSENCE')",
             normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
         ),
         new GetCollection(
-            security: "is_granted('IS_PERSONNEL')",
+            security: "(is_granted('IS_PERSONNEL')) and (is_granted('CAN_VIEW_ABSENCE'))",
             uriTemplate: '/administration/stats/etudiant_absences',
-            security: "is_granted('CAN_VIEW_ABSENCE')",
             paginationEnabled: false,
             normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
             provider: AbsenceStatsProvider::class
         ),
         new GetCollection(
-            security: "is_granted('IS_PERSONNEL')",
+            security: "(is_granted('IS_PERSONNEL')) and (is_granted('CAN_VIEW_ABSENCE'))",
             uriTemplate: '/administration/repartition/etudiant_absences',
-            security: "is_granted('CAN_VIEW_ABSENCE')",
             normalizationContext: ['groups' => ['absence:administration', 'timestamp:read']],
         ),
         new Post(
@@ -69,13 +65,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
             security: "is_granted('CAN_EDIT_ABSENCE', object)",
             securityPostDenormalize: "is_granted('CAN_EDIT_ABSENCE', object)",
             uriTemplate: '/administration/etudiant_absences/{id}',
-            security: "is_granted('CAN_EDIT_ABSENCE', object)",
             denormalizationContext: ['groups' => ['absence:write:administration']],
         ),
         new Delete(
             security: "is_granted('CAN_DELETE_ABSENCE', object)",
             uriTemplate: '/administration/etudiant_absences/{id}',
-            security: "is_granted('CAN_DELETE_ABSENCE', object)",
         )
     ],
     order: ['createdAt' => 'ASC']

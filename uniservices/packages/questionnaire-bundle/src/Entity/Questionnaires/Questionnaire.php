@@ -79,6 +79,11 @@ class Questionnaire implements TimestampableInterface
     #[ApiProperty(identifier: false)]
     private ?int $id = null;
 
+    /** Modèle réutilisable (bibliothèque) : jamais publié, sert à créer des questionnaires. */
+    #[ORM\Column(options: ['default' => false])]
+    #[Groups(['questionnaire:read'])]
+    private bool $estModele = false;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['questionnaire:read', 'invitation:read'])]
     private ?string $title = null;
@@ -412,6 +417,18 @@ class Questionnaire implements TimestampableInterface
     public function setDepartement(?StructureDepartement $departement): static
     {
         $this->departement = $departement;
+
+        return $this;
+    }
+
+    public function isEstModele(): bool
+    {
+        return $this->estModele;
+    }
+
+    public function setEstModele(bool $estModele): static
+    {
+        $this->estModele = $estModele;
 
         return $this;
     }

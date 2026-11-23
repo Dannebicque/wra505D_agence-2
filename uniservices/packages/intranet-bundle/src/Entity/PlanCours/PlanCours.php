@@ -36,11 +36,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
             security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
         new Patch(
-            security: "is_granted('CAN_MANAGE_PLAN_COURS', object)",
+            security: "(is_granted('CAN_MANAGE_PLAN_COURS', object)) and (is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT'))",
             securityPostDenormalize: "is_granted('CAN_MANAGE_PLAN_COURS', object)",
             normalizationContext: ['groups' => ['plancours:read']],
             denormalizationContext: ['groups' => ['plancours:write']],
-            security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
         new Delete(security: "is_granted('CAN_MANAGE_PLAN_COURS', object)"),
     ],

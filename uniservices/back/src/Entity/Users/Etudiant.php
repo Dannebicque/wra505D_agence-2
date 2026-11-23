@@ -48,7 +48,6 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
             security: "is_granted('CAN_VIEW_ETUDIANT', object)",
             requirements: ['id' => '\d+'],
             normalizationContext: ['groups' => ['etudiant:scolarite']],
-            security: "is_granted('CAN_VIEW_ETUDIANT', object)",
         ),
         new GetCollection(
             normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light', 'semestre:light', 'groupe:light', 'annee_univ:light']],
