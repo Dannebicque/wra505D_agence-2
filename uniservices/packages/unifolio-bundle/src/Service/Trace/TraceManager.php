@@ -112,7 +112,7 @@ class TraceManager
             $trace->setUsageIaDetail($d['usageIaDetail'] !== null ? LooseValue::castString($d['usageIaDetail']) : null);
         }
         if (\array_key_exists('tags', $d)) {
-            $trace->setTags(\is_array($d['tags']) ? $d['tags'] : []);
+            $trace->setTags(\is_array($d['tags']) ? array_map(LooseValue::castString(...), $d['tags']) : []);
         }
     }
 
@@ -138,6 +138,9 @@ class TraceManager
         $deposant = $trace->getEtudiant();
         foreach (array_unique(array_map(static fn ($p) => $p->getId(), $this->affectations->evaluateursDe($deposant))) as $id) {
             $evaluateur = $this->em->getReference(\App\Entity\Users\Personnel::class, $id);
+            if (!$evaluateur instanceof \App\Entity\Users\Personnel) {
+                continue;
+            }
             $this->notifications->notifier(
                 $evaluateur,
                 TypeNotificationEnum::TRACE_DEPOSEE->cle(),
@@ -279,15 +282,15 @@ class TraceManager
 
         $rattachements = [];
         foreach ($demandes as $demande) {
-            $granularite = GranulariteEnum::tryFrom((string) ($demande['type'] ?? ''));
+            $granularite = GranulariteEnum::tryFrom(LooseValue::castString($demande['type'] ?? ''));
             if ($imposee !== null && $granularite !== $imposee) {
                 throw UnifolioValidationException::un(sprintf(
                     'Votre formation rattache les traces au niveau « %s » uniquement.',
                     $imposee->getLibelle()
                 ));
             }
-            $id = (int) ($demande['id'] ?? 0);
-            $argumentaire = isset($demande['argumentaire']) ? (string) $demande['argumentaire'] : null;
+            $id = LooseValue::castInt($demande['id'] ?? 0);
+            $argumentaire = isset($demande['argumentaire']) ? LooseValue::nullableString($demande['argumentaire']) : null;
 
             $cible = match ($granularite) {
                 GranulariteEnum::COMPETENCE => $this->em->find(ApcCompetence::class, $id),
@@ -295,7 +298,7 @@ class TraceManager
                 GranulariteEnum::AC => $this->em->find(ApcApprentissageCritique::class, $id),
                 null => null,
             };
-            if ($cible === null || !$this->referentiel->contient($scolarite, $cible)) {
+            if ($cible === null || $scolarite === null || !$this->referentiel->contient($scolarite, $cible)) {
                 throw UnifolioValidationException::un('Un des éléments choisis ne fait pas partie du référentiel de cette année.');
             }
 

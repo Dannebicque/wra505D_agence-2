@@ -220,7 +220,7 @@ const traceARevoir = computed(() => lot.value?.traceStatut?.value === 'a_reviser
           </div>
         </div>
 
-        <div v-if="revisionOuverte" class="rounded-lg border border-amber-300 bg-amber-50/60 dark:bg-amber-950/20 p-3 flex flex-col gap-2">
+        <div v-if="revisionOuverte" class="rounded-lg border border-surface bg-emphasis p-3 flex flex-col gap-2">
           <label for="lot-motif" class="font-medium">Que doit réviser l'étudiant ?</label>
           <Textarea id="lot-motif" v-model="motif" rows="3" auto-resize placeholder="Ce message est envoyé à l'étudiant (un seul e-mail) avec la demande." />
           <div class="flex justify-end gap-2">

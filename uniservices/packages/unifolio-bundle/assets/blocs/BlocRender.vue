@@ -28,11 +28,11 @@ const urlSure = computed(() => (/^https?:\/\//i.test(a.value.url ?? '') ? a.valu
 const trace = computed(() => props.donnees?.traces?.find((t) => t.uuid === a.value.trace) ?? null);
 const traces = computed(() => tracesFiltrees(props.donnees, { competence: a.value.competence, maximum: a.value.maximum ?? 6 }));
 const colonnes = computed(() => ({ gridTemplateColumns: (a.value.ratio ?? '1-1').split('-').map((n) => `${Number(n) || 1}fr`).join(' ') }));
-const fonds = { aucun: '', doux: 'bg-surface-100 rounded-xl p-4', accent: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4' };
+const fonds = { aucun: '', doux: 'bg-surface-100 rounded-xl p-4', accent: 'bg-emphasis border border-surface rounded-xl p-4' };
 const tons = {
-  info: 'bg-sky-50 border-sky-300',
-  success: 'bg-emerald-50 border-emerald-300',
-  warning: 'bg-amber-50 border-amber-300',
+  info: 'bg-emphasis border-surface',
+  success: 'bg-emphasis border-surface',
+  warning: 'bg-emphasis border-surface',
   neutre: 'bg-surface-100 border-surface-300',
 };
 const cv = computed(() => props.donnees?.cv ?? null);
@@ -46,7 +46,7 @@ const periode = (e) => [mois(e.dateDebut), e.dateFin ? mois(e.dateFin) : e.dateD
 
   <div v-else-if="bloc.type === 'paragraph'" class="bloc-texte" v-html="md(a.texte)" />
 
-  <blockquote v-else-if="bloc.type === 'quote'" class="m-0 border-l-4 border-emerald-500 pl-4 italic">
+  <blockquote v-else-if="bloc.type === 'quote'" class="m-0 border-l-4 border-primary pl-4 italic">
     <div class="bloc-texte" v-html="md(a.texte)" />
     <footer v-if="a.auteur" class="text-sm text-muted-color not-italic mt-1">— {{ a.auteur }}</footer>
   </blockquote>
@@ -66,7 +66,7 @@ const periode = (e) => [mois(e.dateDebut), e.dateFin ? mois(e.dateFin) : e.dateD
     :href="urlSure ?? undefined"
     target="_blank"
     rel="noopener noreferrer nofollow"
-    class="inline-block px-4 py-2 rounded-lg bg-emerald-600 text-white no-underline font-medium"
+    class="inline-block px-4 py-2 rounded-lg bg-primary text-primary-contrast no-underline font-medium"
   >{{ a.libelle }}</a>
 
   <!-- Médias -->
@@ -177,17 +177,17 @@ const periode = (e) => [mois(e.dateDebut), e.dateFin ? mois(e.dateFin) : e.dateD
     <p v-else class="m-0 text-sm text-muted-color">Votre CV apparaîtra ici. Complétez-le dans « Mon CV ».</p>
   </div>
 
-  <ol v-else-if="bloc.type === 'parcours'" class="m-0 pl-0 list-none flex flex-col gap-2 border-l-2 border-emerald-300 ml-1">
+    <ol v-else-if="bloc.type === 'parcours'" class="m-0 pl-0 list-none flex flex-col gap-2 border-l-2 border-surface ml-1">
     <li v-for="(p, i) in donnees?.parcours ?? []" :key="i" class="pl-4 relative">
-      <span class="absolute -left-[7px] top-1.5 w-3 h-3 rounded-full" :class="p.actif ? 'bg-emerald-600' : 'bg-emerald-300'" />
+      <span class="absolute -left-[7px] top-1.5 w-3 h-3 rounded-full" :class="p.actif ? 'bg-primary' : 'bg-emphasis'" />
       <strong>{{ p.annee }}</strong>
       <div class="text-sm text-muted-color">{{ [p.anneeUniversitaire, p.diplome].filter(Boolean).join(' · ') }}</div>
     </li>
     <li v-if="!donnees?.parcours?.length" class="pl-4 text-sm text-muted-color">Votre parcours apparaîtra ici.</li>
   </ol>
 
-  <aside v-else-if="bloc.type === 'reflexion'" class="rounded-lg border border-violet-200 bg-violet-50/50 p-3 flex flex-col gap-1">
-    <strong class="text-violet-800"><i class="pi pi-lightbulb" /> {{ a.titre }}</strong>
+    <aside v-else-if="bloc.type === 'reflexion'" class="rounded-lg border border-surface bg-emphasis p-3 flex flex-col gap-1">
+    <strong class="text-primary"><i class="pi pi-lightbulb" /> {{ a.titre }}</strong>
     <div v-if="a.texte" class="bloc-texte" v-html="md(a.texte)" />
     <p v-else class="m-0 text-sm text-muted-color">À rédiger.</p>
   </aside>

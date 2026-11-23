@@ -4,6 +4,7 @@ namespace UnifolioBundle\Service\Migration\V1;
 
 use App\Utils\LooseValue;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\Name\OptionallyQualifiedName;
 
 /**
  * Lecture seule de la base UniFolio v1 (noms de tables et de colonnes par défaut de Doctrine, d'après les entités v1).
@@ -45,13 +46,13 @@ class V1Reader
     {
         $manques = [];
         $sm = $this->v1->createSchemaManager();
-        $tables = array_map('strtolower', $sm->listTableNames());
+        $tables = array_map(static fn (OptionallyQualifiedName $table): string => strtolower($table->toString()), $sm->introspectTableNames());
         foreach (self::ATTENDU as $table => $colonnes) {
             if (!\in_array($table, $tables, true)) {
                 $manques[] = sprintf('Table « %s » absente.', $table);
                 continue;
             }
-            $presentes = array_map(static fn ($c) => strtolower($c->getName()), $sm->listTableColumns($table));
+            $presentes = array_map(static fn ($c) => strtolower($c->getObjectName()->toString()), $sm->introspectTableColumns(OptionallyQualifiedName::unquoted($table)));
             foreach (array_diff($colonnes, $presentes) as $colonne) {
                 $manques[] = sprintf('Colonne « %s.%s » absente.', $table, $colonne);
             }
@@ -117,6 +118,10 @@ class V1Reader
     }
 
     /** @return list<array<string, mixed>> */
+    /**
+     * @param list<int>|null $etudiantIds
+     * @return list<array<string, mixed>>
+     */
     public function portfolios(?array $etudiantIds = null): array
     {
         return $this->lignes('SELECT * FROM portfolio'.($etudiantIds !== null ? ' WHERE etudiant_id IN (:ids)' : '').' ORDER BY id', $etudiantIds !== null ? ['ids' => $etudiantIds] : []);
@@ -134,16 +139,38 @@ class V1Reader
             ['pf' => $portfolioId]
         );
         foreach ($pages as &$page) {
-            $page['traces'] = array_map('intval', $this->v1->fetchFirstColumn(
+            $traces = [];
+            foreach ($this->v1->fetchFirstColumn(
                 'SELECT pt.trace_id FROM page_trace pt LEFT JOIN ordre_trace ot ON ot.trace_id = pt.trace_id AND ot.page_id = pt.page_id WHERE pt.page_id = :p ORDER BY COALESCE(ot.ordre, 999999), pt.trace_id',
                 ['p' => $page['id']]
-            ));
+            ) as $traceId) {
+                $traces[] = LooseValue::castInt($traceId);
+            }
+            $page['traces'] = $traces;
         }
 
-        return $pages;
+        $resultat = [];
+        foreach ($pages as $page) {
+            $traces = [];
+            foreach (LooseValue::row($page['traces']) as $traceId) {
+                $traces[] = LooseValue::castInt($traceId);
+            }
+            $resultat[] = [
+                'id' => LooseValue::castInt($page['id']),
+                'intitule' => $page['intitule'] === null ? null : LooseValue::castString($page['intitule']),
+                'description' => $page['description'] === null ? null : LooseValue::castString($page['description']),
+                'traces' => $traces,
+            ];
+        }
+
+        return $resultat;
     }
 
     /** @return list<array<string, mixed>> */
+    /**
+     * @param list<int>|null $etudiantIds
+     * @return list<array<string, mixed>>
+     */
     public function cvs(?array $etudiantIds = null): array
     {
         $cvs = $this->lignes('SELECT * FROM cv'.($etudiantIds !== null ? ' WHERE etudiant_id IN (:ids)' : '').' ORDER BY id', $etudiantIds !== null ? ['ids' => $etudiantIds] : []);

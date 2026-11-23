@@ -147,8 +147,8 @@ const libelleScolarite = (s) => [s.annee, s.anneeUniversitaire].filter(Boolean).
                 @click="ouvrirTrace(t)"
               >
                 <i class="pi pi-images" /> {{ t.titre }}
-                <i v-if="t.autoEvaluation?.statut.value === 'soumise'" class="pi pi-check-circle text-green-600" />
-                <i v-else-if="t.autoEvaluation" class="pi pi-pencil text-amber-600" />
+                <i v-if="t.autoEvaluation?.statut.value === 'soumise'" class="pi pi-check-circle text-primary" />
+                <i v-else-if="t.autoEvaluation" class="pi pi-pencil text-primary" />
               </button>
             </div>
             <span v-else class="text-xs text-muted-color">

@@ -129,10 +129,10 @@ const nbImposes = (p) => p.verrouilles.length + (p.verrouillee ? 1 : 0);
       <Card bare tag="aside" class="p-3 flex flex-col gap-2 lg:sticky lg:top-2" aria-label="Pages du modèle">
         <h3 class="text-sm font-semibold m-0">Pages</h3>
         <draggable :list="pages" handle=".page-poignee" :disabled="lectureSeule" class="flex flex-col gap-1" @end="modifie">
-          <div v-for="(p, i) in pages" :key="p.cle" class="flex items-center gap-1 rounded-lg px-1" :class="i === courante ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''">
+          <div v-for="(p, i) in pages" :key="p.cle" class="flex items-center gap-1 rounded-lg px-1" :class="i === courante ? 'bg-highlight' : ''">
             <i v-if="!lectureSeule" class="pi pi-bars page-poignee cursor-move text-muted-color p-1" aria-hidden="true" />
             <button type="button" class="flex-1 text-left bg-transparent border-0 py-2 cursor-pointer text-sm truncate" :class="i === courante ? 'font-semibold' : ''" :aria-current="i === courante ? 'page' : undefined" @click="aller(i)">{{ p.titre || 'Sans titre' }}</button>
-            <i v-if="nbImposes(p)" class="pi pi-lock text-amber-600 text-xs" :title="`${nbImposes(p)} élément(s) imposé(s)`" />
+            <i v-if="nbImposes(p)" class="pi pi-lock text-primary text-xs" :title="`${nbImposes(p)} élément(s) imposé(s)`" />
             <Button v-if="!lectureSeule && pages.length > 1" icon="pi pi-trash" size="small" text rounded severity="danger" :aria-label="`Supprimer ${p.titre}`" @click="supprimerPage(i)" />
           </div>
         </draggable>

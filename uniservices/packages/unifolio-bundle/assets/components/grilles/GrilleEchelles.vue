@@ -45,7 +45,7 @@ const retirerEchelon = (i) => { props.echelons.splice(i, 1); emit('modifie'); };
           <Button icon="pi pi-trash" severity="danger" text rounded size="small" aria-label="Retirer le niveau" @click="retirerEchelon(i)" />
         </template>
         <template v-else>
-          <span class="text-sm font-semibold px-2 py-1 rounded text-white" :style="{ background: e.couleur || 'var(--p-primary-color)' }">{{ e.libelle }}</span>
+          <span class="text-sm font-semibold px-2 py-1 rounded text-primary-contrast" :style="{ background: e.couleur || 'var(--p-primary-color)' }">{{ e.libelle }}</span>
           <span class="text-sm text-muted-color">valeur {{ e.valeur }}<template v-if="e.descripteur"> — {{ e.descripteur }}</template></span>
         </template>
       </div>

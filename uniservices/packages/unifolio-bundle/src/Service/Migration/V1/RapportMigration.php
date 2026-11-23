@@ -48,6 +48,9 @@ final class RapportMigration
     public function csv(): string
     {
         $flux = fopen('php://temp', 'r+');
+        if ($flux === false) {
+            throw new \RuntimeException('Impossible d\'ouvrir le flux CSV.');
+        }
         fwrite($flux, "\xEF\xBB\xBF");
         fputcsv($flux, ['gravité', 'type', 'identifiant v1', 'message'], ';', '"', '\\');
         foreach ($this->ecarts as $e) {

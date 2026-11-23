@@ -136,7 +136,7 @@ class PortfolioPage implements TimestampableInterface
     {
         $correspondance = [];
         $this->blocs = $this->regenererIds($blocs, $correspondance);
-        $this->verrouilles = array_values(array_filter(array_map(static fn (string $id) => $correspondance[$id] ?? null, $verrouilles)));
+        $this->verrouilles = array_values(array_filter(array_map(static fn (string $id) => $correspondance[$id] ?? null, $verrouilles), static fn (?string $id): bool => $id !== null));
     }
 
     /**
@@ -176,8 +176,8 @@ class PortfolioPage implements TimestampableInterface
                 $correspondance[LooseValue::castString($bloc['id'])] = $nouveau;
             }
             $bloc['id'] = $nouveau;
-            if (!empty($bloc['children'])) {
-                $bloc['children'] = $this->regenererIds($bloc['children'], $correspondance);
+            if (isset($bloc['children']) && is_array($bloc['children']) && $bloc['children'] !== []) {
+                $bloc['children'] = $this->regenererIds(array_map(LooseValue::assoc(...), array_values(array_filter($bloc['children'], 'is_array'))), $correspondance);
             }
         }
 
@@ -192,7 +192,7 @@ class PortfolioPage implements TimestampableInterface
     {
         foreach ($blocs as $bloc) {
             $types[LooseValue::castString($bloc['id'])] = LooseValue::castString($bloc['type']);
-            $this->collecterTypes($bloc['children'] ?? [], $types);
+            $this->collecterTypes(is_array($bloc['children'] ?? null) ? array_map(LooseValue::assoc(...), array_values(array_filter($bloc['children'], 'is_array'))) : [], $types);
         }
     }
 

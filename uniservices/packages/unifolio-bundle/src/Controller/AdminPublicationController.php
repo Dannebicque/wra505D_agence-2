@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Utils\LooseValue;
 use UnifolioBundle\Entity\PortfolioPublication;
 use UnifolioBundle\Repository\PortfolioPublicationRepository;
 use UnifolioBundle\Security\PublicationVoter;
@@ -45,7 +46,7 @@ class AdminPublicationController extends AbstractController
     public function moderer(string $uuid, Request $request): JsonResponse
     {
         $publication = $this->publication($uuid);
-        $this->manager->moderer($publication, (string) ($this->corps($request)['motif'] ?? ''));
+        $this->manager->moderer($publication, LooseValue::castString($this->corps($request)['motif'] ?? ''));
 
         return $this->json($this->normalizer->pourModeration($publication));
     }
@@ -67,10 +68,11 @@ class AdminPublicationController extends AbstractController
         return $publication;
     }
 
+    /** @return array<string, mixed> */
     private function corps(Request $request): array
     {
         try {
-            return $request->toArray();
+            return LooseValue::assoc($request->toArray());
         } catch (\Throwable) {
             throw UnifolioValidationException::un('Requête JSON invalide.');
         }

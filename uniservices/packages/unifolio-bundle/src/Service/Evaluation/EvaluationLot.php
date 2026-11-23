@@ -46,7 +46,7 @@ class EvaluationLot
     {
         $scolarite = $trace->getScolarite() ?? throw UnifolioValidationException::un('Cette trace n\'est rattachée à aucune année de BUT.');
 
-        return ['trace' => $trace, 'scolarite' => $scolarite, 'cibles' => array_map(CibleLot::pourRattachement(...), $trace->getRattachements()->toArray())];
+        return ['trace' => $trace, 'scolarite' => $scolarite, 'cibles' => array_values(array_map(CibleLot::pourRattachement(...), $trace->getRattachements()->toArray()))];
     }
 
     /** @return array{trace: ?Trace, scolarite: EtudiantScolarite, cibles: list<CibleLot>} */
@@ -100,7 +100,7 @@ class EvaluationLot
             ];
         }
 
-        $etudiant = $scolarite->getEtudiant();
+        $etudiant = $scolarite->getEtudiant() ?? throw UnifolioValidationException::un('Scolarité sans étudiant.');
 
         return [
             'mode' => $portee['trace'] !== null ? 'trace' : 'bilans',
@@ -121,7 +121,7 @@ class EvaluationLot
      * Enregistre les points transmis ; une évaluation est créée pour un point renseigné qui n'en a pas encore.
      *
      * @param array{trace: ?Trace, scolarite: EtudiantScolarite, cibles: list<CibleLot>} $portee
-     * @param list<array{cle?: string, appreciation?: ?string, reponses?: mixed}>        $items
+     * @param list<array<string, mixed>> $items
      */
     public function enregistrer(Personnel $evaluateur, array $portee, array $items): void
     {
@@ -132,7 +132,7 @@ class EvaluationLot
 
         $this->em->wrapInTransaction(function () use ($evaluateur, $portee, $items, $parCle): void {
             foreach ($items as $item) {
-                $cle = (string) ($item['cle'] ?? '');
+                $cle = LooseValue::castString($item['cle'] ?? '');
                 $c = $parCle[$cle] ?? throw UnifolioValidationException::un('Un des points transmis ne fait pas partie de cette évaluation.');
 
                 $existante = $this->existante($evaluateur, $portee['scolarite'], $c);
@@ -282,9 +282,10 @@ class EvaluationLot
     }
 
     /** Un point est renseigné s'il porte au moins une réponse non vide ou une appréciation. */
+    /** @param array<string, mixed> $item */
     private function estRenseigne(array $item): bool
     {
-        if (trim((string) ($item['appreciation'] ?? '')) !== '') {
+        if (trim(LooseValue::castString($item['appreciation'] ?? '')) !== '') {
             return true;
         }
         foreach (\is_array($item['reponses'] ?? null) ? $item['reponses'] : [] as $r) {

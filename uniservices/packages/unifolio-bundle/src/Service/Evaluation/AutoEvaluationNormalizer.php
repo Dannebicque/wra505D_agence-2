@@ -51,7 +51,7 @@ class AutoEvaluationNormalizer
     {
         $contenu = $this->grilles->contenu($a->getGrilleVersion());
         $ids = array_map(static fn (GrilleCritere $c) => $c->getId(), $a->getCriteres());
-        $contenu['criteres'] = array_values(array_filter($contenu['criteres'], static fn (array $c) => \in_array($c['id'], $ids, true)));
+        $contenu['criteres'] = array_values(array_filter(\is_array($contenu['criteres'] ?? null) ? $contenu['criteres'] : [], static fn (mixed $c): bool => \is_array($c) && \in_array($c['id'] ?? null, $ids, true)));
         unset($contenu['erreursPublication']);
 
         $memeCible = $a->getRattachement() !== null

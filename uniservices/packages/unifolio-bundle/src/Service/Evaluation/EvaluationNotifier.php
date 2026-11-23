@@ -43,13 +43,15 @@ class EvaluationNotifier
         ];
         $quoi = $trace !== null ? sprintf('votre trace « %s »', $trace->getTitre()) : 'votre bilan de l\'année';
 
-        return $this->notifications->notifier(
+        $this->notifications->notifier(
             $e->getEtudiant(),
             TypeNotificationEnum::EVALUATION_RENDUE->cle(),
             sprintf('%s a évalué %s.', $e->getEvaluateur()->getDisplay(), $quoi),
             $trace !== null ? '/app/unifolio/traces/'.$trace->getUuidString() : '/app/unifolio/auto-evaluation',
             fn () => $this->envoyer('unifolio.evaluation_rendue', $e->getEtudiant(), $e->getCampagne(), $contexte),
         );
+
+        return true;
     }
 
     /**
@@ -64,7 +66,8 @@ class EvaluationNotifier
         foreach ($evaluations as $e) {
             if ($e->getAppreciation() !== null) {
                 $cible = $e->getCible();
-                $appreciations[] = ($cible instanceof \App\Entity\Apc\ApcApprentissageCritique && $cible->getCode() !== null ? $cible->getCode() : mb_strimwidth($cible->getLibelle(), 0, 40, '…')) . ' : ' . $e->getAppreciation();
+                $appreciation = $e->getAppreciation();
+                $appreciations[] = ($cible instanceof \App\Entity\Apc\ApcApprentissageCritique && $cible->getCode() !== null ? $cible->getCode() : mb_strimwidth(\App\Utils\LooseValue::castString($cible->getLibelle()), 0, 40, '…')) . ' : ' . $appreciation;
             }
         }
 
@@ -78,7 +81,7 @@ class EvaluationNotifier
             'urlPortal' => $trace !== null ? '/app/unifolio/traces/' . $trace->getUuidString() : '/app/unifolio/auto-evaluation',
         ];
 
-        return $this->notifications->notifier(
+        $this->notifications->notifier(
             $etudiant,
             TypeNotificationEnum::EVALUATION_RENDUE->cle(),
             $trace !== null
@@ -87,6 +90,8 @@ class EvaluationNotifier
             $contexte['urlPortal'],
             fn () => $this->envoyer('unifolio.evaluation_rendue', $etudiant, $campagne, $contexte),
         );
+
+        return true;
     }
 
     public function revisionDemandee(Evaluation $e): bool
@@ -104,13 +109,15 @@ class EvaluationNotifier
             'urlPortal' => '/app/unifolio/traces/' . $trace->getUuidString() . '/modifier',
         ];
 
-        return $this->notifications->notifier(
+        $this->notifications->notifier(
             $e->getEtudiant(),
             TypeNotificationEnum::REVISION_DEMANDEE->cle(),
             sprintf('%s vous demande de réviser la trace « %s ».', $e->getEvaluateur()->getDisplay(), $trace->getTitre()),
             $contexte['urlPortal'],
             fn () => $this->envoyer('unifolio.revision_demandee', $e->getEtudiant(), $e->getCampagne(), $contexte),
         );
+
+        return true;
     }
 
     public function relanceEvaluateur(Personnel $evaluateur, Campagne $campagne, int $nbAEvaluer): bool
@@ -132,13 +139,15 @@ class EvaluationNotifier
         ];
 
         // Un rappel qui part « dans un résumé » n'aurait pas de sens : seuls « tout de suite » et « jamais » sont possibles.
-        return $this->notifications->notifier(
+        $this->notifications->notifier(
             $evaluateur,
             TypeNotificationEnum::RELANCE_EVALUATEUR->cle(),
             sprintf('%d évaluation(s) en attente — %s', $nbAEvaluer, $campagne->getLibelle()),
             $contexte['urlPortal'],
             fn () => $this->envoyerA('unifolio.relance_evaluateur', $to, $campagne, $contexte),
         );
+
+        return true;
     }
 
     /** @param array<string, mixed> $contexte */

@@ -88,19 +88,19 @@ class AutoEvaluationManager
     }
 
     /**
-     * @param array{reflexion?: ?string, reponses?: mixed} $d reponses : [{ critere, echelon?, valeur?, booleen?, texte? }]
+     * @param array<string, mixed> $d reponses : [{ critere, echelon?, valeur?, booleen?, texte? }]
      */
     public function enregistrer(AutoEvaluation $auto, array $d): AutoEvaluation
     {
         $this->garder(function () use ($auto, $d): void {
             if (\array_key_exists('reflexion', $d)) {
-                $auto->setReflexion($d['reflexion'] !== null ? (string) $d['reflexion'] : null);
+                $auto->setReflexion($d['reflexion'] !== null ? LooseValue::string($d['reflexion']) : null);
             }
             if (\array_key_exists('reponses', $d)) {
                 $saisies = [];
                 foreach (\is_array($d['reponses']) ? $d['reponses'] : [] as $r) {
                     if (\is_array($r) && isset($r['critere'])) {
-                        $saisies[LooseValue::castString($r['critere'])] = $r;
+                        $saisies[LooseValue::castString($r['critere'])] = LooseValue::assoc($r);
                     }
                 }
                 $auto->repondre($saisies);
@@ -125,7 +125,7 @@ class AutoEvaluationManager
     {
         $evaluee = $auto->isBilan()
             ? $this->evaluations->existeRendueSurBilan($auto->getScolarite(), $auto->getGranularite(), (int) $auto->getCible()->getId())
-            : $this->evaluations->existeRendueSurRattachement($auto->getRattachement());
+            : ($auto->getRattachement() !== null && $this->evaluations->existeRendueSurRattachement($auto->getRattachement()));
         if ($evaluee) {
             throw UnifolioValidationException::un('Un enseignant a déjà rendu son évaluation : cette auto-évaluation ne peut plus être modifiée.');
         }

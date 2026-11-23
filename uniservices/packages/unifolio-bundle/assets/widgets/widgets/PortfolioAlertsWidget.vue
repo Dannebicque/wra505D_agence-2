@@ -15,7 +15,7 @@ const items = computed(() => props.data?.items || []);
 <template>
     <ul v-if="items.length" class="list-none p-0 m-0 space-y-2">
         <li v-for="(item, index) in items" :key="`${item}-${index}`" class="text-sm flex items-center gap-2">
-            <i class="pi pi-exclamation-triangle text-orange-500" />
+            <i class="pi pi-exclamation-triangle text-primary" />
             {{ item }}
         </li>
     </ul>

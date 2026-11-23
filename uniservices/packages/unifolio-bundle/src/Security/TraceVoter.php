@@ -41,8 +41,6 @@ class TraceVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         $user = $token->getUser();
-        \assert($subject instanceof Trace);
-
         if ($user instanceof Etudiant) {
             if (!$subject->appartientA($user)) {
                 $vote?->addReason('Cette trace appartient à un autre étudiant.');

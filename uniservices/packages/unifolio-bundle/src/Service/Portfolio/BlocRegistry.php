@@ -20,24 +20,25 @@ final class BlocRegistry
         if ($contenu === false) {
             throw new \RuntimeException(sprintf('Schéma des blocs introuvable : %s', $fichier));
         }
-        $this->schema = json_decode($contenu, true, 512, \JSON_THROW_ON_ERROR);
+        $this->schema = LooseValue::assoc(json_decode($contenu, true, 512, \JSON_THROW_ON_ERROR));
     }
 
     /** @return array<string, array<string, mixed>> */
     public function types(): array
     {
-        return $this->schema['types'];
+        return array_map(LooseValue::assoc(...), LooseValue::assoc($this->schema['types'] ?? []));
     }
 
     /** @return array<string, mixed>|null */
     public function type(string $type): ?array
     {
-        return $this->schema['types'][$type] ?? null;
+        $types = LooseValue::assoc($this->schema['types'] ?? []);
+        return isset($types[$type]) && is_array($types[$type]) ? LooseValue::assoc($types[$type]) : null;
     }
 
     public function limite(string $nom): int
     {
-        return LooseValue::castInt($this->schema['limites'][$nom]);
+        return LooseValue::castInt(LooseValue::assoc($this->schema['limites'] ?? [])[$nom] ?? 0);
     }
 
     /** @return array<string, mixed> */
@@ -47,8 +48,9 @@ final class BlocRegistry
     }
 
     /** Types pouvant figurer directement dans une page (les colonnes et volets n'existent que dans leur parent). */
+    /** @return list<string> */
     public function typesRacine(): array
     {
-        return array_keys(array_filter($this->schema['types'], static fn (array $t) => !isset($t['seulement_dans'])));
+        return array_keys(array_filter($this->types(), static fn (array $t) => !isset($t['seulement_dans'])));
     }
 }

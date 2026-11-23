@@ -76,7 +76,8 @@ class ModeleManager
         $structure = [];
         $erreurs = [];
         foreach ($pages as $i => $page) {
-            $titre = trim((string) ($page['titre'] ?? ''));
+            $page = LooseValue::assoc($page);
+            $titre = trim(LooseValue::castString($page['titre'] ?? ''));
             if ($titre === '' || mb_strlen($titre) > 120) {
                 $erreurs[] = sprintf('Page %d : titre de 1 à 120 caractères obligatoire.', $i + 1);
                 continue;
@@ -92,7 +93,7 @@ class ModeleManager
             $ids = [];
             $this->collecterIds($blocs, $ids);
             $verrouilles = array_values(array_unique(array_filter(
-                \is_array($page['verrouilles'] ?? null) ? array_map('strval', $page['verrouilles']) : [],
+                \is_array($page['verrouilles'] ?? null) ? array_map(LooseValue::castString(...), $page['verrouilles']) : [],
                 static fn (string $id) => isset($ids[$id])
             )));
             $structure[] = ['titre' => $titre, 'verrouillee' => (bool) ($page['verrouillee'] ?? false), 'blocs' => $blocs, 'verrouilles' => $verrouilles];
@@ -134,7 +135,7 @@ class ModeleManager
     {
         foreach ($blocs as $bloc) {
             $ids[LooseValue::castString($bloc['id'])] = true;
-            $this->collecterIds($bloc['children'] ?? [], $ids);
+            $this->collecterIds(is_array($bloc['children'] ?? null) ? array_map(LooseValue::assoc(...), array_values(array_filter($bloc['children'], 'is_array'))) : [], $ids);
         }
     }
 

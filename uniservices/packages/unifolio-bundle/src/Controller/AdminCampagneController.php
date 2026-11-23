@@ -176,17 +176,17 @@ class AdminCampagneController extends AbstractController
                     ++$groupes[$g->getId()]['nbEtudiants'];
                 }
             }
-            $etudiant = $scolarite->getEtudiant();
+            $etudiant = $scolarite->getEtudiant() ?? throw UnifolioValidationException::un('Étudiant introuvable.');
             $lignes[] = [
                 'id' => $id,
                 'nom' => $etudiant->getNom(),
                 'prenom' => $etudiant->getPrenom(),
-                'annee' => $scolarite->getAnnee()[0]?->getLibelle() ?? null,
+                'annee' => $scolarite->getAnnee()[0]->getLibelle() ?? null,
                 'groupes' => array_values($nomsGroupes),
                 'evaluateurs' => $evaluateursParEtudiant[$id] ?? [],
             ];
         }
-        usort($groupes, static fn (array $a, array $b) => strnatcmp($a['libelle'], $b['libelle']));
+        usort($groupes, static fn (array $a, array $b) => strnatcmp(LooseValue::castString($a['libelle']), LooseValue::castString($b['libelle'])));
 
         $candidats = [];
         foreach ($campagne->getDiplome()->getDepartement()?->getDepartementPersonnels() ?? [] as $dp) {
@@ -213,9 +213,9 @@ class AdminCampagneController extends AbstractController
         $campagne = $this->campagne($uuid);
         $d = $this->corps($request);
         $evaluateur = $this->em->find(Personnel::class, LooseValue::castInt($d['evaluateur'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez l\'enseignant.');
-        $groupe = !empty($d['groupe']) ? ($this->em->find(StructureGroupe::class, LooseValue::castInt($d['groupe'])) ?? throw UnifolioValidationException::un('Groupe introuvable.')) : null;
+        $groupe = ($d['groupe'] ?? null) !== null && $d['groupe'] !== '' ? ($this->em->find(StructureGroupe::class, LooseValue::castInt($d['groupe'])) ?? throw UnifolioValidationException::un('Groupe introuvable.')) : null;
 
-        $crees = $this->affectationManager->affecter($campagne, $evaluateur, isset($d['etudiants']) && \is_array($d['etudiants']) ? $d['etudiants'] : null, $groupe);
+        $crees = $this->affectationManager->affecter($campagne, $evaluateur, isset($d['etudiants']) && \is_array($d['etudiants']) ? array_map(LooseValue::castInt(...), $d['etudiants']) : null, $groupe);
 
         return $this->json(['crees' => $crees]);
     }
@@ -228,7 +228,7 @@ class AdminCampagneController extends AbstractController
         $d = $this->corps($request);
         $evaluateur = $this->em->find(Personnel::class, LooseValue::castInt($d['evaluateur'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez l\'enseignant.');
 
-        $retirees = $this->affectationManager->retirer($campagne, $evaluateur, isset($d['etudiants']) && \is_array($d['etudiants']) ? $d['etudiants'] : null);
+        $retirees = $this->affectationManager->retirer($campagne, $evaluateur, isset($d['etudiants']) && \is_array($d['etudiants']) ? array_map(LooseValue::castInt(...), $d['etudiants']) : null);
 
         return $this->json(['retirees' => $retirees]);
     }
@@ -254,7 +254,7 @@ class AdminCampagneController extends AbstractController
     /** @param array<string, mixed> $d Le modèle choisi doit être visible du référent. */
     private function verifierModele(array $d): void
     {
-        if (!empty($d['modele'])) {
+        if (($d['modele'] ?? null) !== null && $d['modele'] !== '') {
             $modele = $this->modeles->findOneByUuid(LooseValue::castString($d['modele'])) ?? throw UnifolioValidationException::un('Modèle de portfolio introuvable.');
             $this->denyAccessUnlessGranted(ModeleVoter::VOIR, $modele);
         }
@@ -272,7 +272,7 @@ class AdminCampagneController extends AbstractController
     private function corps(Request $request): array
     {
         try {
-            return $request->toArray();
+            return LooseValue::assoc($request->toArray());
         } catch (\Throwable) {
             throw UnifolioValidationException::un('Requête JSON invalide.');
         }

@@ -90,7 +90,7 @@ const majAttrs = (b, attrs) => {
   changement();
 };
 const grille = (b) => ({ gridTemplateColumns: (b.attrs.ratio ?? '1-1').split('-').map((n) => `${Number(n) || 1}fr`).join(' ') });
-const fonds = { aucun: 'border border-dashed border-surface-300', doux: 'bg-surface-100', accent: 'bg-emerald-50 border border-emerald-200' };
+const fonds = { aucun: 'border border-dashed border-surface-300', doux: 'bg-surface-100', accent: 'bg-emphasis border border-surface' };
 </script>
 
 <template>
@@ -105,15 +105,15 @@ const fonds = { aucun: 'border border-dashed border-surface-300', doux: 'bg-surf
         :key="b.id"
         role="group"
         :aria-label="libelleType(b.type)"
-        class="rounded-lg border bg-white dark:bg-surface-900 transition-shadow"
-        :class="selection === b.id ? 'border-emerald-500 shadow-md' : 'border-surface-200 hover:border-surface-300'"
+        class="rounded-lg border bg-surface-0 transition-shadow"
+        :class="selection === b.id ? 'border-primary shadow-md' : 'border-surface-200 hover:border-surface-300'"
         @click.stop="selection = b.id"
       >
         <div class="flex items-center gap-1 px-2 py-1 text-xs text-muted-color border-b border-surface-100">
           <i v-if="!lectureSeule" class="pi pi-bars bloc-poignee cursor-move p-1" title="Déplacer" aria-hidden="true" />
           <i :class="icone(b.type)" aria-hidden="true" />
           <span class="font-medium">{{ libelleType(b.type) }}</span>
-          <i v-if="estVerrouille(b)" class="pi pi-lock text-amber-600" :title="modeModele ? 'Bloc imposé aux étudiants' : 'Bloc imposé par le modèle : son contenu reste modifiable'" />
+          <i v-if="estVerrouille(b)" class="pi pi-lock text-primary" :title="modeModele ? 'Bloc imposé aux étudiants' : 'Bloc imposé par le modèle : son contenu reste modifiable'" />
           <span v-if="!lectureSeule" class="ml-auto flex items-center">
             <Button icon="pi pi-arrow-up" size="small" text rounded severity="secondary" :disabled="i === 0" aria-label="Monter" @click.stop="deplacer(i, -1)" />
             <Button icon="pi pi-arrow-down" size="small" text rounded severity="secondary" :disabled="i === blocs.length - 1" aria-label="Descendre" @click.stop="deplacer(i, 1)" />

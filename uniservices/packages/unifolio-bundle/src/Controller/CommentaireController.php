@@ -4,6 +4,7 @@ namespace UnifolioBundle\Controller;
 
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,9 +49,9 @@ class CommentaireController extends AbstractController
         $commentaire = $this->commentaires->ajouter(
             $trace,
             $this->auteur(),
-            (string) ($d['contenu'] ?? ''),
-            isset($d['rattachement']) ? (int) $d['rattachement'] : null,
-            isset($d['parent']) ? (string) $d['parent'] : null,
+            LooseValue::castString($d['contenu'] ?? ''),
+            isset($d['rattachement']) ? LooseValue::castInt($d['rattachement']) : null,
+            isset($d['parent']) ? LooseValue::castString($d['parent']) : null,
         );
 
         return $this->json($commentaire, Response::HTTP_CREATED);

@@ -79,7 +79,10 @@ class EvaluationNormalizer
         ];
     }
 
-    /** Vue de l'étudiant : uniquement ce que l'enseignant lui a communiqué. @return array<string, mixed> */
+    /**
+     * Vue de l'étudiant : uniquement ce que l'enseignant lui a communiqué.
+     * @return array<string, mixed>
+     */
     public function retourEtudiant(Evaluation $e): array
     {
         return $this->resume($e) + [

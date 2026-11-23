@@ -24,13 +24,14 @@ class PublicationNormalizer
             'moderee' => $p->isModeree(),
             'motifModeration' => $p->getMotifModeration(),
             'erreur' => $p->getErreur(),
-            'pages' => \count($p->getInstantane()['pages'] ?? []),
+            'pages' => \count(is_array($p->getInstantane()['pages'] ?? null) ? $p->getInstantane()['pages'] : []),
             'genereLe' => $p->getGenereLe()?->format(\DATE_ATOM),
             'creeLe' => $p->getCreatedAt()?->format(\DATE_ATOM),
         ];
     }
 
     /** Ligne de la liste de modération. */
+    /** @return array<string, mixed> */
     public function pourModeration(PortfolioPublication $p): array
     {
         $portfolio = $p->getPortfolio();
@@ -49,6 +50,10 @@ class PublicationNormalizer
     }
 
     /** Réglages de partage — réservé au propriétaire (contient le secret du lien). */
+    /**
+     * @param list<PortfolioPublication> $historique
+     * @return array<string, mixed>
+     */
     public function partage(Portfolio $portfolio, ?PortfolioPublication $active, array $historique, bool $renduDisponible): array
     {
         return [

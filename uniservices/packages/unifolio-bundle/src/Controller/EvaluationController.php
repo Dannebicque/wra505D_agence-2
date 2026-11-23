@@ -74,11 +74,15 @@ class EvaluationController extends AbstractController
     {
         $campagne = $this->campagnes->findOneByUuid($campagne) ?? throw $this->createNotFoundException('Campagne introuvable.');
         $user = $this->personnel();
-        if (!$this->affectations->existe($campagne, $user, $this->em->getReference(\App\Entity\Users\Etudiant::class, $etudiant)) && !$this->isGranted(CampagneVoter::GERER, $campagne)) {
+        $etudiantReference = $this->em->getReference(\App\Entity\Users\Etudiant::class, $etudiant);
+        if (!$etudiantReference instanceof \App\Entity\Users\Etudiant) {
+            throw $this->createNotFoundException('Étudiant introuvable.');
+        }
+        if (!$this->affectations->existe($campagne, $user, $etudiantReference) && !$this->isGranted(CampagneVoter::GERER, $campagne)) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas chargé(e) de cet étudiant.');
         }
         $scolarite = $this->etudiants->scolarites($campagne)[$etudiant] ?? throw $this->createNotFoundException('Cet étudiant ne fait pas partie de la campagne.');
-        $e = $scolarite->getEtudiant();
+        $e = $scolarite->getEtudiant() ?? throw $this->createNotFoundException('Étudiant introuvable.');
 
         $base = [
             'campagne' => $this->campagneNormalizer->resume($campagne),
@@ -110,7 +114,11 @@ class EvaluationController extends AbstractController
 
         $parRattachement = [];
         foreach ($this->evaluations->findParTrace($trace) as $e) {
-            $cle = $e->getRattachement()->getId();
+            $rattachement = $e->getRattachement();
+            if ($rattachement === null) {
+                continue;
+            }
+            $cle = $rattachement->getId();
             if ($e->estDe($user)) {
                 $parRattachement[$cle]['mienne'] = $this->normalizer->resume($e);
             } elseif ($e->getStatut() === StatutEvaluationEnum::RENDUE) {
@@ -213,7 +221,7 @@ class EvaluationController extends AbstractController
     {
         $portee = $this->porteeTrace($uuid);
         $items = $this->corps($request)['items'] ?? [];
-        $this->lot->enregistrer($this->personnel(), $portee, \is_array($items) ? array_values($items) : []);
+        $this->lot->enregistrer($this->personnel(), $portee, \is_array($items) ? array_values(array_map(static fn (mixed $item): array => LooseValue::assoc($item), $items)) : []);
 
         return $this->json($this->lot->charger($this->personnel(), $portee));
     }
@@ -234,7 +242,7 @@ class EvaluationController extends AbstractController
     {
         $portee = $this->porteeTrace($uuid);
         $cles = $this->corps($request)['cles'] ?? null;
-        $nb = $this->lot->rouvrir($this->personnel(), $portee, \is_array($cles) ? array_map('strval', $cles) : null);
+        $nb = $this->lot->rouvrir($this->personnel(), $portee, \is_array($cles) ? array_values(array_map(static fn (mixed $cle): string => LooseValue::castString($cle), $cles)) : null);
 
         return $this->json($this->lot->charger($this->personnel(), $portee) + ['nbRouvertes' => $nb]);
     }
@@ -261,7 +269,7 @@ class EvaluationController extends AbstractController
     {
         $portee = $this->porteeBilans($campagne, $etudiant);
         $items = $this->corps($request)['items'] ?? [];
-        $this->lot->enregistrer($this->personnel(), $portee, \is_array($items) ? array_values($items) : []);
+        $this->lot->enregistrer($this->personnel(), $portee, \is_array($items) ? array_values(array_map(static fn (mixed $item): array => LooseValue::assoc($item), $items)) : []);
 
         return $this->json($this->lot->charger($this->personnel(), $portee));
     }
@@ -280,7 +288,7 @@ class EvaluationController extends AbstractController
     {
         $portee = $this->porteeBilans($campagne, $etudiant);
         $cles = $this->corps($request)['cles'] ?? null;
-        $nb = $this->lot->rouvrir($this->personnel(), $portee, \is_array($cles) ? array_map('strval', $cles) : null);
+        $nb = $this->lot->rouvrir($this->personnel(), $portee, \is_array($cles) ? array_values(array_map(static fn (mixed $cle): string => LooseValue::castString($cle), $cles)) : null);
 
         return $this->json($this->lot->charger($this->personnel(), $portee) + ['nbRouvertes' => $nb]);
     }
@@ -298,7 +306,11 @@ class EvaluationController extends AbstractController
     private function porteeBilans(string $campagneUuid, int $etudiantId): array
     {
         $campagne = $this->campagnes->findOneByUuid($campagneUuid) ?? throw $this->createNotFoundException('Campagne introuvable.');
-        if (!$this->affectations->existe($campagne, $this->personnel(), $this->em->getReference(\App\Entity\Users\Etudiant::class, $etudiantId)) && !$this->isGranted(CampagneVoter::GERER, $campagne)) {
+        $etudiantReference = $this->em->getReference(\App\Entity\Users\Etudiant::class, $etudiantId);
+        if (!$etudiantReference instanceof \App\Entity\Users\Etudiant) {
+            throw $this->createNotFoundException('Étudiant introuvable.');
+        }
+        if (!$this->affectations->existe($campagne, $this->personnel(), $etudiantReference) && !$this->isGranted(CampagneVoter::GERER, $campagne)) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas chargé(e) de cet étudiant.');
         }
         $scolarite = $this->etudiants->scolarites($campagne)[$etudiantId] ?? throw $this->createNotFoundException('Cet étudiant ne fait pas partie de la campagne.');
@@ -318,7 +330,7 @@ class EvaluationController extends AbstractController
     private function corps(Request $request): array
     {
         try {
-            return $request->toArray();
+            return LooseValue::assoc($request->toArray());
         } catch (\Throwable) {
             throw UnifolioValidationException::un('Requête JSON invalide.');
         }

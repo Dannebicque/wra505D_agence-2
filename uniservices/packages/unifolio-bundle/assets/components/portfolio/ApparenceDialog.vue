@@ -98,9 +98,9 @@ const retirerLogo = async () => {
           class="p-4 flex items-center gap-3"
           :style="{
             fontFamily: 'var(--pf-police)',
-            background: form.entete === 'couleur' ? 'var(--pf-accent)' : form.entete === 'clair' ? 'color-mix(in srgb, var(--pf-accent) 9%, #fff)' : '#fff',
+            background: form.entete === 'couleur' ? 'var(--pf-accent)' : form.entete === 'clair' ? 'color-mix(in srgb, var(--pf-accent) 9%, var(--p-surface-0))' : 'var(--p-surface-0)',
             color: form.entete === 'couleur' ? 'var(--pf-contraste)' : 'inherit',
-            borderBottom: form.entete === 'clair' ? '3px solid var(--pf-accent)' : form.entete === 'sobre' ? '1px solid #e4e4e7' : 'none',
+            borderBottom: form.entete === 'clair' ? '3px solid var(--pf-accent)' : form.entete === 'sobre' ? '1px solid var(--p-surface-200)' : 'none',
           }"
         >
           <img v-if="urlLogo" :src="urlLogo" alt="" style="max-height: 2.5rem; max-width: 7rem; object-fit: contain" />
@@ -125,7 +125,7 @@ const retirerLogo = async () => {
             :key="p.couleur"
             type="button"
             class="w-9 h-9 rounded-full border-2 cursor-pointer"
-            :style="{ background: p.couleur, borderColor: form.couleur === p.couleur ? '#18181b' : 'transparent' }"
+            :style="{ background: p.couleur, borderColor: form.couleur === p.couleur ? 'var(--p-text-color)' : 'transparent' }"
             :aria-label="p.nom"
             :aria-pressed="form.couleur === p.couleur"
             :title="p.nom"
@@ -136,7 +136,7 @@ const retirerLogo = async () => {
             Personnalisée
           </label>
         </div>
-        <small v-if="!lisible" class="text-red-600">Cette teinte est trop claire : le texte et les liens ne seraient pas lisibles sur fond blanc. Choisissez-en une plus foncée.</small>
+        <small v-if="!lisible" class="text-primary">Cette teinte est trop claire : le texte et les liens ne seraient pas lisibles sur fond blanc. Choisissez-en une plus foncée.</small>
       </fieldset>
 
       <!-- Police -->
@@ -148,7 +148,7 @@ const retirerLogo = async () => {
             :key="cle"
             type="button"
             class="rounded-lg border p-3 text-left cursor-pointer bg-transparent"
-            :class="form.police === cle ? 'border-emerald-500 bg-emerald-50/50' : 'border-surface-200'"
+            :class="form.police === cle ? 'border-primary bg-highlight' : 'border-surface-200'"
             :style="{ fontFamily: p.pile }"
             :aria-pressed="form.police === cle"
             @click="form.police = cle"
@@ -169,7 +169,7 @@ const retirerLogo = async () => {
       <!-- Logo -->
       <section class="flex flex-wrap items-center gap-3">
         <span class="font-semibold w-full">Logo</span>
-        <img v-if="urlLogo" :src="urlLogo" :alt="`Logo : ${portfolio.logo.nom}`" class="rounded border border-surface-200 p-1 bg-white" style="max-height: 3.5rem; max-width: 10rem; object-fit: contain" />
+        <img v-if="urlLogo" :src="urlLogo" :alt="`Logo : ${portfolio.logo.nom}`" class="rounded border border-surface-200 p-1 bg-surface-0" style="max-height: 3.5rem; max-width: 10rem; object-fit: contain" />
         <span v-else class="text-sm text-muted-color">Aucun logo.</span>
         <input ref="champFichier" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" aria-label="Choisir un logo" @change="choisirLogo" />
         <Button :label="portfolio.logo ? 'Remplacer' : 'Ajouter un logo'" icon="pi pi-upload" size="small" severity="secondary" outlined :loading="logoEnCours" @click="champFichier.click()" />

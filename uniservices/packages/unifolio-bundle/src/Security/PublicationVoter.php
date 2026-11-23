@@ -13,6 +13,7 @@ use UnifolioBundle\Entity\PortfolioPublication;
 use UnifolioBundle\Service\Perimetre\UnifolioPerimetre;
 
 /** Modération d'une publication : référents et publicateurs du département de l'étudiant, ou super administrateur. */
+/** @extends Voter<string, PortfolioPublication> */
 class PublicationVoter extends Voter
 {
     public const MODERER = 'UNIFOLIO_PUBLICATION_MODERER';
@@ -31,7 +32,6 @@ class PublicationVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
-        \assert($subject instanceof PortfolioPublication);
         $user = $token->getUser();
         if (!$user instanceof Personnel) {
             return false;

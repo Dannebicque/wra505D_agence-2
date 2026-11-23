@@ -226,7 +226,7 @@ class Portfolio implements TimestampableInterface
     /** @param list<string> $uuids nouvel ordre des pages */
     public function reordonnerPages(array $uuids): void
     {
-        $position = array_flip(array_map('strtolower', array_values($uuids)));
+        $position = array_flip(array_map('strtolower', $uuids));
         $suivant = \count($position);
         foreach ($this->pages as $page) {
             $page->setOrdre($position[$page->getUuidString()] ?? $suivant++);
@@ -243,7 +243,7 @@ class Portfolio implements TimestampableInterface
     public function setSlug(string $slug): static
     {
         $slug = strtolower(trim($slug));
-        if (!preg_match(self::SLUG_PATTERN, $slug) || str_contains($slug, '--')) {
+        if (preg_match(self::SLUG_PATTERN, $slug) !== 1 || str_contains($slug, '--')) {
             throw new \InvalidArgumentException('L\'adresse doit comporter 3 à 58 caractères : lettres minuscules, chiffres et tirets isolés.');
         }
         $this->slug = $slug;

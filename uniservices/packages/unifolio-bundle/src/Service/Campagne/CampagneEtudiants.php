@@ -35,7 +35,10 @@ class CampagneEtudiants
 
         $parEtudiant = [];
         foreach ($qb->getQuery()->getResult() as $scolarite) {
-            $parEtudiant[$scolarite->getEtudiant()->getId()] ??= $scolarite;
+            $etudiant = $scolarite->getEtudiant();
+            if ($etudiant !== null) {
+                $parEtudiant[(int) $etudiant->getId()] ??= $scolarite;
+            }
         }
 
         return $parEtudiant;

@@ -66,7 +66,10 @@ class BilanAnnee
             if ($e->isBilan()) {
                 $evalBilan[$e->getCible()->getId()][] = $e;
             } else {
-                $evalParRattachement[$e->getRattachement()->getId()][] = $e;
+                $rattachement = $e->getRattachement();
+                if ($rattachement !== null) {
+                    $evalParRattachement[$rattachement->getId()][] = $e;
+                }
             }
         }
         $regle = $this->grilles->agregationPourScolarite($scolarite);
@@ -124,10 +127,10 @@ class BilanAnnee
      */
     private function resumes(array $evaluations, ?Personnel $evaluateur): array
     {
-        return array_map(
-            fn (Evaluation $e) => $this->evaluationNormalizer->resume($e) + ['mienne' => $evaluateur !== null && $e->estDe($evaluateur)],
+        return array_values(array_map(
+            fn (Evaluation $e): array => $this->evaluationNormalizer->resume($e) + ['mienne' => $evaluateur !== null && $e->estDe($evaluateur)],
             $evaluations
-        );
+        ));
     }
 
     /** L'évaluateur voit les siennes (même en cours) et les rendues des autres ; l'étudiant les communiquées. */
@@ -151,9 +154,9 @@ class BilanAnnee
         $niveaux = $this->referentiel->niveaux($scolarite);
 
         return match ($granularite) {
-            GranulariteEnum::NIVEAU => $niveaux,
+            GranulariteEnum::NIVEAU => array_values($niveaux),
             GranulariteEnum::AC => array_merge([], ...array_map(static fn (ApcNiveau $n) => $n->getApprentissageCritique()->toArray(), $niveaux)),
-            GranulariteEnum::COMPETENCE => $this->competencesDe($niveaux),
+            GranulariteEnum::COMPETENCE => array_values($this->competencesDe($niveaux)),
         };
     }
 
@@ -178,7 +181,7 @@ class BilanAnnee
     /** Un rattachement concerne un élément s'il le vise directement ou vise un élément plus fin qui en dépend. */
     private function concerne(TraceRattachement $r, ApcCompetence|ApcNiveau|ApcApprentissageCritique $cible): bool
     {
-        $meme = static fn (?object $a, ?object $b) => $a !== null && $b !== null && $a->getId() === $b->getId();
+        $meme = static fn (ApcCompetence|ApcNiveau|ApcApprentissageCritique|null $a, ApcCompetence|ApcNiveau|ApcApprentissageCritique|null $b): bool => $a !== null && $b !== null && $a->getId() === $b->getId();
 
         return match (true) {
             $cible instanceof ApcApprentissageCritique => $meme($r->getApprentissageCritique(), $cible),

@@ -69,13 +69,17 @@ final class BlocValidator
                 continue;
             }
             $ou = sprintf('%s › %s %d', $chemin, mb_strtolower(LooseValue::castString($definition['libelle'])), $i + 1);
-            foreach ($definition['attrs'] as $nom => $def) {
-                $v = $bloc['attrs'][$nom] ?? null;
-                if (($def['requis'] ?? false) && ($v === null || $v === '' || $v === [])) {
-                    $manques[] = sprintf('%s : « %s » est à renseigner.', $ou, $def['libelle']);
+            foreach (LooseValue::assoc($definition['attrs'] ?? []) as $nom => $defBrut) {
+                if (!is_array($defBrut)) {
+                    continue;
+                }
+                $def = LooseValue::assoc($defBrut);
+                $v = is_array($bloc['attrs'] ?? null) ? $bloc['attrs'][$nom] ?? null : null;
+                if (LooseValue::bool($def['requis'] ?? false) && ($v === null || $v === '' || $v === [])) {
+                    $manques[] = sprintf('%s : « %s » est à renseigner.', $ou, LooseValue::castString($def['libelle'] ?? ''));
                 }
             }
-            array_push($manques, ...$this->incomplets($bloc['children'] ?? [], $ou));
+            array_push($manques, ...$this->incomplets(is_array($bloc['children'] ?? null) ? array_map(LooseValue::assoc(...), array_values(array_filter($bloc['children'], 'is_array'))) : [], $ou));
         }
 
         return $manques;
@@ -110,13 +114,13 @@ final class BlocValidator
                 $erreurs[] = sprintf('%s : imbrication trop profonde (%d niveaux maximum).', $ou, $this->registre->limite('profondeur'));
                 continue;
             }
-            if (isset($definition['seulement_dans']) && !\in_array($parent, $definition['seulement_dans'], true)) {
-                $erreurs[] = sprintf('%s : ce bloc ne peut figurer que dans %s.', $ou, implode(' / ', $definition['seulement_dans']));
+            if (isset($definition['seulement_dans']) && !\in_array($parent, LooseValue::row($definition['seulement_dans']), true)) {
+                $erreurs[] = sprintf('%s : ce bloc ne peut figurer que dans %s.', $ou, implode(' / ', array_map(LooseValue::castString(...), LooseValue::row($definition['seulement_dans']))));
                 continue;
             }
             if ($parent !== null) {
                 $attendus = $this->registre->type($parent)['enfants'] ?? null;
-                if ($attendus !== '*' && !\in_array($type, (array) $attendus, true)) {
+                if ($attendus !== '*' && !\in_array($type, LooseValue::row($attendus), true)) {
                     $erreurs[] = sprintf('%s : ce bloc n\'est pas autorisé ici.', $ou);
                     continue;
                 }
@@ -126,7 +130,7 @@ final class BlocValidator
             if ($id === '') {
                 $id = Uuid::v4()->toRfc4122();
             }
-            if (!preg_match('/^[A-Za-z0-9_-]{8,40}$/', $id)) {
+            if (preg_match('/^[A-Za-z0-9_-]{8,40}$/', $id) !== 1) {
                 $erreurs[] = sprintf('%s : identifiant de bloc invalide.', $ou);
                 continue;
             }
@@ -136,7 +140,7 @@ final class BlocValidator
             }
             $ids[$id] = true;
 
-            $attrs = $this->attributs($definition['attrs'], \is_array($bloc['attrs'] ?? null) ? $bloc['attrs'] : [], $ou, $contexte, $erreurs);
+            $attrs = $this->attributs(array_map(LooseValue::assoc(...), LooseValue::assoc($definition['attrs'] ?? [])), \is_array($bloc['attrs'] ?? null) ? LooseValue::assoc($bloc['attrs']) : [], $ou, $contexte, $erreurs);
 
             $enfants = $bloc['children'] ?? [];
             if (!\is_array($enfants) || !array_is_list($enfants)) {
@@ -175,7 +179,7 @@ final class BlocValidator
                 $attrs[$nom] = $def['defaut'] ?? null;
                 continue;
             }
-            $valide = $this->valeur($def, $valeurs[$nom], $contexte, sprintf('%s › %s', $ou, $def['libelle']), $erreurs);
+            $valide = $this->valeur($def, $valeurs[$nom], $contexte, sprintf('%s › %s', $ou, LooseValue::castString($def['libelle'] ?? '')), $erreurs);
             $attrs[$nom] = $valide ?? ($def['defaut'] ?? null);
         }
 
@@ -198,7 +202,7 @@ final class BlocValidator
                 }
                 $v = $def['type'] === 'texte' ? trim(preg_replace('/\s+/u', ' ', $v) ?? '') : trim(str_replace("\r\n", "\n", $v));
                 if (mb_strlen($v) > LooseValue::castInt($def['max'])) {
-                    $erreurs[] = sprintf('%s : %d caractères maximum.', $ou, $def['max']);
+                    $erreurs[] = sprintf('%s : %d caractères maximum.', $ou, LooseValue::castInt($def['max']));
 
                     return null;
                 }
@@ -206,8 +210,8 @@ final class BlocValidator
                 return $v;
 
             case 'entier':
-                if (!is_numeric($v) || (int) $v != $v || $v < $def['min'] || $v > $def['max']) {
-                    $erreurs[] = sprintf('%s : nombre entier entre %d et %d attendu.', $ou, $def['min'], $def['max']);
+                if (!is_numeric($v) || floor(LooseValue::castFloat($v)) !== LooseValue::castFloat($v) || LooseValue::castFloat($v) < LooseValue::castInt($def['min']) || LooseValue::castFloat($v) > LooseValue::castInt($def['max'])) {
+                    $erreurs[] = sprintf('%s : nombre entier entre %d et %d attendu.', $ou, LooseValue::castInt($def['min']), LooseValue::castInt($def['max']));
 
                     return null;
                 }
@@ -221,7 +225,7 @@ final class BlocValidator
                 return (bool) $v;
 
             case 'enum':
-                if (!\is_scalar($v) || !\array_key_exists((string) $v, $def['valeurs'])) {
+                if (!\is_scalar($v) || !\array_key_exists((string) $v, LooseValue::assoc($def['valeurs'] ?? []))) {
                     $erreurs[] = sprintf('%s : valeur « %s » non autorisée.', $ou, \is_scalar($v) ? (string) $v : '?');
 
                     return null;
@@ -233,15 +237,15 @@ final class BlocValidator
                 return $this->url($v, LooseValue::bool(($def['embed'] ?? false)), $ou, $erreurs);
 
             case 'liste_texte':
-                if (!\is_array($v) || !array_is_list($v) || \count($v) > $def['max_items']) {
-                    $erreurs[] = sprintf('%s : liste de %d éléments maximum attendue.', $ou, $def['max_items']);
+                if (!\is_array($v) || !array_is_list($v) || \count($v) > LooseValue::castInt($def['max_items'])) {
+                    $erreurs[] = sprintf('%s : liste de %d éléments maximum attendue.', $ou, LooseValue::castInt($def['max_items']));
 
                     return null;
                 }
                 $liste = [];
                 foreach ($v as $element) {
                     if (!\is_string($element) || mb_strlen($element) > LooseValue::castInt($def['max'])) {
-                        $erreurs[] = sprintf('%s : élément invalide (%d caractères maximum).', $ou, $def['max']);
+                        $erreurs[] = sprintf('%s : élément invalide (%d caractères maximum).', $ou, LooseValue::castInt($def['max']));
 
                         return null;
                     }
@@ -263,8 +267,8 @@ final class BlocValidator
                 return $this->media($v, $contexte, $ou, $erreurs);
 
             case 'liste_media':
-                if (!\is_array($v) || !array_is_list($v) || \count($v) > $def['max_items']) {
-                    $erreurs[] = sprintf('%s : %d médias maximum.', $ou, $def['max_items']);
+                if (!\is_array($v) || !array_is_list($v) || \count($v) > LooseValue::castInt($def['max_items'])) {
+                    $erreurs[] = sprintf('%s : %d médias maximum.', $ou, LooseValue::castInt($def['max_items']));
 
                     return null;
                 }

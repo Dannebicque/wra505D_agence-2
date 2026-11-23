@@ -41,14 +41,14 @@ const OUI_NON = [{ label: 'Oui', value: true }, { label: 'Non', value: false }];
         <div class="flex-1">
           <div class="font-medium">
             {{ critere.libelle }}
-            <span v-if="critere.obligatoire" class="text-red-600" aria-label="obligatoire">*</span>
+            <span v-if="critere.obligatoire" class="text-primary" aria-label="obligatoire">*</span>
             <span v-else-if="critere.type === 'texte'" class="text-muted-color text-sm font-normal">(facultatif)</span>
           </div>
           <p v-if="critere.description" class="text-sm text-muted-color m-0">{{ critere.description }}</p>
         </div>
       </div>
 
-      <div v-if="critere.source === 'declaration_ia' && declarationIa" class="text-sm rounded-lg p-2 bg-violet-50 dark:bg-violet-950/30">
+      <div v-if="critere.source === 'declaration_ia' && declarationIa" class="text-sm rounded-lg p-2 bg-emphasis">
         Votre déclaration — conception : {{ declarationIa.conception }} · réalisation : {{ declarationIa.realisation }}
         <span v-if="declarationIa.detail"> · {{ declarationIa.detail }}</span>
       </div>
@@ -64,7 +64,7 @@ const OUI_NON = [{ label: 'Oui', value: true }, { label: 'Non', value: false }];
           :title="e.descripteur || e.libelle"
           class="px-3 py-2 rounded-lg border-2 text-sm font-medium transition-colors cursor-pointer disabled:cursor-default"
           :style="reponse(critere).echelon === e.id
-            ? { background: e.couleur || 'var(--p-primary-color)', borderColor: e.couleur || 'var(--p-primary-color)', color: '#fff' }
+            ? { background: e.couleur || 'var(--p-primary-color)', borderColor: e.couleur || 'var(--p-primary-color)', color: 'var(--p-primary-contrast-color)' }
             : { borderColor: e.couleur || 'var(--p-content-border-color)', color: 'inherit', background: 'transparent' }"
           @click="majReponse(critere, 'echelon', reponse(critere).echelon === e.id ? null : e.id)"
         >
@@ -73,7 +73,7 @@ const OUI_NON = [{ label: 'Oui', value: true }, { label: 'Non', value: false }];
       </div>
       <p v-if="critere.type === 'echelle' && referenceDe(critere)?.echelon" class="text-xs text-muted-color m-0 flex items-center gap-1">
         <i class="pi pi-user" /> Auto-évaluation :
-        <span class="px-1.5 py-0.5 rounded font-semibold text-white" :style="{ background: referenceDe(critere).echelon.couleur || 'var(--p-primary-color)' }">{{ referenceDe(critere).echelon.libelle }}</span>
+        <span class="px-1.5 py-0.5 rounded font-semibold text-primary-contrast" :style="{ background: referenceDe(critere).echelon.couleur || 'var(--p-primary-color)' }">{{ referenceDe(critere).echelon.libelle }}</span>
       </p>
       <p
         v-if="critere.type === 'echelle' && reponse(critere).echelon"

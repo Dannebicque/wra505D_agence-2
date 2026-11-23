@@ -69,7 +69,7 @@ class SuiviController extends AbstractController
 
         return $this->json(array_map(
             fn (Campagne $c) => $this->campagneNormalizer->resume($c) + ['perimetre' => $this->isGranted(CampagneVoter::GERER, $c) ? 'promo' : 'affectes'],
-            array_values($liste)
+            $liste
         ));
     }
 
@@ -111,7 +111,7 @@ class SuiviController extends AbstractController
             throw $this->createAccessDeniedException('Aucun étudiant de cette campagne ne vous est affecté.');
         }
 
-        return [$campagne, $ids];
+        return [$campagne, array_values($ids)];
     }
 
     private function personnel(): Personnel

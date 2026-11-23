@@ -92,7 +92,7 @@ class PortfolioController extends AbstractController
     {
         $portfolio = $this->portfolio($uuid, PortfolioVoter::MODIFIER);
         $uuids = $this->corps($request)['uuids'] ?? [];
-        $this->manager->reordonner($portfolio, \is_array($uuids) ? array_map('strval', $uuids) : []);
+        $this->manager->reordonner($portfolio, \is_array($uuids) ? array_values(array_map(LooseValue::castString(...), $uuids)) : []);
 
         return $this->json($this->normalizer->detail($portfolio));
     }
@@ -148,7 +148,7 @@ class PortfolioController extends AbstractController
     private function corps(Request $request): array
     {
         try {
-            return $request->toArray();
+            return LooseValue::assoc($request->toArray());
         } catch (\Throwable) {
             throw UnifolioValidationException::un('Requête JSON invalide.');
         }

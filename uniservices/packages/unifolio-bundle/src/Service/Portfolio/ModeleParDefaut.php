@@ -17,6 +17,7 @@ final class ModeleParDefaut
      */
     public static function pages(array $competences, string $titrePortfolio): array
     {
+        /** @var list<array{titre: string, verrouillee: bool, blocs: list<array<string, mixed>>, verrouilles: list<string>}> $pages */
         $pages = [[
             'titre' => 'Présentation',
             'verrouillee' => true,
@@ -38,7 +39,7 @@ final class ModeleParDefaut
                     self::bloc('traces', ['competence' => $competence['id'], 'maximum' => 6, 'affichage' => 'cartes']),
                     $reflexion,
                 ],
-                'verrouilles' => [$reflexion['id']],
+                'verrouilles' => [\App\Utils\LooseValue::castString($reflexion['id'])],
             ];
         }
 

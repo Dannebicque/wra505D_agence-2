@@ -74,7 +74,7 @@ const date = (iso) => formatDateFr(iso, 'moyenne', '');
       <div class="flex flex-col flex-1 min-w-56">
         <span class="font-semibold">{{ p.portfolio.titre }}</span>
         <span class="text-sm text-muted-color">{{ p.portfolio.etudiant }} · version {{ p.numero }} · {{ date(p.genereLe) }}</span>
-        <span v-if="p.moderee" class="text-sm text-red-600">Retirée : {{ p.motifModeration }}</span>
+        <span v-if="p.moderee" class="text-sm text-primary">Retirée : {{ p.motifModeration }}</span>
       </div>
       <Tag :value="p.portfolio.visibilite.libelle" severity="secondary" />
       <Tag :value="p.portfolio.type.libelle" :severity="p.portfolio.type.value === 'academique' ? 'success' : 'info'" />

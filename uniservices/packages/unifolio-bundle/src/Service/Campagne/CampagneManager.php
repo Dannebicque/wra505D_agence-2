@@ -87,15 +87,15 @@ class CampagneManager
                 $campagne->setLibelle(LooseValue::castString($d['libelle']));
             }
             if (\array_key_exists('anneeFormation', $d)) {
-                $af = $d['anneeFormation'] ? $this->em->find(StructureAnnee::class, LooseValue::castInt($d['anneeFormation'])) : null;
-                if ($d['anneeFormation'] && $af === null) {
+                $af = ($d['anneeFormation'] ?? null) !== null && $d['anneeFormation'] !== '' ? $this->em->find(StructureAnnee::class, LooseValue::castInt($d['anneeFormation'])) : null;
+                if (($d['anneeFormation'] ?? null) !== null && $d['anneeFormation'] !== '' && $af === null) {
                     throw new \InvalidArgumentException('Année de BUT inconnue.');
                 }
                 $campagne->setAnneeFormation($af);
             }
             if (\array_key_exists('modele', $d)) {
-                $modele = $d['modele'] ? $this->modeles->findOneByUuid(LooseValue::castString($d['modele'])) : null;
-                if ($d['modele'] && $modele === null) {
+                $modele = ($d['modele'] ?? null) !== null && $d['modele'] !== '' ? $this->modeles->findOneByUuid(LooseValue::castString($d['modele'])) : null;
+                if (($d['modele'] ?? null) !== null && $d['modele'] !== '' && $modele === null) {
                     throw new \InvalidArgumentException('Modèle de portfolio introuvable.');
                 }
                 $campagne->setModele($modele);

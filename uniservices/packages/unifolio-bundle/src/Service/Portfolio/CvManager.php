@@ -103,7 +103,7 @@ class CvManager
             return [];
         }
 
-        return array_values(array_filter($v, '\is_array'));
+        return array_map(LooseValue::assoc(...), array_values(array_filter($v, '\is_array')));
     }
 
     /**

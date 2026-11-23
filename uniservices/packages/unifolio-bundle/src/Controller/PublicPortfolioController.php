@@ -117,7 +117,7 @@ class PublicPortfolioController extends AbstractController
         $reponse->headers->set('X-Content-Type-Options', 'nosniff');
         $reponse->headers->set('Referrer-Policy', 'no-referrer');
         if (!isset($types[$extension])) {
-            $reponse->setContentDisposition('attachment', 'fichier.'.($extension ?: 'bin'));
+            $reponse->setContentDisposition('attachment', 'fichier.'.($extension !== '' ? $extension : 'bin'));
         }
         if ($extension === 'html') {
             $reponse->headers->set('Content-Security-Policy', "default-src 'none'; img-src 'self' https: data:; media-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src https:; base-uri 'none'; form-action 'none'");

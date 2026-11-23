@@ -16,10 +16,10 @@ const date = computed(() => formatDateFr(props.retour.rendueLe, 'longue'));
 <template>
   <div
     class="rounded-lg border p-3 flex flex-col gap-2 text-sm"
-    :class="revision ? 'border-amber-300 bg-amber-50/60 dark:bg-amber-950/20' : 'border-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/20'"
+    :class="revision ? 'border-surface bg-emphasis' : 'border-surface bg-emphasis'"
   >
     <div class="flex flex-wrap items-center gap-2">
-      <i :class="revision ? 'pi pi-exclamation-circle text-amber-600' : 'pi pi-check-circle text-emerald-600'" />
+      <i :class="revision ? 'pi pi-exclamation-circle text-primary' : 'pi pi-check-circle text-primary'" />
       <strong>{{ retour.evaluateur.nom }}</strong>
       <span v-if="date" class="text-muted-color">{{ date }}</span>
       <Tag v-if="revision" value="Révision demandée" severity="warn" />
@@ -33,7 +33,7 @@ const date = computed(() => formatDateFr(props.retour.rendueLe, 'longue'));
         <span class="text-muted-color">{{ r.libelle }} :</span>
         <span
           v-if="r.echelon"
-          class="px-2 py-0.5 rounded text-xs font-semibold text-white"
+          class="px-2 py-0.5 rounded text-xs font-semibold text-primary-contrast"
           :style="{ background: r.echelon.couleur || 'var(--p-primary-color)' }"
         >{{ r.echelon.libelle }}</span>
         <span v-else class="font-medium whitespace-pre-line">{{ libelleReponse(r) }}</span>

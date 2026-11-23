@@ -122,7 +122,7 @@ class GrilleManager
         if (\count($criteres) > self::CRITERES_MAX) {
             throw UnifolioValidationException::un(sprintf('Une grille est limitée à %d critères.', self::CRITERES_MAX));
         }
-        $nbIa = \count(array_filter($criteres, static fn ($c) => ($c['source'] ?? null) === SourceCritereEnum::DECLARATION_IA->value));
+        $nbIa = \count(array_filter($criteres, static fn (mixed $c): bool => \is_array($c) && (LooseValue::castString($c['source'] ?? '') === SourceCritereEnum::DECLARATION_IA->value)));
         if ($nbIa > 1) {
             throw UnifolioValidationException::un('Une grille ne peut contenir qu\'un critère « Usage de l\'IA ».');
         }
@@ -130,6 +130,7 @@ class GrilleManager
         $this->garder(function () use ($brouillon, $echelons, $criteres): void {
             $brouillon->viderContenu();
             foreach ($echelons as $e) {
+                $e = LooseValue::assoc($e);
                 $brouillon->ajouterEchelon(
                     LooseValue::castString($e['libelle'] ?? ''),
                     LooseValue::castFloat($e['valeur'] ?? 0),
@@ -138,6 +139,7 @@ class GrilleManager
                 );
             }
             foreach ($criteres as $c) {
+                $c = LooseValue::assoc($c);
                 $type = TypeCritereEnum::tryFrom(LooseValue::castString($c['type'] ?? '')) ?? throw new \InvalidArgumentException('Type de critère inconnu.');
                 $critere = $brouillon->ajouterCritere(LooseValue::castString($c['libelle'] ?? ''), $type)
                     ->setDescription(isset($c['description']) ? LooseValue::castString($c['description']) : null)
@@ -197,8 +199,9 @@ class GrilleManager
             $parametrage->setAgregation(AgregationEnum::tryFrom(LooseValue::castString($d['agregation'])) ?? throw UnifolioValidationException::un('Règle d\'agrégation inconnue.'));
         }
         if (\array_key_exists('grille', $d)) {
-            $grille = $d['grille'] ? $this->grilles->findOneByUuid(LooseValue::castString($d['grille'])) : null;
-            if ($d['grille'] && $grille === null) {
+            $grilleValue = $d['grille'];
+            $grille = !\in_array($grilleValue, [null, false, '', '0', 0, 0.0], true) ? $this->grilles->findOneByUuid(LooseValue::castString($grilleValue)) : null;
+            if (!\in_array($grilleValue, [null, false, '', '0', 0, 0.0], true) && $grille === null) {
                 throw UnifolioValidationException::un('Grille introuvable.');
             }
             if ($grille !== null && !$grille->hasVersionPubliee()) {

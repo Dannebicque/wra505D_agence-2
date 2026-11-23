@@ -35,13 +35,16 @@ class AutoEvaluationRepository extends ServiceEntityRepository
      */
     public function findParRattachements(array $rattachements): array
     {
-        $ids = array_filter(array_map(static fn (TraceRattachement $r) => $r->getId(), $rattachements));
+        $ids = array_values(array_filter(array_map(static fn (TraceRattachement $r) => $r->getId(), $rattachements), static fn (?int $id): bool => $id !== null));
         if ($ids === []) {
             return [];
         }
         $resultat = [];
         foreach ($this->createQueryBuilder('a')->andWhere('a.rattachement IN (:ids)')->setParameter('ids', $ids)->getQuery()->getResult() as $a) {
-            $resultat[$a->getRattachement()->getId()] = $a;
+            $rattachement = $a->getRattachement();
+            if ($rattachement !== null && $rattachement->getId() !== null) {
+                $resultat[$rattachement->getId()] = $a;
+            }
         }
 
         return $resultat;
@@ -55,13 +58,15 @@ class AutoEvaluationRepository extends ServiceEntityRepository
             GranulariteEnum::AC => 'apprentissageCritique',
         };
 
-        return $this->createQueryBuilder('a')
+        $resultat = $this->createQueryBuilder('a')
             ->andWhere('a.scolarite = :scolarite')->setParameter('scolarite', $scolarite)
             ->andWhere('a.rattachement IS NULL')
             ->andWhere("IDENTITY(a.$champ) = :cible")->setParameter('cible', $cibleId)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $resultat instanceof AutoEvaluation ? $resultat : null;
     }
 
     /** @return AutoEvaluation[] toutes les auto-évaluations (traces et bilans) d'une année */

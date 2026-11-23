@@ -257,7 +257,7 @@ class Trace implements TimestampableInterface
     {
         $propres = [];
         foreach ($tags as $tag) {
-            $tag = mb_strtolower(trim((string) $tag));
+            $tag = mb_strtolower(trim($tag));
             if ($tag !== '' && mb_strlen($tag) <= 50) {
                 $propres[$tag] = $tag;
             }
@@ -419,7 +419,10 @@ class Trace implements TimestampableInterface
         }
     }
 
-    /** @param Collection<int, TraceMedia|TraceRattachement> $collection */
+    /**
+     * @template T of TraceMedia|TraceRattachement
+     * @param Collection<int, T> $collection
+     */
     private function prochainOrdre(Collection $collection): int
     {
         $max = -1;

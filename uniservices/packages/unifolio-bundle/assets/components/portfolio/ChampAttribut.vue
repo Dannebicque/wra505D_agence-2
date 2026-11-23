@@ -71,7 +71,7 @@ const competences = computed(() => (props.donnees?.progression ?? []).map((p) =>
 
 <template>
   <div class="flex flex-col gap-1">
-    <label :for="id" class="text-sm font-medium">{{ def.libelle }}<span v-if="def.requis" class="text-red-600" aria-label="obligatoire"> *</span></label>
+    <label :for="id" class="text-sm font-medium">{{ def.libelle }}<span v-if="def.requis" class="text-primary" aria-label="obligatoire"> *</span></label>
 
     <InputText v-if="def.type === 'texte'" :id="id" :model-value="modelValue ?? ''" :maxlength="def.max" size="small" @update:model-value="maj" />
 

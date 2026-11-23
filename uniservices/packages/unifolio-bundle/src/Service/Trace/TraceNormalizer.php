@@ -3,6 +3,7 @@
 namespace UnifolioBundle\Service\Trace;
 
 use App\Entity\Etudiant\EtudiantScolarite;
+use App\Utils\LooseValue;
 use UnifolioBundle\Entity\Trace;
 use UnifolioBundle\Entity\TraceMedia;
 use UnifolioBundle\Entity\TraceRattachement;
@@ -66,7 +67,10 @@ class TraceNormalizer
         $retours = [];
         foreach ($this->evaluations->findParTrace($trace) as $e) {
             if ($e->isVisibleEtudiant() && $e->getStatut() !== StatutEvaluationEnum::EN_COURS) {
-                $retours[$e->getRattachement()->getId()][] = $this->evaluationNormalizer->retourEtudiant($e);
+                $rattachement = $e->getRattachement();
+                if ($rattachement !== null) {
+                    $retours[$rattachement->getId()][] = $this->evaluationNormalizer->retourEtudiant($e);
+                }
             }
         }
 
@@ -158,7 +162,7 @@ class TraceNormalizer
     private function enum(?\BackedEnum $enum): ?array
     {
         return $enum !== null && method_exists($enum, 'getLibelle')
-            ? ['value' => (string) $enum->value, 'libelle' => $enum->getLibelle()]
+            ? ['value' => (string) $enum->value, 'libelle' => LooseValue::castString($enum->getLibelle())]
             : null;
     }
 }

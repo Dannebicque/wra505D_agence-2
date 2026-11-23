@@ -27,7 +27,7 @@ class CommentaireService
     /** @return list<array<string, mixed>> */
     public function lister(Trace $trace, Etudiant|Personnel $moi): array
     {
-        return array_map(fn (Commentaire $c) => $this->normaliser($c, $moi), $this->commentaires->findParTrace($trace));
+        return array_values(array_map(fn (Commentaire $c): array => $this->normaliser($c, $moi), $this->commentaires->findParTrace($trace)));
     }
 
     /** @return array<string, mixed> */
@@ -90,6 +90,7 @@ class CommentaireService
         }
     }
 
+    /** @return array<string, mixed> */
     private function normaliser(Commentaire $c, Etudiant|Personnel $moi): array
     {
         $auteur = $c->getAuteurEtudiant() ?? $c->getAuteurPersonnel();

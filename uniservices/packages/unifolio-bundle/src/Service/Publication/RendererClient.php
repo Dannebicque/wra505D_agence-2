@@ -34,7 +34,7 @@ class RendererClient
         $process->setTimeout($this->unifolioRendererTimeout);
         $process->run();
         if (!$process->isSuccessful()) {
-            throw new \RuntimeException('Échec du rendu : '.mb_substr(trim($process->getErrorOutput()) ?: 'erreur inconnue', 0, 600));
+            throw new \RuntimeException('Échec du rendu : '.mb_substr(trim($process->getErrorOutput()) !== '' ? trim($process->getErrorOutput()) : 'erreur inconnue', 0, 600));
         }
         try {
             $pages = json_decode($process->getOutput(), true, 512, \JSON_THROW_ON_ERROR);
@@ -45,7 +45,12 @@ class RendererClient
             throw new \RuntimeException('Le service de rendu n\'a produit aucune page.');
         }
 
-        return array_map('strval', $pages);
+        $resultat = [];
+        foreach ($pages as $fichier => $page) {
+            $resultat[(string) $fichier] = is_string($page) ? $page : throw new \RuntimeException('Le service de rendu a renvoyé une page illisible.');
+        }
+
+        return $resultat;
     }
 
     private function script(): string

@@ -38,7 +38,7 @@ const choisirAdresse = () => {
             v-for="m in proposes"
             :key="`${m.trace}-${m.media}`"
             type="button"
-            class="rounded-lg border border-surface-200 p-1 bg-transparent cursor-pointer text-left hover:border-emerald-400"
+            class="rounded-lg border border-surface-200 p-1 bg-transparent cursor-pointer text-left hover:border-primary"
             @click="choisirMedia(m)"
           >
             <img v-if="m.type === 'image'" :src="m.src" :alt="m.nom" class="w-full h-24 object-cover rounded" loading="lazy" />

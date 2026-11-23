@@ -92,6 +92,10 @@ class VitrineManager
     }
 
     /** @param list<array<string, mixed>> $blocs */
+    /**
+     * @param list<array<string, mixed>> $blocs
+     * @return list<array<string, mixed>>
+     */
     private function valider(Etudiant $etudiant, array $blocs): array
     {
         return $this->validateur->valider($blocs, new ContexteEtudiant($etudiant, $this->traces));

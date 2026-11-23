@@ -102,7 +102,6 @@ class ReponseCritere
                 return $reponse;
         }
 
-        return null;
     }
 
     public function attacherA(AutoEvaluation|Evaluation $parent): void
@@ -218,6 +217,9 @@ class ReponseCritere
             return null;
         }
         $valeurs = array_map(static fn (GrilleEchelon $e) => $e->getValeur(), $this->critere->getVersion()->getEchelons()->toArray());
+        if ($valeurs === []) {
+            return null;
+        }
         $min = min($valeurs);
         $max = max($valeurs);
 

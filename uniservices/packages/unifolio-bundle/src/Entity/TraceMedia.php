@@ -167,7 +167,7 @@ class TraceMedia
 
     public function setLangage(?string $langage): static
     {
-        if ($this->type === TypeMediaEnum::CODE && $langage !== null && preg_match('/^[a-z0-9+#.-]{1,30}$/i', $langage)) {
+        if ($this->type === TypeMediaEnum::CODE && $langage !== null && preg_match('/^[a-z0-9+#.-]{1,30}$/i', $langage) === 1) {
             $this->metadata['langage'] = strtolower($langage);
         } else {
             unset($this->metadata['langage']);

@@ -110,20 +110,20 @@ class EvaluationManager
     // ---------- Saisie et remise ----------
 
     /**
-     * @param array{appreciation?: ?string, reponses?: mixed} $d reponses : [{ critere, echelon?, valeur?, booleen?, texte? }]
+     * @param array<string, mixed> $d reponses : [{ critere, echelon?, valeur?, booleen?, texte? }]
      */
     public function enregistrer(Evaluation $e, array $d): Evaluation
     {
         $this->verifierCampagneOuverte($e);
         $donnees = [];
         if (\array_key_exists('appreciation', $d)) {
-            $donnees['appreciation'] = $d['appreciation'];
+            $donnees['appreciation'] = LooseValue::nullableString($d['appreciation']);
         }
         if (\array_key_exists('reponses', $d)) {
             $saisies = [];
             foreach (\is_array($d['reponses']) ? $d['reponses'] : [] as $r) {
                 if (\is_array($r) && isset($r['critere'])) {
-                    $saisies[LooseValue::castString($r['critere'])] = $r;
+                    $saisies[LooseValue::castString($r['critere'])] = LooseValue::assoc($r);
                 }
             }
             $donnees['reponses'] = $saisies;
@@ -144,7 +144,8 @@ class EvaluationManager
         }
         $this->garder(fn () => $e->rendre($visibleEtudiant));
         if (!$e->isBilan()) {
-            $this->synchroniserTrace($e->getRattachement()->getTrace());
+            $rattachement = $e->getRattachement() ?? throw new \LogicException('Évaluation de trace sans rattachement.');
+            $this->synchroniserTrace($rattachement->getTrace());
         }
         $this->em->flush();
         if ($notifier) {
@@ -157,7 +158,8 @@ class EvaluationManager
     {
         $this->verifierCampagneOuverte($e);
         $this->garder(fn () => $e->demanderRevision($motif));
-        $this->synchroniserTrace($e->getRattachement()->getTrace());
+        $rattachement = $e->getRattachement() ?? throw new \LogicException('Évaluation de trace sans rattachement.');
+        $this->synchroniserTrace($rattachement->getTrace());
         $this->em->flush();
         if ($notifier) {
             $this->notifier->revisionDemandee($e);
@@ -172,7 +174,8 @@ class EvaluationManager
             return $e;
         }
         if (!$e->isBilan()) {
-            $trace = $e->getRattachement()->getTrace();
+            $rattachement = $e->getRattachement() ?? throw new \LogicException('Évaluation de trace sans rattachement.');
+            $trace = $rattachement->getTrace();
             if ($trace->getStatut() === StatutTraceEnum::A_REVISER) {
                 throw UnifolioValidationException::un('L\'étudiant doit d\'abord réviser et redéposer sa trace.');
             }

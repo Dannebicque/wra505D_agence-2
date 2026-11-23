@@ -150,7 +150,7 @@ const toutCocher = (coche) => { cochees.value = coche ? etudiants.value.map((e) 
               <td class="p-2 text-muted-color">{{ e.annee }}</td>
               <td class="p-2 text-muted-color">{{ e.groupes.join(', ') }}</td>
               <td class="p-2">
-                <span v-if="e.evaluateurs.length === 0" class="text-amber-700">—</span>
+                <span v-if="e.evaluateurs.length === 0" class="text-primary">—</span>
                 <Tag v-for="id in e.evaluateurs" :key="id" :value="nomEvaluateur(id)" severity="secondary" class="mr-1" />
               </td>
             </tr>

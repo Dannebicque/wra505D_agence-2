@@ -271,7 +271,7 @@ class Evaluation implements TimestampableInterface
         $this->assertModifiable();
         if (\array_key_exists('appreciation', $d)) {
             $a = $d['appreciation'];
-            $this->appreciation = $a !== null && trim((string) $a) !== '' ? (string) $a : null;
+            $this->appreciation = $a !== null && trim($a) !== '' ? $a : null;
         }
         if (\array_key_exists('reponses', $d)) {
             $reponses = ReponseCritere::depuisSaisies($this->getCriteres(), $d['reponses']);

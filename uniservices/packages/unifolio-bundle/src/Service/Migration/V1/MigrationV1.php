@@ -61,18 +61,22 @@ class MigrationV1
     private string $dossier = '';
     /** @var array<int, array<string, mixed>> */
     private array $v1Etudiants = [];
+    /** @var array<int, array<string, mixed>> */
     private array $v1Enseignants = [];
+    /** @var array<int, array<string, mixed>> */
     private array $v1AU = [];
+    /** @var array<int, array<string, mixed>> */
     private array $v1Annees = [];
+    /** @var array<int, array<string, mixed>> */
     private array $v1Niveaux = [];
     /** @var array<int, Etudiant|null> */
     private array $etudiants = [];
     /** @var array<int, Personnel|null> */
     private array $enseignants = [];
-    /** @var array<int, ?EtudiantScolarite> clé : id scolarité résolu pour une trace */
+    /** @var array<int, (array<ApcNiveau>|null)> clé : id scolarité résolu pour une trace */
     private array $niveauxAnnee = [];
+    /** @var list<string> */
     private array $fichiersCrees = [];
-    private ?GrilleVersion $grilleHeritage = null;
     /** @var array<string, ?Campagne> */
     private array $campagnes = [];
 
@@ -99,7 +103,6 @@ class MigrationV1
         $this->dossier = rtrim($dossierFichiers, '/');
         $this->fichiersCrees = [];
         $this->etudiants = $this->enseignants = $this->niveauxAnnee = $this->campagnes = [];
-        $this->grilleHeritage = null;
         $this->v1Etudiants = $v1->etudiants();
         $this->v1Enseignants = $v1->enseignants();
         $this->v1AU = $v1->anneesUniversitaires();
@@ -190,7 +193,7 @@ class MigrationV1
             $trace->setContexte($this->contexte($t));
             $trace->setConceptionIa(ConceptionIaEnum::tryFrom(LooseValue::castInt($t['conception_ia'] ?? 3)) ?? ConceptionIaEnum::NON_RENSEIGNE);
             $trace->setRealisationIa(RealisationIaEnum::tryFrom(LooseValue::castInt($t['realisation_ia'] ?? 4)) ?? RealisationIaEnum::NON_RENSEIGNE);
-            if (!empty($t['date_realisation'])) {
+            if (($t['date_realisation'] ?? null) !== null && $t['date_realisation'] !== '') {
                 $trace->setDateRealisation(new \DateTimeImmutable(LooseValue::castString($t['date_realisation'])));
             }
             $this->dates($trace, $t['date_creation'] ?? null, $t['date_modification'] ?? null);
@@ -235,25 +238,28 @@ class MigrationV1
         }
     }
 
+    /** @param array<string, mixed> $t */
     private function titre(array $t, int $id): string
     {
-        $titre = trim((string) ($t['titre'] ?? ''));
+        $titre = trim(LooseValue::castString($t['titre'] ?? ''));
 
         return $titre !== '' ? mb_substr($titre, 0, 255) : sprintf('Trace sans titre (v1 n°%d)', $id);
     }
 
     /** description + contexte v1 fusionnés en un seul texte (la v2 n'a qu'un champ), HTML retiré. */
+    /** @param array<string, mixed> $t */
     private function contexte(array $t): ?string
     {
         $morceaux = array_filter([
             self::texte($t['description'] ?? null),
             self::texte($t['contexte'] ?? null) !== null ? 'Contexte : '.self::texte($t['contexte']) : null,
-        ]);
+        ], static fn (?string $morceau): bool => $morceau !== null && $morceau !== '');
 
         return $morceaux === [] ? null : mb_substr(implode("\n\n", $morceaux), 0, 10000);
     }
 
     /** @return int nombre de médias créés */
+    /** @param array<string, mixed> $t */
     private function medias(Trace $trace, array $t, int $id): int
     {
         $contenu = $t['contenu'] ?? null;
@@ -263,7 +269,7 @@ class MigrationV1
 
             return 0;
         }
-        $type = (string) ($t['type_trace'] ?? '');
+        $type = LooseValue::castString($t['type_trace'] ?? '');
         $n = 0;
         foreach ($elements as $element) {
             if (!\is_string($element) || trim($element) === '') {
@@ -284,9 +290,12 @@ class MigrationV1
                 ++$n;
             }
         }
-        $legende = trim((string) ($t['legende'] ?? ''));
+        $legende = trim(LooseValue::castString($t['legende'] ?? ''));
         if ($legende !== '' && $n > 0) {
-            $trace->getMedias()->first()->setLegende($legende);
+            $media = $trace->getMedias()->first();
+            if ($media instanceof TraceMedia) {
+                $media->setLegende($legende);
+            }
         }
 
         return $n;
@@ -326,7 +335,7 @@ class MigrationV1
     private function mediaLien(Trace $trace, string $type, string $url, int $id): ?TraceMedia
     {
         $url = trim($url);
-        if (!preg_match('#^https?://#i', $url) || !filter_var($url, \FILTER_VALIDATE_URL)) {
+        if (preg_match('#^https?://#i', $url) !== 1 || filter_var($url, \FILTER_VALIDATE_URL) === false) {
             $this->rapport->ecart('avertissement', 'trace', $id, sprintf('Lien invalide ignoré : %s', mb_substr($url, 0, 120)));
 
             return null;
@@ -352,8 +361,8 @@ class MigrationV1
         foreach ($validations as $v) {
             $r = $this->lien('validation', LooseValue::castInt($v['id']));
             $cle = $r.'-'.LooseValue::castInt($v['enseignant_id'] ?? 0);
-            if ($r !== null && (!isset($derniere[$cle]) || LooseValue::castString($v['date_modification'] ?? '').sprintf('%010d', $v['id']) > $derniere[$cle][0])) {
-                $derniere[$cle] = [LooseValue::castString($v['date_modification'] ?? '').sprintf('%010d', $v['id']), LooseValue::castInt($v['id'])];
+            if ($r !== null && (!isset($derniere[$cle]) || LooseValue::castString($v['date_modification'] ?? '').sprintf('%010d', LooseValue::castInt($v['id'])) > $derniere[$cle][0])) {
+                $derniere[$cle] = [LooseValue::castString($v['date_modification'] ?? '').sprintf('%010d', LooseValue::castInt($v['id'])), LooseValue::castInt($v['id'])];
             }
         }
         foreach ($validations as $v) {
@@ -411,6 +420,9 @@ class MigrationV1
 
             try {
                 $evaluation = Evaluation::pourRattachement($campagne, $evaluateur, $rattachement, $scolarite, $version);
+                if ($critere === false || $niveau === null) {
+                    throw new \DomainException('Critère ou échelon de grille introuvable.');
+                }
                 $evaluation->renseigner(['appreciation' => null, 'reponses' => [$critere->getId() => ['echelon' => $niveau->getId()]]]);
                 $evaluation->rendre(true, $this->date($v['date_modification'] ?? $v['date_creation'] ?? null));
             } catch (\InvalidArgumentException|\DomainException $e) {
@@ -492,7 +504,7 @@ class MigrationV1
         $cle = $diplome->getId().'-'.$au->getId().'-'.($annee?->getId() ?? 0);
         if (!\array_key_exists($cle, $this->campagnes)) {
             $debut = new \DateTimeImmutable(sprintf('%d-09-01', $au->getAnnee()));
-            $fin = new \DateTimeImmutable(sprintf('%d-08-31', $au->getAnnee() + 1));
+            $fin = new \DateTimeImmutable(sprintf('%d-08-31', ($au->getAnnee() ?? 0) + 1));
             $c = new Campagne(sprintf('Héritage UniFolio v1 — %s — %s', $diplome->getLibelle() ?? 'Formation', $au->getLibelle() ?? $au->getAnnee()), $diplome, $au, $debut);
             $c->setAnneeFormation($annee);
             $c->definirCalendrier($debut, null, null, $fin);
@@ -512,6 +524,7 @@ class MigrationV1
     {
         $crees = [];
         foreach ($this->v1->commentaires() as $c) {
+            $c = LooseValue::assoc($c);
             $id = LooseValue::castInt($c['id']);
             if ($c['trace_id'] === null) {
                 $this->rapport->compter('commentaire', RapportMigration::IGNORE);
@@ -560,6 +573,7 @@ class MigrationV1
     private function portfolios(?array $ids): void
     {
         foreach ($this->v1->portfolios($ids) as $p) {
+            $p = LooseValue::assoc($p);
             $id = LooseValue::castInt($p['id']);
             if ($this->lien('portfolio', $id) !== null) {
                 $this->rapport->compter('portfolio', RapportMigration::DEJA);
@@ -576,7 +590,8 @@ class MigrationV1
             }
 
             $existant = $this->portfolios->findAcademique($etudiant, $scolarite);
-            $portfolio = $existant ?? new Portfolio($etudiant, TypePortfolioEnum::ACADEMIQUE, mb_substr(trim(LooseValue::castString($p['intitule'] ?? '')) ?: 'Portfolio', 0, 255), $scolarite);
+            $intitule = trim(LooseValue::castString($p['intitule'] ?? ''));
+            $portfolio = $existant ?? new Portfolio($etudiant, TypePortfolioEnum::ACADEMIQUE, mb_substr($intitule !== '' ? $intitule : 'Portfolio', 0, 255), $scolarite);
             $prefixe = $existant !== null ? 'Archive v1 — ' : '';
             if ($existant !== null) {
                 $this->rapport->ecart('info', 'portfolio', $id, 'Un portfolio académique existe déjà pour cette année : les pages v1 y sont ajoutées (préfixe « Archive v1 »).');
@@ -586,7 +601,8 @@ class MigrationV1
             try {
                 $nbPages = 0;
                 foreach ($this->v1->pagesDuPortfolio($id) as $page) {
-                    $blocs = [ModeleParDefaut::bloc('heading', ['niveau' => 2, 'texte' => mb_substr(trim((string) ($page['intitule'] ?? '')) ?: 'Page', 0, 200)])];
+                    $intitulePage = trim(LooseValue::castString($page['intitule'] ?? ''));
+                    $blocs = [ModeleParDefaut::bloc('heading', ['niveau' => 2, 'texte' => mb_substr($intitulePage !== '' ? $intitulePage : 'Page', 0, 200)])];
                     $description = self::texte($page['description'] ?? null);
                     if ($description !== null) {
                         $blocs[] = ModeleParDefaut::bloc('paragraph', ['texte' => mb_substr($description, 0, 5000)]);
@@ -600,7 +616,7 @@ class MigrationV1
                         }
                         $blocs[] = ModeleParDefaut::bloc('trace', ['trace' => $uuid, 'affichage' => 'detail']);
                     }
-                    $cible = $portfolio->ajouterPage($prefixe.mb_substr(trim((string) ($page['intitule'] ?? '')) ?: 'Page', 0, 110));
+                    $cible = $portfolio->ajouterPage($prefixe.mb_substr($intitulePage !== '' ? $intitulePage : 'Page', 0, 110));
                     $cible->initialiser($this->validateur->valider($blocs, $contexte), []);
                     ++$nbPages;
                 }
@@ -623,7 +639,7 @@ class MigrationV1
                 $portfolio->setDescription(self::texte($p['description'] ?? null));
                 $this->dates($portfolio, $p['date_creation'] ?? null, $p['date_modification'] ?? null);
             }
-            if (!empty($p['banniere']) && !str_ends_with(LooseValue::castString($p['banniere']), 'banniere.jpg')) {
+            if (($p['banniere'] ?? null) !== null && $p['banniere'] !== '' && !str_ends_with(LooseValue::castString($p['banniere']), 'banniere.jpg')) {
                 $this->rapport->ecart('info', 'portfolio', $id, 'Bannière personnalisée non reprise (non gérée par la v2).');
             }
             $this->em->persist($portfolio);
@@ -640,6 +656,7 @@ class MigrationV1
     {
         $parEtudiant = [];
         foreach ($this->v1->cvs($ids) as $cv) {
+            $cv = LooseValue::assoc($cv);
             $parEtudiant[LooseValue::castInt($cv['etudiant_id'])][] = $cv;
         }
         foreach ($parEtudiant as $etudiantV1 => $liste) {
@@ -649,7 +666,11 @@ class MigrationV1
                 continue;
             }
             // Un seul CV en v2 : le plus récemment modifié.
-            usort($liste, static fn (array $a, array $b) => strcmp(LooseValue::castString($b['date_modification'] ?? ''), LooseValue::castString($a['date_modification'] ?? '')) ?: $b['id'] <=> $a['id']);
+            usort($liste, static function (array $a, array $b): int {
+                $compare = strcmp(LooseValue::castString($b['date_modification'] ?? ''), LooseValue::castString($a['date_modification'] ?? ''));
+
+                return $compare !== 0 ? $compare : LooseValue::castInt($b['id']) <=> LooseValue::castInt($a['id']);
+            });
             $retenu = $liste[0];
             if (\count($liste) > 1) {
                 $this->rapport->ecart('info', 'cv', LooseValue::castInt($retenu['id']), sprintf('%d CV dans la v1 : seul le plus récent est repris.', \count($liste)));
@@ -677,7 +698,10 @@ class MigrationV1
         }
     }
 
-    /** @return array<string, mixed> document attendu par CvManager */
+    /**
+     * @param array<string, mixed> $cv
+     * @return array<string, mixed> document attendu par CvManager
+     */
     private function documentCv(array $cv): array
     {
         $liste = static function (mixed $v): array {
@@ -685,20 +709,32 @@ class MigrationV1
 
             return \is_array($v) ? $v : [];
         };
-        $textes = static fn (array $l) => array_values(array_filter(array_map(static fn ($x) => \is_scalar($x) ? trim((string) $x) : null, $l)));
-        $langues = array_map(static fn ($l) => \is_array($l) ? ['langue' => LooseValue::castString($l['langue'] ?? $l['nom'] ?? $l['name'] ?? ''), 'niveau' => $l['niveau'] ?? $l['level'] ?? null] : ['langue' => (string) $l, 'niveau' => null], $liste($cv['langues'] ?? []));
+        $textes = static fn (array $l): array => array_values(array_filter(array_map(static fn (mixed $x): ?string => \is_scalar($x) ? trim(LooseValue::castString($x)) : null, $l), static fn (?string $x): bool => $x !== null && $x !== ''));
+        $langues = array_map(static fn (mixed $l): array => \is_array($l) ? ['langue' => LooseValue::castString($l['langue'] ?? $l['nom'] ?? $l['name'] ?? ''), 'niveau' => $l['niveau'] ?? $l['level'] ?? null] : ['langue' => LooseValue::castString($l), 'niveau' => null], $liste($cv['langues'] ?? []));
         // Réseaux v1 : liste d'adresses ou de paires {nom, url}. Seules les adresses http(s) sont gardées.
         $reseaux = [];
         foreach ($liste($cv['reseaux'] ?? []) as $r) {
             $u = \is_array($r) ? ($r['url'] ?? $r['lien'] ?? null) : $r;
-            if (\is_string($u) && preg_match('#^https?://#i', trim($u))) {
-                $reseaux[] = ['type' => mb_substr(trim(LooseValue::castString(\is_array($r) ? ($r['type'] ?? $r['nom'] ?? $r['name'] ?? '') : '')) ?: 'site', 0, 40), 'url' => trim($u)];
+            if (\is_string($u) && preg_match('#^https?://#i', trim($u)) === 1) {
+                $type = trim(LooseValue::castString(\is_array($r) ? ($r['type'] ?? $r['nom'] ?? $r['name'] ?? '') : ''));
+                $reseaux[] = ['type' => mb_substr($type !== '' ? $type : 'site', 0, 40), 'url' => trim($u)];
             } else {
-                $this->rapport->ecart('avertissement', 'cv', (int) $cv['id'], sprintf('Lien de réseau non repris (adresse http(s) attendue) : %s', mb_substr(json_encode($r, \JSON_UNESCAPED_UNICODE) ?: '', 0, 100)));
+                $json = json_encode($r, \JSON_UNESCAPED_UNICODE);
+                $this->rapport->ecart('avertissement', 'cv', LooseValue::castInt($cv['id']), sprintf('Lien de réseau non repris (adresse http(s) attendue) : %s', mb_substr($json !== false ? $json : '', 0, 100)));
             }
         }
-        $activite = static fn (mixed $a) => implode("\n", array_map(static fn ($x) => '- '.trim((string) $x), array_filter(\is_array($a) ? $a : (\is_string($a) ? (json_decode($a, true) ?? [$a]) : []), static fn ($x) => \is_scalar($x) && trim((string) $x) !== '')));
-        $jour = static fn (mixed $d) => !empty($d) ? substr(LooseValue::castString($d), 0, 10) : null;
+        $activite = static function (mixed $a): string {
+            $valeurs = \is_array($a) ? $a : (\is_string($a) ? json_decode($a, true) : []);
+            $valeurs = \is_array($valeurs) ? $valeurs : [];
+
+            return implode("\n", array_map(static fn (mixed $x): string => '- '.trim(LooseValue::castString($x)), array_filter($valeurs, static fn (mixed $x): bool => \is_scalar($x) && trim(LooseValue::castString($x)) !== '')));
+        };
+        $jour = static fn (mixed $d): ?string => $d !== null && $d !== '' && $d !== false ? substr(LooseValue::castString($d), 0, 10) : null;
+
+        $experiencesBrutes = \is_array($cv['experiences'] ?? null) ? $cv['experiences'] : [];
+        $formationsBrutes = \is_array($cv['formations'] ?? null) ? $cv['formations'] : [];
+        $experiences = array_values(array_filter($experiencesBrutes, static fn (mixed $e): bool => \is_array($e)));
+        $formations = array_values(array_filter($formationsBrutes, static fn (mixed $f): bool => \is_array($f)));
 
         return [
             'poste' => self::texte($cv['poste'] ?? null),
@@ -707,8 +743,8 @@ class MigrationV1
             'softSkills' => $textes($liste($cv['soft_skills'] ?? [])),
             'hardSkills' => $textes($liste($cv['hard_skills'] ?? [])),
             'reseaux' => $reseaux,
-            'experiences' => array_map(static fn (array $e) => ['poste' => (string) ($e['poste'] ?? ''), 'entreprise' => $e['entreprise'] ?? null, 'dateDebut' => $jour($e['date_debut'] ?? null), 'dateFin' => $jour($e['date_fin'] ?? null), 'description' => $activite($e['activite'] ?? null) ?: null], $cv['experiences'] ?? []),
-            'formations' => array_map(static fn (array $f) => ['diplome' => (string) ($f['diplome'] ?? ''), 'etablissement' => $f['etablissement'] ?? null, 'dateDebut' => $jour($f['date_debut'] ?? null), 'dateFin' => $jour($f['date_fin'] ?? null), 'description' => $activite($f['activite'] ?? null) ?: null], $cv['formations'] ?? []),
+            'experiences' => array_map(static fn (array $e): array => ['poste' => LooseValue::castString($e['poste'] ?? ''), 'entreprise' => $e['entreprise'] ?? null, 'dateDebut' => $jour($e['date_debut'] ?? null), 'dateFin' => $jour($e['date_fin'] ?? null), 'description' => ($description = $activite($e['activite'] ?? null)) !== '' ? $description : null], $experiences),
+            'formations' => array_map(static fn (array $f): array => ['diplome' => LooseValue::castString($f['diplome'] ?? ''), 'etablissement' => $f['etablissement'] ?? null, 'dateDebut' => $jour($f['date_debut'] ?? null), 'dateFin' => $jour($f['date_fin'] ?? null), 'description' => ($description = $activite($f['activite'] ?? null)) !== '' ? $description : null], $formations),
         ];
     }
 
@@ -721,14 +757,18 @@ class MigrationV1
         }
         $ligne = $this->v1Etudiants[$v1Id] ?? null;
         $etudiant = null;
+        $username = '';
+        $mail = '';
         if ($ligne !== null) {
             $repo = $this->em->getRepository(Etudiant::class);
-            $etudiant = (!empty($ligne['username']) ? $repo->findOneBy(['username' => $ligne['username']]) : null)
-                ?? (!empty($ligne['mail_univ']) ? $repo->findOneBy(['mailUniv' => $ligne['mail_univ']]) : null);
+            $username = LooseValue::castString($ligne['username'] ?? '');
+            $mail = LooseValue::castString($ligne['mail_univ'] ?? '');
+            $etudiant = ($username !== '' ? $repo->findOneBy(['username' => $username]) : null)
+                ?? ($mail !== '' ? $repo->findOneBy(['mailUniv' => $mail]) : null);
         }
         if ($etudiant === null) {
             // RGPD : un compte v1 absent d'uniServices n'est pas importé ; il figure une fois au rapport.
-            $this->rapport->ecart('avertissement', 'etudiant', $v1Id, sprintf('Étudiant introuvable dans uniServices (%s) : ses données ne sont pas reprises.', $ligne['username'] ?? $ligne['mail_univ'] ?? 'identifiant inconnu'));
+            $this->rapport->ecart('avertissement', 'etudiant', $v1Id, sprintf('Étudiant introuvable dans uniServices (%s) : ses données ne sont pas reprises.', $username !== '' ? $username : ($mail !== '' ? $mail : 'identifiant inconnu')));
         }
 
         return $this->etudiants[$v1Id] = $etudiant;
@@ -741,13 +781,17 @@ class MigrationV1
         }
         $ligne = $this->v1Enseignants[$v1Id] ?? null;
         $personnel = null;
+        $username = '';
+        $mail = '';
         if ($ligne !== null) {
             $repo = $this->em->getRepository(Personnel::class);
-            $personnel = (!empty($ligne['username']) ? $repo->findOneBy(['username' => $ligne['username']]) : null)
-                ?? (!empty($ligne['mail_univ']) ? $repo->findOneBy(['mailUniv' => $ligne['mail_univ']]) : null);
+            $username = LooseValue::castString($ligne['username'] ?? '');
+            $mail = LooseValue::castString($ligne['mail_univ'] ?? '');
+            $personnel = ($username !== '' ? $repo->findOneBy(['username' => $username]) : null)
+                ?? ($mail !== '' ? $repo->findOneBy(['mailUniv' => $mail]) : null);
         }
         if ($personnel === null) {
-            $this->rapport->ecart('avertissement', 'enseignant', $v1Id, sprintf('Enseignant introuvable dans uniServices (%s).', $ligne['username'] ?? $ligne['mail_univ'] ?? 'identifiant inconnu'));
+            $this->rapport->ecart('avertissement', 'enseignant', $v1Id, sprintf('Enseignant introuvable dans uniServices (%s).', $username !== '' ? $username : ($mail !== '' ? $mail : 'identifiant inconnu')));
         }
 
         return $this->enseignants[$v1Id] = $personnel;
@@ -757,14 +801,14 @@ class MigrationV1
     private function scolarite(Etudiant $etudiant, int $auV1, int $anneeV1, string $type, int $id): ?EtudiantScolarite
     {
         $au = $this->v1AU[$auV1] ?? null;
-        $ordre = isset($this->v1Annees[$anneeV1]) ? (int) $this->v1Annees[$anneeV1]['ordre'] : null;
+        $ordre = isset($this->v1Annees[$anneeV1]) ? LooseValue::castInt($this->v1Annees[$anneeV1]['ordre']) : null;
         $candidates = [];
         foreach ($etudiant->getScolarites() as $s) {
             $su = $s->getAnneeUniversitaire();
             if ($su === null || !$this->perimetre->isScolariteEligible($s)) {
                 continue;
             }
-            if ($au !== null && ((int) $su->getAnnee() === (int) $au['annee'] || ($su->getLibelle() !== null && $su->getLibelle() === $au['libelle']))) {
+            if ($au !== null && $su->getAnnee() === LooseValue::castInt($au['annee']) || ($au !== null && $su->getLibelle() !== null && $su->getLibelle() === LooseValue::castString($au['libelle']))) {
                 $candidates[] = $s;
             }
         }
@@ -779,7 +823,7 @@ class MigrationV1
             }
         }
         if ($choisie === null) {
-            $this->rapport->ecart('avertissement', $type, $id, sprintf('Année %s non retrouvée dans le parcours de l\'étudiant.', $au['libelle'] ?? '?'));
+            $this->rapport->ecart('avertissement', $type, $id, sprintf('Année %s non retrouvée dans le parcours de l\'étudiant.', LooseValue::castString($au['libelle'] ?? '?')));
         }
 
         return $choisie;
@@ -788,7 +832,7 @@ class MigrationV1
     /** Scolarité la plus récente de l'étudiant pour une année de BUT v1 (les portfolios v1 ne portent pas l'année universitaire). */
     private function scolariteDeLAnnee(Etudiant $etudiant, int $anneeV1): ?EtudiantScolarite
     {
-        $ordre = isset($this->v1Annees[$anneeV1]) ? (int) $this->v1Annees[$anneeV1]['ordre'] : null;
+        $ordre = isset($this->v1Annees[$anneeV1]) ? LooseValue::castInt($this->v1Annees[$anneeV1]['ordre']) : null;
         $retenue = null;
         foreach ($etudiant->getScolarites() as $s) {
             if (!$this->perimetre->isScolariteEligible($s) || $this->perimetre->getAnneeFormation($s)?->getOrdre() !== $ordre) {
@@ -806,7 +850,7 @@ class MigrationV1
     {
         $niveau = $this->niveauSilencieux($scolarite, $niveauV1);
         if ($niveau === null) {
-            $this->rapport->ecart('avertissement', $type, $id, sprintf('Niveau v1 n°%d (%s) non résolu dans le référentiel de l\'année.', $niveauV1, $this->v1Niveaux[$niveauV1]['nom_court'] ?? '?'));
+            $this->rapport->ecart('avertissement', $type, $id, sprintf('Niveau v1 n°%d (%s) non résolu dans le référentiel de l\'année.', $niveauV1, LooseValue::castString($this->v1Niveaux[$niveauV1]['nom_court'] ?? '?')));
         }
 
         return $niveau;
@@ -823,10 +867,10 @@ class MigrationV1
         foreach ($this->niveauxAnnee[$cle] as $n) {
             $c = $n->getCompetence();
             $memeCompetence = $c !== null && (
-                mb_strtolower(trim((string) $c->getNomCourt())) === mb_strtolower(trim((string) $v1['nom_court']))
-                || mb_strtolower(trim((string) $c->getLibelle())) === mb_strtolower(trim((string) $v1['competence_libelle']))
+                mb_strtolower(trim(LooseValue::castString($c->getNomCourt()))) === mb_strtolower(trim(LooseValue::castString($v1['nom_court'])))
+                || mb_strtolower(trim(LooseValue::castString($c->getLibelle()))) === mb_strtolower(trim(LooseValue::castString($v1['competence_libelle'])))
             );
-            if ($memeCompetence && (int) $n->getOrdre() === (int) $v1['ordre']) {
+            if ($memeCompetence && $n->getOrdre() === LooseValue::castInt($v1['ordre'])) {
                 return $n;
             }
         }
@@ -864,7 +908,7 @@ class MigrationV1
     private function date(mixed $valeur): ?\DateTimeImmutable
     {
         try {
-            return !empty($valeur) ? new \DateTimeImmutable(LooseValue::castString($valeur)) : null;
+            return $valeur !== null && $valeur !== '' && $valeur !== false ? new \DateTimeImmutable(LooseValue::castString($valeur)) : null;
         } catch (\Exception) {
             return null;
         }

@@ -74,7 +74,7 @@ class ReferentielController extends AbstractController
         );
         usort($scolarites, static fn (EtudiantScolarite $a, EtudiantScolarite $b) => $b->getOrdre() <=> $a->getOrdre());
 
-        return array_values($scolarites);
+        return $scolarites;
     }
 
     private function etudiant(): Etudiant

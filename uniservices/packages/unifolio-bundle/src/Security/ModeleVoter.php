@@ -34,7 +34,6 @@ class ModeleVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
-        \assert($subject instanceof PortfolioModele);
         $user = $token->getUser();
         if (!$user instanceof Personnel) {
             return false;

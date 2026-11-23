@@ -56,9 +56,9 @@ final class RelancerEvaluateursCommand extends Command
                 $parEvaluateur[$a->getEvaluateur()->getId()]['etudiants'][] = $a->getEtudiant();
             }
             foreach ($parEvaluateur as ['p' => $evaluateur, 'etudiants' => $etudiants]) {
-                \assert($evaluateur instanceof Personnel);
-                $totaux = $this->file->campagne($evaluateur, $campagne, $etudiants)['totaux'];
-                $enAttente = $totaux['aEvaluer'] + $totaux['enCours'] + $totaux['aReprendre'];
+                $resultat = LooseValue::assoc($this->file->campagne($evaluateur, $campagne, $etudiants));
+                $totaux = LooseValue::assoc($resultat['totaux'] ?? []);
+                $enAttente = LooseValue::castInt($totaux['aEvaluer']) + LooseValue::castInt($totaux['enCours']) + LooseValue::castInt($totaux['aReprendre']);
                 if ($enAttente === 0) {
                     continue;
                 }

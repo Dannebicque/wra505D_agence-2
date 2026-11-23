@@ -175,7 +175,7 @@ const reordonner = async () => {
     <div
       v-if="modifiable"
       class="rounded-xl border-2 border-dashed p-6 flex flex-col items-center gap-3 text-center transition-colors outline-none focus-visible:ring-2"
-      :class="survol ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950' : 'border-surface-300'"
+      :class="survol ? 'border-primary bg-emphasis' : 'border-surface-300'"
       tabindex="0"
       role="region"
       aria-label="Zone de dépôt des preuves : glissez des fichiers ou collez une capture"
@@ -185,7 +185,7 @@ const reordonner = async () => {
       @drop.prevent="surDrop"
       @paste="surCollage"
     >
-      <i class="pi pi-cloud-upload text-4xl text-emerald-600" />
+      <i class="pi pi-cloud-upload text-4xl text-primary" />
       <div>
         <p class="font-medium m-0">Glissez vos fichiers ici</p>
         <p class="text-sm text-muted-color m-0">
@@ -222,11 +222,11 @@ const reordonner = async () => {
     </div>
 
     <div v-for="envoi in envois" :key="envoi.id" class="flex items-center gap-3 text-sm">
-      <i :class="envoi.erreur ? 'pi pi-exclamation-triangle text-red-500' : 'pi pi-upload'" />
+      <i :class="envoi.erreur ? 'pi pi-exclamation-triangle text-primary' : 'pi pi-upload'" />
       <span class="truncate flex-1">{{ envoi.nom }}</span>
       <ProgressBar v-if="!envoi.erreur" :value="envoi.progression" class="w-40" style="height: 6px" :show-value="false" />
       <template v-else>
-        <span class="text-red-600">{{ envoi.erreur }}</span>
+        <span class="text-primary">{{ envoi.erreur }}</span>
         <Button icon="pi pi-times" text rounded size="small" aria-label="Masquer" @click="retirerEnvoi(envoi.id)" />
       </template>
     </div>

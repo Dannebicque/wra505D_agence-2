@@ -196,7 +196,7 @@ class AdminGrilleController extends AbstractController
         $this->denyAccessUnlessGranted(GrilleVoter::PARAMETRER_FORMATION, $diplome);
 
         $d = $this->corps($request);
-        $annee = !empty($d['applicableDepuis'])
+        $annee = ($d['applicableDepuis'] ?? null) !== null && $d['applicableDepuis'] !== ''
             ? $this->em->find(StructureAnneeUniversitaire::class, LooseValue::castInt($d['applicableDepuis']))
             : $this->anneeCourante();
         if ($annee === null) {
@@ -266,7 +266,7 @@ class AdminGrilleController extends AbstractController
     private function corps(Request $request): array
     {
         try {
-            return $request->toArray();
+            return LooseValue::assoc($request->toArray());
         } catch (\Throwable) {
             throw UnifolioValidationException::un('Requête JSON invalide.');
         }

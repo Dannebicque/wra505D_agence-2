@@ -79,7 +79,7 @@ const date = (iso) => formatDateFr(iso, 'jourMoisHeure', '');
     <p v-if="!chargement && racines.length === 0" class="text-sm text-muted-color m-0">Aucun message pour l'instant.</p>
 
     <div v-for="c in racines" :key="c.uuid" class="flex flex-col gap-2">
-      <article class="rounded-lg p-3 flex flex-col gap-1 text-sm" :class="c.auteur.type === 'etudiant' ? 'bg-surface-100' : 'bg-emerald-50 dark:bg-emerald-950/30'">
+      <article class="rounded-lg p-3 flex flex-col gap-1 text-sm" :class="c.auteur.type === 'etudiant' ? 'bg-surface-100' : 'bg-emphasis'">
         <div class="flex flex-wrap items-center gap-2">
           <strong>{{ c.auteur.moi ? 'Moi' : c.auteur.nom }}</strong>
           <Tag :value="c.auteur.type === 'etudiant' ? 'Étudiant' : 'Enseignant'" :severity="c.auteur.type === 'etudiant' ? 'secondary' : 'success'" />
@@ -93,7 +93,7 @@ const date = (iso) => formatDateFr(iso, 'jourMoisHeure', '');
         v-for="r in reponsesDe(c.uuid)"
         :key="r.uuid"
         class="rounded-lg p-3 ml-6 flex flex-col gap-1 text-sm"
-        :class="r.auteur.type === 'etudiant' ? 'bg-surface-100' : 'bg-emerald-50 dark:bg-emerald-950/30'"
+        :class="r.auteur.type === 'etudiant' ? 'bg-surface-100' : 'bg-emphasis'"
       >
         <div class="flex flex-wrap items-center gap-2">
           <strong>{{ r.auteur.moi ? 'Moi' : r.auteur.nom }}</strong>

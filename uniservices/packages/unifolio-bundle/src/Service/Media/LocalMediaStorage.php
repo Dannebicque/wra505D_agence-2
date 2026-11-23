@@ -51,7 +51,7 @@ class LocalMediaStorage implements MediaStorageInterface
             ));
         }
 
-        $extension = $fichier->guessExtension() ?: 'bin';
+        $extension = $fichier->guessExtension() ?? 'bin';
         $chemin = sprintf('%s/%s.%s', date('Y/m'), Uuid::v7()->toRfc4122(), $extension);
 
         $this->filesystem->mkdir(\dirname($this->cheminAbsolu($chemin)), 0o750);
@@ -91,6 +91,6 @@ class LocalMediaStorage implements MediaStorageInterface
         $nom = basename(str_replace('\\', '/', $nom));
         $nom = preg_replace('/[\x00-\x1F\x7F]/u', '', $nom) ?? '';
 
-        return mb_substr($nom, 0, 255) ?: 'fichier';
+        return mb_substr($nom, 0, 255) !== '' ? mb_substr($nom, 0, 255) : 'fichier';
     }
 }

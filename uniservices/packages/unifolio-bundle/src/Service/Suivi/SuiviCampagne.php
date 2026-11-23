@@ -32,15 +32,15 @@ class SuiviCampagne
         $debutee = $campagne->getOuvertureLe() <= $maintenant;
         $colonnes = [];
         $lignes = [];
-        $totaux = SuiviCalculator::resumeVide() + ['avecDepot' => 0, 'ecartsNotables' => 0, 'sansDepot' => 0];
+        $totaux = ['total' => 0, 'couverts' => 0, 'nbTraces' => 0, 'aEvaluer' => 0, 'avecDepot' => 0, 'ecartsNotables' => 0, 'sansDepot' => 0];
         $indisponible = null;
 
         foreach ($this->etudiants->scolarites($campagne) as $id => $scolarite) {
             if ($etudiantIds !== null && !\in_array($id, $etudiantIds, true)) {
                 continue;
             }
-            $suivi = $this->calculateur->pourScolarite($scolarite, true);
-            $etudiant = $scolarite->getEtudiant();
+            $suivi = $this->normaliserSuivi($this->calculateur->pourScolarite($scolarite, true));
+            $etudiant = $scolarite->getEtudiant() ?? throw new \LogicException('Scolarité sans étudiant.');
             if (!$suivi['disponible']) {
                 $indisponible = $suivi['message'];
                 $lignes[] = ['etudiant' => ['id' => $id, 'nom' => $etudiant->getNom(), 'prenom' => $etudiant->getPrenom()], 'cellules' => [], 'resume' => $suivi['resume'], 'alertes' => []];
@@ -99,19 +99,37 @@ class SuiviCampagne
     }
 
     /** CSV (séparateur « ; », UTF-8 avec BOM pour Excel). Les cellules texte sont neutralisées contre l'injection de formules. */
+    /** @param array<string, mixed> $suivi */
     public function csv(array $suivi): string
     {
+        $competences = [];
+        foreach (LooseValue::row($suivi['competences'] ?? []) as $competence) {
+            $c = LooseValue::assoc($competence);
+            $competences[] = ['id' => LooseValue::nullableInt($c['id'] ?? null), 'nomCourt' => LooseValue::castString($c['nomCourt'] ?? '')];
+        }
+        $lignes = [];
+        foreach (LooseValue::row($suivi['lignes'] ?? []) as $ligne) {
+            $l = LooseValue::assoc($ligne);
+            $etudiant = LooseValue::assoc($l['etudiant'] ?? []);
+            $resume = LooseValue::assoc($l['resume'] ?? []);
+            $cellules = [];
+            foreach (LooseValue::row($l['cellules'] ?? []) as $cle => $cellule) {
+                $cell = LooseValue::assoc($cellule);
+                $cellules[$cle] = ['couverts' => LooseValue::castInt($cell['couverts'] ?? 0), 'total' => LooseValue::castInt($cell['total'] ?? 0), 'evalScore' => LooseValue::nullableFloat($cell['evalScore'] ?? null), 'autoScore' => LooseValue::nullableFloat($cell['autoScore'] ?? null)];
+            }
+            $lignes[] = ['etudiant' => ['nom' => LooseValue::castString($etudiant['nom'] ?? ''), 'prenom' => LooseValue::castString($etudiant['prenom'] ?? '')], 'cellules' => $cellules, 'resume' => ['nbTraces' => LooseValue::castInt($resume['nbTraces'] ?? 0), 'aEvaluer' => LooseValue::castInt($resume['aEvaluer'] ?? 0)], 'alertes' => array_map(LooseValue::castString(...), LooseValue::row($l['alertes'] ?? []))];
+        }
         $pct = static fn (?float $v) => $v === null ? '' : (string) round($v * 100);
         $entete = ['Nom', 'Prénom'];
-        foreach ($suivi['competences'] as $c) {
+        foreach ($competences as $c) {
             array_push($entete, $c['nomCourt'].' — couverts', $c['nomCourt'].' — évaluation (%)', $c['nomCourt'].' — auto-évaluation (%)');
         }
         array_push($entete, 'Traces déposées', 'À évaluer', 'Alertes');
         $sortie = [$entete];
-        foreach ($suivi['lignes'] as $l) {
+        foreach ($lignes as $l) {
             $ligne = [$l['etudiant']['nom'], $l['etudiant']['prenom']];
-            foreach ($suivi['competences'] as $c) {
-                $cell = $l['cellules'][(int) $c['id']] ?? null;
+            foreach ($competences as $c) {
+                $cell = $l['cellules'][$c['id'] ?? 0] ?? null;
                 array_push($ligne, $cell !== null ? $cell['couverts'].'/'.$cell['total'] : '', $cell !== null ? $pct($cell['evalScore']) : '', $cell !== null ? $pct($cell['autoScore']) : '');
             }
             array_push($ligne, $l['resume']['nbTraces'], $l['resume']['aEvaluer'], implode(', ', $l['alertes']));
@@ -119,6 +137,9 @@ class SuiviCampagne
         }
 
         $flux = fopen('php://temp', 'r+');
+        if ($flux === false) {
+            throw new \RuntimeException('Impossible d’ouvrir le flux CSV.');
+        }
         fwrite($flux, "\xEF\xBB\xBF");
         foreach ($sortie as $ligne) {
             fputcsv($flux, array_map(self::neutraliser(...), $ligne), ';', '"', '\\');
@@ -135,5 +156,34 @@ class SuiviCampagne
         $texte = LooseValue::castString($valeur);
 
         return $texte !== '' && str_contains("=+-@\t\r", $texte[0]) ? "'".$texte : $texte;
+    }
+
+    /**
+     * @param array<string, mixed> $suivi
+     * @return array{disponible: bool, message: ?string, competences: list<array{id: int|null, nomCourt: string, libelle: ?string, couleur: ?string, total: int, couverts: int, nbTraces: int, evalScore: ?float, autoScore: ?float}>, resume: array{total: int, couverts: int, nbTraces: int, aEvaluer: int, evalScore: ?float, autoScore: ?float, ecartMax: ?float}}
+     */
+    private function normaliserSuivi(array $suivi): array
+    {
+        $disponible = LooseValue::bool($suivi['disponible'] ?? false);
+        $resume = LooseValue::assoc($suivi['resume'] ?? []);
+        $resumeType = [
+            'total' => LooseValue::castInt($resume['total'] ?? 0), 'couverts' => LooseValue::castInt($resume['couverts'] ?? 0),
+            'nbTraces' => LooseValue::castInt($resume['nbTraces'] ?? 0), 'aEvaluer' => LooseValue::castInt($resume['aEvaluer'] ?? 0),
+            'evalScore' => LooseValue::nullableFloat($resume['evalScore'] ?? null), 'autoScore' => LooseValue::nullableFloat($resume['autoScore'] ?? null),
+            'ecartMax' => LooseValue::nullableFloat($resume['ecartMax'] ?? null),
+        ];
+        $competences = [];
+        foreach (LooseValue::row($suivi['competences'] ?? []) as $competence) {
+            $c = LooseValue::assoc($competence);
+            $competences[] = [
+                'id' => LooseValue::nullableInt($c['id'] ?? null), 'nomCourt' => LooseValue::castString($c['nomCourt'] ?? ''),
+                'libelle' => LooseValue::nullableString($c['libelle'] ?? null), 'couleur' => LooseValue::nullableString($c['couleur'] ?? null),
+                'total' => LooseValue::castInt($c['total'] ?? 0), 'couverts' => LooseValue::castInt($c['couverts'] ?? 0),
+                'nbTraces' => LooseValue::castInt($c['nbTraces'] ?? 0), 'evalScore' => LooseValue::nullableFloat($c['evalScore'] ?? null),
+                'autoScore' => LooseValue::nullableFloat($c['autoScore'] ?? null),
+            ];
+        }
+
+        return ['disponible' => $disponible, 'message' => LooseValue::nullableString($suivi['message'] ?? null), 'competences' => $competences, 'resume' => $resumeType];
     }
 }

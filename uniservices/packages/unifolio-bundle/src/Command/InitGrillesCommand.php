@@ -52,17 +52,17 @@ final class InitGrillesCommand extends Command
                     continue;
                 }
                 $io->writeln(sprintf(' <info>création</info> %s (%s)', $libelle, $type->getSigle()));
-                if (!$input->getOption('dry-run')) {
+                if (!(bool) $input->getOption('dry-run')) {
                     $this->em->persist(GrillesParDefaut::construire($type, $granularite));
                 }
                 ++$crees;
             }
         }
 
-        if (!$input->getOption('dry-run')) {
+        if (!(bool) $input->getOption('dry-run')) {
             $this->em->flush();
         }
-        $io->success(sprintf('%d grille(s) %s.', $crees, $input->getOption('dry-run') ? 'à créer' : 'créée(s) et publiée(s)'));
+        $io->success(sprintf('%d grille(s) %s.', $crees, (bool) $input->getOption('dry-run') ? 'à créer' : 'créée(s) et publiée(s)'));
 
         return Command::SUCCESS;
     }

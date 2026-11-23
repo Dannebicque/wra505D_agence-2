@@ -62,7 +62,7 @@ const sections = computed(() =>
  type="button"
  class="p-4 text-left flex gap-3 items-start hover:shadow-md transition-shadow cursor-pointer"
  @click="router.push(item.to)">
-          <i :class="item.icon" class="text-2xl text-emerald-600 mt-1" />
+          <i :class="item.icon" class="text-2xl text-primary mt-1" />
           <span class="flex flex-col gap-1">
             <span class="font-medium">{{ item.label }}</span>
             <span class="text-sm text-muted-color">{{ item.description }}</span>

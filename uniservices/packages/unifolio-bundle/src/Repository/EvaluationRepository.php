@@ -34,11 +34,13 @@ class EvaluationRepository extends ServiceEntityRepository
 
     public function findBilan(Personnel $evaluateur, EtudiantScolarite $scolarite, GranulariteEnum $granularite, int $cibleId): ?Evaluation
     {
-        return $this->requeteBilan($scolarite, $granularite, $cibleId)
+        $resultat = $this->requeteBilan($scolarite, $granularite, $cibleId)
             ->andWhere('e.evaluateur = :evaluateur')->setParameter('evaluateur', $evaluateur)
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $resultat instanceof Evaluation ? $resultat : null;
     }
 
     /** Une évaluation rendue existe-t-elle sur ce rattachement ? (verrouille l'auto-évaluation de l'étudiant) */
@@ -66,7 +68,7 @@ class EvaluationRepository extends ServiceEntityRepository
     /** @return Evaluation[] toutes les évaluations des rattachements d'une trace */
     public function findParTrace(Trace $trace): array
     {
-        $ids = array_filter(array_map(static fn (TraceRattachement $r) => $r->getId(), $trace->getRattachements()->toArray()));
+        $ids = array_values(array_filter(array_map(static fn (TraceRattachement $r) => $r->getId(), $trace->getRattachements()->toArray()), static fn (?int $id): bool => $id !== null));
         if ($ids === []) {
             return [];
         }

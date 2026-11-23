@@ -36,7 +36,6 @@ class PortfolioVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
-        \assert($subject instanceof Portfolio);
         $user = $token->getUser();
 
         if ($user instanceof Etudiant) {

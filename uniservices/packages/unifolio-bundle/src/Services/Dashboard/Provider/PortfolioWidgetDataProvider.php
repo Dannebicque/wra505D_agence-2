@@ -58,14 +58,15 @@ class PortfolioWidgetDataProvider implements WidgetDataProviderInterface
         $items = [];
         $total = 0;
         foreach ($this->file->pour($user) as $groupe) {
+            $groupe = $this->groupe($groupe);
             if ($groupe['campagne']['phase']['value'] === 'cloturee') {
                 continue;
             }
             $t = $groupe['totaux'];
             $parts = array_filter([
-                $t['aEvaluer'] ? sprintf('%d à évaluer', $t['aEvaluer']) : null,
-                $t['enCours'] ? sprintf('%d en cours', $t['enCours']) : null,
-                $t['aReprendre'] ? sprintf('%d à reprendre', $t['aReprendre']) : null,
+                $t['aEvaluer'] > 0 ? sprintf('%d à évaluer', $t['aEvaluer']) : null,
+                $t['enCours'] > 0 ? sprintf('%d en cours', $t['enCours']) : null,
+                $t['aReprendre'] > 0 ? sprintf('%d à reprendre', $t['aReprendre']) : null,
             ]);
             if ($parts === []) {
                 continue;
@@ -99,8 +100,8 @@ class PortfolioWidgetDataProvider implements WidgetDataProviderInterface
 
         $elements = $this->bilan->elements($etudiant, $scolarite, $granularite);
         $couverts = array_filter($elements, static fn (array $el) => array_filter(
-            $el['traces'],
-            static fn (array $t) => \in_array($t['statutValue'], ['deposee', 'en_evaluation', 'evaluee'], true)
+            is_array($el['traces'] ?? null) ? $el['traces'] : [],
+            static fn (mixed $t): bool => is_array($t) && \in_array($t['statutValue'] ?? null, ['deposee', 'en_evaluation', 'evaluee'], true)
         ) !== []);
 
         return ['validated' => \count($couverts), 'target' => \count($elements), 'label' => 'éléments couverts par une trace déposée'];
@@ -111,6 +112,7 @@ class PortfolioWidgetDataProvider implements WidgetDataProviderInterface
     {
         $campagnes = [];
         foreach ($this->file->pour($user) as $groupe) {
+            $groupe = $this->groupe($groupe);
             $c = $this->campagnes->findOneByUuid(LooseValue::string($groupe['campagne']['uuid']));
             if ($c !== null && !$c->isCloturee()) {
                 $campagnes[$c->getId()] = [$c, $groupe['totaux']['aEvaluer'] + $groupe['totaux']['enCours'] + $groupe['totaux']['aReprendre']];
@@ -142,7 +144,23 @@ class PortfolioWidgetDataProvider implements WidgetDataProviderInterface
             $items[] = $this->alerteReferent($c, $bientot);
         }
 
-        return ['items' => array_values(array_filter($items))];
+        return ['items' => array_values(array_filter($items, static fn (?string $item): bool => $item !== null))];
+    }
+
+    /** @return array{campagne: array{uuid: string, libelle: string, phase: array{value: string}}, etudiants: list<array{nom: string, prenom: string, aEvaluer: int, aReprendre: int}>, totaux: array{aEvaluer: int, enCours: int, aReprendre: int}} */
+    private function groupe(mixed $groupe): array
+    {
+        $groupe = LooseValue::assoc($groupe);
+        $campagne = LooseValue::assoc($groupe['campagne'] ?? []);
+        $phase = LooseValue::assoc($campagne['phase'] ?? []);
+        $totaux = LooseValue::assoc($groupe['totaux'] ?? []);
+        $etudiants = [];
+        foreach (LooseValue::rows($groupe['etudiants'] ?? []) as $etudiant) {
+            $etudiant = LooseValue::assoc($etudiant);
+            $etudiants[] = ['nom' => LooseValue::string($etudiant['nom'] ?? ''), 'prenom' => LooseValue::string($etudiant['prenom'] ?? ''), 'aEvaluer' => LooseValue::castInt($etudiant['aEvaluer'] ?? 0), 'aReprendre' => LooseValue::castInt($etudiant['aReprendre'] ?? 0)];
+        }
+
+        return ['campagne' => ['uuid' => LooseValue::string($campagne['uuid'] ?? ''), 'libelle' => LooseValue::string($campagne['libelle'] ?? ''), 'phase' => ['value' => LooseValue::string($phase['value'] ?? '')]], 'etudiants' => $etudiants, 'totaux' => ['aEvaluer' => LooseValue::castInt($totaux['aEvaluer'] ?? 0), 'enCours' => LooseValue::castInt($totaux['enCours'] ?? 0), 'aReprendre' => LooseValue::castInt($totaux['aReprendre'] ?? 0)]];
     }
 
     private function alerteReferent(Campagne $c, \DateTimeImmutable $bientot): ?string

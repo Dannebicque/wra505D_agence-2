@@ -40,15 +40,17 @@ class PartageManager
             }
             $visibilite = $portfolio->getVisibilite();
             if ($visibilite === VisibilitePortfolioEnum::PUBLIC || $visibilite === VisibilitePortfolioEnum::LIEN_SECRET) {
-                $portfolio->getSlug() ?? $this->changerSlug($portfolio, $this->proposerSlug($portfolio));
+                if ($portfolio->getSlug() === null) {
+                    $this->changerSlug($portfolio, $this->proposerSlug($portfolio));
+                }
             }
-            if ($visibilite === VisibilitePortfolioEnum::LIEN_SECRET && ($portfolio->getTokenPartage() === null || !empty($donnees['regenererLien']))) {
+            if ($visibilite === VisibilitePortfolioEnum::LIEN_SECRET && ($portfolio->getTokenPartage() === null || self::vrai($donnees['regenererLien'] ?? false))) {
                 $portfolio->regenererTokenPartage();
-            } elseif (!empty($donnees['regenererLien']) && $portfolio->getTokenPartage() !== null) {
+            } elseif (self::vrai($donnees['regenererLien'] ?? false) && $portfolio->getTokenPartage() !== null) {
                 $portfolio->regenererTokenPartage();
             }
             // L'indexation est une démarche volontaire, réservée aux portfolios publics.
-            $portfolio->setIndexable($visibilite === VisibilitePortfolioEnum::PUBLIC && !empty($donnees['indexable'] ?? $portfolio->isIndexable()));
+            $portfolio->setIndexable($visibilite === VisibilitePortfolioEnum::PUBLIC && self::vrai($donnees['indexable'] ?? $portfolio->isIndexable()));
         } catch (\InvalidArgumentException|\DomainException $e) {
             throw UnifolioValidationException::un($e->getMessage());
         }
@@ -84,5 +86,17 @@ class PartageManager
         }
 
         return $slug;
+    }
+
+    private static function vrai(mixed $value): bool
+    {
+        if (is_array($value)) {
+            return $value !== [];
+        }
+        if (is_object($value)) {
+            return true;
+        }
+
+        return !in_array($value, [null, false, '', '0', 0, 0.0], true);
     }
 }

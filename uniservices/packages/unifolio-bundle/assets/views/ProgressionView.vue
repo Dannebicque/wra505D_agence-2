@@ -74,7 +74,7 @@ const part = (c) => (c.total > 0 ? Math.round((c.couverts * 100) / c.total) : 0)
             </div>
             <ul class="list-none m-0 p-0 flex flex-col gap-1 text-sm">
               <li v-for="e in c.elements" :key="e.id" class="flex items-start gap-2">
-                <i :class="e.couvert ? 'pi pi-check-circle text-emerald-600' : 'pi pi-circle text-muted-color'" class="mt-1" :aria-label="e.couvert ? 'Couvert' : 'Pas encore couvert'" />
+                <i :class="e.couvert ? 'pi pi-check-circle text-primary' : 'pi pi-circle text-muted-color'" class="mt-1" :aria-label="e.couvert ? 'Couvert' : 'Pas encore couvert'" />
                 <span class="flex-1" :class="{ 'text-muted-color': !e.couvert }"><strong v-if="e.code">{{ e.code }}</strong> {{ e.libelle }}</span>
                 <span v-if="e.nbTraces" class="text-xs text-muted-color">{{ e.nbTraces }} trace(s)</span>
                 <span v-if="pourcent(e.evalScore) !== null" class="text-xs font-semibold">{{ pourcent(e.evalScore) }} %</span>

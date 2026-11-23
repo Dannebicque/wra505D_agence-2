@@ -40,13 +40,13 @@ class GrilleEchelon
         if ($libelle === '') {
             throw new \InvalidArgumentException('Chaque niveau de l\'échelle doit avoir un libellé.');
         }
-        if ($couleur !== null && $couleur !== '' && !preg_match('/^#[0-9a-fA-F]{6}$/', $couleur)) {
+        if ($couleur !== null && $couleur !== '' && preg_match('/^#[0-9a-fA-F]{6}$/', $couleur) !== 1) {
             throw new \InvalidArgumentException('Couleur invalide (format attendu : #RRGGBB).');
         }
         $this->version = $version;
         $this->libelle = mb_substr($libelle, 0, 100);
         $this->valeur = $valeur;
-        $this->couleur = $couleur !== '' ? $couleur : null;
+        $this->couleur = $couleur !== null && $couleur !== '' ? $couleur : null;
         $this->descripteur = $descripteur !== null && trim($descripteur) !== '' ? $descripteur : null;
     }
 

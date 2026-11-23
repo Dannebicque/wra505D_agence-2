@@ -139,6 +139,6 @@ class ReferentielAnnee
             return false;
         }
 
-        return $a === $b || ($a->getId() !== null && $a->getId() === $b->getId());
+        return $a === $b || (method_exists($a, 'getId') && method_exists($b, 'getId') && $a->getId() !== null && $a->getId() === $b->getId());
     }
 }

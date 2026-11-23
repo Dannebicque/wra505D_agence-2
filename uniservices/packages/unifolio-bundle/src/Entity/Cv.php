@@ -175,7 +175,7 @@ class Cv implements TimestampableInterface
     public function remplacerExperiences(array $experiences): void
     {
         $this->experiences->clear();
-        foreach (array_values($experiences) as $i => $e) {
+        foreach ($experiences as $i => $e) {
             $e->setOrdre($i);
             $this->experiences->add($e);
         }
@@ -185,7 +185,7 @@ class Cv implements TimestampableInterface
     public function remplacerFormations(array $formations): void
     {
         $this->formations->clear();
-        foreach (array_values($formations) as $i => $f) {
+        foreach ($formations as $i => $f) {
             $f->setOrdre($i);
             $this->formations->add($f);
         }

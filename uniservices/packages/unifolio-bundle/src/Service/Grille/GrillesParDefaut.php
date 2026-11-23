@@ -10,7 +10,7 @@ use UnifolioBundle\Enum\TypeCritereEnum;
 /** Grilles nationales BUT proposées par défaut, une par granularité (publiées en version 1). */
 final class GrillesParDefaut
 {
-    /** @var array<string, array{libelle: string, description: string, criteres: list<array{0: string, 1: TypeCritereEnum, 2: float, 3: string}>}> */
+    /** @var array<string, array{libelle: string, description: string, criteres: list<array{0: string, 1: TypeCritereEnum, 2: int|float, 3: string}>}> */
     public const DEFINITIONS = [
         'ac' => [
             'libelle' => 'BUT — évaluation par apprentissage critique',

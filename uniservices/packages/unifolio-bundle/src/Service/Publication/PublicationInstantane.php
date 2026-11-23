@@ -41,7 +41,7 @@ class PublicationInstantane
             foreach ($this->validateur->incomplets($page->getBlocs(), $page->getTitre()) as $anomalie) {
                 $erreurs[] = $anomalie;
             }
-            $base = strtolower($slugger->slug($page->getTitre())->toString()) ?: 'page';
+            $base = strtolower($slugger->slug($page->getTitre())->toString()) !== '' ? strtolower($slugger->slug($page->getTitre())->toString()) : 'page';
             $fichier = $pages === [] ? 'index' : (\in_array($base, self::RESERVES, true) ? $base.'-page' : $base);
             for ($i = 2; isset($utilises[$fichier]); ++$i) {
                 $fichier = $base.'-'.$i;
@@ -57,10 +57,13 @@ class PublicationInstantane
         }
 
         $source = $this->donnees->pour($portfolio);
+        $sourceTraces = self::liste($source['traces'] ?? []);
+        $sourceCv = LooseValue::assoc($source['cv'] ?? []);
+        $sourceParcours = self::liste($source['parcours'] ?? []);
         $types = [];
         $uuidsTraces = [];
         foreach ($pages as $p) {
-            $this->parcourir($p['blocs'], $types, $uuidsTraces, $source['traces']);
+            $this->parcourir(self::liste($p['blocs']), $types, $uuidsTraces, $sourceTraces);
         }
 
         $etudiant = $portfolio->getEtudiant();
@@ -78,22 +81,30 @@ class PublicationInstantane
             ],
             'pages' => $pages,
             'donnees' => [
-                'traces' => $this->traces($source['traces'], $uuidsTraces),
+                'traces' => $this->traces($sourceTraces, $uuidsTraces),
                 'progression' => isset($types['progression']) ? $source['progression'] : [],
-                'cv' => isset($types['cv']) ? $this->cv($source['cv']) : $this->cvVide(),
-                'parcours' => isset($types['parcours']) ? $this->parcours($source['parcours']) : [],
+                'cv' => isset($types['cv']) ? $this->cv($sourceCv) : $this->cvVide(),
+                'parcours' => isset($types['parcours']) ? $this->parcours($sourceParcours) : [],
             ],
         ];
     }
 
-    /** @return list<array{mediaId: int, destination: string}> médias à copier, dérivés de l'instantané */
+    /**
+     * @param array<string, mixed> $instantane
+     * @return list<array{mediaId: int, destination: string}>
+     */
     public static function medias(array $instantane): array
     {
         $liste = [];
-        foreach ($instantane['donnees']['traces'] ?? [] as $trace) {
-            foreach ($trace['medias'] ?? [] as $media) {
-                if (isset($media['fichier']['mediaId'], $media['fichier']['url'])) {
-                    $liste[] = ['mediaId' => (int) $media['fichier']['mediaId'], 'destination' => (string) $media['fichier']['url']];
+        $donnees = LooseValue::assoc($instantane['donnees'] ?? []);
+        foreach (self::liste($donnees['traces'] ?? []) as $trace) {
+            foreach (self::liste($trace['medias'] ?? []) as $media) {
+                if (is_array($media['fichier'] ?? null)) {
+                    $fichier = LooseValue::assoc($media['fichier']);
+                    if (!isset($fichier['mediaId'], $fichier['url'])) {
+                        continue;
+                    }
+                    $liste[] = ['mediaId' => LooseValue::castInt($fichier['mediaId']), 'destination' => LooseValue::castString($fichier['url'])];
                 }
             }
         }
@@ -110,12 +121,12 @@ class PublicationInstantane
     private function parcourir(array $blocs, array &$types, array &$uuids, array $traces): void
     {
         foreach ($blocs as $bloc) {
-            $type = $bloc['type'] ?? '';
-            $attrs = $bloc['attrs'] ?? [];
+            $type = LooseValue::castString($bloc['type'] ?? '');
+            $attrs = LooseValue::assoc($bloc['attrs'] ?? []);
             $types[$type] = true;
             switch ($type) {
                 case 'trace':
-                    if (!empty($attrs['trace'])) {
+                    if (LooseValue::castString($attrs['trace'] ?? '') !== '') {
                         $uuids[strtolower(LooseValue::castString($attrs['trace']))] = true;
                     }
                     break;
@@ -123,7 +134,7 @@ class PublicationInstantane
                     $competence = $attrs['competence'] ?? null;
                     $retenues = array_values(array_filter(
                         $traces,
-                        static fn (array $t) => !$competence || array_filter($t['competences'] ?? [], static fn (array $c) => LooseValue::castInt($c['id']) === LooseValue::castInt($competence)) !== []
+                        static fn (array $t): bool => $competence === null || array_filter(self::liste($t['competences'] ?? []), static fn (array $c): bool => LooseValue::castInt($c['id']) === LooseValue::castInt($competence)) !== []
                     ));
                     foreach (\array_slice($retenues, 0, LooseValue::castInt($attrs['maximum'] ?? 6)) as $t) {
                         $uuids[strtolower(LooseValue::castString($t['uuid']))] = true;
@@ -131,20 +142,21 @@ class PublicationInstantane
                     break;
                 case 'image':
                 case 'file':
-                    if (!empty($attrs['source']['trace'])) {
-                        $uuids[strtolower(LooseValue::castString($attrs['source']['trace']))] = true;
+                    $source = LooseValue::assoc($attrs['source'] ?? []);
+                    if (LooseValue::castString($source['trace'] ?? '') !== '') {
+                        $uuids[strtolower(LooseValue::castString($source['trace']))] = true;
                     }
                     break;
                 case 'gallery':
-                    foreach ($attrs['images'] ?? [] as $image) {
-                        if (!empty($image['trace'])) {
+                    foreach (self::liste($attrs['images'] ?? []) as $image) {
+                        if (LooseValue::castString($image['trace'] ?? '') !== '') {
                             $uuids[strtolower(LooseValue::castString($image['trace']))] = true;
                         }
                     }
                     break;
             }
-            if (!empty($bloc['children'])) {
-                $this->parcourir($bloc['children'], $types, $uuids, $traces);
+            if (($bloc['children'] ?? []) !== []) {
+                $this->parcourir(self::liste($bloc['children']), $types, $uuids, $traces);
             }
         }
     }
@@ -165,13 +177,14 @@ class PublicationInstantane
             $court = substr(str_replace('-', '', LooseValue::castString($t['uuid'])), 0, 8);
             $adresses = [];
             $medias = [];
-            foreach ($t['medias'] ?? [] as $m) {
+            foreach (self::liste($t['medias'] ?? []) as $m) {
                 $fichier = null;
-                if (!empty($m['fichier']['url'])) {
-                    $extension = $this->extension(LooseValue::castString($m['fichier']['nom'] ?? ''), LooseValue::castString($m['fichier']['mimeType'] ?? ''));
+                $fichierSource = is_array($m['fichier'] ?? null) ? LooseValue::assoc($m['fichier']) : [];
+                if (LooseValue::castString($fichierSource['url'] ?? '') !== '') {
+                    $extension = $this->extension(LooseValue::castString($fichierSource['nom'] ?? ''), LooseValue::castString($fichierSource['mimeType'] ?? ''));
                     $destination = sprintf('media/%s-%d.%s', $court, LooseValue::castInt($m['id']), $extension);
-                    $adresses[$m['fichier']['url']] = $destination;
-                    $fichier = ['url' => $destination, 'nom' => LooseValue::castString($m['fichier']['nom'] ?? 'fichier'), 'mediaId' => LooseValue::castInt($m['id'])];
+                    $adresses[LooseValue::castString($fichierSource['url'])] = $destination;
+                    $fichier = ['url' => $destination, 'nom' => LooseValue::castString($fichierSource['nom'] ?? 'fichier'), 'mediaId' => LooseValue::castInt($m['id'])];
                 }
                 $medias[] = [
                     'id' => LooseValue::castInt($m['id']),
@@ -179,7 +192,7 @@ class PublicationInstantane
                     'icone' => $m['icone'] ?? 'pi pi-file',
                     'legende' => $m['legende'] ?? null,
                     'fichier' => $fichier,
-                    'url' => \is_string($m['url'] ?? null) && preg_match('#^https?://#i', $m['url']) ? $m['url'] : null,
+                    'url' => \is_string($m['url'] ?? null) && preg_match('#^https?://#i', $m['url']) === 1 ? $m['url'] : null,
                 ];
             }
             $resultat[] = [
@@ -187,9 +200,9 @@ class PublicationInstantane
                 'titre' => $t['titre'],
                 'contexte' => $t['contexte'] ?? null,
                 'dateRealisation' => $t['dateRealisation'] ?? null,
-                'typeActivite' => isset($t['typeActivite']['libelle']) ? ['libelle' => $t['typeActivite']['libelle']] : null,
-                'vignette' => $adresses[$t['vignette'] ?? ''] ?? null,
-                'competences' => array_map(static fn (array $c) => ['id' => $c['id'], 'nomCourt' => $c['nomCourt'], 'couleur' => $c['couleur'] ?? null], $t['competences'] ?? []),
+                'typeActivite' => is_array($t['typeActivite'] ?? null) && isset($t['typeActivite']['libelle']) ? ['libelle' => LooseValue::castString($t['typeActivite']['libelle'])] : null,
+                'vignette' => $adresses[LooseValue::castString($t['vignette'] ?? '')] ?? null,
+                'competences' => array_map(static fn (array $c): array => ['id' => $c['id'], 'nomCourt' => $c['nomCourt'], 'couleur' => $c['couleur'] ?? null], self::liste($t['competences'] ?? [])),
                 'medias' => $medias,
             ];
         }
@@ -209,12 +222,16 @@ class PublicationInstantane
         return $parMime[strtolower($mime)] ?? 'bin';
     }
 
-    /** @param array<string, mixed> $cv */
+    /**
+     * @param array<string, mixed> $cv
+     * @return array<string, mixed>
+     */
     private function cv(array $cv): array
     {
         return array_intersect_key($cv, array_flip(['poste', 'description', 'langues', 'softSkills', 'hardSkills', 'reseaux', 'experiences', 'formations']));
     }
 
+    /** @return array<string, mixed> */
     private function cvVide(): array
     {
         return ['poste' => null, 'description' => null, 'langues' => [], 'softSkills' => [], 'hardSkills' => [], 'reseaux' => [], 'experiences' => [], 'formations' => []];
@@ -228,5 +245,11 @@ class PublicationInstantane
     private function parcours(array $parcours): array
     {
         return array_map(static fn (array $p) => ['annee' => $p['annee'] ?? null, 'anneeUniversitaire' => $p['anneeUniversitaire'] ?? null, 'diplome' => $p['diplome'] ?? null, 'actif' => (bool) ($p['actif'] ?? false)], $parcours);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private static function liste(mixed $value): array
+    {
+        return array_values(array_map(static fn (mixed $row): array => LooseValue::assoc($row), LooseValue::rows($value)));
     }
 }

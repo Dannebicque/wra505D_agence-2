@@ -217,13 +217,13 @@ const reordonner = async () => {
             v-for="p in portfolio.pages"
             :key="p.uuid"
             class="flex items-center gap-1 rounded-lg px-1"
-            :class="p.uuid === pageUuid ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''"
+            :class="p.uuid === pageUuid ? 'bg-highlight' : ''"
           >
             <i v-if="!lectureSeule" class="pi pi-bars page-poignee cursor-move text-muted-color p-1" aria-hidden="true" />
             <button type="button" class="flex-1 text-left bg-transparent border-0 py-2 cursor-pointer text-sm truncate" :class="p.uuid === pageUuid ? 'font-semibold' : ''" :aria-current="p.uuid === pageUuid ? 'page' : undefined" @click="aller(p.uuid)">
               {{ p.titre }}
             </button>
-            <i v-if="p.verrouillee" class="pi pi-lock text-amber-600 text-xs" title="Page imposée par le modèle" />
+            <i v-if="p.verrouillee" class="pi pi-lock text-primary text-xs" title="Page imposée par le modèle" />
             <template v-else-if="!lectureSeule">
               <Button icon="pi pi-pencil" size="small" text rounded severity="secondary" :aria-label="`Renommer ${p.titre}`" @click="ouvrirDialogue('renommer', p)" />
               <Button icon="pi pi-trash" size="small" text rounded severity="danger" :aria-label="`Supprimer ${p.titre}`" @click="supprimerPage(p)" />

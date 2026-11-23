@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use App\Utils\LooseValue;
 use UnifolioBundle\Entity\Portfolio;
 use UnifolioBundle\Entity\PortfolioPublication;
 use UnifolioBundle\Enum\TypePortfolioEnum;
@@ -65,7 +66,7 @@ class PublicationController extends AbstractController
     public function creerVitrine(Request $request): JsonResponse
     {
         $d = $this->corps($request);
-        $portfolio = $this->vitrines->creer($this->etudiant(), isset($d['titre']) ? (string) $d['titre'] : null);
+        $portfolio = $this->vitrines->creer($this->etudiant(), isset($d['titre']) ? LooseValue::string($d['titre']) : null);
 
         return $this->json($this->normalizer->detail($portfolio), Response::HTTP_CREATED);
     }
@@ -77,7 +78,7 @@ class PublicationController extends AbstractController
         $source = $this->portfolio($uuid, PortfolioVoter::MODIFIER);
         $vitrine = $this->vitrines->trouver($this->etudiant()) ?? $this->vitrines->creer($this->etudiant());
         $pages = $this->corps($request)['pages'] ?? [];
-        $nb = $this->vitrines->copier($source, $vitrine, \is_array($pages) ? array_map('strval', $pages) : []);
+        $nb = $this->vitrines->copier($source, $vitrine, \is_array($pages) ? array_values(array_map(static fn (mixed $page): string => LooseValue::string($page), $pages)) : []);
 
         return $this->json(['copiees' => $nb, 'vitrine' => $this->normalizer->resume($vitrine)]);
     }
@@ -285,7 +286,7 @@ class PublicationController extends AbstractController
         $etat['peutPublier'] = $portfolio->getVisibilite() !== VisibilitePortfolioEnum::PRIVE;
         $etat['type'] = $portfolio->getType() === TypePortfolioEnum::VITRINE ? 'vitrine' : 'academique';
 
-        return $etat;
+        return array_replace([], $etat);
     }
 
     private function derniere(Portfolio $portfolio): PortfolioPublication
@@ -307,10 +308,11 @@ class PublicationController extends AbstractController
         return $portfolio;
     }
 
+    /** @return array<string, mixed> */
     private function corps(Request $request): array
     {
         try {
-            return $request->toArray();
+            return LooseValue::assoc($request->toArray());
         } catch (\Throwable) {
             throw UnifolioValidationException::un('Requête JSON invalide.');
         }

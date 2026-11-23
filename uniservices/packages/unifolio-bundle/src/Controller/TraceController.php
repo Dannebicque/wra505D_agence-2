@@ -44,10 +44,10 @@ class TraceController extends AbstractController
     public function liste(Request $request): JsonResponse
     {
         $traces = $this->traces->findBibliotheque($this->etudiant(), [
-            'scolarite' => $request->query->getInt('scolarite') ?: null,
+            'scolarite' => $request->query->getInt('scolarite') !== 0 ? $request->query->getInt('scolarite') : null,
             'statut' => StatutTraceEnum::tryFrom($request->query->getString('statut')),
-            'competence' => $request->query->getInt('competence') ?: null,
-            'q' => trim($request->query->getString('q')) ?: null,
+            'competence' => $request->query->getInt('competence') !== 0 ? $request->query->getInt('competence') : null,
+            'q' => trim($request->query->getString('q')) !== '' ? trim($request->query->getString('q')) : null,
         ]);
 
         return $this->json(array_map($this->normalizer->resume(...), $traces));
@@ -109,7 +109,14 @@ class TraceController extends AbstractController
     {
         $trace = $this->trace($uuid, TraceVoter::MODIFIER);
         $demandes = $this->corps($request)['rattachements'] ?? [];
-        $this->manager->definirRattachements($trace, \is_array($demandes) ? array_values($demandes) : []);
+        $this->manager->definirRattachements($trace, \is_array($demandes) ? array_map(static function (mixed $demande): array {
+            $d = LooseValue::assoc($demande);
+            return array_filter([
+                'type' => isset($d['type']) ? LooseValue::castString($d['type']) : null,
+                'id' => isset($d['id']) ? LooseValue::castInt($d['id']) : null,
+                'argumentaire' => isset($d['argumentaire']) ? LooseValue::nullableString($d['argumentaire']) : null,
+            ], static fn (mixed $value): bool => $value !== null);
+        }, array_values(array_filter($demandes, 'is_array'))) : []);
 
         return $this->json($this->normalizer->detail($trace));
     }
@@ -144,7 +151,7 @@ class TraceController extends AbstractController
     {
         $trace = $this->trace($uuid, TraceVoter::MODIFIER);
         $ids = $this->corps($request)['ids'] ?? [];
-        $this->manager->reordonnerMedias($trace, \is_array($ids) ? $ids : []);
+        $this->manager->reordonnerMedias($trace, \is_array($ids) ? array_map(LooseValue::castInt(...), $ids) : []);
 
         return $this->json($this->normalizer->detail($trace));
     }
@@ -219,7 +226,7 @@ class TraceController extends AbstractController
             throw UnifolioValidationException::un('Requête JSON invalide.');
         }
 
-        return $donnees;
+        return LooseValue::assoc($donnees);
     }
 
     private function etudiant(): Etudiant

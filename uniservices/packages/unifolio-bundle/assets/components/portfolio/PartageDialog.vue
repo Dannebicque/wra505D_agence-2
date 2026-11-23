@@ -164,7 +164,7 @@ const date = (iso) => formatDateFr(iso, 'moyenneHeure', '');
           v-for="v in etat.visibilitesAutorisees"
           :key="v.value"
           class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer"
-          :class="form.visibilite === v.value ? 'border-emerald-500 bg-emerald-50/50' : 'border-surface-200'"
+          :class="form.visibilite === v.value ? 'border-primary bg-highlight' : 'border-surface-200'"
         >
           <RadioButton v-model="form.visibilite" :value="v.value" name="visibilite" class="mt-1" />
           <span class="flex flex-col">
@@ -223,7 +223,7 @@ const date = (iso) => formatDateFr(iso, 'moyenneHeure', '');
           <Button v-if="actif" label="Retirer" icon="pi pi-eye-slash" severity="danger" outlined @click="depublier" />
           <Button v-if="form.visibilite === 'lien_secret' && url" label="Régénérer le lien" icon="pi pi-refresh" severity="secondary" outlined @click="regenerer" />
         </div>
-        <small v-if="!etat.renduDisponible" class="text-red-600">Le service de rendu n'est pas installé sur ce serveur : la publication est indisponible.</small>
+          <small v-if="!etat.renduDisponible" class="text-primary">Le service de rendu n'est pas installé sur ce serveur : la publication est indisponible.</small>
       </section>
 
       <!-- Historique et exports -->

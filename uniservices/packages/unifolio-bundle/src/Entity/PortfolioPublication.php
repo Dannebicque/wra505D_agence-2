@@ -45,10 +45,12 @@ class PortfolioPublication implements TimestampableInterface
     private bool $active = false;
 
     /** Instantané : { portfolio, pages: [{slug, titre, blocs}], donnees }. */
+    /** @var array<string, mixed> */
     #[ORM\Column(type: Types::JSON)]
     private array $instantane = [];
 
     /** Fichiers générés (relatifs au dossier de la publication), pour le service et l'export. */
+    /** @var list<string> */
     #[ORM\Column(type: Types::JSON)]
     private array $fichiers = [];
 
@@ -65,6 +67,7 @@ class PortfolioPublication implements TimestampableInterface
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $motifModeration = null;
 
+    /** @param array<string, mixed> $instantane */
     public function __construct(Portfolio $portfolio, int $numero, array $instantane)
     {
         $this->portfolio = $portfolio;
@@ -98,9 +101,10 @@ class PortfolioPublication implements TimestampableInterface
         return $this->active;
     }
 
+    /** @return array<string, mixed> */
     public function getInstantane(): array
     {
-        return $this->instantane;
+        return array_replace([], $this->instantane);
     }
 
     /** @return list<string> */
@@ -138,7 +142,7 @@ class PortfolioPublication implements TimestampableInterface
     public function marquerGeneree(array $fichiers): static
     {
         $this->statut = StatutRenduEnum::GENERE;
-        $this->fichiers = array_values($fichiers);
+        $this->fichiers = $fichiers;
         $this->erreur = null;
         $this->genereLe = new \DateTimeImmutable();
 

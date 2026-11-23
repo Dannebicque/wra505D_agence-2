@@ -42,7 +42,7 @@ final class ThemeNormalizer
         }
         if (isset($donnees['couleur'])) {
             $couleur = strtolower(trim(LooseValue::castString($donnees['couleur'])));
-            if (!preg_match('/^#[0-9a-f]{6}$/', $couleur)) {
+            if (preg_match('/^#[0-9a-f]{6}$/', $couleur) !== 1) {
                 throw new \InvalidArgumentException('La couleur doit être au format #rrggbb.');
             }
             if (self::contraste($couleur, '#ffffff') < self::CONTRASTE_MINI) {
@@ -55,6 +55,10 @@ final class ThemeNormalizer
     }
 
     /** Thème stocké (éventuellement ancien ou vide) ramené à un thème valide, sans jamais lever d'exception. */
+    /**
+     * @param array<string, mixed> $stocke
+     * @return array{couleur: string, police: string, entete: string, largeur: string, coins: string}
+     */
     public function lire(array $stocke): array
     {
         try {

@@ -70,7 +70,8 @@ class PortfolioDonnees
      */
     private function progression(Portfolio $portfolio, array $traces): array
     {
-        $niveaux = $this->referentiel->niveaux($portfolio->getScolarite());
+        $scolarite = $portfolio->getScolarite() ?? throw new \LogicException('Scolarité absente.');
+        $niveaux = $this->referentiel->niveaux($scolarite);
         $couverts = [];
         foreach ($traces as $trace) {
             if (!\in_array($trace->getStatut(), [StatutTraceEnum::DEPOSEE, StatutTraceEnum::EN_EVALUATION, StatutTraceEnum::EVALUEE], true)) {
@@ -120,6 +121,6 @@ class PortfolioDonnees
             'anneeUniversitaire' => $s->getAnneeUniversitaire()?->getLibelle(),
             'diplome' => $this->perimetre->getDiplome($s)?->getLibelle(),
             'actif' => $s->isActif(),
-        ], array_values($scolarites));
+        ], $scolarites);
     }
 }

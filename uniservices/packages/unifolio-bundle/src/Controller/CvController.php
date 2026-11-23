@@ -3,6 +3,7 @@
 namespace UnifolioBundle\Controller;
 
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,7 +44,7 @@ class CvController extends AbstractController
             throw UnifolioValidationException::un('Requête JSON invalide.');
         }
 
-        return $this->json($this->normalizer->document($this->manager->enregistrer($this->etudiant(), $d)));
+        return $this->json($this->normalizer->document($this->manager->enregistrer($this->etudiant(), LooseValue::assoc($d))));
     }
 
     private function etudiant(): Etudiant

@@ -149,13 +149,15 @@ class PublicationManager
             if ($media === null || !$media->hasFichier() || !$media->getTrace()->appartientA($portfolio->getEtudiant())) {
                 continue;
             }
-            $source = $this->medias->cheminAbsolu((string) $media->getChemin());
+            $source = $this->medias->cheminAbsolu($media->getChemin() ?? '');
             if (is_file($source)) {
                 $this->stockage->copier($publication, $m['destination'], $source);
                 $ecrits[] = $m['destination'];
             }
         }
-        $logo = $instantane['portfolio']['logo']['fichier'] ?? null;
+        $portfolioSnapshot = \App\Utils\LooseValue::assoc($instantane['portfolio'] ?? []);
+        $logoSnapshot = \App\Utils\LooseValue::assoc($portfolioSnapshot['logo'] ?? []);
+        $logo = $logoSnapshot['fichier'] ?? null;
         $cheminLogo = $logo !== null ? $this->logos->chemin($portfolio) : null;
         if ($logo !== null && $cheminLogo !== null && LogoManager::nomPublie($portfolio) === $logo) {
             $this->stockage->copier($publication, $logo, $cheminLogo);
@@ -163,7 +165,7 @@ class PublicationManager
         }
         $ecrits[] = PublicationStorage::FEUILLE;
 
-        return array_values(array_unique($ecrits));
+        return array_values(array_unique($ecrits, SORT_STRING));
     }
 
     private function ecrireFichiersDe(PortfolioPublication $publication): void

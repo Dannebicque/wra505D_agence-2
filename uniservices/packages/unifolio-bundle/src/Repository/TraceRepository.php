@@ -43,17 +43,17 @@ class TraceRepository extends ServiceEntityRepository
             ->orderBy('t.dateRealisation', 'DESC')
             ->addOrderBy('t.createdAt', 'DESC');
 
-        if (!empty($filtres['scolarite'])) {
+        if (($filtres['scolarite'] ?? null) !== null && $filtres['scolarite'] !== 0) {
             $qb->andWhere('IDENTITY(t.scolarite) = :scolarite')->setParameter('scolarite', $filtres['scolarite']);
         }
         if (($filtres['statut'] ?? null) instanceof StatutTraceEnum) {
             $qb->andWhere('t.statut = :statut')->setParameter('statut', $filtres['statut']);
         }
-        if (!empty($filtres['q'])) {
+        if (($filtres['q'] ?? null) !== null && $filtres['q'] !== '') {
             $qb->andWhere('t.titre LIKE :q OR t.contexte LIKE :q')
-                ->setParameter('q', '%' . addcslashes((string) $filtres['q'], '%_') . '%');
+                ->setParameter('q', '%' . addcslashes($filtres['q'], '%_') . '%');
         }
-        if (!empty($filtres['competence'])) {
+        if (($filtres['competence'] ?? null) !== null && $filtres['competence'] !== 0) {
             $sub = $this->getEntityManager()->createQueryBuilder()
                 ->select('IDENTITY(rf.trace)')
                 ->from(\UnifolioBundle\Entity\TraceRattachement::class, 'rf')

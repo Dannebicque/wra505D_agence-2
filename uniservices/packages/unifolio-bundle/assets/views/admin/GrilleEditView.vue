@@ -179,7 +179,7 @@ const adapter = async () => {
               <li v-for="e in grille.contenuBrouillon.erreursPublication" :key="e">{{ e }}</li>
             </ul>
           </Alert>
-          <small v-if="modifie" class="text-amber-600">Modifications non enregistrées.</small>
+          <small v-if="modifie" class="text-primary">Modifications non enregistrées.</small>
           <Button label="Enregistrer le brouillon" icon="pi pi-save" :loading="occupe" @click="enregistrer" />
           <Button label="Publier cette version" icon="pi pi-check-circle" severity="success" outlined :loading="occupe" @click="publier" />
           <Button v-if="grille.versionPubliee" label="Abandonner le brouillon" icon="pi pi-undo" severity="secondary" text @click="abandonner" />

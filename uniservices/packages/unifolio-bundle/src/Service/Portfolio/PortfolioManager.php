@@ -4,6 +4,7 @@ namespace UnifolioBundle\Service\Portfolio;
 
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use UnifolioBundle\Entity\Campagne;
 use UnifolioBundle\Entity\Portfolio;
@@ -70,9 +71,9 @@ class PortfolioManager
         $pages = $modele?->getPages() ?? ModeleParDefaut::pages($this->competencesDeLAnnee($scolarite), $titre);
         $contexte = new ContexteModele();
         foreach ($pages as $definition) {
-            $page = $portfolio->ajouterPage((string) $definition['titre'], (bool) ($definition['verrouillee'] ?? false));
+            $page = $portfolio->ajouterPage($definition['titre'], $definition['verrouillee']);
             // Les blocs d'un modèle sont revalidés : le schéma a pu évoluer depuis son enregistrement.
-            $page->initialiser($this->validateur->valider($definition['blocs'] ?? [], $contexte), $definition['verrouilles'] ?? []);
+            $page->initialiser($this->validateur->valider($definition['blocs'], $contexte), $definition['verrouilles']);
         }
         $this->em->persist($portfolio);
 
@@ -173,7 +174,7 @@ class PortfolioManager
     private function competencesDeLAnnee(EtudiantScolarite $scolarite): array
     {
         return array_map(
-            static fn (array $c) => ['id' => $c['id'], 'libelle' => $c['libelle'], 'nomCourt' => $c['nomCourt']],
+            static fn (array $c) => ['id' => LooseValue::nullableInt($c['id']), 'libelle' => LooseValue::nullableString($c['libelle']), 'nomCourt' => LooseValue::nullableString($c['nomCourt'])],
             $this->referentiel->arbre($scolarite)
         );
     }

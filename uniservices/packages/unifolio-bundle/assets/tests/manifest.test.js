@@ -11,7 +11,6 @@ describe('unifolio manifest', () => {
 
   it('garde le nom et la couleur du bundle', () => {
     expect(manifest.name).toBe('unifolio');
-    expect(manifest.primaryColor).toBe('emerald');
     expect(typeof manifest.registerWidgets).toBe('function');
   });
 

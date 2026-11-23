@@ -98,7 +98,7 @@ const ouvrir = (l) => router.push(`/unifolio/evaluations/etudiants/${choix.value
           <caption class="sr-only">Couverture du référentiel par étudiant et par compétence</caption>
           <thead>
             <tr class="text-left">
-              <th scope="col" class="p-3 sticky left-0 bg-white dark:bg-surface-900 z-10">Étudiant</th>
+              <th scope="col" class="p-3 sticky left-0 bg-surface-0 z-10">Étudiant</th>
               <th v-for="c in suivi.competences" :key="c.id" scope="col" class="p-2 text-center">
                 <span class="inline-block px-2 py-1 rounded text-xs font-semibold" :style="{ background: couleurCompetence(c.couleur), color: texteSurCompetence(c.couleur) }" :title="c.libelle">{{ c.nomCourt }}</span>
               </th>
@@ -108,7 +108,7 @@ const ouvrir = (l) => router.push(`/unifolio/evaluations/etudiants/${choix.value
           </thead>
           <tbody>
             <tr v-for="l in lignes" :key="l.etudiant.id" class="border-t border-surface-200 hover:bg-surface-50 cursor-pointer" tabindex="0" @click="ouvrir(l)" @keydown.enter="ouvrir(l)">
-              <th scope="row" class="p-3 text-left font-medium sticky left-0 bg-white dark:bg-surface-900">{{ l.etudiant.nom }} {{ l.etudiant.prenom }}</th>
+              <th scope="row" class="p-3 text-left font-medium sticky left-0 bg-surface-0">{{ l.etudiant.nom }} {{ l.etudiant.prenom }}</th>
               <td v-for="c in suivi.competences" :key="c.id" class="p-1 text-center">
                 <div v-if="l.cellules[c.id]" class="rounded px-2 py-1 leading-tight" :style="teinteScore(l.cellules[c.id].evalScore)" :title="`Couverts ${l.cellules[c.id].couverts}/${l.cellules[c.id].total} · auto-évaluation ${pourcent(l.cellules[c.id].autoScore) ?? '–'} %`">
                   <strong>{{ l.cellules[c.id].couverts }}/{{ l.cellules[c.id].total }}</strong>

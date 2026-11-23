@@ -19,7 +19,7 @@ class ParametrageFormationRepository extends ServiceEntityRepository
     /** Paramétrage en vigueur pour une année : le plus récent dont l'année d'application est antérieure ou égale. */
     public function findApplicable(StructureDiplome $diplome, StructureAnneeUniversitaire $annee): ?ParametrageFormation
     {
-        return $this->createQueryBuilder('p')
+        $resultat = $this->createQueryBuilder('p')
             ->join('p.applicableDepuis', 'a')
             ->andWhere('p.diplome = :diplome')->setParameter('diplome', $diplome)
             ->andWhere('a.annee <= :annee')->setParameter('annee', $annee->getAnnee())
@@ -27,6 +27,7 @@ class ParametrageFormationRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+        return $resultat instanceof ParametrageFormation ? $resultat : null;
     }
 
     /** @return ParametrageFormation[] historique, du plus récent au plus ancien */

@@ -39,28 +39,33 @@ class SuiviCalculator
             return ['disponible' => false, 'message' => $e->getMessage(), 'competences' => [], 'resume' => self::resumeVide()];
         }
 
-        $elements = $this->bilan->elements($scolarite->getEtudiant(), $scolarite, $granularite, null, $vueEnseignant);
+        $etudiant = $scolarite->getEtudiant() ?? throw new \LogicException('Scolarité sans étudiant.');
+        $elements = $this->bilan->elements($etudiant, $scolarite, $granularite, null, $vueEnseignant);
         $competences = [];
         $traitees = 0;
         $aEvaluer = 0;
         $ecartMax = null;
-        foreach ($elements as $el) {
+        foreach ($elements as $rawElement) {
+            $el = $this->element($rawElement);
             $c = $el['competence'] ?? null;
+            $c = $c === null ? [] : LooseValue::assoc($c);
             $cle = LooseValue::castInt($c['id'] ?? 0);
             $competences[$cle] ??= [
                 'id' => $c['id'] ?? null, 'nomCourt' => $c['nomCourt'] ?? 'Autre', 'libelle' => $c['libelle'] ?? null, 'couleur' => $c['couleur'] ?? null,
                 'total' => 0, 'couverts' => 0, 'nbTraces' => 0, '_eval' => [], '_auto' => [], 'elements' => [],
             ];
 
-            $couvertes = array_filter($el['traces'], static fn (array $t) => \in_array($t['statutValue'], self::STATUTS_COUVRANTS, true));
+            $traces = LooseValue::row($el['traces'] ?? []);
+            $couvertes = array_filter($traces, static fn (mixed $t) => \in_array(LooseValue::assoc($t)['statutValue'] ?? null, self::STATUTS_COUVRANTS, true));
             $couvert = $couvertes !== [];
-            $eval = $el['synthese']['score'] ?? $this->moyenne(array_map(
-                static fn (array $e) => $e['score'] ?? null,
-                array_filter($el['evaluationsBilan'], static fn (array $e) => ($e['statut']['value'] ?? null) === 'rendue')
-            ));
+            $eval = LooseValue::nullableFloat(LooseValue::assoc($el['synthese'] ?? [])['score'] ?? null) ?? $this->moyenne(array_values(array_map(
+                static fn (mixed $e) => LooseValue::nullableFloat(LooseValue::assoc($e)['score'] ?? null),
+                array_filter(LooseValue::row($el['evaluationsBilan'] ?? []), static fn (mixed $e) => (LooseValue::assoc(LooseValue::assoc($e)['statut'] ?? [])['value'] ?? null) === 'rendue')
+            )));
             $auto = $this->scoreAuto($el);
             foreach ($couvertes as $t) {
-                $rendue = array_filter($t['evaluations'], static fn (array $e) => ($e['statut']['value'] ?? null) === 'rendue');
+                $t = LooseValue::assoc($t);
+                $rendue = array_filter(LooseValue::row($t['evaluations'] ?? []), static fn (mixed $e) => (LooseValue::assoc(LooseValue::assoc($e)['statut'] ?? [])['value'] ?? null) === 'rendue');
                 if ($rendue === []) {
                     ++$aEvaluer;
                 }
@@ -78,7 +83,7 @@ class SuiviCalculator
                 $comp['_auto'][] = $auto;
             }
             if ($eval !== null && $auto !== null) {
-                $ecartMax = max($ecartMax ?? 0.0, abs($eval - $auto));
+                $ecartMax = max($ecartMax ?? 0.0, abs(LooseValue::float($eval) - LooseValue::float($auto)));
             }
             if ($detail) {
                 $comp['elements'][] = [
@@ -125,17 +130,65 @@ class SuiviCalculator
     }
 
     /** Auto-évaluation du bilan de l'élément si elle est soumise, sinon moyenne de celles de ses traces. */
+    /**
+     * @param array<string, mixed> $value
+     * @return array<string, mixed>
+     */
+    private function element(mixed $value): array
+    {
+        $row = LooseValue::assoc($value);
+        $competence = $row['competence'] === null ? null : LooseValue::assoc($row['competence']);
+        $traces = [];
+        foreach (LooseValue::row($row['traces'] ?? []) as $trace) {
+            $traceRow = LooseValue::assoc($trace);
+            $evaluations = [];
+            foreach (LooseValue::row($traceRow['evaluations'] ?? []) as $evaluation) {
+                $evaluationRow = LooseValue::assoc($evaluation);
+                $evaluations[] = ['statut' => LooseValue::assoc($evaluationRow['statut'] ?? [])];
+            }
+            $auto = $traceRow['autoEvaluation'] === null ? null : LooseValue::assoc($traceRow['autoEvaluation']);
+            $traces[] = ['statutValue' => $traceRow['statutValue'] ?? null, 'evaluations' => $evaluations, 'autoEvaluation' => $auto];
+        }
+        $evaluationsBilan = [];
+        foreach (LooseValue::row($row['evaluationsBilan'] ?? []) as $evaluation) {
+            $evaluationRow = LooseValue::assoc($evaluation);
+            $evaluationsBilan[] = ['score' => $evaluationRow['score'] ?? null, 'statut' => LooseValue::assoc($evaluationRow['statut'] ?? [])];
+        }
+        $bilan = $row['bilan'] === null ? null : LooseValue::assoc($row['bilan']);
+
+        return [
+            'bilan' => $bilan,
+            'competence' => $competence,
+            'traces' => $traces,
+            'evaluationsBilan' => $evaluationsBilan,
+            'synthese' => LooseValue::assoc($row['synthese'] ?? []),
+            'type' => $row['type'] ?? null, 'id' => $row['id'] ?? null, 'code' => $row['code'] ?? null,
+            'ordre' => $row['ordre'] ?? null, 'libelle' => $row['libelle'] ?? null,
+        ];
+    }
+
+    /** @param array<string, mixed> $el */
     private function scoreAuto(array $el): ?float
     {
-        $soumise = static fn (?array $a) => $a !== null && ($a['statut']['value'] ?? null) === 'soumise' && ($a['score'] ?? null) !== null;
+        $soumise = static function (mixed $a): bool {
+            if (!is_array($a)) {
+                return false;
+            }
+            $a = LooseValue::assoc($a);
+            return (LooseValue::assoc($a['statut'] ?? [])['value'] ?? null) === 'soumise' && ($a['score'] ?? null) !== null;
+        };
         if ($soumise($el['bilan'])) {
-            return (float) $el['bilan']['score'];
+            return LooseValue::float(LooseValue::assoc($el['bilan'])['score']);
         }
 
-        return $this->moyenne(array_map(
-            static fn (array $t) => $soumise($t['autoEvaluation']) ? (float) $t['autoEvaluation']['score'] : null,
-            $el['traces']
-        ));
+        return $this->moyenne(array_values(array_map(
+            static function (mixed $t) use ($soumise): ?float {
+                $trace = LooseValue::assoc($t);
+
+                return $soumise($trace['autoEvaluation'] ?? null) ? LooseValue::float(LooseValue::assoc($trace['autoEvaluation'])['score']) : null;
+            },
+            LooseValue::row($el['traces'] ?? [])
+        )));
     }
 
     /** @param array<int, float|int|null> $valeurs */

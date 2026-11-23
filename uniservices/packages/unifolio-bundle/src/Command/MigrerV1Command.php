@@ -48,8 +48,8 @@ final class MigrerV1Command extends Command
         $io = new SymfonyStyle($input, $output);
         $rapport = new RapportMigration();
 
-        if ($input->getOption('purge')) {
-            if (!$input->getOption('force') && !$io->confirm('Supprimer toutes les traces, portfolios et CV créés par la migration ?', false)) {
+        if (LooseValue::bool($input->getOption('purge'))) {
+            if (!LooseValue::bool($input->getOption('force')) && !$io->confirm('Supprimer toutes les traces, portfolios et CV créés par la migration ?', false)) {
                 return Command::SUCCESS;
             }
             $this->migration->purger($rapport);
@@ -58,7 +58,7 @@ final class MigrerV1Command extends Command
             return Command::SUCCESS;
         }
 
-        $dsn = LooseValue::castString($input->getOption('dsn') ?: ($_ENV['UNIFOLIO_V1_DATABASE_URL'] ?? $_SERVER['UNIFOLIO_V1_DATABASE_URL'] ?? ''));
+        $dsn = LooseValue::castString($input->getOption('dsn') ?? ($_ENV['UNIFOLIO_V1_DATABASE_URL'] ?? $_SERVER['UNIFOLIO_V1_DATABASE_URL'] ?? ''));
         if ($dsn === '') {
             $io->error('Indiquez la base v1 avec --dsn ou la variable UNIFOLIO_V1_DATABASE_URL.');
 
@@ -90,25 +90,25 @@ final class MigrerV1Command extends Command
             return Command::FAILURE;
         }
         $io->success('Schéma de la base v1 compatible.');
-        if ($input->getOption('check')) {
+        if (LooseValue::bool($input->getOption('check'))) {
             return Command::SUCCESS;
         }
 
-        $dossier = LooseValue::castString($input->getOption('files-dir') ?: ($_ENV['UNIFOLIO_V1_FILES_DIR'] ?? $_SERVER['UNIFOLIO_V1_FILES_DIR'] ?? ''));
+        $dossier = LooseValue::castString($input->getOption('files-dir') ?? ($_ENV['UNIFOLIO_V1_FILES_DIR'] ?? $_SERVER['UNIFOLIO_V1_FILES_DIR'] ?? ''));
         if ($dossier === '' || !is_dir($dossier)) {
             $io->error('Dossier des fichiers v1 introuvable : indiquez --files-dir ou UNIFOLIO_V1_FILES_DIR.');
 
             return Command::INVALID;
         }
 
-        $demandees = (array) $input->getOption('step');
+        $demandees = array_map(static fn (mixed $etape): string => LooseValue::castString($etape), array_values(LooseValue::row($input->getOption('step'))));
         $etapes = \in_array('all', $demandees, true) ? MigrationV1::ETAPES : array_values(array_intersect($demandees, MigrationV1::ETAPES));
         if ($etapes === [] || array_diff($demandees, [...MigrationV1::ETAPES, 'all']) !== []) {
             $io->error('Étape inconnue. Étapes : '.implode(', ', MigrationV1::ETAPES).', all.');
 
             return Command::INVALID;
         }
-        $essai = (bool) $input->getOption('dry-run');
+        $essai = LooseValue::bool($input->getOption('dry-run'));
         $io->title(sprintf('Migration UniFolio v1%s — étapes : %s', $essai ? ' (essai, rien n\'est conservé)' : '', implode(', ', $etapes)));
 
         $limite = $input->getOption('limite') !== null ? max(1, LooseValue::castInt($input->getOption('limite'))) : null;
@@ -122,9 +122,9 @@ final class MigrerV1Command extends Command
         }
         $io->table(['Objet', 'Résultat', 'Nombre'], $lignes);
         $this->afficherEcarts($io, $rapport);
-        if ($chemin = $input->getOption('rapport')) {
+        if (($chemin = $input->getOption('rapport')) !== null) {
             file_put_contents(LooseValue::castString($chemin), $rapport->csv());
-            $io->writeln(sprintf('Rapport d\'écarts écrit dans %s', $chemin));
+            $io->writeln(sprintf('Rapport d\'écarts écrit dans %s', LooseValue::castString($chemin)));
         }
 
         return $rapport->nbEcarts('erreur') > 0 ? Command::FAILURE : Command::SUCCESS;

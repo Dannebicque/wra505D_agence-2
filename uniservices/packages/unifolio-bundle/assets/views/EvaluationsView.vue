@@ -81,7 +81,7 @@ const aFaire = (e) => e.aEvaluer + e.enCours + e.aReprendre;
               </span>
               <span v-else class="text-muted-color">0</span>
             </td>
-            <td class="p-3 text-center"><span :class="e.rendues ? 'text-emerald-700 font-medium' : 'text-muted-color'">{{ e.rendues }}</span></td>
+            <td class="p-3 text-center"><span :class="e.rendues ? 'text-primary font-medium' : 'text-muted-color'">{{ e.rendues }}</span></td>
           </tr>
         </tbody>
         <tfoot v-if="aFaire(g.totaux) > 0">

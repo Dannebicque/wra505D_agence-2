@@ -3,6 +3,7 @@
 namespace UnifolioBundle\Service\Evaluation;
 
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use UnifolioBundle\Entity\Campagne;
 use UnifolioBundle\Entity\Evaluation;
 use UnifolioBundle\Enum\StatutEvaluationEnum;
@@ -42,7 +43,16 @@ class FileEvaluation
         foreach ($parCampagne as $groupe) {
             $file[] = $this->campagne($evaluateur, $groupe['campagne'], $groupe['etudiants']);
         }
-        usort($file, static fn (array $a, array $b) => [$a['campagne']['phase']['value'] === 'cloturee', $b['campagne']['anneeUniversitaire']['libelle']] <=> [$b['campagne']['phase']['value'] === 'cloturee', $a['campagne']['anneeUniversitaire']['libelle']]);
+        usort($file, static function (array $a, array $b): int {
+            $campagneA = LooseValue::assoc($a['campagne'] ?? []);
+            $campagneB = LooseValue::assoc($b['campagne'] ?? []);
+            $phaseA = LooseValue::assoc($campagneA['phase'] ?? []);
+            $phaseB = LooseValue::assoc($campagneB['phase'] ?? []);
+            $anneeA = LooseValue::assoc($campagneA['anneeUniversitaire'] ?? []);
+            $anneeB = LooseValue::assoc($campagneB['anneeUniversitaire'] ?? []);
+
+            return [LooseValue::string($phaseA['value'] ?? '') === 'cloturee', LooseValue::string($anneeB['libelle'] ?? '')] <=> [LooseValue::string($phaseB['value'] ?? '') === 'cloturee', LooseValue::string($anneeA['libelle'] ?? '')];
+        });
 
         return $file;
     }
@@ -86,7 +96,7 @@ class FileEvaluation
                 }
             }
             foreach (['aEvaluer', 'enCours', 'aReprendre', 'enAttente'] as $k) {
-                $totaux[$k] += $ligne[$k];
+                $totaux[$k] += LooseValue::castInt($ligne[$k] ?? 0);
             }
             $lignes[] = $ligne;
         }
@@ -95,14 +105,14 @@ class FileEvaluation
     }
 
     /**
-     * @param array<string, int|string|null>                 $ligne
+     * @param array<string, mixed>                            $ligne
      * @param \UnifolioBundle\Entity\AutoEvaluation|false|null $auto false = auto-évaluation non exigée
      */
     private function compter(array &$ligne, \UnifolioBundle\Entity\Trace $trace, ?Evaluation $mienne, \UnifolioBundle\Entity\AutoEvaluation|false|null $auto): void
     {
         if ($trace->getStatut() === StatutTraceEnum::A_REVISER) {
             if ($mienne?->getStatut() === StatutEvaluationEnum::REVISION_DEMANDEE) {
-                ++$ligne['enAttente'];
+                $ligne['enAttente'] = LooseValue::castInt($ligne['enAttente'] ?? 0) + 1;
             }
 
             return;
@@ -111,23 +121,23 @@ class FileEvaluation
         switch ($mienne?->getStatut()) {
             case null:
                 if ($auto !== false && ($auto === null || $auto->isModifiable())) {
-                    ++$ligne['attenteAutoEvaluation'];
+                    $ligne['attenteAutoEvaluation'] = LooseValue::castInt($ligne['attenteAutoEvaluation'] ?? 0) + 1;
                 } else {
-                    ++$ligne['aEvaluer'];
+                    $ligne['aEvaluer'] = LooseValue::castInt($ligne['aEvaluer'] ?? 0) + 1;
                 }
                 break;
             case StatutEvaluationEnum::EN_COURS:
-                ++$ligne['enCours'];
+                $ligne['enCours'] = LooseValue::castInt($ligne['enCours'] ?? 0) + 1;
                 break;
             case StatutEvaluationEnum::RENDUE:
-                ++$ligne['rendues'];
+                $ligne['rendues'] = LooseValue::castInt($ligne['rendues'] ?? 0) + 1;
                 break;
             case StatutEvaluationEnum::REVISION_DEMANDEE:
                 $depuis = $trace->getDeposeeLe();
                 if ($depuis !== null && $mienne->getRendueLe() !== null && $mienne->getRendueLe() < $depuis) {
-                    ++$ligne['aReprendre'];
+                    $ligne['aReprendre'] = LooseValue::castInt($ligne['aReprendre'] ?? 0) + 1;
                 } else {
-                    ++$ligne['enAttente'];
+                    $ligne['enAttente'] = LooseValue::castInt($ligne['enAttente'] ?? 0) + 1;
                 }
                 break;
         }

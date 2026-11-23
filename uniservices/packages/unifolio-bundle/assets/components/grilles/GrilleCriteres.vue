@@ -57,7 +57,7 @@ const libelleType = (v) => TYPES_CRITERE.find((t) => t.value === v)?.label ?? v;
         v-for="(c, i) in (enEdition ? criteres : affiche ?? [])"
         :key="i"
         class="border rounded-lg p-3 flex flex-col gap-3"
-        :class="c.source === 'declaration_ia' ? 'border-violet-300 bg-violet-50/40 dark:bg-violet-950/20' : 'border-surface-200'"
+        :class="c.source === 'declaration_ia' ? 'border-surface bg-emphasis' : 'border-surface-200'"
       >
         <template v-if="enEdition">
           <div class="flex flex-wrap items-center gap-2">
