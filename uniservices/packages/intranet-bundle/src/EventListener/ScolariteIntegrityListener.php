@@ -66,7 +66,13 @@ final readonly class ScolariteIntegrityListener
                 }
             }
             if ($entity instanceof EtudiantScolariteSemestre && !$this->context->isActive()) {
-                if (array_intersect(array_keys($changes), ['moyenne', 'rang', 'decision']) !== []) {
+                // Une inscription créée porte tous ses champs dans le jeu de changements, même vides :
+                // seul un résultat qui change réellement est refusé.
+                $resultatModifie = array_filter(
+                    ['moyenne', 'rang', 'decision'],
+                    static fn (string $champ): bool => isset($changes[$champ]) && LooseValue::row($changes[$champ])[0] !== LooseValue::row($changes[$champ])[1],
+                );
+                if ($resultatModifie !== []) {
                     throw new ConflictHttpException('Les résultats semestriels sont écrits uniquement lors de la validation.');
                 }
             }

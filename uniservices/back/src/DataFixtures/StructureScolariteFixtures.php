@@ -10,6 +10,7 @@ use App\Repository\Structure\StructureDepartementRepository;
 use App\Repository\Structure\StructureGroupeRepository;
 use App\Repository\Structure\StructureSemestreRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use IntranetBundle\Commission\Service\CommissionWriteContext;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Uid\Uuid;
@@ -27,6 +28,7 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         StructureAnneeUniversitaireRepository $anneeUniversitaireRepository,
         private readonly StructureGroupeRepository $groupeRepository,
         private readonly StructureDepartementRepository $departementRepository,
+        private readonly CommissionWriteContext $commissionWrite,
     ) {
         $this->semestreRepository = $semestreRepository;
         $this->etudiantRepository = $etudiantRepository;
@@ -106,6 +108,7 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         $manager->persist($scolarite2);
         $manager->persist($scolariteSemestre2);
 
-        $manager->flush();
+        // Les résultats de démonstration (moyenne, rang, décision) passent par la porte de la validation.
+        $this->commissionWrite->run(static fn () => $manager->flush());
     }
 }
