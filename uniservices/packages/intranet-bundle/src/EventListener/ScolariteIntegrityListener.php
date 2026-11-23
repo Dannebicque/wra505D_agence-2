@@ -66,7 +66,16 @@ final readonly class ScolariteIntegrityListener
                 }
             }
             if ($entity instanceof EtudiantScolariteSemestre && !$this->context->isActive()) {
-                if (array_intersect(array_keys($changes), ['moyenne', 'rang', 'decision']) !== []) {
+                // À l'insertion, Doctrine place chaque champ dans le changeset, même resté à null :
+                // seule une valeur de résultat effectivement posée ou effacée est refusée.
+                $resultatModifie = false;
+                foreach (['moyenne', 'rang', 'decision'] as $champ) {
+                    $change = $changes[$champ] ?? null;
+                    if (is_array($change) && ($change[0] !== null || $change[1] !== null)) {
+                        $resultatModifie = true;
+                    }
+                }
+                if ($resultatModifie) {
                     throw new ConflictHttpException('Les résultats semestriels sont écrits uniquement lors de la validation.');
                 }
             }
