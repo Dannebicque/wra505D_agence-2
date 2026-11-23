@@ -60,6 +60,12 @@ class EtudiantFilter implements FilterInterface
                 ->andWhere(sprintf('%s.id = :anneeUniversitaire', $anneeUnivAlias))
                 ->setParameter('anneeUniversitaire', $value);
 
+            if (isset($context['filters']['annee'])) {
+                $anneeAlias = $this->getAnneeFormationAlias($queryBuilder, $queryNameGenerator, $scolaritesAlias);
+                $queryBuilder
+                    ->andWhere(sprintf('%s.id = :annee', $anneeAlias))
+                    ->setParameter('annee', $context['filters']['annee']);
+            }
         }
 
         if ('semestre' === $property) {

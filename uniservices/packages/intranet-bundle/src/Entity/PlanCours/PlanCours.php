@@ -30,16 +30,19 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(normalizationContext: ['groups' => ['plancours:read', 'plancours:detail']], security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')"),
         new GetCollection(normalizationContext: ['groups' => ['plancours:read', 'plancours:list']], security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')"),
         new Post(
+            securityPostDenormalize: "is_granted('CAN_MANAGE_PLAN_COURS', object)",
             normalizationContext: ['groups' => ['plancours:read']],
             denormalizationContext: ['groups' => ['plancours:write']],
             security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
         new Patch(
+            security: "is_granted('CAN_MANAGE_PLAN_COURS', object)",
+            securityPostDenormalize: "is_granted('CAN_MANAGE_PLAN_COURS', object)",
             normalizationContext: ['groups' => ['plancours:read']],
             denormalizationContext: ['groups' => ['plancours:write']],
             security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
-        new Delete(security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')"),
+        new Delete(security: "is_granted('CAN_MANAGE_PLAN_COURS', object)"),
     ],
     paginationEnabled: false
 )]

@@ -78,6 +78,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         'diplome' => new QueryParameter(filter: SemestreFilter::class),
         'annee' => new QueryParameter(filter: SemestreFilter::class),
         'actif' => new QueryParameter(filter: SemestreFilter::class),
+        'anneeUniversitaire' => new QueryParameter(filter: SemestreFilter::class),
     ],
 )]
 class StructureSemestre implements TimestampableInterface

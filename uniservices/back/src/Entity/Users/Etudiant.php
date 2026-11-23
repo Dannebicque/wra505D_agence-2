@@ -42,12 +42,11 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 ])]
 #[ApiResource(
     operations: [
-        new Get(
-            normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light', 'semestre:light', 'groupe:light', 'annee_univ:light']],
-            security: "is_granted('CAN_VIEW_ETUDIANT', object)",
-        ),
+        new Get(security: "is_granted('CAN_VIEW_ETUDIANT', object)", requirements: ['id' => '\d+'], normalizationContext: ['groups' => ['etudiant:detail', 'scolarite:light', 'bac:light', 'semestre:light', 'groupe:light', 'annee_univ:light']]),
         new Get(
             uriTemplate: '/scolarite/etudiant/{id}',
+            security: "is_granted('CAN_VIEW_ETUDIANT', object)",
+            requirements: ['id' => '\d+'],
             normalizationContext: ['groups' => ['etudiant:scolarite']],
             security: "is_granted('CAN_VIEW_ETUDIANT', object)",
         ),

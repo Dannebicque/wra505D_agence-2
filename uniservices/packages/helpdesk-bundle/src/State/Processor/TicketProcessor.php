@@ -55,14 +55,12 @@ class TicketProcessor implements ProcessorInterface
             }
         }
 
-        // Résolution de l'auteur
-        if ((bool) $auteurPath) {
-            $auteurId = basename(LooseValue::castString($auteurPath));
-            $auteur = $this->em->getRepository(Personnel::class)->find($auteurId);
-            if ($auteur instanceof Personnel) {
-                $ticket->setAuteur($auteur);
-            }
+        // L’auteur provient du compte authentifié, jamais du formulaire multipart.
+        $author = $this->security->getUser();
+        if (!$author instanceof Personnel) {
+            throw new AccessDeniedException();
         }
+        $ticket->setAuteur($author);
 
         // 👇 Gestion des fichiers uploadés
         $savedFiles = [];

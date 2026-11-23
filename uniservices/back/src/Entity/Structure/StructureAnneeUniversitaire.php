@@ -126,12 +126,6 @@ class StructureAnneeUniversitaire implements TimestampableInterface
     #[ORM\OneToMany(targetEntity: StructurePn::class, mappedBy: 'anneeUniversitaire', orphanRemoval: true, cascade: ['remove'])]
     private Collection $pns;
 
-    /**
-     * @var Collection<int, Personnel>
-     */
-    #[ORM\OneToMany(targetEntity: Personnel::class, mappedBy: 'anneeUniversitaire')]
-    private Collection $personnels;
-
     #[ORM\Column]
     #[Groups(['annee_universitaire:detail', 'annee_universitaire:write', 'maquette:detail', 'pn:read', 'scolarite:read', 'etudiant:read', 'scolarite:user'])]
     private bool $actif = false;

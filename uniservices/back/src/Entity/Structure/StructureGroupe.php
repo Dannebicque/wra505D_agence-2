@@ -105,10 +105,6 @@ class StructureGroupe
     #[Groups(['groupe:detail', 'edt_event:read:agenda', 'groupe:structure'])]
     private Collection $enfants;
 
-    #[ORM\ManyToOne(targetEntity: ApcParcours::class, inversedBy: 'groupes')]
-    #[Groups(['groupe:detail', 'groupe:structure'])]
-    private ?ApcParcours $parcours = null;
-
     /**
      * @var Collection<int, EdtEvent>
      */

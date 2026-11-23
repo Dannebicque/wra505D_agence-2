@@ -13,6 +13,8 @@ use App\Repository\Structure\StructureGroupeRepository;
 use App\Repository\Structure\StructureSemestreRepository;
 use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -24,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 class SynchroSemestrePreviousProcessor implements ProcessorInterface
 {
     public function __construct(
+        private readonly Security $security,
         private readonly StructureSemestreRepository $semestreRepository,
         private readonly StructureGroupeRepository $groupeRepository,
         private readonly EtudiantScolariteSemestreRepository $scoSemestreRepository,
@@ -52,6 +55,12 @@ class SynchroSemestrePreviousProcessor implements ProcessorInterface
         $currentSemestre = $this->semestreRepository->find($semestreId);
         if (!$currentSemestre instanceof StructureSemestre) {
             return $this->result('semester_not_found', 'Semestre courant introuvable.');
+        }
+
+        if (!$this->security->isGranted('CAN_EDIT_SEMESTRE', $currentSemestre)
+            && ($currentSemestre->getDepartement() === null
+                || !$this->security->isGranted('ROLE_SCOLARITE', $currentSemestre->getDepartement()))) {
+            throw new AccessDeniedException();
         }
 
         if (!$this->security->isGranted('CAN_EDIT_SEMESTRE', $currentSemestre)

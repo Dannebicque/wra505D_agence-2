@@ -137,11 +137,6 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     #[Groups(['personnel:detail', 'personnel:config'])]
     private Collection $assistantDiplome;
 
-    #[ORM\ManyToOne(inversedBy: 'personnels')]
-    #[Groups(['personnel:detail'])]
-    private ?StructureAnneeUniversitaire $anneeUniversitaire = null;
-
-    /** @var array{adresse: string, complement1: string, complement2: string, ville: string, codePostal: string, pays: string}|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?array $adressePersonnelle = null;
@@ -849,7 +844,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     #[Groups(['personnel:detail', 'previsionnel_personnel:read', 'previsionnel_all_personnels:read', 'personnel:liste'])]
     public function getStatutSeverity(): string
     {
-        return $this->statut?->getBadge() ?? '';
+        return $this->statut?->getBadge() ?? 'secondary';
     }
 
     /**

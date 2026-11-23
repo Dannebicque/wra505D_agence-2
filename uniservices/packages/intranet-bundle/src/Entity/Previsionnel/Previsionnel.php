@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Utils\LooseValue;
+use ApiPlatform\Metadata\QueryParameter;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelAllPersonnelsDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelPersonnelDto;
@@ -216,6 +217,50 @@ class Previsionnel
     public function getHeures(): array
     {
         return $this->heures;
+    }
+
+    #[Assert\Callback]
+    public function verifierSaisie(ExecutionContextInterface $context): void
+    {
+        foreach ($this->heures as $type => $heures) {
+            if (!is_numeric($heures) || !is_finite((float) $heures) || $heures < 0) {
+                $context->buildViolation('Le nombre d’heures doit être positif ou nul.')
+                    ->atPath('heures['.$type.']')->addViolation();
+            }
+        }
+        foreach ($this->groupes as $type => $groupes) {
+            if ($groupes < 0) {
+                $context->buildViolation('Le nombre de groupes doit être positif ou nul.')
+                    ->atPath('groupes['.$type.']')->addViolation();
+            }
+        }
+
+        if ($this->anneeUniversitaire === null || $this->enseignement === null) {
+            return;
+        }
+        foreach ($this->enseignement->getEnseignementUes() as $lien) {
+            if ($lien->getUe()?->getSemestre()?->getAnnee()?->getPn()?->getAnneeUniversitaire() === $this->anneeUniversitaire) {
+                return;
+            }
+        }
+        $context->buildViolation('L’enseignement doit appartenir à la maquette de l’année universitaire.')
+            ->atPath('enseignement')->addViolation();
+    }
+
+    public function getRepartitionHeures(): array
+    {
+        $repartition = [];
+        foreach (['CM', 'TD', 'TP', 'Projet'] as $type) {
+            $heures = $this->heures[$type] ?? 0;
+            $groupes = (int) ($this->groupes[$type] ?? 0);
+            $repartition[$type] = [
+                'NbHrGrp' => $type !== 'Projet' && $groupes > 0 ? $heures / $groupes : $heures,
+                'NbGrp' => $groupes,
+                'NbSeanceGrp' => round($heures / self::DUREE_SEANCE, 1),
+            ];
+        }
+
+        return $repartition;
     }
 
     /** @param array<string, float|int> $heures */
