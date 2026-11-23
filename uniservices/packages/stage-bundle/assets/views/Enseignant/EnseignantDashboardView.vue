@@ -397,18 +397,18 @@ const getInitials = (name) => {
 
     <!-- Navigation Tabs: Année en cours & Archives -->
     <Tabs v-model:value="activeTab" class="w-full">
-      <TabList class="mb-4 border-b border-slate-200 dark:border-slate-800">
+      <TabList class="mb-4 border-b border-surface ">
         <Tab value="current" class="flex items-center gap-2 cursor-pointer font-bold text-sm py-3 px-4">
-          <CalendarDaysIcon class="w-4 h-4 text-violet-600 dark:text-violet-400" />
+          <CalendarDaysIcon class="w-4 h-4 text-primary " />
           <span>Année en cours ({{ currentAnneeUnivLibelle }})</span>
-          <span class="ml-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
+          <span class="ml-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-emphasis  text-primary ">
             {{ currentStudents.length }}
           </span>
         </Tab>
         <Tab value="archives" class="flex items-center gap-2 cursor-pointer font-bold text-sm py-3 px-4">
-          <ArchiveBoxIcon class="w-4 h-4 text-slate-500" />
+          <ArchiveBoxIcon class="w-4 h-4 text-muted-color" />
           <span>Archives des années précédentes</span>
-          <span class="ml-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+          <span class="ml-1.5 px-2 py-0.5 rounded-full text-xs font-bold bg-emphasis  text-muted-color ">
             {{ archiveStudents.length }}
           </span>
         </Tab>
@@ -434,41 +434,41 @@ const getInitials = (name) => {
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
               currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} étudiants"
               responsiveLayout="scroll"
-              class="text-xs text-slate-700 dark:text-slate-300"
+              class="text-xs text-color "
               stripedRows
               :globalFilterFields="['studentName', 'company', 'supervisor', 'period']"
             >
               <template #header>
-                <div class="flex flex-wrap gap-4 items-center justify-between p-2 bg-slate-50/50 dark:bg-slate-900/20 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex flex-wrap gap-4 items-center justify-between p-2 bg-emphasis  border-b border-surface ">
                   <div></div>
                   <div class="flex flex-wrap gap-3 items-center ml-auto">
                     <!-- Global Search -->
                     <IconField>
                       <InputIcon>
-                        <MagnifyingGlassIcon class="w-4 h-4 text-slate-400" />
+                        <MagnifyingGlassIcon class="w-4 h-4 text-muted-color" />
                       </InputIcon>
-                      <InputText v-model="filters.global.value" placeholder="Rechercher..." class="py-1.5 px-3 text-xs w-[180px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none" />
+                      <InputText v-model="filters.global.value" placeholder="Rechercher..." class="py-1.5 px-3 text-xs w-[180px] bg-surface-0  border border-surface  rounded-xl focus:outline-none" />
                     </IconField>
                     
                     <!-- Filter by Period -->
-                    <Select v-model="filters.period.value" :options="currentPeriodOptions.length > 0 ? currentPeriodOptions : periodOptions" showClear placeholder="Formation" class="text-xs min-w-[150px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl" />
+                    <Select v-model="filters.period.value" :options="currentPeriodOptions.length > 0 ? currentPeriodOptions : periodOptions" showClear placeholder="Formation" class="text-xs min-w-[150px] bg-surface-0  border border-surface  rounded-xl" />
 
                     <!-- Filter by Report Status -->
-                    <Select v-model="filters.reportUploaded.value" :options="statusOptions" optionLabel="label" optionValue="value" showClear placeholder="État du rapport" class="text-xs min-w-[150px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl" />
+                    <Select v-model="filters.reportUploaded.value" :options="statusOptions" optionLabel="label" optionValue="value" showClear placeholder="État du rapport" class="text-xs min-w-[150px] bg-surface-0  border border-surface  rounded-xl" />
                   </div>
                 </div>
               </template>
               
-              <Column header="Étudiant" field="studentName" sortable class="font-semibold text-slate-900 dark:text-white">
+              <Column header="Étudiant" field="studentName" sortable class="font-semibold text-color -contrast">
                 <template #body="slotProps">
                   <div class="flex items-center gap-3 py-1">
                     <div
-                      class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 flex items-center justify-center font-bold text-xs uppercase">
+                      class="w-8 h-8 rounded-lg bg-emphasis  text-primary  flex items-center justify-center font-bold text-xs uppercase">
                       {{ getInitials(slotProps.data.studentName) }}
                     </div>
                     <div>
                       <span class="font-bold text-sm block">{{ slotProps.data.studentName }}</span>
-                      <span class="text-[10px] text-slate-400 block">{{ slotProps.data.period }}</span>
+                      <span class="text-[10px] text-muted-color block">{{ slotProps.data.period }}</span>
                     </div>
                   </div>
                 </template>
@@ -478,9 +478,9 @@ const getInitials = (name) => {
               
               <Column header="Dates">
                 <template #body="slotProps">
-                  <span :class="{'text-amber-600 dark:text-amber-400 font-black flex items-center gap-1 w-max': slotProps.data.isDatesDiff}" :title="slotProps.data.isDatesDiff ? 'Dates différentes de la période de stage (' + slotProps.data.periodStartDateStr + ' au ' + slotProps.data.periodEndDateStr + ')' : ''">
+                  <span :class="{'text-muted-color  font-black flex items-center gap-1 w-max': slotProps.data.isDatesDiff}" :title="slotProps.data.isDatesDiff ? 'Dates différentes de la période de stage (' + slotProps.data.periodStartDateStr + ' au ' + slotProps.data.periodEndDateStr + ')' : ''">
                     <span>{{ slotProps.data.dates }}</span>
-                    <ExclamationTriangleIcon v-if="slotProps.data.isDatesDiff" class="w-3.5 h-3.5 text-amber-500" />
+                    <ExclamationTriangleIcon v-if="slotProps.data.isDatesDiff" class="w-3.5 h-3.5 text-muted-color" />
                   </span>
                 </template>
               </Column>
@@ -490,13 +490,13 @@ const getInitials = (name) => {
               <Column header="Rapport" class="text-center">
                 <template #body="slotProps">
                   <span v-if="slotProps.data.reportUploaded"
-                    class="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 w-max">
-                    <CheckIcon class="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                    class="bg-emphasis  text-color  px-2 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 w-max">
+                    <CheckIcon class="w-3 h-3 text-muted-color " />
                     <span>Déposé</span>
                   </span>
                   <span v-else
-                    class="bg-rose-100 dark:bg-rose-950/30 text-rose-800 dark:text-rose-400 px-2 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 w-max">
-                    <XMarkIcon class="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                    class="bg-emphasis  text-color  px-2 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 w-max">
+                    <XMarkIcon class="w-3 h-3 text-muted-color " />
                     <span>En attente</span>
                   </span>
                 </template>
@@ -512,12 +512,12 @@ const getInitials = (name) => {
                 <template #body="slotProps">
                   <div class="flex gap-2 justify-end">
                     <button @click="openStudentInfo(slotProps.data)"
-                      class="text-xs font-bold px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-800 dark:text-slate-200 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-0 shadow-sm">
-                      <EyeIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-350" />
+                      class="text-xs font-bold px-2.5 py-1.5 bg-emphasis hover:bg-emphasis  dark:hover:bg-emphasis text-color  rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-0 shadow-sm">
+                      <EyeIcon class="w-3.5 h-3.5 text-muted-color " />
                       <span>Détails</span>
                     </button>
                     <button @click="openStudentDetails(slotProps.data)"
-                      class="text-xs font-bold px-2.5 py-1.5 bg-slate-50 dark:bg-slate-700 hover:bg-violet-650 hover:text-white dark:hover:bg-violet-650 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-0 shadow-sm">
+                      class="text-xs font-bold px-2.5 py-1.5 bg-emphasis  hover:bg-primary hover:text-primary-contrast dark:hover:bg-primary rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-0 shadow-sm">
                       <ChatBubbleLeftRightIcon class="w-3.5 h-3.5" />
                       <span>Suivre</span>
                     </button>
@@ -551,30 +551,30 @@ const getInitials = (name) => {
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
               currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} étudiants archivés"
               responsiveLayout="scroll"
-              class="text-xs text-slate-700 dark:text-slate-300"
+              class="text-xs text-color "
               stripedRows
               :globalFilterFields="['studentName', 'company', 'supervisor', 'period', 'anneeUniversitaire']"
             >
               <template #header>
-                <div class="flex flex-wrap gap-4 items-center justify-between p-2 bg-slate-50/50 dark:bg-slate-900/20 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex flex-wrap gap-4 items-center justify-between p-2 bg-emphasis  border-b border-surface ">
                   <div></div>
                   <div class="flex flex-wrap gap-3 items-center ml-auto">
                     <!-- Global Search -->
                     <IconField>
                       <InputIcon>
-                        <MagnifyingGlassIcon class="w-4 h-4 text-slate-400" />
+                        <MagnifyingGlassIcon class="w-4 h-4 text-muted-color" />
                       </InputIcon>
-                      <InputText v-model="archiveFilters.global.value" placeholder="Rechercher..." class="py-1.5 px-3 text-xs w-[180px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none" />
+                      <InputText v-model="archiveFilters.global.value" placeholder="Rechercher..." class="py-1.5 px-3 text-xs w-[180px] bg-surface-0  border border-surface  rounded-xl focus:outline-none" />
                     </IconField>
                     
                     <!-- Filter by Année Universitaire -->
-                    <Select v-if="archiveYearOptions.length > 0" v-model="archiveFilters.anneeUniversitaire.value" :options="archiveYearOptions" showClear placeholder="Année Univ." class="text-xs min-w-[140px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl" />
+                    <Select v-if="archiveYearOptions.length > 0" v-model="archiveFilters.anneeUniversitaire.value" :options="archiveYearOptions" showClear placeholder="Année Univ." class="text-xs min-w-[140px] bg-surface-0  border border-surface  rounded-xl" />
 
                     <!-- Filter by Period -->
-                    <Select v-model="archiveFilters.period.value" :options="archivePeriodOptions.length > 0 ? archivePeriodOptions : periodOptions" showClear placeholder="Formation" class="text-xs min-w-[150px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl" />
+                    <Select v-model="archiveFilters.period.value" :options="archivePeriodOptions.length > 0 ? archivePeriodOptions : periodOptions" showClear placeholder="Formation" class="text-xs min-w-[150px] bg-surface-0  border border-surface  rounded-xl" />
 
                     <!-- Filter by Report Status -->
-                    <Select v-model="archiveFilters.reportUploaded.value" :options="statusOptions" optionLabel="label" optionValue="value" showClear placeholder="État du rapport" class="text-xs min-w-[150px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl" />
+                    <Select v-model="archiveFilters.reportUploaded.value" :options="statusOptions" optionLabel="label" optionValue="value" showClear placeholder="État du rapport" class="text-xs min-w-[150px] bg-surface-0  border border-surface  rounded-xl" />
                   </div>
                 </div>
               </template>
@@ -582,24 +582,24 @@ const getInitials = (name) => {
               <!-- Column 1: Année Universitaire (with Badge) -->
               <Column header="Année Univ." field="anneeUniversitaire" sortable class="font-bold min-w-[130px]">
                 <template #body="slotProps">
-                  <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                    <CalendarDaysIcon class="w-3.5 h-3.5 mr-1 text-slate-500" />
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emphasis  text-color  border border-surface ">
+                    <CalendarDaysIcon class="w-3.5 h-3.5 mr-1 text-muted-color" />
                     {{ slotProps.data.anneeUniversitaire }}
                   </span>
                 </template>
               </Column>
 
               <!-- Column 2: Étudiant -->
-              <Column header="Étudiant" field="studentName" sortable class="font-semibold text-slate-900 dark:text-white">
+              <Column header="Étudiant" field="studentName" sortable class="font-semibold text-color -contrast">
                 <template #body="slotProps">
                   <div class="flex items-center gap-3 py-1">
                     <div
-                      class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold text-xs uppercase">
+                      class="w-8 h-8 rounded-lg bg-emphasis  text-color  flex items-center justify-center font-bold text-xs uppercase">
                       {{ getInitials(slotProps.data.studentName) }}
                     </div>
                     <div>
                       <span class="font-bold text-sm block">{{ slotProps.data.studentName }}</span>
-                      <span class="text-[10px] text-slate-400 block">{{ slotProps.data.period }}</span>
+                      <span class="text-[10px] text-muted-color block">{{ slotProps.data.period }}</span>
                     </div>
                   </div>
                 </template>
@@ -612,13 +612,13 @@ const getInitials = (name) => {
               <Column header="Rapport" class="text-center">
                 <template #body="slotProps">
                   <span v-if="slotProps.data.reportUploaded"
-                    class="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 w-max">
-                    <CheckIcon class="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                    class="bg-emphasis  text-color  px-2 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 w-max">
+                    <CheckIcon class="w-3 h-3 text-muted-color " />
                     <span>Déposé</span>
                   </span>
                   <span v-else
-                    class="bg-rose-100 dark:bg-rose-950/30 text-rose-800 dark:text-rose-400 px-2 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 w-max">
-                    <XMarkIcon class="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                    class="bg-emphasis  text-color  px-2 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 w-max">
+                    <XMarkIcon class="w-3 h-3 text-muted-color " />
                     <span>En attente</span>
                   </span>
                 </template>
@@ -634,12 +634,12 @@ const getInitials = (name) => {
                 <template #body="slotProps">
                   <div class="flex gap-2 justify-end">
                     <button @click="openStudentInfo(slotProps.data)"
-                      class="text-xs font-bold px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-800 dark:text-slate-200 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-0 shadow-sm">
-                      <EyeIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-350" />
+                      class="text-xs font-bold px-2.5 py-1.5 bg-emphasis hover:bg-emphasis  dark:hover:bg-emphasis text-color  rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-0 shadow-sm">
+                      <EyeIcon class="w-3.5 h-3.5 text-muted-color " />
                       <span>Détails</span>
                     </button>
                     <button @click="openStudentDetails(slotProps.data)"
-                      class="text-xs font-bold px-2.5 py-1.5 bg-slate-50 dark:bg-slate-700 hover:bg-violet-650 hover:text-white dark:hover:bg-violet-650 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-0 shadow-sm">
+                      class="text-xs font-bold px-2.5 py-1.5 bg-emphasis  hover:bg-primary hover:text-primary-contrast dark:hover:bg-primary rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-0 shadow-sm">
                       <ChatBubbleLeftRightIcon class="w-3.5 h-3.5" />
                       <span>Suivre</span>
                     </button>
@@ -658,50 +658,50 @@ const getInitials = (name) => {
 
     <!-- Student Detail & Follow-up Slideout Dialog -->
     <Dialog v-model:visible="showDetailDialog" modal header="Suivi individualisé de l'étudiant"
-      :style="{ width: '80vw', maxWidth: '850px' }" class="text-xs dark:bg-slate-800 dark:text-slate-200">
+      :style="{ width: '80vw', maxWidth: '850px' }" class="text-xs  ">
       <div v-if="selectedStudent" class="grid grid-cols-1 lg:grid-cols-2 gap-8 py-4">
 
         <!-- Left Column: Internship Info & Followups history -->
         <div class="space-y-6">
 
           <!-- Summary Info Box -->
-          <div class="bg-slate-50 dark:bg-slate-900/40 rounded-2xl p-5 border border-slate-100 dark:border-slate-800">
-            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <InformationCircleIcon class="w-4 h-4 text-violet-600" />
+          <div class="bg-emphasis  rounded-2xl p-5 border border-surface ">
+            <h4 class="text-sm font-bold text-color  flex items-center gap-2">
+              <InformationCircleIcon class="w-4 h-4 text-primary" />
               <span>Détails du stage</span>
             </h4>
             <div class="grid grid-cols-2 gap-4 mt-4 text-[11px]">
               <div>
-                <span class="text-slate-400 block">Étudiant</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.studentName }}</span>
+                <span class="text-muted-color block">Étudiant</span>
+                <span class="font-bold text-color ">{{ selectedStudent.studentName }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block">Année universitaire</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.anneeUniversitaire }}</span>
+                <span class="text-muted-color block">Année universitaire</span>
+                <span class="font-bold text-color ">{{ selectedStudent.anneeUniversitaire }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block">Entreprise</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.company }}</span>
+                <span class="text-muted-color block">Entreprise</span>
+                <span class="font-bold text-color ">{{ selectedStudent.company }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block">Maître de stage</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.supervisor }}</span>
+                <span class="text-muted-color block">Maître de stage</span>
+                <span class="font-bold text-color ">{{ selectedStudent.supervisor }}</span>
               </div>
               <div class="col-span-2">
-                <span class="text-slate-400 block">Période de stage</span>
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.dates }}</span>
+                <span class="text-muted-color block">Période de stage</span>
+                <span class="font-bold text-color ">{{ selectedStudent.dates }}</span>
               </div>
             </div>
 
             <!-- Report Download link if uploaded -->
             <div v-if="selectedStudent.reportUploaded"
-              class="mt-4 pt-3 border-t border-slate-200/40 flex items-center justify-between bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700/60">
-              <span class="font-bold text-slate-700 dark:text-slate-300 truncate max-w-[200px] flex items-center gap-2">
-                <DocumentTextIcon class="w-4 h-4 text-rose-500" />
+              class="mt-4 pt-3 border-t border-surface flex items-center justify-between bg-surface-0  p-2.5 rounded-xl border border-surface ">
+              <span class="font-bold text-color  truncate max-w-[200px] flex items-center gap-2">
+                <DocumentTextIcon class="w-4 h-4 text-muted-color" />
                 {{ selectedStudent.reportName }}
               </span>
               <a :href="rapportStageUrl(selectedStudent.id)"
-                class="text-[10px] font-bold text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1">
+                class="text-[10px] font-bold text-primary  hover:underline flex items-center gap-1">
                 <ArrowUpTrayIcon class="w-3.5 h-3.5" />
                 <span>Télécharger</span>
               </a>
@@ -710,22 +710,22 @@ const getInitials = (name) => {
 
           <!-- Logged Follow-ups List -->
           <div>
-            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-              <CalendarDaysIcon class="w-4 h-4 text-violet-600" />
+            <h4 class="text-sm font-bold text-color  mb-4 flex items-center gap-2">
+              <CalendarDaysIcon class="w-4 h-4 text-primary" />
               <span>Historique des Suivis ({{ selectedStudent.followups.length }})</span>
             </h4>
 
             <div class="space-y-4 max-h-[220px] overflow-y-auto pr-2">
               <div v-for="follow in selectedStudent.followups" :key="follow.id"
-                class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700/50 rounded-xl p-4 space-y-1 relative">
+                class="bg-surface-0  border border-surface  rounded-xl p-4 space-y-1 relative">
                 <div class="flex items-center justify-between">
                   <span
-                    class="bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-400 px-2 py-0.5 rounded font-bold text-[9px]">
+                    class="bg-emphasis  text-primary  px-2 py-0.5 rounded font-bold text-[9px]">
                     {{ follow.type }}
                   </span>
-                  <span class="text-[9px] text-slate-400">{{ follow.date }}</span>
+                  <span class="text-[9px] text-muted-color">{{ follow.date }}</span>
                 </div>
-                <p class="text-[10px] text-slate-600 dark:text-slate-300 leading-relaxed pt-1">
+                <p class="text-[10px] text-muted-color  leading-relaxed pt-1">
                   {{ follow.summary }}
                 </p>
               </div>
@@ -737,25 +737,25 @@ const getInitials = (name) => {
         </div>
 
         <!-- Right Column: Add follow-up & Grading -->
-        <div class="space-y-6 lg:border-l lg:border-slate-100 lg:dark:border-slate-700/50 lg:pl-6">
+        <div class="space-y-6 lg:border-l lg:border-surface lg: lg:pl-6">
 
           <!-- Add Follow-up Form -->
           <div class="space-y-4">
-            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <PlusIcon class="w-4 h-4 text-violet-600" />
+            <h4 class="text-sm font-bold text-color  flex items-center gap-2">
+              <PlusIcon class="w-4 h-4 text-primary" />
               <span>Ajouter un suivi</span>
             </h4>
 
             <div class="grid grid-cols-2 gap-4">
               <div class="flex flex-col gap-1.5">
-                <label class="text-[10px] font-bold text-slate-500">Date du suivi</label>
+                <label class="text-[10px] font-bold text-muted-color">Date du suivi</label>
                 <input type="date" v-model="newFollowup.date"
-                  class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-xs" />
+                  class="p-2 border border-surface  rounded-lg bg-emphasis  text-color  text-xs" />
               </div>
               <div class="flex flex-col gap-1.5">
-                <label class="text-[10px] font-bold text-slate-500">Canal</label>
+                <label class="text-[10px] font-bold text-muted-color">Canal</label>
                 <select v-model="newFollowup.type"
-                  class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-xs font-semibold">
+                  class="p-2 border border-surface  rounded-lg bg-emphasis  text-color  text-xs font-semibold">
                   <option value="Appel Téléphonique">Appel Téléphonique</option>
                   <option value="Visite Entreprise">Visite Entreprise</option>
                   <option value="Visioconférence">Visioconférence</option>
@@ -765,53 +765,53 @@ const getInitials = (name) => {
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label class="text-[10px] font-bold text-slate-500">Compte-rendu du suivi</label>
+              <label class="text-[10px] font-bold text-muted-color">Compte-rendu du suivi</label>
               <textarea v-model="newFollowup.summary" rows="2" placeholder="Renseignez le déroulement de l'échange..."
-                class="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
+                class="w-full p-2.5 border border-surface  rounded-lg bg-emphasis  text-xs text-color  focus:outline-none focus:ring-1 focus:ring-primary"></textarea>
             </div>
 
             <button @click="addFollowup"
-              class="w-full py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-2 border-0 cursor-pointer">
+              class="w-full py-2 bg-primary hover:bg-primary text-primary-contrast font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-2 border-0 cursor-pointer">
               <CheckIcon class="w-3.5 h-3.5" />
               <span>Enregistrer le suivi</span>
             </button>
           </div>
 
           <!-- Évaluation par le tuteur en entreprise -->
-          <div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2">
-            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100">Évaluation par l'entreprise</h4>
+          <div class="pt-4 border-t border-surface  space-y-2">
+            <h4 class="text-sm font-bold text-color ">Évaluation par l'entreprise</h4>
             <EvaluationEntreprisePanel :stage-id="selectedStudent.id" />
           </div>
 
           <!-- Grading Evaluation Panel -->
-          <div class="pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-4">
-            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <StarIcon class="w-4 h-4 text-violet-600" />
+          <div class="pt-4 border-t border-surface  space-y-4">
+            <h4 class="text-sm font-bold text-color  flex items-center gap-2">
+              <StarIcon class="w-4 h-4 text-primary" />
               <span>Notation & Appréciation</span>
             </h4>
 
             <div class="flex gap-4 items-end">
               <div class="flex flex-col gap-1.5 w-1/3">
-                <label class="text-[10px] font-bold text-slate-500">Note / 20</label>
+                <label class="text-[10px] font-bold text-muted-color">Note / 20</label>
                 <input type="text" v-model="gradingInput" placeholder="Ex: 15.5"
-                  class="p-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-xs font-bold text-center" />
+                  class="p-2.5 border border-surface  rounded-lg bg-emphasis  text-color  text-xs font-bold text-center" />
               </div>
               <div class="flex-1">
-                <span class="text-[10px] text-slate-400 block pb-1">
+                <span class="text-[10px] text-muted-color block pb-1">
                   La note doit être saisie après réception et lecture du rapport de stage.
                 </span>
               </div>
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label class="text-[10px] font-bold text-slate-500">Appréciations pédagogiques</label>
+              <label class="text-[10px] font-bold text-muted-color">Appréciations pédagogiques</label>
               <textarea v-model="commentsInput" rows="3"
                 placeholder="Rédigez l'appréciation globale qui figurera sur le procès-verbal de stage..."
-                class="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-violet-500"></textarea>
+                class="w-full p-2.5 border border-surface  rounded-lg bg-emphasis  text-xs text-color  focus:outline-none focus:ring-1 focus:ring-primary"></textarea>
             </div>
 
             <button @click="saveGrading"
-              class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-2 border-0 cursor-pointer">
+              class="w-full py-2 bg-emphasis hover:bg-emphasis text-primary-contrast font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-2 border-0 cursor-pointer">
               <ArrowUpTrayIcon class="w-3.5 h-3.5" />
               <span>Sauvegarder l'évaluation</span>
             </button>
@@ -823,126 +823,126 @@ const getInitials = (name) => {
 
     <!-- Internship Details Modal -->
     <Dialog v-model:visible="showInfoDialog" modal header="Informations détaillées du stage"
-      :style="{ width: '90vw', maxWidth: '650px' }" class="text-xs dark:bg-slate-800 dark:text-slate-200">
+      :style="{ width: '90vw', maxWidth: '650px' }" class="text-xs  ">
       <div v-if="selectedStudent" class="space-y-6 py-2">
         
         <!-- Section: L'Étudiant & Le Stage -->
-        <div class="bg-violet-500/5 dark:bg-violet-500/10 p-4 rounded-2xl border border-violet-500/15">
-          <h3 class="text-sm font-bold text-violet-700 dark:text-violet-400 flex items-center gap-2 mb-3">
-            <UserIcon class="w-4 h-4 text-violet-600 dark:text-violet-400" />
+        <div class="bg-primary  p-4 rounded-2xl border border-primary">
+          <h3 class="text-sm font-bold text-primary  flex items-center gap-2 mb-3">
+            <UserIcon class="w-4 h-4 text-primary " />
             <span>L'Étudiant & Le Stage</span>
           </h3>
           <div class="grid grid-cols-2 gap-4 text-[11px]">
             <div>
-              <span class="text-slate-400 block">Nom de l'étudiant</span>
-              <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.studentName }}</span>
+              <span class="text-muted-color block">Nom de l'étudiant</span>
+              <span class="font-bold text-color ">{{ selectedStudent.studentName }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block">Formation</span>
-              <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.period }}</span>
+              <span class="text-muted-color block">Formation</span>
+              <span class="font-bold text-color ">{{ selectedStudent.period }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block">Année universitaire</span>
-              <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.anneeUniversitaire }}</span>
+              <span class="text-muted-color block">Année universitaire</span>
+              <span class="font-bold text-color ">{{ selectedStudent.anneeUniversitaire }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block">Durée hebdomadaire</span>
-              <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.weeklyHours }} heures</span>
+              <span class="text-muted-color block">Durée hebdomadaire</span>
+              <span class="font-bold text-color ">{{ selectedStudent.weeklyHours }} heures</span>
             </div>
             <div class="col-span-2">
-              <span class="text-slate-400 block">Dates de stage</span>
-              <span class="font-bold text-slate-800 dark:text-slate-200" :class="{'text-amber-600 dark:text-amber-400': selectedStudent.isDatesDiff}">
+              <span class="text-muted-color block">Dates de stage</span>
+              <span class="font-bold text-color " :class="{'text-muted-color ': selectedStudent.isDatesDiff}">
                 {{ selectedStudent.dates }}
-                <ExclamationTriangleIcon v-if="selectedStudent.isDatesDiff" class="w-3.5 h-3.5 text-amber-500 inline ml-1" />
+                <ExclamationTriangleIcon v-if="selectedStudent.isDatesDiff" class="w-3.5 h-3.5 text-muted-color inline ml-1" />
               </span>
             </div>
           </div>
         </div>
 
         <!-- Section: L'Entreprise -->
-        <div class="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-          <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-3">
-            <BuildingOfficeIcon class="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        <div class="bg-emphasis  p-4 rounded-2xl border border-surface ">
+          <h3 class="text-sm font-bold text-color  flex items-center gap-2 mb-3">
+            <BuildingOfficeIcon class="w-4 h-4 text-muted-color " />
             <span>L'Entreprise</span>
           </h3>
           <div class="grid grid-cols-2 gap-4 text-[11px] mb-3">
             <div>
-              <span class="text-slate-400 block">Raison Sociale</span>
-              <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.company }}</span>
+              <span class="text-muted-color block">Raison Sociale</span>
+              <span class="font-bold text-color ">{{ selectedStudent.company }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block">SIRET</span>
-              <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.siret }}</span>
+              <span class="text-muted-color block">SIRET</span>
+              <span class="font-bold text-color ">{{ selectedStudent.siret }}</span>
             </div>
           </div>
           <div class="text-[11px] mb-3">
-            <span class="text-slate-400 block">Adresse de stage</span>
-            <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.companyAddress }}</span>
+            <span class="text-muted-color block">Adresse de stage</span>
+            <span class="font-bold text-color ">{{ selectedStudent.companyAddress }}</span>
           </div>
-          <div class="grid grid-cols-2 gap-4 text-[11px] pt-3 border-t border-slate-200/40">
+          <div class="grid grid-cols-2 gap-4 text-[11px] pt-3 border-t border-surface">
             <div>
-              <span class="text-slate-400 block">Signataire de la convention</span>
-              <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.signatoryName }} ({{ selectedStudent.signatoryTitle }})</span>
+              <span class="text-muted-color block">Signataire de la convention</span>
+              <span class="font-bold text-color ">{{ selectedStudent.signatoryName }} ({{ selectedStudent.signatoryTitle }})</span>
             </div>
             <div>
-              <span class="text-slate-400 block">Contact Signataire</span>
-              <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.signatoryEmail }} / {{ selectedStudent.companyPhone }}</span>
+              <span class="text-muted-color block">Contact Signataire</span>
+              <span class="font-bold text-color ">{{ selectedStudent.signatoryEmail }} / {{ selectedStudent.companyPhone }}</span>
             </div>
           </div>
         </div>
 
         <!-- Section: Les Tuteurs -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-2">
-              <UserPlusIcon class="w-4 h-4 text-violet-600 dark:text-violet-400" />
+          <div class="bg-emphasis  p-4 rounded-2xl border border-surface ">
+            <h4 class="text-xs font-bold text-color  flex items-center gap-2 mb-2">
+              <UserPlusIcon class="w-4 h-4 text-primary " />
               <span>Maître de Stage (Entreprise)</span>
             </h4>
             <div class="space-y-2 text-[11px]">
               <div>
-                <span class="text-slate-400">Nom :</span> <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.supervisor }}</span>
+                <span class="text-muted-color">Nom :</span> <span class="font-bold text-color ">{{ selectedStudent.supervisor }}</span>
               </div>
               <div>
-                <span class="text-slate-400">Fonction :</span> <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.supervisorTitle }}</span>
+                <span class="text-muted-color">Fonction :</span> <span class="font-bold text-color ">{{ selectedStudent.supervisorTitle }}</span>
               </div>
               <div>
-                <span class="text-slate-400">Email :</span> <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.supervisorEmail }}</span>
+                <span class="text-muted-color">Email :</span> <span class="font-bold text-color ">{{ selectedStudent.supervisorEmail }}</span>
               </div>
               <div>
-                <span class="text-slate-400">Téléphone :</span> <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.supervisorPhone }}</span>
+                <span class="text-muted-color">Téléphone :</span> <span class="font-bold text-color ">{{ selectedStudent.supervisorPhone }}</span>
               </div>
             </div>
           </div>
 
-          <div class="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-2">
-              <UserIcon class="w-4 h-4 text-violet-600 dark:text-violet-400" />
+          <div class="bg-emphasis  p-4 rounded-2xl border border-surface ">
+            <h4 class="text-xs font-bold text-color  flex items-center gap-2 mb-2">
+              <UserIcon class="w-4 h-4 text-primary " />
               <span>Tuteur Universitaire</span>
             </h4>
             <div class="space-y-2 text-[11px]">
               <div>
-                <span class="text-slate-400">Nom :</span> <span class="font-bold text-slate-800 dark:text-slate-200">{{ selectedStudent.academicTutor }}</span>
+                <span class="text-muted-color">Nom :</span> <span class="font-bold text-color ">{{ selectedStudent.academicTutor }}</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Section: Sujet & Activités -->
-        <div class="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-          <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-3">
-            <BookOpenIcon class="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        <div class="bg-emphasis  p-4 rounded-2xl border border-surface ">
+          <h3 class="text-sm font-bold text-color  flex items-center gap-2 mb-3">
+            <BookOpenIcon class="w-4 h-4 text-muted-color " />
             <span>Sujet & Activités</span>
           </h3>
           <div class="space-y-3 text-[11px]">
             <div>
-              <span class="text-slate-400 block">Sujet du stage</span>
-              <p class="font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 mt-1 leading-relaxed">
+              <span class="text-muted-color block">Sujet du stage</span>
+              <p class="font-semibold text-color  bg-surface-0  p-2.5 rounded-xl border border-surface  mt-1 leading-relaxed">
                 {{ selectedStudent.subject }}
               </p>
             </div>
             <div>
-              <span class="text-slate-400 block">Activités confiées</span>
-              <p class="font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 mt-1 leading-relaxed whitespace-pre-line">
+              <span class="text-muted-color block">Activités confiées</span>
+              <p class="font-semibold text-color  bg-surface-0  p-2.5 rounded-xl border border-surface  mt-1 leading-relaxed whitespace-pre-line">
                 {{ selectedStudent.activities }}
               </p>
             </div>

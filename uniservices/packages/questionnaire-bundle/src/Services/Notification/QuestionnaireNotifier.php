@@ -88,7 +88,7 @@ class QuestionnaireNotifier
             Type::BILAN->cle(),
             sprintf('Le questionnaire « %s » est clôturé : %d réponse(s) sur %d (%s %%).', $q->getTitle(), $stats['submitted'], $stats['total'], $stats['rate']),
             self::URL_RESULTATS.$q->getUuidString(),
-            $adresse ? fn (): bool => $this->mailer->bilan($q, $adresse, $destinataire->getDisplay(), $stats, $complet, $dateAtteinte) : null,
+            $adresse !== null ? fn (): bool => $this->mailer->bilan($q, $adresse, $destinataire->getDisplay(), $stats, $complet, $dateAtteinte) : null,
         );
     }
 
@@ -106,7 +106,7 @@ class QuestionnaireNotifier
             Type::RESULTATS->cle(),
             sprintf('Les résultats du questionnaire « %s » qui vous concernent sont disponibles (%d section(s)).', $q->getTitle(), \count($sections)),
             self::URL_MES_RESULTATS.$q->getUuidString(),
-            $adresse ? fn (): bool => $this->mailer->resultats($q, $adresse, $destinataire->getDisplay(), $sections) : null,
+            $adresse !== null ? fn (): bool => $this->mailer->resultats($q, $adresse, $destinataire->getDisplay(), $sections) : null,
         );
     }
 

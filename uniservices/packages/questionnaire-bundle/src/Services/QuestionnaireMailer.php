@@ -103,7 +103,7 @@ class QuestionnaireMailer
             'questionnaire_titre' => (string) $questionnaire?->getTitle(),
             'questionnaire_description' => (string) $questionnaire?->getDescription(),
             'date_cloture' => $questionnaire?->getClosingDate()?->format('d/m/Y') ?? '',
-            'duree_estimee' => $questionnaire?->getEstimatedTime() ? (int) ceil($questionnaire->getEstimatedTime() / 60) : 0,
+            'duree_estimee' => $questionnaire?->getEstimatedTime() !== null ? (int) ceil($questionnaire->getEstimatedTime() / 60) : 0,
             'anonyme' => (bool) $questionnaire?->estAnonyme(),
             'lien' => $this->lienReponse($invitation),
         ];

@@ -22,7 +22,7 @@ const emit = defineEmits(['create', 'edit', 'delete', 'select']);
 <template>
   <div class="space-y-6">
     <div class="flex justify-between items-center">
-      <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider">
+      <h2 class="text-sm font-bold text-muted-color uppercase tracking-wider">
         Configuration des périodes universitaires
       </h2>
       <Button
@@ -30,7 +30,7 @@ const emit = defineEmits(['create', 'edit', 'delete', 'select']);
         icon="pi pi-plus"
         @click="emit('create')"
         size="small"
-        class="bg-violet-600 hover:bg-violet-750 text-white border-0 font-bold rounded-xl shadow-md cursor-pointer"
+        class="bg-primary hover:bg-primary text-primary-contrast border-0 font-bold rounded-xl shadow-md cursor-pointer"
       />
     </div>
 
@@ -73,39 +73,39 @@ const emit = defineEmits(['create', 'edit', 'delete', 'select']);
             />
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px] text-muted-color  font-medium">
             <div class="space-y-2">
               <div class="flex items-center gap-2" v-if="p.diplome || p.semestre">
-                <AcademicCapIcon class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <AcademicCapIcon class="w-3.5 h-3.5 text-muted-color shrink-0" />
                 <span>Formation : <strong>{{ p.diplome }}</strong> ({{ p.semestre }})</span>
               </div>
               <div class="flex items-center gap-2">
-                <CalendarIcon class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <CalendarIcon class="w-3.5 h-3.5 text-muted-color shrink-0" />
                 <span>{{ p.dates }} ({{ p.minWeeks }} sem. min)</span>
               </div>
               <div class="flex items-center gap-2">
-                <UsersIcon class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <UsersIcon class="w-3.5 h-3.5 text-muted-color shrink-0" />
                 <span>Responsable : <strong>{{ p.responsablePrincipal }}</strong></span>
               </div>
               <div class="flex items-start gap-2">
-                <UserPlusIcon class="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
+                <UserPlusIcon class="w-3.5 h-3.5 text-muted-color mt-0.5 shrink-0" />
                 <span>Co-responsables : <strong>{{ p.coResponsables?.join(', ') || 'Aucun' }}</strong></span>
               </div>
             </div>
 
             <div
-              class="space-y-2 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-700 md:pl-4 pt-2 md:pt-0">
+              class="space-y-2 border-t md:border-t-0 md:border-l border-surface  md:pl-4 pt-2 md:pt-0">
               <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-800 dark:text-slate-200">{{ p.interruptions?.length || 0 }}</span>
+                <span class="font-bold text-color ">{{ p.interruptions?.length || 0 }}</span>
                 <span>Interruption(s)</span>
               </div>
               <div class="flex items-center gap-2" v-for="s in p.soutenances" :key="s.dateDebut">
-                <ClockIcon class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <ClockIcon class="w-3.5 h-3.5 text-muted-color shrink-0" />
                 <span>Soutenances : {{ new Date(s.dateDebut).toLocaleDateString('fr') }} au {{ new
                   Date(s.dateFin).toLocaleDateString('fr') }}</span>
               </div>
               <div class="flex items-center gap-2">
-                <DocumentTextIcon class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <DocumentTextIcon class="w-3.5 h-3.5 text-muted-color shrink-0" />
                 <span>Fichiers : {{ p.consignesFichiers?.length || 0 }} consignes</span>
               </div>
             </div>
@@ -113,28 +113,28 @@ const emit = defineEmits(['create', 'edit', 'delete', 'select']);
 
           <!-- Display convention parameters brief summary -->
           <div
-            class="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-3 border border-slate-100 dark:border-slate-700/40 text-[10px] mt-4 space-y-1 text-slate-500 font-sans">
-            <span class="font-bold text-slate-700 dark:text-slate-350 block mb-1">Paramètres Convention :</span>
-            <p class="truncate"><strong class="text-slate-650 dark:text-slate-400">Compétences :</strong> {{
+            class="bg-emphasis  rounded-xl p-3 border border-surface  text-[10px] mt-4 space-y-1 text-muted-color font-sans">
+            <span class="font-bold text-color  block mb-1">Paramètres Convention :</span>
+            <p class="truncate"><strong class="text-color ">Compétences :</strong> {{
               p.competencesVisees || 'Non définies' }}</p>
-            <p class="truncate"><strong class="text-slate-650 dark:text-slate-400">Rendu :</strong> {{
+            <p class="truncate"><strong class="text-color ">Rendu :</strong> {{
               p.documentsRendre || 'Non définies' }}</p>
           </div>
         </div>
 
-        <div class="flex gap-2 w-full pt-4 border-t border-slate-100 dark:border-slate-700/60 mt-4">
+        <div class="flex gap-2 w-full pt-4 border-t border-surface  mt-4">
           <Button
             label="Accéder au suivi"
             icon="pi pi-search"
             @click="emit('select', p)"
-            class="flex-1 bg-violet-600 hover:bg-violet-750 text-white font-bold border-0 rounded-xl text-xs transition-all cursor-pointer"
+            class="flex-1 bg-primary hover:bg-primary text-primary-contrast font-bold border-0 rounded-xl text-xs transition-all cursor-pointer"
           />
           <Button
             icon="pi pi-cog"
             severity="secondary"
             @click="emit('edit', p)"
             v-tooltip="'Paramètres de la période'"
-            class="px-3 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600/60 text-slate-700 dark:text-slate-300 border-0 rounded-xl transition-all cursor-pointer"
+            class="px-3 bg-emphasis  hover:bg-emphasis dark:hover:bg-emphasis text-color  border-0 rounded-xl transition-all cursor-pointer"
           />
           <ButtonDelete
             tooltip="Supprimer la période"

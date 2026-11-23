@@ -694,30 +694,30 @@ const finalizeSignature = (student) => {
       title="Suivi du flux des conventions"
       subtitle="Cycle de vie de la validation à la signature finale. Traitez les dossiers en un clic."
       :icon="ArrowPathIcon"
-      iconClass="text-violet-600 dark:text-violet-400"
-      iconBgClass="bg-violet-50 dark:bg-violet-950/20 border-violet-100 dark:border-violet-900/30"
+      iconClass="text-primary "
+      iconBgClass="bg-emphasis  border-primary "
       bodyClass="space-y-4"
     >
 
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Etape 1: A Valider -->
-        <div class="bg-slate-50/50 dark:bg-slate-900/40 p-4 rounded-2xl border-t-4 border-t-amber-500 border-x border-b border-slate-100 dark:border-slate-800 flex flex-col h-full min-h-[160px]">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
-            <span class="font-bold text-[11px] text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-              <ClockIcon class="w-3.5 h-3.5 text-amber-500 shrink-0" />
+        <div class="bg-emphasis  p-4 rounded-2xl border-t-4 border-t-amber-500 border-x border-b border-surface  flex flex-col h-full min-h-[160px]">
+          <div class="flex items-center justify-between pb-3 border-b border-surface ">
+            <span class="font-bold text-[11px] text-color  flex items-center gap-1.5">
+              <ClockIcon class="w-3.5 h-3.5 text-muted-color shrink-0" />
               <span>1. À Valider</span>
             </span>
-            <span class="bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-bold">
+            <span class="bg-emphasis  text-color  text-[10px] px-2 py-0.5 rounded-full font-bold">
               {{ studentsToValidate.length }}
             </span>
           </div>
           <div class="flex-1 mt-3 max-h-56 overflow-y-auto space-y-2 pr-1">
-            <div v-for="s in studentsToValidate" :key="s.id" class="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-150 dark:border-slate-750 shadow-sm transition-all hover:border-violet-300">
+            <div v-for="s in studentsToValidate" :key="s.id" class="flex items-center justify-between p-2.5 rounded-xl bg-surface-0  border border-surface  shadow-sm transition-all hover:border-primary">
               <div class="flex flex-col min-w-0">
                 <span class="font-bold text-xs truncate">{{ s.studentName }}</span>
-                <span class="text-[9px] text-slate-450 truncate">{{ s.company }}</span>
+                <span class="text-[9px] text-muted-color truncate">{{ s.company }}</span>
               </div>
-              <button @click="openReviewRequest(s)" class="p-1.5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 hover:text-amber-700 rounded-lg transition-all cursor-pointer" v-tooltip.left="'Ouvrir la relecture'">
+              <button @click="openReviewRequest(s)" class="p-1.5 bg-emphasis  text-muted-color  hover:bg-emphasis hover:text-color rounded-lg transition-all cursor-pointer" v-tooltip.left="'Ouvrir la relecture'">
                 <EyeIcon class="w-3.5 h-3.5" />
               </button>
             </div>
@@ -726,23 +726,23 @@ const finalizeSignature = (student) => {
         </div>
 
         <!-- Etape 2: A Imprimer -->
-        <div class="bg-slate-50/50 dark:bg-slate-900/40 p-4 rounded-2xl border-t-4 border-t-blue-500 border-x border-b border-slate-100 dark:border-slate-800 flex flex-col h-full min-h-[160px]">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
-            <span class="font-bold text-[11px] text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-              <PrinterIcon class="w-3.5 h-3.5 text-blue-500 shrink-0" />
+        <div class="bg-emphasis  p-4 rounded-2xl border-t-4 border-t-blue-500 border-x border-b border-surface  flex flex-col h-full min-h-[160px]">
+          <div class="flex items-center justify-between pb-3 border-b border-surface ">
+            <span class="font-bold text-[11px] text-color  flex items-center gap-1.5">
+              <PrinterIcon class="w-3.5 h-3.5 text-primary shrink-0" />
               <span>2. À Imprimer</span>
             </span>
-            <span class="bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold">
+            <span class="bg-emphasis  text-primary  text-[10px] px-2 py-0.5 rounded-full font-bold">
               {{ studentsToPrint.length }}
             </span>
           </div>
           <div class="flex-1 mt-3 max-h-56 overflow-y-auto space-y-2 pr-1">
-            <div v-for="s in studentsToPrint" :key="s.id" class="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-150 dark:border-slate-750 shadow-sm transition-all hover:border-violet-300">
+            <div v-for="s in studentsToPrint" :key="s.id" class="flex items-center justify-between p-2.5 rounded-xl bg-surface-0  border border-surface  shadow-sm transition-all hover:border-primary">
               <div class="flex flex-col min-w-0">
                 <span class="font-bold text-xs truncate">{{ s.studentName }}</span>
-                <span class="text-[9px] text-slate-455 truncate">{{ s.company }}</span>
+                <span class="text-[9px] text-muted-color truncate">{{ s.company }}</span>
               </div>
-              <button @click="printConvention(s)" class="p-1.5 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition-all cursor-pointer" v-tooltip.left="'Générer PDF &amp; envoyer en signature'">
+              <button @click="printConvention(s)" class="p-1.5 bg-emphasis  text-primary  hover:bg-emphasis hover:text-primary rounded-lg transition-all cursor-pointer" v-tooltip.left="'Générer PDF &amp; envoyer en signature'">
                 <PrinterIcon class="w-3.5 h-3.5" />
               </button>
             </div>
@@ -751,27 +751,27 @@ const finalizeSignature = (student) => {
         </div>
 
         <!-- Etape 3: En cours de signature -->
-        <div class="bg-slate-50/50 dark:bg-slate-900/40 p-4 rounded-2xl border-t-4 border-t-indigo-500 border-x border-b border-slate-100 dark:border-slate-800 flex flex-col h-full min-h-[160px]">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
-            <span class="font-bold text-[11px] text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-              <PencilIcon class="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+        <div class="bg-emphasis  p-4 rounded-2xl border-t-4 border-t-indigo-500 border-x border-b border-surface  flex flex-col h-full min-h-[160px]">
+          <div class="flex items-center justify-between pb-3 border-b border-surface ">
+            <span class="font-bold text-[11px] text-color  flex items-center gap-1.5">
+              <PencilIcon class="w-3.5 h-3.5 text-primary shrink-0" />
               <span>3. En Signature</span>
             </span>
-            <span class="bg-indigo-100 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-400 text-[10px] px-2 py-0.5 rounded-full font-bold">
+            <span class="bg-emphasis  text-primary  text-[10px] px-2 py-0.5 rounded-full font-bold">
               {{ studentsSigning.length }}
             </span>
           </div>
           <div class="flex-1 mt-3 max-h-56 overflow-y-auto space-y-2 pr-1">
-            <div v-for="s in studentsSigning" :key="s.id" class="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-150 dark:border-slate-750 shadow-sm transition-all hover:border-violet-300">
+            <div v-for="s in studentsSigning" :key="s.id" class="flex items-center justify-between p-2.5 rounded-xl bg-surface-0  border border-surface  shadow-sm transition-all hover:border-primary">
               <div class="flex flex-col min-w-0">
                 <span class="font-bold text-xs truncate">{{ s.studentName }}</span>
-                <span class="text-[9px] text-slate-455 truncate">{{ s.company }}</span>
+                <span class="text-[9px] text-muted-color truncate">{{ s.company }}</span>
               </div>
               <div class="flex items-center gap-1">
-                <button @click="openConventionPdf(s)" class="p-1.5 bg-slate-100 dark:bg-slate-750 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-all cursor-pointer" v-tooltip.left="'Voir la convention PDF'">
-                  <i class="pi pi-file-pdf text-[11px] text-red-500"></i>
+                <button @click="openConventionPdf(s)" class="p-1.5 bg-emphasis  text-muted-color  hover:bg-emphasis dark:hover:bg-emphasis rounded-lg transition-all cursor-pointer" v-tooltip.left="'Voir la convention PDF'">
+                  <i class="pi pi-file-pdf text-[11px] text-muted-color"></i>
                 </button>
-                <button @click="finalizeSignature(s)" class="p-1.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 hover:text-indigo-700 rounded-lg transition-all cursor-pointer" v-tooltip.left="'Marquer comme signée/récupérée'">
+                <button @click="finalizeSignature(s)" class="p-1.5 bg-emphasis  text-primary  hover:bg-emphasis hover:text-primary rounded-lg transition-all cursor-pointer" v-tooltip.left="'Marquer comme signée/récupérée'">
                   <CheckCircleIcon class="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -781,28 +781,28 @@ const finalizeSignature = (student) => {
         </div>
 
         <!-- Etape 4: Récupérée signée -->
-        <div class="bg-slate-50/50 dark:bg-slate-900/40 p-4 rounded-2xl border-t-4 border-t-emerald-500 border-x border-b border-slate-100 dark:border-slate-800 flex flex-col h-full min-h-[160px]">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
-            <span class="font-bold text-[11px] text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-              <CheckCircleIcon class="w-3.5 h-3.5 text-emerald-555 shrink-0" />
+        <div class="bg-emphasis  p-4 rounded-2xl border-t-4 border-t-emerald-500 border-x border-b border-surface  flex flex-col h-full min-h-[160px]">
+          <div class="flex items-center justify-between pb-3 border-b border-surface ">
+            <span class="font-bold text-[11px] text-color  flex items-center gap-1.5">
+              <CheckCircleIcon class="w-3.5 h-3.5 text-muted-color shrink-0" />
               <span>4. Signée / Terminé</span>
             </span>
-            <span class="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 text-[10px] px-2 py-0.5 rounded-full font-bold">
+            <span class="bg-emphasis  text-color  text-[10px] px-2 py-0.5 rounded-full font-bold">
               {{ studentsSigned.length }}
             </span>
           </div>
           <div class="flex-1 mt-3 max-h-56 overflow-y-auto space-y-2 pr-1">
-            <div v-for="s in studentsSigned" :key="s.id" class="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-150 dark:border-slate-750 shadow-sm transition-all">
+            <div v-for="s in studentsSigned" :key="s.id" class="flex items-center justify-between p-2.5 rounded-xl bg-surface-0  border border-surface  shadow-sm transition-all">
               <div class="flex flex-col min-w-0">
                 <span class="font-bold text-xs truncate">{{ s.studentName }}</span>
-                <span class="text-[9px] text-slate-455 truncate">{{ s.company }}</span>
+                <span class="text-[9px] text-muted-color truncate">{{ s.company }}</span>
               </div>
               <div class="flex items-center gap-1">
-                <button @click="openConventionPdf(s)" class="p-1.5 bg-slate-100 dark:bg-slate-750 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-all cursor-pointer" v-tooltip.left="'Télécharger le PDF'">
-                  <i class="pi pi-file-pdf text-[11px] text-red-500"></i>
+                <button @click="openConventionPdf(s)" class="p-1.5 bg-emphasis  text-muted-color  hover:bg-emphasis dark:hover:bg-emphasis rounded-lg transition-all cursor-pointer" v-tooltip.left="'Télécharger le PDF'">
+                  <i class="pi pi-file-pdf text-[11px] text-muted-color"></i>
                 </button>
-                <div class="p-1 text-emerald-600 dark:text-emerald-400">
-                  <CheckIcon class="w-3.5 h-3.5 text-emerald-500" />
+                <div class="p-1 text-muted-color ">
+                  <CheckIcon class="w-3.5 h-3.5 text-muted-color" />
                 </div>
               </div>
             </div>
@@ -817,8 +817,8 @@ const finalizeSignature = (student) => {
       title="Liste des étudiants de la période"
       subtitle="Suivi de placement, tuteur universitaire et livrables."
       :icon="UsersIcon"
-      iconClass="text-indigo-600 dark:text-indigo-400"
-      iconBgClass="bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/30"
+      iconClass="text-primary "
+      iconBgClass="bg-emphasis  border-primary "
       :badge="'Période : ' + activePeriodName"
       badgeSeverity="info"
     >
@@ -835,38 +835,38 @@ const finalizeSignature = (student) => {
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} étudiants"
         responsiveLayout="scroll"
-        class="text-xs text-slate-700 dark:text-slate-300"
+        class="text-xs text-color "
         stripedRows
       >
         <template #header>
-          <div class="flex justify-end p-2 bg-slate-50/50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-700/40">
+          <div class="flex justify-end p-2 bg-emphasis  border-b border-surface ">
             <IconField>
               <InputIcon>
-                <MagnifyingGlassIcon class="w-4 h-4 text-slate-400" />
+                <MagnifyingGlassIcon class="w-4 h-4 text-muted-color" />
               </InputIcon>
               <InputText v-model="filters['global'].value" placeholder="Rechercher un étudiant, une entreprise..."
-                class="py-1.5 px-3 text-xs rounded-lg shadow-sm border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-primary-500 w-64" />
+                class="py-1.5 px-3 text-xs rounded-lg shadow-sm border border-surface  focus:outline-none focus:ring-1 focus:ring-primary-500 w-64" />
             </IconField>
           </div>
         </template>
 
         <!-- Column 1: Student Identity -->
-        <Column header="Étudiant" field="studentName" sortable :showFilterMenu="false" class="font-semibold text-slate-900 dark:text-white min-w-[180px]">
+        <Column header="Étudiant" field="studentName" sortable :showFilterMenu="false" class="font-semibold text-color -contrast min-w-[180px]">
           <template #body="slotProps">
             <div class="flex items-center gap-3 py-1">
               <div
-                class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
+                class="w-8 h-8 rounded-lg bg-emphasis  text-primary  flex items-center justify-center font-bold text-xs">
                 {{ getInitials(slotProps.data.studentName) }}
               </div>
               <div>
                 <span class="font-bold text-sm block">{{ slotProps.data.studentName }}</span>
-                <span class="text-[9px] text-slate-400 block" v-if="slotProps.data.hasStage">Maître : {{ slotProps.data.supervisor }}</span>
+                <span class="text-[9px] text-muted-color block" v-if="slotProps.data.hasStage">Maître : {{ slotProps.data.supervisor }}</span>
               </div>
             </div>
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Filtrer..."
-              class="w-full text-xs border border-gray-300 dark:border-gray-700 rounded p-1 px-2 focus:ring-1 focus:ring-primary-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" />
+              class="w-full text-xs border border-surface  rounded p-1 px-2 focus:ring-1 focus:ring-primary-500 bg-surface-0  text-color " />
           </template>
         </Column>
 
@@ -875,24 +875,24 @@ const finalizeSignature = (student) => {
           <template #body="slotProps">
             <div v-if="slotProps.data.hasStage" class="space-y-1">
               <span
-                class="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded font-bold text-[9px] uppercase tracking-wider inline-block">
+                class="bg-emphasis  text-color  px-2 py-0.5 rounded font-bold text-[9px] uppercase tracking-wider inline-block">
                 Placé
               </span>
-              <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400 block truncate max-w-[140px]">
+              <span class="text-[10px] font-medium text-muted-color  block truncate max-w-[140px]">
                 {{ slotProps.data.company }}
               </span>
             </div>
             <div v-else class="space-y-1">
               <span
-                class="bg-rose-100 dark:bg-rose-950/20 text-rose-800 dark:text-rose-400 px-2 py-0.5 rounded font-bold text-[9px] uppercase tracking-wider inline-block">
+                class="bg-emphasis  text-color  px-2 py-0.5 rounded font-bold text-[9px] uppercase tracking-wider inline-block">
                 Sans Stage
               </span>
-              <span class="text-[9px] text-slate-400 block">Recherche active</span>
+              <span class="text-[9px] text-muted-color block">Recherche active</span>
             </div>
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Filtrer..."
-              class="w-full text-xs border border-gray-300 dark:border-gray-700 rounded p-1 px-2 focus:ring-1 focus:ring-primary-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" />
+              class="w-full text-xs border border-surface  rounded p-1 px-2 focus:ring-1 focus:ring-primary-500 bg-surface-0  text-color " />
           </template>
         </Column>
 
@@ -908,18 +908,18 @@ const finalizeSignature = (student) => {
                 :class="[
                   'px-2 py-0.5 rounded text-[9px] font-bold transition-all duration-200 flex items-center gap-1 cursor-pointer select-none border shadow-sm',
                   slotProps.data.inputAuthorized
-                    ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/20'
-                    : 'bg-slate-50 dark:bg-slate-900/40 text-slate-550 dark:text-slate-450 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? 'bg-emphasis  text-color  border-surface  hover:bg-emphasis dark:hover:bg-emphasis'
+                    : 'bg-emphasis  text-muted-color  border-surface  hover:bg-emphasis dark:hover:bg-emphasis'
                 ]"
               >
-                <i :class="['pi text-[8px]', slotProps.data.inputAuthorized ? 'pi-lock-open text-emerald-500' : 'pi-lock text-slate-400']"></i>
+                <i :class="['pi text-[8px]', slotProps.data.inputAuthorized ? 'pi-lock-open text-muted-color' : 'pi-lock text-muted-color']"></i>
                 <span>{{ slotProps.data.inputAuthorized ? 'Saisie ouverte' : 'Saisie bloquée' }}</span>
               </button>
             </div>
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <Select v-model="filterModel.value" @change="filterCallback()" :options="['En attente', 'Validée', 'En cours de signature', 'Signée', 'Rejetée']" placeholder="Tous" :showClear="true"
-              class="w-full text-xs border border-gray-300 dark:border-gray-700 rounded focus:ring-1 focus:ring-primary-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" />
+              class="w-full text-xs border border-surface  rounded focus:ring-1 focus:ring-primary-500 bg-surface-0  text-color " />
           </template>
         </Column>
 
@@ -935,7 +935,7 @@ const finalizeSignature = (student) => {
                 placeholder="Assigner un tuteur..."
                 dropdown
                 class="w-full text-xs"
-                inputClass="text-[11px] py-1 px-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 w-full focus:outline-none"
+                inputClass="text-[11px] py-1 px-2 border border-surface  rounded-lg bg-emphasis  text-color  w-full focus:outline-none"
                 scrollHeight="220px"
                 appendTo="body"
                 @item-select="(e) => assignTutorDirectly(slotProps.data, e.value)"
@@ -944,8 +944,8 @@ const finalizeSignature = (student) => {
               >
                 <template #option="{ option }">
                   <div class="flex flex-col py-0.5">
-                    <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">{{ option.fullName }}</span>
-                    <span v-if="option.email" class="text-[9px] text-slate-400">{{ option.email }}</span>
+                    <span class="text-xs font-semibold text-color ">{{ option.fullName }}</span>
+                    <span v-if="option.email" class="text-[9px] text-muted-color">{{ option.email }}</span>
                   </div>
                 </template>
                 <template #empty>
@@ -953,11 +953,11 @@ const finalizeSignature = (student) => {
                 </template>
               </AutoComplete>
             </div>
-            <span v-else class="text-[10px] text-slate-400 italic">Sans stage</span>
+            <span v-else class="text-[10px] text-muted-color italic">Sans stage</span>
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Filtrer..."
-              class="w-full text-xs border border-gray-300 dark:border-gray-700 rounded p-1 px-2 focus:ring-1 focus:ring-primary-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" />
+              class="w-full text-xs border border-surface  rounded p-1 px-2 focus:ring-1 focus:ring-primary-500 bg-surface-0  text-color " />
           </template>
         </Column>
 
@@ -965,16 +965,16 @@ const finalizeSignature = (student) => {
         <Column header="Rapport" field="reportUploaded" sortable :showFilterMenu="false" class="text-center min-w-[100px]">
           <template #body="slotProps">
             <a v-if="slotProps.data.reportUploaded" :href="`/api/stage_etudiants/${slotProps.data.id}/rapport`"
-              class="bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 px-2.5 py-0.5 rounded-full font-bold text-[9px] flex items-center gap-1 w-max mx-auto hover:underline"
+              class="bg-emphasis  text-primary  px-2.5 py-0.5 rounded-full font-bold text-[9px] flex items-center gap-1 w-max mx-auto hover:underline"
               v-tooltip="`Télécharger : ${slotProps.data.reportName}`">
               <i class="pi pi-download text-[8px]"></i>
               <span>Reçu</span>
             </a>
-            <span v-else class="text-slate-400 text-[10px]">-</span>
+            <span v-else class="text-muted-color text-[10px]">-</span>
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <Select v-model="filterModel.value" @change="filterCallback()" :options="[true, false]" placeholder="Tous" :showClear="true"
-              class="w-full text-xs border border-gray-300 dark:border-gray-700 rounded focus:ring-1 focus:ring-primary-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+              class="w-full text-xs border border-surface  rounded focus:ring-1 focus:ring-primary-500 bg-surface-0  text-color ">
               <template #option="slotProps">
                 <span>{{ slotProps.option ? 'Reçu' : 'Non reçu' }}</span>
               </template>
@@ -987,14 +987,14 @@ const finalizeSignature = (student) => {
           <template #body="slotProps">
             <!-- Case A: Convention needs validation -->
             <button v-if="slotProps.data.conventionStatus === 'En attente'" @click="openReviewRequest(slotProps.data)"
-              class="text-[10px] font-bold px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-all flex items-center gap-1.5 ml-auto cursor-pointer">
+              class="text-[10px] font-bold px-3 py-1.5 bg-primary hover:bg-primary text-primary-contrast rounded-lg transition-all flex items-center gap-1.5 ml-auto cursor-pointer">
               <i class="pi pi-check text-[8px]"></i>
               <span>Valider</span>
             </button>
 
             <!-- Case B: Convention needs printing -->
             <button v-else-if="slotProps.data.conventionStatus === 'Validée'" @click="printConvention(slotProps.data)"
-              class="text-[10px] font-bold px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all flex items-center gap-1.5 ml-auto cursor-pointer">
+              class="text-[10px] font-bold px-3 py-1.5 bg-primary hover:bg-primary text-primary-contrast rounded-lg transition-all flex items-center gap-1.5 ml-auto cursor-pointer">
               <i class="pi pi-print text-[8px]"></i>
               <span>Imprimer</span>
             </button>
@@ -1002,12 +1002,12 @@ const finalizeSignature = (student) => {
             <!-- Case C: Convention in signature -->
             <div v-else-if="slotProps.data.conventionStatus === 'En cours de signature'" class="flex items-center gap-1.5 ml-auto">
               <button @click="openConventionPdf(slotProps.data)"
-                class="text-[10px] font-bold p-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-all flex items-center cursor-pointer"
+                class="text-[10px] font-bold p-1.5 bg-emphasis hover:bg-emphasis  dark:hover:bg-emphasis text-color  rounded-lg transition-all flex items-center cursor-pointer"
                 v-tooltip.top="'Télécharger PDF'">
-                <i class="pi pi-file-pdf text-[10px] text-red-500"></i>
+                <i class="pi pi-file-pdf text-[10px] text-muted-color"></i>
               </button>
               <button @click="finalizeSignature(slotProps.data)"
-                class="text-[10px] font-bold px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all flex items-center gap-1 cursor-pointer">
+                class="text-[10px] font-bold px-2.5 py-1.5 bg-primary hover:bg-primary text-primary-contrast rounded-lg transition-all flex items-center gap-1 cursor-pointer">
                 <i class="pi pi-check-square text-[8px]"></i>
                 <span>Finaliser</span>
               </button>
@@ -1015,7 +1015,7 @@ const finalizeSignature = (student) => {
 
             <!-- Case D: Student has no placement, send reminder -->
             <button v-else-if="!slotProps.data.hasStage" @click="contactStudent(slotProps.data.studentName)"
-              class="text-[10px] font-bold px-3 py-1.5 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600/60 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600 rounded-lg transition-all flex items-center gap-1.5 ml-auto cursor-pointer">
+              class="text-[10px] font-bold px-3 py-1.5 bg-emphasis  hover:bg-emphasis dark:hover:bg-emphasis text-color  border border-surface  rounded-lg transition-all flex items-center gap-1.5 ml-auto cursor-pointer">
               <i class="pi pi-envelope text-[8px]"></i>
               <span>Contacter</span>
             </button>
@@ -1024,12 +1024,12 @@ const finalizeSignature = (student) => {
             <div v-else class="flex items-center gap-1.5 ml-auto">
               <button v-if="slotProps.data.hasStage && slotProps.data.conventionStatus === 'Signée'"
                 @click="openConventionPdf(slotProps.data)"
-                class="text-[10px] font-bold p-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-all flex items-center cursor-pointer"
+                class="text-[10px] font-bold p-1.5 bg-emphasis hover:bg-emphasis  dark:hover:bg-emphasis text-color  rounded-lg transition-all flex items-center cursor-pointer"
                 v-tooltip.top="'Télécharger PDF'">
-                <i class="pi pi-file-pdf text-[10px] text-red-500"></i>
+                <i class="pi pi-file-pdf text-[10px] text-muted-color"></i>
               </button>
               <button @click="openReviewRequest(slotProps.data)"
-                class="text-[10px] font-bold px-3 py-1.5 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600/60 text-slate-700 dark:text-slate-300 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+                class="text-[10px] font-bold px-3 py-1.5 bg-emphasis  hover:bg-emphasis dark:hover:bg-emphasis text-color  rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
                 <i class="pi pi-info-circle text-[8px]"></i>
                 <span>Détails</span>
               </button>
@@ -1060,15 +1060,15 @@ const finalizeSignature = (student) => {
       <div v-if="selectedRequest" class="space-y-6 pt-1 max-h-[70vh] overflow-y-auto pr-1">
         <!-- Relecture & Édition des informations de stage/convention -->
         <div v-if="selectedRequest.hasStage" class="space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700/80 pb-3">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400 flex items-center gap-1.5">
+          <div class="flex items-center justify-between border-b border-surface  pb-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-color  flex items-center gap-1.5">
               <PencilSquareIcon class="w-4 h-4" />
               <span>Relecture et modification des données (Responsable)</span>
             </h4>
             <span :class="['px-2.5 py-0.5 text-xs font-bold rounded-full uppercase tracking-wider',
-              selectedRequest.conventionStatus === 'Validée' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' :
-              selectedRequest.conventionStatus === 'Rejetée' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300' :
-              'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+              selectedRequest.conventionStatus === 'Validée' ? 'bg-emphasis text-color  ' :
+              selectedRequest.conventionStatus === 'Rejetée' ? 'bg-emphasis text-color  ' :
+              'bg-emphasis text-color  '
             ]">
               Statut : {{ selectedRequest.conventionStatus }}
             </span>
@@ -1122,7 +1122,7 @@ const finalizeSignature = (student) => {
                 </div>
 
                 <!-- Adresse de l'entreprise -->
-                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-2xs">
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-3 bg-surface-0  p-3 rounded-xl border border-surface  shadow-2xs">
                   <div class="flex flex-col gap-1 md:col-span-3">
                     <label class="q-label">Adresse (Rue, Avenue...)</label>
                     <input v-model="editForm.companyAddress.adresse" type="text" class="q-input q-input-sm" />
@@ -1272,7 +1272,7 @@ const finalizeSignature = (student) => {
                     <template #option="{ option }">
                       <div class="flex items-center justify-between py-0.5">
                         <span class="font-medium text-xs">{{ option.fullName }}</span>
-                        <span v-if="option.email" class="text-[10px] text-slate-400 ml-2">{{ option.email }}</span>
+                        <span v-if="option.email" class="text-[10px] text-muted-color ml-2">{{ option.email }}</span>
                       </div>
                     </template>
                     <template #empty>
@@ -1297,7 +1297,7 @@ const finalizeSignature = (student) => {
           </div>
 
           <div class="flex justify-end gap-2 pt-2">
-            <button @click="saveEdits(false)" class="px-4 py-2 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer">
+            <button @click="saveEdits(false)" class="px-4 py-2 bg-emphasis  hover:bg-emphasis text-primary-contrast font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer">
               <i class="pi pi-save"></i>
               <span>Enregistrer les corrections</span>
             </button>
@@ -1306,25 +1306,25 @@ const finalizeSignature = (student) => {
 
         <!-- If student doesn't have a stage yet (Case B / active search) -->
         <div v-else class="space-y-4">
-          <div class="bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 text-center">
-            <div class="w-12 h-12 bg-teal-50 dark:bg-teal-500/10 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">
+          <div class="bg-emphasis  border border-surface  rounded-2xl p-6 text-center">
+            <div class="w-12 h-12 bg-emphasis  text-muted-color rounded-full flex items-center justify-center mx-auto mb-3">
               <i class="pi pi-search text-xl"></i>
             </div>
-            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Étudiant en recherche active de stage</h4>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 max-w-md mx-auto leading-relaxed">
+            <h4 class="text-sm font-bold text-color ">Étudiant en recherche active de stage</h4>
+            <p class="text-xs text-muted-color  mt-2 max-w-md mx-auto leading-relaxed">
               Cet étudiant ({{ selectedRequest.studentName }}) n'a pas encore déclaré d'entreprise ni saisi ses informations de convention.
             </p>
 
             <div class="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
               <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-600 dark:text-slate-400">Droit de saisie étudiant :</span>
+                <span class="text-xs font-bold text-muted-color ">Droit de saisie étudiant :</span>
                 <button
                   @click="toggleInputAuthorization(selectedRequest)"
                   :class="[
                     'px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-sm cursor-pointer',
                     selectedRequest.inputAuthorized
-                      ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/40 hover:bg-emerald-100'
-                      : 'bg-slate-100 text-slate-650 dark:bg-slate-700/50 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-200'
+                      ? 'bg-emphasis  text-color  border-surface  hover:bg-emphasis'
+                      : 'bg-emphasis text-color   border-surface  hover:bg-emphasis'
                   ]"
                 >
                   <i :class="['pi text-xs', selectedRequest.inputAuthorized ? 'pi-lock-open' : 'pi-lock']"></i>
@@ -1338,21 +1338,21 @@ const finalizeSignature = (student) => {
 
       <!-- Évaluation par le tuteur en entreprise (convention en signature ou signée) -->
       <div v-if="selectedRequest && ['En cours de signature', 'Signée'].includes(selectedRequest.conventionStatus)"
-        class="mt-4 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 space-y-2">
-        <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">Évaluation par l'entreprise</h4>
+        class="mt-4 p-4 rounded-2xl border border-surface  space-y-2">
+        <h4 class="text-xs font-extrabold uppercase tracking-wider text-color ">Évaluation par l'entreprise</h4>
         <EvaluationEntreprisePanel :stage-id="selectedRequest.id" />
       </div>
 
       <!-- Footing buttons -->
       <template #footer>
-        <div class="border-t border-slate-200 dark:border-slate-700/80 pt-4 flex flex-wrap items-center justify-between gap-3 w-full">
+        <div class="border-t border-surface  pt-4 flex flex-wrap items-center justify-between gap-3 w-full">
           <!-- Left side: Reset / Delete (Danger Zone) -->
           <div v-if="selectedRequest && selectedRequest.hasStage" class="flex gap-2">
-            <button @click="resetStudentSubmission" class="px-3.5 py-2 border border-amber-200 dark:border-amber-900/40 hover:bg-amber-50 dark:hover:bg-amber-950/20 text-amber-700 dark:text-amber-400 font-bold rounded-xl text-[11px] transition-all flex items-center gap-1.5 cursor-pointer">
+            <button @click="resetStudentSubmission" class="px-3.5 py-2 border border-surface  hover:bg-emphasis dark:hover:bg-emphasis text-color  font-bold rounded-xl text-[11px] transition-all flex items-center gap-1.5 cursor-pointer">
               <i class="pi pi-refresh"></i>
               <span>Réinitialiser la saisie</span>
             </button>
-            <button @click="deleteStudentSubmission" class="px-3.5 py-2 border border-red-200 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 font-bold rounded-xl text-[11px] transition-all flex items-center gap-1.5 cursor-pointer">
+            <button @click="deleteStudentSubmission" class="px-3.5 py-2 border border-surface  hover:bg-emphasis dark:hover:bg-emphasis text-muted-color  font-bold rounded-xl text-[11px] transition-all flex items-center gap-1.5 cursor-pointer">
               <i class="pi pi-trash"></i>
               <span>Supprimer la demande</span>
             </button>
@@ -1362,46 +1362,46 @@ const finalizeSignature = (student) => {
           <!-- Right side: Validate / Reject / Generate PDF / Close -->
           <div class="flex items-center gap-2 ml-auto">
             <!-- If validated, show Generate PDF button -->
-            <button v-if="selectedRequest && selectedRequest.hasStage && selectedRequest.conventionStatus === 'Validée'" @click="generatePDF" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs">
+            <button v-if="selectedRequest && selectedRequest.hasStage && selectedRequest.conventionStatus === 'Validée'" @click="generatePDF" class="px-4 py-2 bg-emphasis hover:bg-emphasis text-primary-contrast font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs">
               <i class="pi pi-file-pdf"></i>
               <span>Générer la convention PDF</span>
             </button>
 
             <!-- If in signature or signed, show View PDF button -->
-            <button v-if="selectedRequest && selectedRequest.hasStage && ['En cours de signature', 'Signée'].includes(selectedRequest.conventionStatus)" @click="openConventionPdf(selectedRequest)" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs">
-              <i class="pi pi-file-pdf text-red-500"></i>
+            <button v-if="selectedRequest && selectedRequest.hasStage && ['En cours de signature', 'Signée'].includes(selectedRequest.conventionStatus)" @click="openConventionPdf(selectedRequest)" class="px-3.5 py-2 bg-emphasis hover:bg-emphasis  dark:hover:bg-emphasis text-color  font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs">
+              <i class="pi pi-file-pdf text-muted-color"></i>
               <span>Télécharger la convention PDF</span>
             </button>
 
             <!-- If in signature, show Finalize signature button -->
-            <button v-if="selectedRequest && selectedRequest.hasStage && selectedRequest.conventionStatus === 'En cours de signature'" @click="finalizeSignature(selectedRequest); showReviewDialog = false" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs">
+            <button v-if="selectedRequest && selectedRequest.hasStage && selectedRequest.conventionStatus === 'En cours de signature'" @click="finalizeSignature(selectedRequest); showReviewDialog = false" class="px-4 py-2 bg-emphasis hover:bg-emphasis text-primary-contrast font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs">
               <i class="pi pi-check-square"></i>
               <span>Finaliser la signature</span>
             </button>
 
             <!-- Validate / Reject (Only if status is En attente) -->
             <div v-if="selectedRequest && selectedRequest.hasStage && selectedRequest.conventionStatus === 'En attente'" class="flex items-center gap-2">
-              <button @click="showReviewDialog = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-all cursor-pointer">
+              <button @click="showReviewDialog = false" class="px-4 py-2 bg-emphasis hover:bg-emphasis  dark:hover:bg-emphasis text-color  font-bold rounded-xl text-xs transition-all cursor-pointer">
                 Annuler
               </button>
 
               <!-- Rejection input context -->
-              <div class="flex items-center gap-2 border-l border-slate-200 dark:border-slate-700 pl-3">
-                <input v-model="rejectReason" type="text" placeholder="Motif de rejet..." class="p-2 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none w-[140px]" />
-                <button @click="rejectRequest" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-1 cursor-pointer shadow-xs">
+              <div class="flex items-center gap-2 border-l border-surface  pl-3">
+                <input v-model="rejectReason" type="text" placeholder="Motif de rejet..." class="p-2 text-xs border border-surface  rounded-lg bg-emphasis  text-color  focus:outline-none w-[140px]" />
+                <button @click="rejectRequest" class="px-3.5 py-2 bg-emphasis hover:bg-emphasis text-primary-contrast font-bold rounded-xl text-xs transition-all flex items-center gap-1 cursor-pointer shadow-xs">
                   <i class="pi pi-times"></i>
                   <span>Rejeter</span>
                 </button>
               </div>
 
-              <button @click="approveRequest" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs">
+              <button @click="approveRequest" class="px-4 py-2 bg-emphasis hover:bg-emphasis text-primary-contrast font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs">
                 <i class="pi pi-check"></i>
                 <span>Valider la convention</span>
               </button>
             </div>
 
             <!-- Standard Close Button -->
-            <button v-else @click="showReviewDialog = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-all cursor-pointer">
+            <button v-else @click="showReviewDialog = false" class="px-4 py-2 bg-emphasis hover:bg-emphasis  dark:hover:bg-emphasis text-color  font-bold rounded-xl text-xs transition-all cursor-pointer">
               Fermer
             </button>
           </div>

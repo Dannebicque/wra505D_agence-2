@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Publish;
 
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Domain\Questionnaire\Structure\QuestionnaireStructureService;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSectionInstance;
@@ -116,7 +117,7 @@ final class PublishQuestionnaireService
     {
         $emails = [];
         foreach ($adresses as $email) {
-            $email = mb_strtolower(trim((string) $email));
+            $email = mb_strtolower(trim(LooseValue::castString($email)));
             if ($email === '') {
                 continue;
             }

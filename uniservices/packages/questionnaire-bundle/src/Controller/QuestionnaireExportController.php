@@ -11,6 +11,7 @@ use QuestionnaireBundle\Security\QuestionnaireAccess;
 use QuestionnaireBundle\Security\QuestionnaireResolver;
 use QuestionnaireBundle\Security\QuestionnaireVoter;
 use QuestionnaireBundle\Services\Analytics\QuestionnaireAnalyticsService;
+use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -91,7 +92,7 @@ class QuestionnaireExportController extends AbstractController
     {
         $q = $this->questionnaires->charger($uuid, QuestionnaireVoter::SYNTHESE);
         $sections = $this->access->sectionsVisibles($this->getUser(), $q);
-        $demandees = array_values(array_filter(array_map('intval', explode(',', (string) $request->query->get('sections', '')))));
+        $demandees = array_values(array_filter(array_map(static fn (string $id): int => LooseValue::castInt($id), explode(',', (string) $request->query->get('sections', ''))), static fn (int $id): bool => $id !== 0));
         if ($demandees !== []) {
             $sections = $sections === null ? $demandees : array_values(array_intersect($sections, $demandees));
         }
@@ -105,6 +106,6 @@ class QuestionnaireExportController extends AbstractController
 
     private function safeName(Questionnaire $q): string
     {
-        return preg_replace('/[^a-zA-Z0-9]+/', '_', (string) $q->getTitle()) ?: 'questionnaire';
+        return preg_replace('/[^a-zA-Z0-9]+/', '_', (string) $q->getTitle()) ?? 'questionnaire';
     }
 }

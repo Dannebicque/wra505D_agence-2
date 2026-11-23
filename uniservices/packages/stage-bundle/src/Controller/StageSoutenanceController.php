@@ -57,7 +57,7 @@ class StageSoutenanceController extends AbstractController
         $stageEtudiantId = Iri::id($data['stageEtudiantId'] ?? null);
         $enseignantJuryId = Iri::id($data['enseignantJuryId'] ?? null);
         $dateStr = $data['dateSoutenance'] ?? null;
-        $duree = (int)($data['duree'] ?? 30);
+        $duree = LooseValue::castInt($data['duree'] ?? 30);
         $soutenanceId = Iri::id($data['soutenanceId'] ?? null);
         $stagePeriodeId = Iri::id($data['stagePeriodeId'] ?? null);
 
@@ -97,7 +97,7 @@ class StageSoutenanceController extends AbstractController
         $enseignantJuryId = Iri::id($data['enseignantJuryId'] ?? null);
         $dateStr = $data['dateSoutenance'] ?? null;
         $salle = $data['salle'] ?? '';
-        $duree = (int)($data['duree'] ?? 30);
+        $duree = LooseValue::castInt($data['duree'] ?? 30);
         $stagePeriodeId = Iri::id($data['stagePeriodeId'] ?? null);
 
         if (!(bool) $dateStr) {

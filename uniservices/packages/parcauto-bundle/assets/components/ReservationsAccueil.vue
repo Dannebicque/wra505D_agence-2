@@ -26,7 +26,7 @@ function lien(reservation) {
 <template>
   <Card :title="titre" :icon="icon" :color="couleur">
     <EmptyState v-if="!groupe.reservations.length" :title="vide" :icon="icon" compact />
-    <ul v-else class="divide-y divide-surface-200 dark:divide-surface-700">
+    <ul v-else class="divide-y divide-surface-200 -700">
       <li v-for="reservation in groupe.reservations" :key="reservation.id">
         <RouterLink :to="lien(reservation)" class="flex items-center justify-between gap-3 py-3 hover:text-primary">
           <div>

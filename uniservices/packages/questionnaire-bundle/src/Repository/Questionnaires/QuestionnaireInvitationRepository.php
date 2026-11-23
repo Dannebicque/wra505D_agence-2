@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Repository\Questionnaires;
 
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -46,8 +47,8 @@ class QuestionnaireInvitationRepository extends ServiceEntityRepository
             ->setParameter('submitted', QuestInvitationStatusEnum::SUBMITTED);
 
         $res = $qb->getQuery()->getSingleResult();
-        $total = (int) ($res['total'] ?? 0);
-        $submitted = (int) ($res['submitted'] ?? 0);
+        $total = LooseValue::castInt($res['total'] ?? 0);
+        $submitted = LooseValue::castInt($res['submitted'] ?? 0);
         $rate = $total > 0 ? round(($submitted / $total) * 100, 1) : 0.0;
 
         return [

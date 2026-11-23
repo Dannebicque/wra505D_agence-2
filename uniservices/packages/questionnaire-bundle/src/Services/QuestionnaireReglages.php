@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\Services;
 
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -105,13 +106,13 @@ class QuestionnaireReglages
         return [
             'anonymat' => (bool) $r['anonymat'],
             'modification_reponses' => (bool) $r['modification_reponses'],
-            'duree_jours' => (int) $r['duree_jours'],
+            'duree_jours' => LooseValue::castInt($r['duree_jours']),
             'cloture_auto' => (bool) $r['cloture_auto'],
             'responsable_qualite' => is_numeric($responsable) && (int) $responsable > 0 ? (int) $responsable : null,
-            'seuil_min_reponses' => (int) $r['seuil_min_reponses'],
+            'seuil_min_reponses' => LooseValue::castInt($r['seuil_min_reponses']),
             'publication_auto' => (bool) $r['publication_auto'],
-            'delai_relecture_jours' => (int) $r['delai_relecture_jours'],
-            'conservation_annees' => (int) $r['conservation_annees'],
+            'delai_relecture_jours' => LooseValue::castInt($r['delai_relecture_jours']),
+            'conservation_annees' => LooseValue::castInt($r['conservation_annees']),
         ];
     }
 }

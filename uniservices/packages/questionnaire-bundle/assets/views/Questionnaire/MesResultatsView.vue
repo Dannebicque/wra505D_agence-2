@@ -127,7 +127,7 @@ onMounted(charger);
 
       <form
         v-if="!resultats.gestion && retours[section.sectionInstanceId]"
-        class="q-form mt-6 pt-4 border-t border-slate-200 dark:border-slate-700"
+        class="q-form mt-6 pt-4 border-t border-surface "
         @submit.prevent="enregistrerRetour(section.sectionInstanceId)"
       >
         <h4 class="text-base font-medium">Mon retour</h4>

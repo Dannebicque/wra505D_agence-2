@@ -64,14 +64,14 @@ const etape = etapeParId(5);
             </template>
 
             <!-- Étape en cours : saisie de la date qui fait avancer le circuit -->
-            <form v-if="actionFacture" class="rounded-lg border-2 border-pink-300 dark:border-pink-800 bg-pink-50/60 dark:bg-pink-950/30 p-4 flex flex-wrap items-end gap-3" @submit.prevent="enregistrerFacture">
+            <form v-if="actionFacture" class="rounded-lg border-2 border-surface  bg-emphasis  p-4 flex flex-wrap items-end gap-3" @submit.prevent="enregistrerFacture">
                 <div class="flex flex-col gap-1">
                     <label for="facture-arrivee-saisie" class="q-label q-label-required">Date d'arrivée de la facture</label>
                     <input id="facture-arrivee-saisie" v-model="dateFacture" type="date" :max="aujourdhui()" required class="q-input" />
                 </div>
                 <Button type="submit" label="Enregistrer l'arrivée de la facture" icon="pi pi-inbox" :disabled="!dateValide(dateFacture)" :loading="envoi === 'recevoir_facture'" />
             </form>
-            <form v-else-if="actionPaiement" class="rounded-lg border-2 border-pink-300 dark:border-pink-800 bg-pink-50/60 dark:bg-pink-950/30 p-4 flex flex-wrap items-end gap-3" @submit.prevent="enregistrerPaiement">
+            <form v-else-if="actionPaiement" class="rounded-lg border-2 border-surface  bg-emphasis  p-4 flex flex-wrap items-end gap-3" @submit.prevent="enregistrerPaiement">
                 <div class="flex flex-col gap-1">
                     <label for="facture-paiement-saisie" class="q-label q-label-required">Date du paiement</label>
                     <input id="facture-paiement-saisie" v-model="datePaiement" type="date" :max="aujourdhui()" required class="q-input" />
@@ -101,7 +101,7 @@ const etape = etapeParId(5);
                 </label>
                 <p v-if="modifiable('dateArriveeFacture')" class="q-hint md:col-span-2">Correction des dates : enregistrez avec le bouton « Enregistrer » en haut de la page.</p>
             </div>
-            <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div class="mt-4 pt-3 border-t border-surface ">
                 <ActionsWorkflow :actions="autresActions" :etape="5" :envoi="envoi" @executer="emit('executer', $event)" />
             </div>
         </Card>

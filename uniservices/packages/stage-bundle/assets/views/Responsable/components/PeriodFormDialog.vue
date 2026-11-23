@@ -307,7 +307,7 @@ const closeDialog = () => {
                 v-model="localForm.datesFlexibles"
                 class="q-check"
               />
-              <label for="datesFlex" class="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+              <label for="datesFlex" class="text-xs font-semibold text-color  cursor-pointer">
                 Autoriser des dates flexibles pour l'étudiant
               </label>
             </div>
@@ -324,7 +324,7 @@ const closeDialog = () => {
             />
 
             <FormField label="Co-responsables">
-              <div class="flex flex-wrap gap-2 p-2.5 border border-slate-200 dark:border-slate-700/80 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 max-h-[120px] overflow-y-auto w-full">
+              <div class="flex flex-wrap gap-2 p-2.5 border border-surface  rounded-xl bg-emphasis  max-h-[120px] overflow-y-auto w-full">
                 <div v-for="t in teachers" :key="t.iri || t" class="flex items-center gap-1.5">
                   <input
                     type="checkbox"
@@ -333,7 +333,7 @@ const closeDialog = () => {
                     v-model="localForm.coResponsablesIris"
                     class="q-check !w-3.5 !h-3.5"
                   />
-                  <label :for="'coresp_' + (t.iri || t)" class="text-xs text-slate-700 dark:text-slate-300 mr-2 cursor-pointer">
+                  <label :for="'coresp_' + (t.iri || t)" class="text-xs text-color  mr-2 cursor-pointer">
                     {{ (t.fullName || t).split(' ').slice(1).join(' ') }}
                   </label>
                 </div>
@@ -346,9 +346,9 @@ const closeDialog = () => {
         <div v-if="showCreateTab === 'interruptions'" class="space-y-6">
 
           <!-- Interruptions 0-n -->
-          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 space-y-3">
+          <div class="p-4 rounded-2xl border border-surface  bg-emphasis  space-y-3">
             <div class="flex justify-between items-center">
-              <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+              <h4 class="text-xs font-bold text-color  uppercase tracking-wider">
                 Périodes d'interruptions ({{ localForm.interruptions?.length || 0 }})
               </h4>
               <Button
@@ -366,18 +366,18 @@ const closeDialog = () => {
               <div
                 v-for="(item, idx) in localForm.interruptions"
                 :key="idx"
-                class="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-2xs"
+                class="flex flex-wrap items-center gap-3 bg-surface-0  p-3 border border-surface  rounded-xl shadow-2xs"
               >
                 <div class="flex flex-col gap-1 w-[130px]">
-                  <label class="text-2xs font-semibold text-slate-500">Date début</label>
+                  <label class="text-2xs font-semibold text-muted-color">Date début</label>
                   <input type="date" v-model="item.dateDebut" class="q-input q-input-sm" />
                 </div>
                 <div class="flex flex-col gap-1 w-[130px]">
-                  <label class="text-2xs font-semibold text-slate-500">Date fin</label>
+                  <label class="text-2xs font-semibold text-muted-color">Date fin</label>
                   <input type="date" v-model="item.dateFin" class="q-input q-input-sm" />
                 </div>
                 <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
-                  <label class="text-2xs font-semibold text-slate-500">Motif</label>
+                  <label class="text-2xs font-semibold text-muted-color">Motif</label>
                   <input type="text" v-model="item.motif" placeholder="Ex: Vacances de Noël, etc." class="q-input q-input-sm" />
                 </div>
                 <Button
@@ -395,16 +395,16 @@ const closeDialog = () => {
             </div>
             <div
               v-else
-              class="text-center py-6 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-slate-400 text-xs"
+              class="text-center py-6 border border-dashed border-surface  rounded-xl text-muted-color text-xs"
             >
               Aucune période d'interruption déclarée.
             </div>
           </div>
 
           <!-- Soutenances -->
-          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 space-y-3">
+          <div class="p-4 rounded-2xl border border-surface  bg-emphasis  space-y-3">
             <div class="flex justify-between items-center">
-              <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+              <h4 class="text-xs font-bold text-color  uppercase tracking-wider">
                 Périodes de Soutenances ({{ localForm.soutenances?.length || 0 }})
               </h4>
               <Button
@@ -422,22 +422,22 @@ const closeDialog = () => {
               <div
                 v-for="(item, idx) in localForm.soutenances"
                 :key="idx"
-                class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-2xs"
+                class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-surface-0  p-4 border border-surface  rounded-xl shadow-2xs"
               >
                 <div class="flex flex-col gap-1">
-                  <label class="text-2xs font-semibold text-slate-500">Début soutenances</label>
+                  <label class="text-2xs font-semibold text-muted-color">Début soutenances</label>
                   <input type="date" v-model="item.dateDebut" class="q-input q-input-sm" />
                 </div>
                 <div class="flex flex-col gap-1">
-                  <label class="text-2xs font-semibold text-slate-500">Fin soutenances</label>
+                  <label class="text-2xs font-semibold text-muted-color">Fin soutenances</label>
                   <input type="date" v-model="item.dateFin" class="q-input q-input-sm" />
                 </div>
                 <div class="flex flex-col gap-1 md:col-span-2">
-                  <label class="text-2xs font-semibold text-slate-500">Rendu du rapport</label>
+                  <label class="text-2xs font-semibold text-muted-color">Rendu du rapport</label>
                   <input type="date" v-model="item.dateRenduRapport" class="q-input q-input-sm" />
                 </div>
                 <div class="flex flex-col gap-1 md:col-span-4">
-                  <label class="text-2xs font-semibold text-slate-500">Modalités d'évaluation (Texte)</label>
+                  <label class="text-2xs font-semibold text-muted-color">Modalités d'évaluation (Texte)</label>
                   <textarea rows="2" v-model="item.modalites" placeholder="Ex: Modalités de présentation, jury..." class="q-input q-input-sm"></textarea>
                 </div>
                 <div class="md:col-span-4 flex justify-end">
@@ -455,7 +455,7 @@ const closeDialog = () => {
             </div>
             <div
               v-else
-              class="text-center py-6 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-slate-400 text-xs"
+              class="text-center py-6 border border-dashed border-surface  rounded-xl text-muted-color text-xs"
             >
               Aucune période de soutenance déclarée.
             </div>
@@ -521,29 +521,29 @@ const closeDialog = () => {
         <!-- SECTION 4: INSTRUCTIONS FILES UPLOADS -->
         <div v-if="showCreateTab === 'files'" class="space-y-4">
           <div
-            class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-teal-400 dark:hover:border-teal-500 rounded-2xl p-6 text-center cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all duration-300"
+            class="border-2 border-dashed border-surface  hover:border-surface dark:hover:border-surface rounded-2xl p-6 text-center cursor-pointer hover:bg-emphasis dark:hover:bg-emphasis transition-all duration-300"
             @click="triggerConsigneUpload">
             <div
-              class="w-10 h-10 bg-teal-50 dark:bg-teal-500/10 rounded-full flex items-center justify-center text-teal-600 mx-auto">
+              class="w-10 h-10 bg-emphasis  rounded-full flex items-center justify-center text-muted-color mx-auto">
               <ArrowUpTrayIcon class="w-5 h-5" />
             </div>
-            <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 mt-2">Cliquez pour ajouter une consigne</h4>
-            <p class="text-2xs text-slate-400 mt-0.5">Documents pdf d'aide, guides, chartes de stage...</p>
+            <h4 class="text-xs font-bold text-color  mt-2">Cliquez pour ajouter une consigne</h4>
+            <p class="text-2xs text-muted-color mt-0.5">Documents pdf d'aide, guides, chartes de stage...</p>
           </div>
 
           <div class="space-y-2 mt-4" v-if="localForm.consignesFichiers?.length > 0">
-            <h5 class="text-2xs font-bold text-slate-400 uppercase tracking-wider">
+            <h5 class="text-2xs font-bold text-muted-color uppercase tracking-wider">
               Fichiers téléversés ({{ localForm.consignesFichiers.length }})
             </h5>
 
             <div
               v-for="(f, idx) in localForm.consignesFichiers"
               :key="idx"
-              class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white dark:bg-slate-800 shadow-2xs"
+              class="flex items-center justify-between p-3 border border-surface  rounded-xl bg-surface-0  shadow-2xs"
             >
-              <span class="font-semibold text-xs text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <DocumentIcon class="w-4 h-4 text-teal-500" />
-                {{ f.name }} <span class="text-2xs text-slate-400">({{ f.size }})</span>
+              <span class="font-semibold text-xs text-color  flex items-center gap-2">
+                <DocumentIcon class="w-4 h-4 text-muted-color" />
+                {{ f.name }} <span class="text-2xs text-muted-color">({{ f.size }})</span>
               </span>
               <Button
                 type="button"

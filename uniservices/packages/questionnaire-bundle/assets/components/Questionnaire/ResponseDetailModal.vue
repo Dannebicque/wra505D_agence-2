@@ -125,37 +125,37 @@ async function sendReminder() {
         <div class="p-3 rounded-xl border border-surface bg-emphasis flex items-center gap-3">
           <div
             :class="[
-              'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-xs',
-              response.completed ? 'bg-emerald-500' : 'bg-amber-500'
+              'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-primary-contrast shadow-xs',
+              response.completed ? 'bg-emphasis' : 'bg-emphasis'
             ]"
           >
             <component :is="response.completed ? CheckCircleIcon : ClockIcon" class="w-5 h-5" />
           </div>
           <div class="min-w-0">
-            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Statut</span>
-            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <span class="text-sm font-medium text-muted-color  block">Statut</span>
+            <span class="text-sm font-semibold text-color ">
               {{ response.completed ? 'Terminé' : 'En cours' }}
             </span>
           </div>
         </div>
 
         <div class="p-3 rounded-xl border border-surface bg-emphasis flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-primary-600 text-white shadow-xs">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 -primary text-primary-contrast shadow-xs">
             <ChartBarIcon class="w-5 h-5" />
           </div>
           <div class="min-w-0">
-            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Progression</span>
-            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ getProgress() }}%</span>
+            <span class="text-sm font-medium text-muted-color  block">Progression</span>
+            <span class="text-sm font-semibold text-color ">{{ getProgress() }}%</span>
           </div>
         </div>
 
         <div class="p-3 rounded-xl border border-surface bg-emphasis flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-purple-600 text-white shadow-xs">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-primary text-primary-contrast shadow-xs">
             <ClockIcon class="w-5 h-5" />
           </div>
           <div class="min-w-0">
-            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Temps passé</span>
-            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ getTimeSpent() }}</span>
+            <span class="text-sm font-medium text-muted-color  block">Temps passé</span>
+            <span class="text-sm font-semibold text-color ">{{ getTimeSpent() }}</span>
           </div>
         </div>
 
@@ -164,8 +164,8 @@ async function sendReminder() {
             <BellIcon aria-hidden="true" class="w-5 h-5" />
           </div>
           <div class="min-w-0">
-            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Relances</span>
-            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <span class="text-sm font-medium text-muted-color  block">Relances</span>
+            <span class="text-sm font-semibold text-color ">
               {{ remindersCount }} envoyé{{ remindersCount > 1 ? 's' : '' }}
             </span>
           </div>
@@ -173,13 +173,13 @@ async function sendReminder() {
       </div>
 
       <!-- Reminder History Section -->
-      <div v-if="response.remindersHistory && response.remindersHistory.length > 0" class="space-y-3 p-4 rounded-xl border border-primary-200 dark:border-primary-900/50 bg-primary-50/40 dark:bg-primary-950/20">
+      <div v-if="response.remindersHistory && response.remindersHistory.length > 0" class="space-y-3 p-4 rounded-xl border border-primary-200 -900/50 bg-primary-50/40 -950/20">
         <div class="flex items-center justify-between pb-1">
-          <h3 class="text-sm font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
-            <BellIcon class="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <h3 class="text-sm font-bold uppercase tracking-wider text-color  flex items-center gap-1.5">
+            <BellIcon class="w-4 h-4 text-muted-color " />
             <span>Historique des relances ({{ response.remindersHistory.length }})</span>
           </h3>
-          <span class="text-sm text-amber-700/80 dark:text-amber-400/80">
+          <span class="text-sm text-color ">
             Dernière : {{ formatDate(response.remindedAt) }}
           </span>
         </div>
@@ -188,17 +188,17 @@ async function sendReminder() {
           <div
             v-for="(rem, index) in sortedReminders"
             :key="rem.id || index"
-            class="p-3 rounded-lg bg-white dark:bg-slate-900/80 border border-amber-200/60 dark:border-amber-900/40 flex flex-col gap-1 text-sm"
+            class="p-3 rounded-lg bg-surface-0  border border-surface  flex flex-col gap-1 text-sm"
           >
             <div class="flex items-center justify-between gap-2">
               <span class="font-semibold text-color">
                 Relance #{{ response.remindersHistory.length - index }} - {{ rem.subject || 'Rappel' }}
               </span>
-              <span class="text-sm text-slate-500 dark:text-slate-400">
+              <span class="text-sm text-muted-color ">
                 {{ formatDate(rem.sentAt) }}
               </span>
             </div>
-            <p v-if="rem.message" class="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line font-mono bg-slate-50 dark:bg-slate-800/50 p-2 rounded">
+            <p v-if="rem.message" class="text-sm text-muted-color  whitespace-pre-line font-mono bg-emphasis  p-2 rounded">
               {{ rem.message }}
             </p>
           </div>
@@ -207,9 +207,9 @@ async function sendReminder() {
 
       <!-- Responses by Section -->
       <div v-for="section in survey.sections" :key="section.id" class="space-y-4">
-        <div class="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-700/80">
-          <div class="w-2 h-2 rounded-full bg-primary-500"></div>
-          <h3 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+        <div class="flex items-center gap-2 pb-2 border-b border-surface ">
+          <div class="w-2 h-2 rounded-full -primary"></div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-color ">
             {{ section.title }}
           </h3>
         </div>
@@ -218,23 +218,23 @@ async function sendReminder() {
           <div
             v-for="(question, questionIndex) in section.questions"
             :key="question.id"
-            class="p-4 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/40 space-y-3"
+            class="p-4 rounded-xl border border-surface  bg-surface-0  space-y-3"
           >
             <div>
-              <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <span class="text-sm font-medium text-slate-400 dark:text-slate-500">{{ questionIndex + 1 }}.</span>
+              <h4 class="text-sm font-semibold text-color  flex items-center gap-1.5">
+                <span class="text-sm font-medium text-muted-color ">{{ questionIndex + 1 }}.</span>
                 <span>{{ question.title }}</span>
-                <span v-if="question.required" class="text-red-500 font-bold">*</span>
+                <span v-if="question.required" class="text-muted-color font-bold">*</span>
               </h4>
-              <p v-if="question.description" class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              <p v-if="question.description" class="text-sm text-muted-color  mt-1">
                 {{ question.description }}
               </p>
             </div>
 
             <!-- Answer Display -->
             <div class="pt-1">
-              <div v-if="!response.answers[question.id]" class="text-sm text-slate-400 dark:text-slate-500 italic flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+              <div v-if="!response.answers[question.id]" class="text-sm text-muted-color  italic flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emphasis "></span>
                 Pas de réponse
               </div>
 
@@ -244,17 +244,17 @@ async function sendReminder() {
                   <span
                     v-for="answer in response.answers[question.id]"
                     :key="answer"
-                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-semibold bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300 border border-primary-200 dark:border-primary-800"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-semibold bg-primary-50 -primary -950/40 -300 border border-primary-200 -800"
                   >
-                    <CheckCircleIcon class="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
+                    <CheckCircleIcon class="w-3.5 h-3.5 -primary -400" />
                     {{ answer }}
                   </span>
                 </div>
                 <div v-else>
                   <span
-                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-semibold bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300 border border-primary-200 dark:border-primary-800"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-semibold bg-primary-50 -primary -950/40 -300 border border-primary-200 -800"
                   >
-                    <CheckCircleIcon class="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
+                    <CheckCircleIcon class="w-3.5 h-3.5 -primary -400" />
                     {{ response.answers[question.id] }}
                   </span>
                 </div>
@@ -262,18 +262,18 @@ async function sendReminder() {
 
               <!-- Text -->
               <div v-else-if="['text_short', 'text_long'].includes(question.type)">
-                <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
+                <div class="p-3 rounded-lg bg-emphasis  border border-surface  text-sm text-color  whitespace-pre-wrap">
                   {{ response.answers[question.id] }}
                 </div>
               </div>
 
               <!-- Scale -->
               <div v-else-if="question.type === 'scale'">
-                <div class="inline-flex items-baseline gap-2 px-3 py-1.5 rounded-xl bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800">
-                  <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                <div class="inline-flex items-baseline gap-2 px-3 py-1.5 rounded-xl bg-primary-50 -950/40 border border-primary-200 -800">
+                  <span class="text-2xl font-bold -primary -400">
                     {{ response.answers[question.id] }}
                   </span>
-                  <span class="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  <span class="text-sm font-medium text-muted-color ">
                     / {{ question.validation?.max || 10 }}
                   </span>
                 </div>
@@ -285,10 +285,10 @@ async function sendReminder() {
                   <div
                     v-for="(value, key) in response.answers[question.id]"
                     :key="key"
-                    class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm"
+                    class="flex items-center justify-between p-2.5 rounded-lg bg-emphasis  border border-surface  text-sm"
                   >
-                    <span class="font-medium text-slate-800 dark:text-slate-200">{{ key }}</span>
-                    <span class="font-semibold text-primary-600 dark:text-primary-400">{{ value }}</span>
+                    <span class="font-medium text-color ">{{ key }}</span>
+                    <span class="font-semibold -primary -400">{{ value }}</span>
                   </div>
                 </div>
               </div>
@@ -299,12 +299,12 @@ async function sendReminder() {
                   <div
                     v-for="(item, index) in response.answers[question.id]"
                     :key="index"
-                    class="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm"
+                    class="flex items-center gap-2.5 p-2.5 rounded-lg bg-emphasis  border border-surface  text-sm"
                   >
-                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300 font-bold text-sm">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-primary-100 -primary -900 -300 font-bold text-sm">
                       {{ index + 1 }}
                     </span>
-                    <span class="font-medium text-slate-800 dark:text-slate-200">{{ item }}</span>
+                    <span class="font-medium text-color ">{{ item }}</span>
                   </div>
                 </div>
               </div>

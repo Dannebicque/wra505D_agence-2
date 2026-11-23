@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Services\Analytics;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
@@ -170,10 +171,10 @@ class QuestionnaireAnalyticsService
 
                     $sum = 0;
                     $numCount = 0;
-                    $distribution = array_fill($min, $max - $min + 1, 0);
+                    $distribution = array_fill(LooseValue::castInt($min), $max - $min + 1, 0);
 
                     foreach ($qAnswers as $ansVal) {
-                        $val = (int)$ansVal;
+                        $val = LooseValue::castInt($ansVal);
                         if ($val >= $min && $val <= $max) {
                             $sum += $val;
                             $numCount++;

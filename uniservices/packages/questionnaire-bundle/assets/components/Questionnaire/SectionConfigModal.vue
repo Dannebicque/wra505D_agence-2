@@ -393,7 +393,7 @@ onMounted(async () => {
             :class="['q-choice', localSection.typeSection === 'normal' && 'q-choice-active']"
             @click="localSection.typeSection = 'normal'"
           >
-            <DocumentTextIcon class="w-5 h-5 text-primary-600 dark:text-primary-400 shrink-0 mt-0.5" />
+            <DocumentTextIcon class="w-5 h-5 -primary -400 shrink-0 mt-0.5" />
             <div>
               <span class="q-choice-title">Section normale</span>
               <span class="q-choice-desc block">Section standard avec questions fixes posées une seule fois</span>
@@ -404,7 +404,7 @@ onMounted(async () => {
             :class="['q-choice', localSection.typeSection === 'configurable' && 'q-choice-active']"
             @click="localSection.typeSection = 'configurable'"
           >
-            <Cog6ToothIcon class="w-5 h-5 text-primary-600 dark:text-primary-400 shrink-0 mt-0.5" />
+            <Cog6ToothIcon class="w-5 h-5 -primary -400 shrink-0 mt-0.5" />
             <div>
               <span class="q-choice-title">Section configurable</span>
               <span class="q-choice-desc block">Section répétée dynamiquement pour chaque élément d'une liste</span>
@@ -473,8 +473,8 @@ onMounted(async () => {
               :class="[
                 'p-3 rounded-xl border text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 shadow-2xs',
                 localSection.opt?.sourceType === sourceType.value
-                  ? 'bg-primary-50/70 dark:bg-primary-950/40 border-primary-400 dark:border-primary-700 text-primary-700 dark:text-primary-300 font-semibold'
-                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
+                  ? 'bg-primary-50/70 -950/40 -primary -700 -primary -300 font-semibold'
+                  : 'bg-surface-0  border-surface  text-color  hover:border-surface dark:hover:border-surface'
               ]"
               @click="selectSourceType(sourceType.value)"
             >
@@ -491,25 +491,25 @@ onMounted(async () => {
             <div class="flex items-center justify-between gap-2 mb-2">
               <p class="q-label !mb-0">Filtrer par semestre</p>
               <div class="flex items-center gap-3 text-sm">
-                <button type="button" class="font-semibold text-primary-600 dark:text-primary-400 hover:underline border-0 bg-transparent cursor-pointer" @click="selectAllSemestres()">
+                <button type="button" class="font-semibold -primary -400 hover:underline border-0 bg-transparent cursor-pointer" @click="selectAllSemestres()">
                   Tout sélectionner
                 </button>
-                <span class="text-slate-300 dark:text-slate-600">|</span>
-                <button type="button" class="text-slate-500 dark:text-slate-400 hover:underline border-0 bg-transparent cursor-pointer" @click="localSection.opt.selectedSemesters = []">
+                <span class="text-color ">|</span>
+                <button type="button" class="text-muted-color  hover:underline border-0 bg-transparent cursor-pointer" @click="localSection.opt.selectedSemesters = []">
                   Effacer
                 </button>
               </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800">
+            <div class="flex flex-wrap items-center gap-2 p-2.5 rounded-xl border border-surface  bg-surface-0 ">
               <label
                 v-for="semestre in semestresList"
                 :key="semestre.id"
                 :class="[
                   'px-3 py-1.5 rounded-lg border text-sm font-medium cursor-pointer transition-all flex items-center gap-2 select-none',
                   localSection.opt.selectedSemesters?.includes(semestre.id)
-                    ? 'bg-primary-50 dark:bg-primary-950/60 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300 font-semibold'
-                    : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                    ? 'bg-primary-50 -950/60 -primary -700 -primary -300 font-semibold'
+                    : 'bg-emphasis  border-surface  text-muted-color  hover:border-surface'
                 ]"
               >
                 <input
@@ -528,11 +528,11 @@ onMounted(async () => {
             <div class="flex items-center justify-between gap-2 mb-2">
               <p class="q-label !mb-0">Éléments disponibles à évaluer</p>
               <div v-if="availableElements.length > 0" class="flex items-center gap-3 text-sm">
-                <button type="button" class="font-semibold text-primary-600 dark:text-primary-400 hover:underline border-0 bg-transparent cursor-pointer" @click="selectAllElements">
+                <button type="button" class="font-semibold -primary -400 hover:underline border-0 bg-transparent cursor-pointer" @click="selectAllElements">
                   Tout sélectionner
                 </button>
-                <span class="text-slate-300 dark:text-slate-600">|</span>
-                <button type="button" class="text-slate-500 dark:text-slate-400 hover:underline border-0 bg-transparent cursor-pointer" @click="deselectAllElements">
+                <span class="text-color ">|</span>
+                <button type="button" class="text-muted-color  hover:underline border-0 bg-transparent cursor-pointer" @click="deselectAllElements">
                   Effacer
                 </button>
               </div>
@@ -542,15 +542,15 @@ onMounted(async () => {
 
             <EmptyState v-else-if="availableElements.length === 0" compact icon="pi pi-inbox" title="Aucun élément disponible" description="Aucun élément pour les semestres sélectionnés." />
 
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto border border-slate-200 dark:border-slate-700/80 rounded-xl p-3 bg-white dark:bg-slate-800">
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto border border-surface  rounded-xl p-3 bg-surface-0 ">
               <label 
                 v-for="avail in availableElements" 
                 :key="avail.id" 
                 :class="[
                   'flex items-start gap-2.5 p-2.5 rounded-lg border text-sm cursor-pointer transition-colors',
                   isElementSelected(avail)
-                    ? 'bg-primary-50/50 dark:bg-primary-950/30 border-primary-200 dark:border-primary-800/60'
-                    : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                    ? 'bg-primary-50/50 -950/30 border-primary-200 -800/60'
+                    : 'border-transparent hover:bg-emphasis dark:hover:bg-emphasis'
                 ]"
               >
                 <input 
@@ -560,15 +560,15 @@ onMounted(async () => {
                   class="q-check mt-0.5"
                 />
                 <div class="flex-1 min-w-0">
-                  <span class="font-medium text-slate-900 dark:text-white block truncate">{{ avail.name }}</span>
-                  <span v-if="avail.code" class="inline-block mt-0.5 text-sm px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded font-mono">{{ avail.code }}</span>
+                  <span class="font-medium text-color -contrast block truncate">{{ avail.name }}</span>
+                  <span v-if="avail.code" class="inline-block mt-0.5 text-sm px-1.5 py-0.5 bg-emphasis  text-muted-color  rounded font-mono">{{ avail.code }}</span>
                 </div>
               </label>
             </div>
           </div>
 
           <!-- Custom / Manually Added Elements -->
-          <div class="pt-3 border-t border-slate-200 dark:border-slate-700/80">
+          <div class="pt-3 border-t border-surface ">
             <div class="flex items-center justify-between gap-3 mb-2">
               <p class="q-label !mb-0">Éléments personnalisés / manuels</p>
               <Button
@@ -587,7 +587,7 @@ onMounted(async () => {
               <div
                 v-for="element in customElements"
                 :key="element.id"
-                class="flex items-center gap-2 p-2.5 border border-slate-200 dark:border-slate-700/80 rounded-xl bg-white dark:bg-slate-800"
+                class="flex items-center gap-2 p-2.5 border border-surface  rounded-xl bg-surface-0 "
               >
                 <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <input

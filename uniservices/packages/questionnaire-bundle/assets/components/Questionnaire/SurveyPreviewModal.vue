@@ -266,44 +266,44 @@ const prevSection = async () => {
       <!-- Preview Content -->
       <div v-if="survey" class="space-y-5">
         <!-- Survey Header -->
-        <div class="text-center py-2 border-b border-slate-200 dark:border-slate-700/80">
+        <div class="text-center py-2 border-b border-surface ">
           <div class="flex items-center justify-center gap-2 mb-1">
-            <h2 class="text-xl font-bold text-slate-900 dark:text-white">
+            <h2 class="text-xl font-bold text-color -contrast">
               {{ survey.title }}
             </h2>
             <span
               v-if="survey.departement"
               class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-semibold border shadow-2xs"
               :style="{
-                backgroundColor: survey.departement.couleur ? `${survey.departement.couleur}15` : '#f0fdf4',
-                color: survey.departement.couleur || '#16a34a',
-                borderColor: survey.departement.couleur ? `${survey.departement.couleur}40` : '#bbf7d0'
+                backgroundColor: survey.departement.couleur ? `${survey.departement.couleur}15` : 'var(--p-highlight-background)',
+                color: survey.departement.couleur || 'var(--p-primary-color)',
+                borderColor: survey.departement.couleur ? `${survey.departement.couleur}40` : 'var(--p-highlight-border)'
               }"
             >
-              <span class="w-1.5 h-1.5 rounded-full shrink-0 bg-primary-500" aria-hidden="true"></span>
+              <span class="w-1.5 h-1.5 rounded-full shrink-0 -primary" aria-hidden="true"></span>
               <span>{{ survey.departement.libelle || `Dpt ${survey.departement.id}` }}</span>
             </span>
             <span
               v-else
-              class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+              class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-sm font-medium text-muted-color  bg-emphasis  border border-surface "
             >
               <span>{{ libelleGlobal }}</span>
             </span>
           </div>
-          <p v-if="survey.description" class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl mx-auto">
+          <p v-if="survey.description" class="text-sm text-muted-color  mt-1 max-w-2xl mx-auto">
             {{ survey.description }}
           </p>
         </div>
 
         <!-- Progress Bar -->
         <div v-if="survey.opt?.showProgress" class="space-y-1.5">
-          <div class="flex items-center justify-between text-sm font-semibold text-slate-600 dark:text-slate-400">
+          <div class="flex items-center justify-between text-sm font-semibold text-muted-color ">
             <span>Progression</span>
             <span>{{ Math.round((currentSectionIndex + 1) / survey.sections.length * 100) }}%</span>
           </div>
-          <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+          <div class="w-full bg-emphasis  rounded-full h-2 overflow-hidden">
             <div
-              class="bg-primary-600 h-2 rounded-full transition-all duration-300"
+              class="-primary h-2 rounded-full transition-all duration-300"
               :style="{ width: `${(currentSectionIndex + 1) / survey.sections.length * 100}%` }"
             />
           </div>
@@ -313,20 +313,20 @@ const prevSection = async () => {
         <ListSkeleton v-if="isLoadingSection" />
         <template v-else>
           <div v-if="currentSection" class="space-y-4">
-            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/80">
+            <div class="p-3 rounded-xl bg-emphasis  border border-surface ">
               <div class="flex items-center gap-2">
-                <h2 class="text-sm font-bold text-slate-900 dark:text-white">
+                <h2 class="text-sm font-bold text-color -contrast">
                   {{ currentSection.title }}
                 </h2>
                 <span
                   v-if="currentSection.typeSection === 'configurable'"
-                  class="px-2 py-0.5 rounded-full text-sm font-bold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 inline-flex items-center gap-1"
+                  class="px-2 py-0.5 rounded-full text-sm font-bold bg-emphasis text-primary   inline-flex items-center gap-1"
                 >
                   <Cog6ToothIcon class="w-3 h-3" />
                   Section configurable
                 </span>
               </div>
-              <p v-if="currentSection.description" class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              <p v-if="currentSection.description" class="text-sm text-muted-color  mt-1">
                 {{ currentSection.description }}
               </p>
             </div>
@@ -336,14 +336,14 @@ const prevSection = async () => {
               <div
                 v-for="(question, questionIndex) in visibleQuestions"
                 :key="question.id || question.uuid"
-                class="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-2xs space-y-3"
+                class="p-4 rounded-2xl bg-surface-0  border border-surface  shadow-2xs space-y-3"
               >
                 <div>
-                  <h3 class="text-sm font-bold text-slate-900 dark:text-white">
+                  <h3 class="text-sm font-bold text-color -contrast">
                     {{ questionIndex + 1 }}. {{ question.label }}
-                    <span v-if="question.required" class="text-red-500">*</span>
+                    <span v-if="question.required" class="text-muted-color">*</span>
                   </h3>
-                  <p v-if="question.help" class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                  <p v-if="question.help" class="text-sm text-muted-color  mt-0.5">
                     {{ question.help }}
                   </p>
                 </div>
@@ -365,7 +365,7 @@ const prevSection = async () => {
                         :value="option.text"
                         @change="setAnswer(question.id || question.uuid, option.text)"
                       />
-                      <span class="text-sm font-medium text-slate-800 dark:text-slate-200 flex-1">{{ option.text }}</span>
+                      <span class="text-sm font-medium text-color  flex-1">{{ option.text }}</span>
                     </label>
                   </div>
 
@@ -383,7 +383,7 @@ const prevSection = async () => {
                         :value="option.text"
                         @change="toggleMultipleChoice(question.id || question.uuid, option.text)"
                       />
-                      <span class="text-sm font-medium text-slate-800 dark:text-slate-200 flex-1">{{ option.text }}</span>
+                      <span class="text-sm font-medium text-color  flex-1">{{ option.text }}</span>
                     </label>
                   </div>
 
@@ -411,7 +411,7 @@ const prevSection = async () => {
 
                   <!-- Scale -->
                   <div v-else-if="question.typeQuestion === 'scale'" class="space-y-2">
-                    <div class="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+                    <div class="flex items-center justify-between text-sm text-muted-color ">
                       <span>{{ question.scale?.minLabel || question.validation?.min || 1 }}</span>
                       <span>{{ question.scale?.maxLabel || question.validation?.max || 10 }}</span>
                     </div>
@@ -423,8 +423,8 @@ const prevSection = async () => {
                         :class="[
                           'w-9 h-9 rounded-xl border text-sm font-bold transition-all cursor-pointer flex items-center justify-center',
                           answers[question.id || question.uuid] === ((question.scale?.min || question.validation?.min || 1) + n - 1)
-                            ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                            : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:border-primary-400'
+                            ? '-primary text-primary-contrast -primary shadow-sm'
+                            : 'bg-surface-0  border-surface  text-color  hover:-primary'
                         ]"
                         @click="setAnswer(question.id || question.uuid, (question.scale?.min || question.validation?.min || 1) + n - 1)"
                       >
@@ -434,9 +434,9 @@ const prevSection = async () => {
                   </div>
 
                   <!-- Matrix -->
-                  <div v-else-if="question.typeQuestion === 'matrix'" class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700/80">
+                  <div v-else-if="question.typeQuestion === 'matrix'" class="overflow-x-auto rounded-xl border border-surface ">
                     <table class="w-full text-sm">
-                      <thead class="bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 font-semibold">
+                      <thead class="bg-emphasis  text-color  font-semibold">
                         <tr>
                           <th class="p-2.5 text-left"></th>
                           <th v-for="col in ['Pas du tout', 'Peu', 'Moyennement', 'Beaucoup', 'Énormément']" :key="col" class="p-2.5 text-center">
@@ -444,9 +444,9 @@ const prevSection = async () => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody class="divide-y divide-slate-200 dark:divide-slate-700/80 bg-white dark:bg-slate-800">
+                      <tbody class="divide-y divide-surface  bg-surface-0 ">
                         <tr v-for="row in ['Critère 1', 'Critère 2']" :key="row">
-                          <td class="p-2.5 font-medium text-slate-800 dark:text-slate-200">{{ row }}</td>
+                          <td class="p-2.5 font-medium text-color ">{{ row }}</td>
                           <td v-for="n in 5" :key="n" class="p-2.5 text-center">
                             <input type="radio" :name="`matrix_${row}`" class="q-check !w-3.5 !h-3.5 mx-auto" />
                           </td>
@@ -460,12 +460,12 @@ const prevSection = async () => {
                     <div
                       v-for="(option, index) in question.choices"
                       :key="option.id"
-                      class="flex items-center gap-3 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-2xs"
+                      class="flex items-center gap-3 p-2.5 bg-surface-0  border border-surface  rounded-xl shadow-2xs"
                     >
-                      <div class="flex items-center justify-center w-6 h-6 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200">
+                      <div class="flex items-center justify-center w-6 h-6 bg-emphasis  rounded-lg text-sm font-bold text-color ">
                         {{ index + 1 }}
                       </div>
-                      <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ option.text }}</span>
+                      <span class="text-sm font-medium text-color ">{{ option.text }}</span>
                     </div>
                   </div>
                 </div>

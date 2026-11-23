@@ -57,9 +57,9 @@ const blocs = computed(() => {
 </script>
 
 <template>
-    <div class="p-4 space-y-4 bg-slate-50/80 dark:bg-slate-900/60 border-y border-slate-200 dark:border-slate-700">
+    <div class="p-4 space-y-4 bg-emphasis  border-y border-surface ">
         <div class="card p-3"><BonCommandeWorkflowTimeline :commande="commande" /></div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <p class="text-sm text-muted-color ">
             {{ formatMontant(commande.montantTtc ?? commande.montantHt) }} TTC
             <span v-if="commande.montantHt"> — {{ formatMontant(commande.montantHt) }} HT</span>
             <span v-if="commande.tauxTva !== null && commande.tauxTva !== undefined"> — TVA {{ Number(commande.tauxTva).toLocaleString('fr-FR') }} %</span>
@@ -70,8 +70,8 @@ const blocs = computed(() => {
                     <i :class="[b.icone, b.iconeClasse]" aria-hidden="true" />{{ b.id }}. {{ b.titre }}
                 </h4>
                 <dl class="space-y-1 text-sm">
-                    <div v-for="[libelle, valeur] in b.lignes" :key="libelle" class="flex justify-between gap-2 border-b border-slate-100 dark:border-slate-700/50 py-0.5 last:border-0">
-                        <dt class="text-gray-500 dark:text-gray-400">{{ libelle }}</dt>
+                    <div v-for="[libelle, valeur] in b.lignes" :key="libelle" class="flex justify-between gap-2 border-b border-surface  py-0.5 last:border-0">
+                        <dt class="text-muted-color ">{{ libelle }}</dt>
                         <dd class="font-medium text-right break-words min-w-0">{{ valeur }}</dd>
                     </div>
                 </dl>

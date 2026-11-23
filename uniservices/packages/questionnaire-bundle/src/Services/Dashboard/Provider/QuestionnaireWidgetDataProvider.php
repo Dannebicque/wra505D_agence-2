@@ -6,6 +6,7 @@ use App\Domain\Dashboard\DashboardContext;
 use App\Domain\Dashboard\WidgetDataProviderInterface;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\QueryBuilder;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
@@ -76,9 +77,9 @@ class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
             return $stats;
         }
         foreach ($qb->getQuery()->getArrayResult() as $ligne) {
-            $statut = $ligne['statut'] instanceof QuestStatutEnum ? $ligne['statut']->value : (string) $ligne['statut'];
-            $stats[$statut] = (int) $ligne['nombre'];
-            $stats['total'] += (int) $ligne['nombre'];
+            $statut = $ligne['statut'] instanceof QuestStatutEnum ? $ligne['statut']->value : LooseValue::castString($ligne['statut']);
+            $stats[$statut] = LooseValue::castInt($ligne['nombre']);
+            $stats['total'] += LooseValue::castInt($ligne['nombre']);
         }
 
         return $stats;

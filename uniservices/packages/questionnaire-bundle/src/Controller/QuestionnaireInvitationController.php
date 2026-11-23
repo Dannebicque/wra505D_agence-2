@@ -5,6 +5,7 @@ namespace QuestionnaireBundle\Controller;
 use QuestionnaireBundle\Domain\Questionnaire\Publish\PublishQuestionnaireService;
 use QuestionnaireBundle\Security\QuestionnaireResolver;
 use QuestionnaireBundle\Security\QuestionnaireVoter;
+use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +30,7 @@ class QuestionnaireInvitationController extends AbstractController
     {
         $questionnaire = $this->questionnaires->charger($uuid, QuestionnaireVoter::MANAGE);
         $data = json_decode($request->getContent(), true);
-        $emails = is_array($data) && is_array($data['emails'] ?? null) ? $data['emails'] : [];
+        $emails = is_array($data) && is_array($data['emails'] ?? null) ? array_values(array_map(static fn (mixed $email): string => LooseValue::string($email), $data['emails'])) : [];
         if ($emails === []) {
             return new JsonResponse(['error' => 'Aucune adresse e-mail fournie.'], Response::HTTP_BAD_REQUEST);
         }

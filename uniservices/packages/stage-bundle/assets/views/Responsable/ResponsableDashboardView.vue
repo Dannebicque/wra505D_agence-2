@@ -991,12 +991,12 @@ const confirmDeletePeriod = async (p) => {
       <div v-if="viewMode === 'dashboard'" class="space-y-6 animate-fade-in">
         <!-- Département affiché (sélecteur si l'utilisateur gère plusieurs départements, ou super administrateur) -->
         <div v-if="departementOptions.length > 1"
-          class="bg-white dark:bg-slate-800 p-4 border border-slate-100 dark:border-slate-700/60 rounded-3xl shadow-sm flex flex-wrap items-center gap-3">
-          <label for="stage-departement" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Département</label>
+          class="bg-surface-0  p-4 border border-surface  rounded-3xl shadow-sm flex flex-wrap items-center gap-3">
+          <label for="stage-departement" class="text-[10px] font-bold text-muted-color uppercase tracking-wider">Département</label>
           <Select inputId="stage-departement" :modelValue="selectedDepartementId" @update:modelValue="changeDepartement"
             :options="departementOptions" optionLabel="libelle" optionValue="id" filter
             class="w-64 text-xs font-semibold" />
-          <span class="text-[10px] text-slate-400 italic">{{ periods.length }} période(s) dans ce département</span>
+          <span class="text-[10px] text-muted-color italic">{{ periods.length }} période(s) dans ce département</span>
         </div>
 
         <!-- KPIs Globaux -->
@@ -1012,25 +1012,25 @@ const confirmDeletePeriod = async (p) => {
           subtitle="Dossiers récemment déposés nécessitant votre approbation ou relecture." :icon="BellIcon"
           color="amber">
           <div class="space-y-3">
-            <div v-if="pendingConventions.length > 0" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+            <div v-if="pendingConventions.length > 0" class="divide-y divide-surface ">
               <div v-for="c in pendingConventions" :key="c.id"
                 class="flex flex-wrap justify-between items-center py-3 gap-3 first:pt-0 last:pb-0">
                 <div class="flex items-start gap-3 min-w-0">
                   <div
-                    class="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    class="w-8 h-8 rounded-full bg-emphasis  text-muted-color  flex items-center justify-center shrink-0">
                     <DocumentIcon class="w-4 h-4" />
                   </div>
                   <div class="min-w-0">
-                    <span class="font-bold text-slate-800 dark:text-slate-200 text-xs block">
+                    <span class="font-bold text-color  text-xs block">
                       {{ c.studentName }}
                     </span>
-                    <span class="text-[10px] text-slate-400 block mt-0.5">
-                      {{ c.company }} — Période : <strong class="text-slate-600 dark:text-slate-300">{{ getPeriodName(c.periodId) }}</strong>
+                    <span class="text-[10px] text-muted-color block mt-0.5">
+                      {{ c.company }} — Période : <strong class="text-muted-color ">{{ getPeriodName(c.periodId) }}</strong>
                     </span>
                   </div>
                 </div>
                 <button @click="enterPeriod({ id: c.periodId })"
-                  class="py-1.5 px-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-[10px] transition-all flex items-center gap-1 cursor-pointer border-0 shadow-sm">
+                  class="py-1.5 px-3 bg-primary hover:bg-primary text-primary-contrast font-bold rounded-xl text-[10px] transition-all flex items-center gap-1 cursor-pointer border-0 shadow-sm">
                   <span>Instruire la demande</span>
                   <ArrowRightIcon class="w-2.5 h-2.5" />
                 </button>
@@ -1051,44 +1051,44 @@ const confirmDeletePeriod = async (p) => {
 
         <!-- Active Period Dropdown Switcher (Always Visible for quick context switcher) -->
         <div
-          class="bg-white dark:bg-slate-800 p-4 border border-slate-100 dark:border-slate-700/60 rounded-3xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          class="bg-surface-0  p-4 border border-surface  rounded-3xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div class="flex items-center gap-3 w-full sm:w-auto">
             <div
-              class="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-950 flex items-center justify-center text-violet-600 shrink-0">
+              class="w-8 h-8 rounded-lg bg-emphasis  flex items-center justify-center text-primary shrink-0">
               <FunnelIcon class="w-4 h-4" />
             </div>
             <div class="flex-1 sm:flex-initial">
-              <label class="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Filtrer par Période
+              <label class="text-[10px] font-bold text-muted-color block uppercase tracking-wider">Filtrer par Période
                 Académique</label>
               <div class="flex items-center gap-3">
                 <!-- Quick switch dropdown -->
                 <Select v-slot:default v-model="selectedPeriodId" :options="periods" optionLabel="name" optionValue="id"
                   placeholder="Changer de période"
-                  class="w-64 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl" />
+                  class="w-64 text-xs font-semibold bg-surface-0  border border-surface  rounded-xl" />
               </div>
             </div>
           </div>
 
-          <div class="text-[10px] text-slate-400 dark:text-slate-500 font-mono italic">
+          <div class="text-[10px] text-muted-color  font-mono italic">
             Sujets & indicateurs synchronisés sur la période sélectionnée.
           </div>
         </div>
 
         <!-- Tabs for Period Features -->
         <div
-          class="bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl flex gap-1 w-full md:w-auto self-start border border-slate-200/20 dark:border-slate-700/50">
+          class="bg-emphasis  p-1 rounded-2xl flex gap-1 w-full md:w-auto self-start border border-surface ">
           <button @click="activeTab = 'students'"
-            :class="['px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 border-0 cursor-pointer flex-1 md:flex-initial', activeTab === 'students' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-transparent']">
+            :class="['px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 border-0 cursor-pointer flex-1 md:flex-initial', activeTab === 'students' ? 'bg-surface-0  text-color -contrast shadow-sm' : 'text-muted-color hover:text-color dark:hover:text-color bg-transparent']">
             <UsersIcon class="w-3.5 h-3.5" />
             <span>Étudiants & Suivis</span>
           </button>
           <button @click="activeTab = 'info'"
-            :class="['px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 border-0 cursor-pointer flex-1 md:flex-initial', activeTab === 'info' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-transparent']">
+            :class="['px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 border-0 cursor-pointer flex-1 md:flex-initial', activeTab === 'info' ? 'bg-surface-0  text-color -contrast shadow-sm' : 'text-muted-color hover:text-color dark:hover:text-color bg-transparent']">
             <Cog6ToothIcon class="w-3.5 h-3.5" />
             <span>Informations & Config</span>
           </button>
           <button @click="activeTab = 'stats'"
-            :class="['px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 border-0 cursor-pointer flex-1 md:flex-initial', activeTab === 'stats' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-transparent']">
+            :class="['px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-2 border-0 cursor-pointer flex-1 md:flex-initial', activeTab === 'stats' ? 'bg-surface-0  text-color -contrast shadow-sm' : 'text-muted-color hover:text-color dark:hover:text-color bg-transparent']">
             <ChartBarIcon class="w-3.5 h-3.5" />
             <span>Analyses & Stats</span>
           </button>

@@ -35,21 +35,21 @@ const etapes = computed(() => {
         <li v-for="e in etapes" :key="e.id" class="flex flex-col items-center text-center">
             <button
                 type="button"
-                class="flex flex-col items-center gap-1.5 rounded-lg p-1 w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                class="flex flex-col items-center gap-1.5 rounded-lg p-1 w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-surface"
                 :aria-current="e.active ? 'step' : undefined"
                 :aria-pressed="selection === e.id"
                 @click="emit('selectStep', e.id)"
             >
                 <span
-                    class="w-10 h-10 rounded-full flex items-center justify-center shadow-sm text-white"
-                    :class="e.verrouillee ? 'bg-gray-100 dark:bg-gray-800 !text-gray-400 border border-gray-300 dark:border-gray-700' : [e.fond, e.active ? `ring-4 ${e.anneau}` : 'opacity-90']"
+                    class="w-10 h-10 rounded-full flex items-center justify-center shadow-sm text-primary-contrast"
+                    :class="e.verrouillee ? 'bg-emphasis  !text-muted-color border border-surface ' : [e.fond, e.active ? `ring-4 ${e.anneau}` : 'opacity-90']"
                 >
                     <i :class="e.terminee ? 'pi pi-check' : (e.verrouillee ? 'pi pi-lock' : e.icone)" />
                 </span>
-                <span class="text-sm font-semibold" :class="[e.verrouillee ? 'text-gray-500 dark:text-gray-400' : e.texte, selection === e.id ? 'underline underline-offset-4' : '']">
+                <span class="text-sm font-semibold" :class="[e.verrouillee ? 'text-muted-color ' : e.texte, selection === e.id ? 'underline underline-offset-4' : '']">
                     {{ e.id }}. {{ e.titre }}
                 </span>
-                <span v-if="e.date" class="text-sm text-gray-500 dark:text-gray-400">{{ e.date }}</span>
+                <span v-if="e.date" class="text-sm text-muted-color ">{{ e.date }}</span>
             </button>
         </li>
     </ol>

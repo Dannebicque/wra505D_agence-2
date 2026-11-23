@@ -3,6 +3,7 @@
 namespace QuestionnaireBundle\Command;
 
 use Doctrine\ORM\EntityManagerInterface;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
 use QuestionnaireBundle\Enum\QuestStatutEnum;
@@ -52,8 +53,8 @@ final class PurgerReponsesCommand extends Command
             ->getQuery()->getResult();
 
         foreach ($candidats as $q) {
-            $cloture = $q->getClotureLe() ?? ($q->getClosingDate() ? \DateTimeImmutable::createFromInterface($q->getClosingDate()) : null);
-            $annees = $this->reglages->pour($q->getDepartement())['conservation_annees'];
+            $cloture = $q->getClotureLe() ?? ($q->getClosingDate() !== null ? \DateTimeImmutable::createFromInterface($q->getClosingDate()) : null);
+            $annees = LooseValue::castInt($this->reglages->pour($q->getDepartement())['conservation_annees']);
             if ($cloture === null || $cloture->modify(sprintf('+%d years', $annees)) > $maintenant) {
                 continue;
             }
@@ -64,7 +65,7 @@ final class PurgerReponsesCommand extends Command
             }
 
             // 1. Statistiques agrégées figées (aucune réponse individuelle, seuils d'anonymat déjà appliqués).
-            $q->archiverResultats(json_decode((string) json_encode($this->analytics->getAnalytics($q), \JSON_PRESERVE_ZERO_FRACTION), true));
+            $q->archiverResultats(LooseValue::assoc(json_decode((string) json_encode($this->analytics->getAnalytics($q), \JSON_PRESERVE_ZERO_FRACTION), true)));
             // 2. Suppression des réponses, anonymisation des invitations.
             $this->em->createQueryBuilder()->delete(QuestionnaireAnswer::class, 'a')
                 ->where('a.invitation IN (:invitations)')->setParameter('invitations', $q->getInvitations())

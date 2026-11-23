@@ -54,7 +54,7 @@ const departements = ref<{ id: number; libelle: string }[]>([]);
 const surveyDepartementId = ref<number | null>(null);
 
 const departementOptions = computed(() => [
-  { label: libelleGlobal.value, value: null, couleur: '#64748b' },
+  { label: libelleGlobal.value, value: null, couleur: 'var(--p-text-muted-color)' },
   ...departements.value.map(d => ({
     label: d.libelle || `Département ${d.id}`,
     value: d.id
@@ -349,11 +349,11 @@ onMounted(async () => {
 
 .section-menu,
 .question-type-menu {
-  @apply absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50;
+  @apply absolute right-0 mt-2 w-48 bg-surface-0  rounded-lg shadow-lg border border-surface  z-50;
 }
 
 .menu-item {
-  @apply flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
+  @apply flex items-center space-x-2 px-3 py-2 text-sm text-color  hover:bg-emphasis dark:hover:bg-emphasis transition-colors;
 }
 </style>
 
@@ -364,11 +364,11 @@ onMounted(async () => {
       description="Concevez, configurez et publiez vos enquêtes d'évaluation"
     />
 
-  <div class="flex dark:bg-gray-900">
+  <div class="flex ">
     <!-- Left Panel - Survey Structure -->
-    <div class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col me-3">
+    <div class="w-80 bg-surface-0  border-r border-surface  flex flex-col me-3">
       <!-- Survey Info -->
-      <div class="p-4 border-b border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 space-y-3">
+      <div class="p-4 border-b border-surface  bg-emphasis  space-y-3">
         <div class="space-y-3">
           <FormField label="Titre du questionnaire">
             <input
@@ -407,8 +407,8 @@ onMounted(async () => {
                   ></span>
                   <span class="truncate text-sm font-semibold">{{ getDeptLabel(slotProps.value) }}</span>
                 </div>
-                <div v-else class="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  <span class="w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0"></span>
+                <div v-else class="flex items-center gap-2 text-sm font-semibold text-color ">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emphasis shrink-0"></span>
                   <span>{{ libelleGlobal }}</span>
                 </div>
               </template>
@@ -416,7 +416,7 @@ onMounted(async () => {
                 <div class="flex items-center gap-2 text-sm py-0.5">
                   <span
                     class="w-2.5 h-2.5 rounded-full shrink-0"
-                    :class="slotProps.option.value === null ? 'bg-surface-400' : 'bg-primary-500'"
+                    :class="slotProps.option.value === null ? 'bg-surface-400' : '-primary'"
                     aria-hidden="true"
                   ></span>
                   <span :class="slotProps.option.value === null ? 'font-medium text-muted-color' : 'font-semibold text-color'">
@@ -428,9 +428,9 @@ onMounted(async () => {
           </FormField>
         </div>
 
-        <div class="pt-1 flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
-          <ClockIcon class="w-3.5 h-3.5 text-slate-400 shrink-0" />
-          <span>Temps estimé : <strong class="text-slate-700 dark:text-slate-300 font-semibold">{{ formatEstimatedTime(estimatedTime) }}</strong></span>
+        <div class="pt-1 flex items-center gap-1.5 text-sm text-muted-color ">
+          <ClockIcon class="w-3.5 h-3.5 text-muted-color shrink-0" />
+          <span>Temps estimé : <strong class="text-color  font-semibold">{{ formatEstimatedTime(estimatedTime) }}</strong></span>
         </div>
       </div>
 
@@ -440,7 +440,7 @@ onMounted(async () => {
       <div class="flex-1 overflow-y-auto">
         <div class="p-4">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Sections</h3>
+            <h3 class="text-sm font-semibold text-color -contrast">Sections</h3>
             <Button @click="showSectionModal = true" severity="primary" class="text-sm">
               <PlusIcon class="w-3 h-3" />
             </Button>
@@ -450,8 +450,8 @@ onMounted(async () => {
             <div v-for="(section, index) in sections" :key="section.uuid" :class="[
               'border rounded-lg p-3 cursor-pointer transition-colors',
               currentSection?.uuid === section.uuid
-                ? 'border-primary-300 bg-primary-50 dark:border-primary-600 dark:bg-primary-900'
-                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                ? '-primary bg-primary-50 -600 -900'
+                : 'border-surface  hover:border-surface dark:hover:border-surface'
             ]" @click="selectSection(section)">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2 flex-1">
@@ -459,10 +459,10 @@ onMounted(async () => {
                     <Bars3Icon class="w-4 h-4" />
                   </div>
                   <div class="flex-1">
-                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                    <h4 class="text-sm font-medium text-color -contrast">
                       {{ section.title }}
                     </h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                    <p class="text-sm text-muted-color ">
                       {{ section.questions.length }} question{{ section.questions.length > 1 ? 's' : '' }}
                     </p>
                   </div>
@@ -474,8 +474,8 @@ onMounted(async () => {
 
               <!-- Section Type Indicator -->
               <div v-if="section.typeSection === 'configurable' && section.opt" class="mt-2 flex items-center space-x-1">
-                <Cog6ToothIcon class="w-3 h-3 text-blue-500" />
-                <span class="text-sm text-blue-600 dark:text-blue-400">
+                <Cog6ToothIcon class="w-3 h-3 text-primary" />
+                <span class="text-sm text-primary ">
                   {{ section.opt.elements?.length || 0 }} {{ section.opt.sourceLabel?.toLowerCase() }}
                 </span>
               </div>
@@ -485,7 +485,7 @@ onMounted(async () => {
       </div>
 
       <!-- Survey Settings -->
-      <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div class="p-4 border-t border-surface ">
         <Button severity="secondary" @click="showSettings = true" class="w-full text-sm">
           <Cog6ToothIcon class="w-4 h-4" />
           Paramètres du questionnaire
@@ -502,13 +502,13 @@ onMounted(async () => {
     <!-- Main Content - Question Builder -->
     <div class="flex-1 flex flex-col">
       <!-- Toolbar -->
-      <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+      <div class="bg-surface-0  border-b border-surface  p-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 class="text-lg font-semibold text-color -contrast">
               {{ currentSection?.title || 'Sélectionnez une section' }}
             </h2>
-            <span class="text-sm text-gray-500 dark:text-gray-400">
+            <span class="text-sm text-muted-color ">
               {{ currentSection?.questions.length || 0 }} question{{ (currentSection?.questions.length || 0) > 1 ? 's' :
                 '' }}
             </span>

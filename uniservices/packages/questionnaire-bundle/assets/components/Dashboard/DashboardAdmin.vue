@@ -217,12 +217,12 @@ const recentActivity = computed<ActivityItem[]>(() => {
 
 function getActivityColor(type: string): string {
   const colors: Record<string, string> = {
-    survey_created: 'bg-blue-600 dark:bg-blue-500',
-    survey_published: 'bg-emerald-600 dark:bg-emerald-500',
-    survey_closed: 'bg-amber-600 dark:bg-amber-500',
-    response_received: 'bg-purple-600 dark:bg-purple-500'
+    survey_created: 'bg-primary ',
+    survey_published: 'bg-emphasis ',
+    survey_closed: 'bg-emphasis ',
+    response_received: 'bg-primary '
   };
-  return colors[type] || 'bg-gray-600';
+  return colors[type] || 'bg-emphasis';
 }
 
 function getActivityIcon(type: string) {
@@ -294,16 +294,16 @@ function getSurveyStats(surveyUuid: string) {
 <template>
   <div class="space-y-8">
     <!-- Scope / Périmètre de Pilotage Bar -->
-    <div class="bg-surface-0 dark:bg-surface-900 border border-surface rounded-2xl p-4.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="bg-surface-0 -900 border border-surface rounded-2xl p-4.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div class="flex items-center gap-3.5">
-        <div class="w-11 h-11 rounded-xl bg-primary-50 dark:bg-primary-950/50 border border-primary-200 dark:border-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
+        <div class="w-11 h-11 rounded-xl bg-primary-50 -950/50 border border-primary-200 -800 flex items-center justify-center -primary -400 shrink-0">
           <BuildingOfficeIcon aria-hidden="true" class="w-6 h-6" />
         </div>
         <div>
-          <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          <div class="text-sm font-semibold text-muted-color  uppercase tracking-wider">
             Périmètre de pilotage qualité
           </div>
-          <div class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mt-0.5">
+          <div class="text-base font-bold text-color -contrast flex items-center gap-2 mt-0.5">
             <span v-if="isGlobalQuality">Démarche qualité — {{ libelleEtablissement }}</span>
             <span v-else>Département {{ currentDepartmentName }}</span>
             <Tag 
@@ -317,7 +317,7 @@ function getSurveyStats(surveyUuid: string) {
 
       <!-- Scope Selector for Global Quality Managers -->
       <div v-if="isGlobalQuality && departementOptions.length > 1" class="flex items-center gap-2.5">
-        <label for="dept-scope-select" class="text-sm font-semibold text-gray-600 dark:text-gray-300 whitespace-nowrap">
+        <label for="dept-scope-select" class="text-sm font-semibold text-muted-color  whitespace-nowrap">
           Filtrer par département :
         </label>
         <Select 
@@ -329,7 +329,7 @@ function getSurveyStats(surveyUuid: string) {
           class="w-72 text-sm" 
         />
       </div>
-      <div v-else class="text-sm text-gray-500 dark:text-gray-400 italic">
+      <div v-else class="text-sm text-muted-color  italic">
         Vue restreinte aux enquêtes et formations de votre département
       </div>
     </div>
@@ -385,7 +385,7 @@ function getSurveyStats(surveyUuid: string) {
           <template #header-actions>
             <router-link 
               :to="{ name: 'questionnaire_enquetes-liste' }" 
-              class="text-sm font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1.5 py-0.5"
+              class="text-sm font-semibold -primary hover:-primary -400 flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1.5 py-0.5"
             >
               <span>Voir toute la liste</span>
               <i class="pi pi-arrow-right text-sm" aria-hidden="true"></i>
@@ -395,7 +395,7 @@ function getSurveyStats(surveyUuid: string) {
           <div v-if="scopedSurveys.length > 0" class="overflow-x-auto -mx-5 -mb-5">
             <table class="w-full text-left text-sm border-collapse">
               <thead>
-                <tr class="border-b border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50/70 dark:bg-gray-800/40">
+                <tr class="border-b border-surface  text-sm font-bold text-muted-color  uppercase tracking-wider bg-emphasis ">
                   <th scope="col" class="py-3 px-5">Enquête / Campagne</th>
                   <th scope="col" class="py-3 px-4">Portée</th>
                   <th scope="col" class="py-3 px-4">Statut</th>
@@ -404,15 +404,15 @@ function getSurveyStats(surveyUuid: string) {
                   <th scope="col" class="py-3 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-surface-200 dark:divide-surface-700 bg-surface-0 dark:bg-surface-900">
+              <tbody class="divide-y divide-surface-200 -700 bg-surface-0 -900">
                 <tr 
                   v-for="survey in scopedSurveys" 
                   :key="survey.uuid" 
                   class="hover:bg-emphasis dark:hover:bg-emphasis transition-colors"
                 >
                   <td class="py-3.5 px-5">
-                    <div class="font-bold text-gray-900 dark:text-white">{{ survey.title }}</div>
-                    <div v-if="survey.description" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs mt-0.5">
+                    <div class="font-bold text-color -contrast">{{ survey.title }}</div>
+                    <div v-if="survey.description" class="text-sm text-muted-color  truncate max-w-xs mt-0.5">
                       {{ survey.description }}
                     </div>
                   </td>
@@ -421,17 +421,17 @@ function getSurveyStats(surveyUuid: string) {
                       v-if="survey.departement"
                       class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-sm font-semibold border shadow-2xs"
                       :style="{
-                        backgroundColor: survey.departement.couleur ? `${survey.departement.couleur}15` : '#f0fdf4',
-                        color: survey.departement.couleur || '#16a34a',
-                        borderColor: survey.departement.couleur ? `${survey.departement.couleur}40` : '#bbf7d0'
+                        backgroundColor: survey.departement.couleur ? `${survey.departement.couleur}15` : 'var(--p-highlight-background)',
+                        color: survey.departement.couleur || 'var(--p-primary-color)',
+                        borderColor: survey.departement.couleur ? `${survey.departement.couleur}40` : 'var(--p-highlight-border)'
                       }"
                     >
-                      <span class="w-1.5 h-1.5 rounded-full shrink-0 bg-primary-500" aria-hidden="true"></span>
+                      <span class="w-1.5 h-1.5 rounded-full shrink-0 -primary" aria-hidden="true"></span>
                       <span>{{ survey.departement.libelle || `Dpt ${survey.departement.id}` }}</span>
                     </span>
                     <span
                       v-else
-                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium text-muted-color  bg-emphasis  border border-surface "
                     >
                       <span>{{ libelleGlobal }}</span>
                     </span>
@@ -445,7 +445,7 @@ function getSurveyStats(surveyUuid: string) {
                   </td>
                   <td class="py-3.5 px-4 min-w-[170px]">
                     <div class="flex items-center justify-between text-sm mb-1">
-                      <span class="text-gray-600 dark:text-gray-300 font-medium">
+                      <span class="text-muted-color  font-medium">
                         {{ getSurveyStats(survey.uuid).responded }} / {{ getSurveyStats(survey.uuid).invited }}
                       </span>
                       <span class="font-bold text-color">
@@ -462,14 +462,14 @@ function getSurveyStats(surveyUuid: string) {
                       <div 
                         class="h-1.5 rounded-full transition-all duration-500"
                         :class="[
-                          getSurveyStats(survey.uuid).rate >= 60 ? 'bg-primary-500' :
-                          getSurveyStats(survey.uuid).rate >= 30 ? 'bg-primary-500' : 'bg-primary-500'
+                          getSurveyStats(survey.uuid).rate >= 60 ? '-primary' :
+                          getSurveyStats(survey.uuid).rate >= 30 ? '-primary' : '-primary'
                         ]"
                         :style="{ width: `${getSurveyStats(survey.uuid).rate}%` }"
                       ></div>
                     </div>
                   </td>
-                  <td class="py-3.5 px-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                  <td class="py-3.5 px-4 text-sm text-muted-color  whitespace-nowrap">
                     <span v-if="survey.closingDate">Jusqu'au {{ formatDate(survey.closingDate) }}</span>
                     <span v-else-if="survey.publishedAt">Publiée le {{ formatDate(survey.publishedAt) }}</span>
                     <span v-else>Créée le {{ formatDate(survey.createdAt) }}</span>
@@ -481,7 +481,7 @@ function getSurveyStats(surveyUuid: string) {
                         v-if="survey.status === 'published'"
                         :to="{ name: 'questionnaire_responses', params: { id: survey.uuid } }"
                         v-tooltip.top="'Suivi des répondants & Relances'"
-                        class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-semibold rounded-lg text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-800 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-semibold rounded-lg text-color  bg-emphasis  hover:bg-emphasis dark:hover:bg-emphasis border border-surface  transition-colors focus:outline-none focus:ring-2 focus:ring-surface"
                       >
                         <i class="pi pi-users text-sm" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Suivi & Relances</span>
@@ -492,7 +492,7 @@ function getSurveyStats(surveyUuid: string) {
                         v-if="survey.status === 'published'"
                         :to="{ name: 'questionnaire_analytics', params: { id: survey.uuid } }"
                         v-tooltip.top="'Synthèse des résultats'"
-                        class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-semibold rounded-lg text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 border border-purple-300 dark:border-purple-800 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-semibold rounded-lg text-primary  bg-emphasis  hover:bg-emphasis dark:hover:bg-primary border border-primary  transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                       >
                         <i class="pi pi-chart-pie text-sm" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Résultats</span>
@@ -503,7 +503,7 @@ function getSurveyStats(surveyUuid: string) {
                         :to="{ name: 'questionnaire_builder', params: { id: survey.uuid } }"
                         v-tooltip.top="'Modifier le questionnaire'"
                         aria-label="Modifier le questionnaire"
-                        class="p-1.5 text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/40 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-200 dark:border-primary-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        class="p-1.5 -primary -300 bg-primary-50 -950/40 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-200 -800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
                         <PencilIcon class="w-4 h-4" aria-hidden="true" />
                       </router-link>
@@ -521,7 +521,7 @@ function getSurveyStats(surveyUuid: string) {
                           <MenuItem v-slot="{ active }">
                             <button 
                               @click="openDuplicateModal(survey)"
-                              :class="[active ? 'bg-emphasis dark:bg-surface-900' : '', 'menu-item w-full']"
+                              :class="[active ? 'bg-emphasis -900' : '', 'menu-item w-full']"
                               role="menuitem"
                             >
                               <DocumentDuplicateIcon class="w-4 h-4 text-color" aria-hidden="true" />
@@ -531,10 +531,10 @@ function getSurveyStats(surveyUuid: string) {
                           <MenuItem v-slot="{ active }">
                             <button 
                               @click="deleteSurvey(survey)"
-                              :class="[active ? 'bg-red-50 dark:bg-red-950/40' : '', 'menu-item w-full text-red-700 dark:text-red-400 font-medium']"
+                              :class="[active ? 'bg-emphasis ' : '', 'menu-item w-full text-color  font-medium']"
                               role="menuitem"
                             >
-                              <TrashIcon class="w-4 h-4 text-red-700 dark:text-red-400" aria-hidden="true" />
+                              <TrashIcon class="w-4 h-4 text-color " aria-hidden="true" />
                               <span>Supprimer</span>
                             </button>
                           </MenuItem>
@@ -565,19 +565,19 @@ function getSurveyStats(surveyUuid: string) {
       <aside aria-label="Informations et activités" class="space-y-6">
         <!-- Published Feedback Stats Manager Card -->
         <Card title="Synthèse étudiants" subtitle="Configuration des synthèses de résultats" icon="pi pi-chart-pie" color="blue">
-          <p class="text-gray-700 dark:text-gray-300 text-sm mb-4 leading-relaxed">
+          <p class="text-color  text-sm mb-4 leading-relaxed">
             Configurez les synthèses de résultats publiées et visibles par les étudiants.
           </p>
-          <div v-if="lastPublishedSurvey" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-center space-y-1">
-            <p class="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wider">Dernière publication</p>
-            <p class="font-bold text-gray-900 dark:text-white text-sm">{{ lastPublishedSurvey.title }}</p>
-            <p class="text-sm text-gray-600 dark:text-gray-300">
+          <div v-if="lastPublishedSurvey" class="p-4 rounded-xl bg-emphasis  border border-surface  text-center space-y-1">
+            <p class="text-sm text-muted-color  font-semibold uppercase tracking-wider">Dernière publication</p>
+            <p class="font-bold text-color -contrast text-sm">{{ lastPublishedSurvey.title }}</p>
+            <p class="text-sm text-muted-color ">
               Publié le {{ formatDate(lastPublishedSurvey.publishedAt || lastPublishedSurvey.updatedAt) }}
             </p>
             <div class="pt-2">
               <router-link 
                 :to="{ name: 'questionnaire_analytics', params: { id: lastPublishedSurvey.uuid } }" 
-                class="inline-flex items-center gap-1.5 text-sm bg-primary-100 dark:bg-primary-950 text-primary-800 dark:text-primary-200 hover:bg-primary-200 dark:hover:bg-primary-900 border border-primary-300 dark:border-primary-800 px-3 py-1.5 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="inline-flex items-center gap-1.5 text-sm bg-primary-100 -950 text-primary-800 -200 hover:bg-primary-200 dark:hover:bg-primary-900 border -primary -800 px-3 py-1.5 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <ChartBarIcon class="w-3.5 h-3.5" aria-hidden="true" />
                 Voir les résultats
@@ -589,20 +589,20 @@ function getSurveyStats(surveyUuid: string) {
 
         <!-- Recent Activity Card -->
         <section aria-labelledby="recent-activity-title" class="space-y-4">
-          <h2 id="recent-activity-title" class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ClockIcon class="w-5 h-5 text-purple-600 dark:text-purple-400" aria-hidden="true" />
+          <h2 id="recent-activity-title" class="text-xl font-bold text-color -contrast flex items-center gap-2">
+            <ClockIcon class="w-5 h-5 text-primary " aria-hidden="true" />
             Activité récente
           </h2>
 
-          <div class="card p-4 space-y-3 max-h-[380px] overflow-y-auto border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-2xl">
+          <div class="card p-4 space-y-3 max-h-[380px] overflow-y-auto border border-surface  bg-surface-0  rounded-2xl">
             <div 
               v-for="activity in recentActivity" 
               :key="activity.id"
-              class="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-750/50 hover:bg-gray-100 dark:hover:bg-gray-700/60 rounded-xl border border-gray-150 dark:border-gray-700/80 transition-colors"
+              class="flex items-start space-x-3 p-3 bg-emphasis  hover:bg-emphasis dark:hover:bg-emphasis rounded-xl border border-surface  transition-colors"
             >
               <div 
                 :class="[
-                  'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm shrink-0 shadow-sm',
+                  'w-8 h-8 rounded-full flex items-center justify-center text-primary-contrast text-sm shrink-0 shadow-sm',
                   getActivityColor(activity.type)
                 ]"
                 aria-hidden="true"
@@ -610,10 +610,10 @@ function getSurveyStats(surveyUuid: string) {
                 <component :is="getActivityIcon(activity.type)" class="w-4 h-4" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm text-gray-900 dark:text-white font-medium leading-snug">
+                <p class="text-sm text-color -contrast font-medium leading-snug">
                   {{ activity.message }}
                 </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5 font-medium">
+                <p class="text-sm text-muted-color  mt-0.5 font-medium">
                   {{ formatRelativeTime(activity.timestamp) }}
                 </p>
               </div>
@@ -649,11 +649,10 @@ function getSurveyStats(surveyUuid: string) {
 }
 
 .survey-menu {
-  @apply absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 py-1;
+  @apply absolute right-0 mt-2 w-48 bg-surface-0  rounded-lg shadow-lg border border-surface  z-50 py-1;
 }
 
 .menu-item {
-  @apply flex items-center space-x-2 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border-0 bg-transparent text-left cursor-pointer;
+  @apply flex items-center space-x-2 px-3 py-2 text-sm text-color  hover:bg-emphasis dark:hover:bg-emphasis transition-colors border-0 bg-transparent text-left cursor-pointer;
 }
 </style>
-

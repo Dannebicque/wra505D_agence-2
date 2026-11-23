@@ -77,7 +77,7 @@ watch(() => props.stageId, charger);
     <template v-else-if="etat">
       <div class="flex flex-wrap items-center gap-2">
         <Tag :value="statut.libelle" :severity="statut.severite" />
-        <span v-if="detail" class="text-slate-600 dark:text-slate-300">{{ detail }}</span>
+        <span v-if="detail" class="text-muted-color ">{{ detail }}</span>
       </div>
 
       <div v-if="etat.statut !== 'soumise'" class="flex flex-wrap items-center gap-2">
@@ -90,10 +90,10 @@ watch(() => props.stageId, charger);
       <div v-else class="space-y-2">
         <table class="w-full">
           <tbody>
-            <tr v-for="r in etat.reponses" :key="r.critere" class="border-b border-slate-100 dark:border-slate-800 align-top">
-              <td class="py-1.5 pr-2 font-semibold text-slate-700 dark:text-slate-200">{{ r.libelle }}</td>
+            <tr v-for="r in etat.reponses" :key="r.critere" class="border-b border-surface  align-top">
+              <td class="py-1.5 pr-2 font-semibold text-color ">{{ r.libelle }}</td>
               <td class="py-1.5 pr-2 whitespace-nowrap">{{ r.niveau }}/4 — {{ etat.niveaux[r.niveau] }}</td>
-              <td class="py-1.5 text-slate-500 dark:text-slate-400">{{ r.commentaire }}</td>
+              <td class="py-1.5 text-muted-color ">{{ r.commentaire }}</td>
             </tr>
           </tbody>
         </table>

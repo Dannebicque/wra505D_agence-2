@@ -429,7 +429,7 @@ function getRuleTypeLabel(type: string): string {
           :class="['q-choice', logicMode === 'trigger' && 'q-choice-active']"
           @click="setLogicMode('trigger')"
         >
-          <div class="p-2 rounded-lg bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 shrink-0">
+          <div class="p-2 rounded-lg bg-emphasis  text-color  shrink-0">
             <BoltIcon class="w-5 h-5" />
           </div>
           <div>
@@ -445,7 +445,7 @@ function getRuleTypeLabel(type: string): string {
           :class="['q-choice', logicMode === 'dependency' && 'q-choice-active']"
           @click="setLogicMode('dependency')"
         >
-          <div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 shrink-0">
+          <div class="p-2 rounded-lg bg-emphasis  text-primary  shrink-0">
             <LinkIcon class="w-5 h-5" />
           </div>
           <div>
@@ -469,12 +469,12 @@ function getRuleTypeLabel(type: string): string {
               :class="[
                 'p-2.5 rounded-xl border text-sm cursor-pointer transition-all flex items-center gap-2',
                 selectedRuleType === ruleType.value
-                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-400 dark:border-amber-700 text-amber-900 dark:text-amber-200 font-semibold shadow-2xs'
-                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                  ? 'bg-emphasis  border-surface  text-color  font-semibold shadow-2xs'
+                  : 'bg-surface-0  border-surface  text-color  hover:border-surface'
               ]"
               @click="selectedRuleType = ruleType.value"
             >
-              <component :is="ruleType.icon" class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <component :is="ruleType.icon" class="w-4 h-4 text-muted-color  shrink-0" />
               <span class="truncate">{{ ruleType.title }}</span>
             </div>
           </div>
@@ -482,8 +482,8 @@ function getRuleTypeLabel(type: string): string {
 
         <div class="space-y-3 pt-2">
           <!-- Logical operator connector (AND / OR) -->
-          <div v-if="rule.conditions.length > 1" class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
-            <span class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase">Connecteur logique :</span>
+          <div v-if="rule.conditions.length > 1" class="flex items-center gap-3 p-2.5 rounded-xl bg-emphasis  border border-surface ">
+            <span class="text-sm font-bold text-color  uppercase">Connecteur logique :</span>
             <div class="q-tabs !p-0.5 max-w-xs">
               <button
                 type="button"
@@ -510,9 +510,9 @@ function getRuleTypeLabel(type: string): string {
               <div
                 v-for="(cond, idx) in rule.conditions"
                 :key="idx"
-                class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80"
+                class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-surface-0  p-2.5 rounded-xl border border-surface "
               >
-                <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-sm font-bold text-slate-600 dark:text-slate-300 uppercase shrink-0 text-center">
+                <span class="px-2 py-1 rounded bg-emphasis  text-sm font-bold text-muted-color  uppercase shrink-0 text-center">
                   {{ idx === 0 ? 'Si' : rule.logicalOperator === 'AND' ? 'ET' : 'OU' }}
                 </span>
 
@@ -615,7 +615,7 @@ function getRuleTypeLabel(type: string): string {
           </div>
 
           <!-- Targets / Actions configuration -->
-          <div v-if="hasValidConditions" class="pt-3 border-t border-slate-200 dark:border-slate-700/80 space-y-3">
+          <div v-if="hasValidConditions" class="pt-3 border-t border-surface  space-y-3">
             <p class="q-label !mb-0">Action à effectuer :</p>
 
             <!-- Show/Hide other questions (Trigger Mode) -->
@@ -638,10 +638,10 @@ function getRuleTypeLabel(type: string): string {
                 </label>
               </div>
 
-              <div class="border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1.5">
-                <label v-for="q in otherQuestions" :key="q.uuid || q.id" class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50">
+              <div class="border border-surface  bg-surface-0  rounded-xl p-3 max-h-40 overflow-y-auto space-y-1.5">
+                <label v-for="q in otherQuestions" :key="q.uuid || q.id" class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-emphasis dark:hover:bg-emphasis">
                   <input v-model="rule.targetQuestionIds" type="checkbox" :value="q.uuid || q.id" class="q-check !w-3.5 !h-3.5" />
-                  <span class="text-sm text-slate-800 dark:text-slate-200">{{ q.label }}</span>
+                  <span class="text-sm text-color ">{{ q.label }}</span>
                 </label>
               </div>
             </div>
@@ -682,10 +682,10 @@ function getRuleTypeLabel(type: string): string {
                 </label>
               </div>
 
-              <div class="border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1.5">
-                <label v-for="q in otherQuestions" :key="q.uuid || q.id" class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50">
+              <div class="border border-surface  bg-surface-0  rounded-xl p-3 max-h-40 overflow-y-auto space-y-1.5">
+                <label v-for="q in otherQuestions" :key="q.uuid || q.id" class="flex items-center gap-2 cursor-pointer p-1 rounded hover:bg-emphasis dark:hover:bg-emphasis">
                   <input v-model="rule.targetQuestionIds" type="checkbox" :value="q.uuid || q.id" class="q-check !w-3.5 !h-3.5" />
-                  <span class="text-sm text-slate-800 dark:text-slate-200">{{ q.label }}</span>
+                  <span class="text-sm text-color ">{{ q.label }}</span>
                 </label>
               </div>
             </div>
@@ -730,7 +730,7 @@ function getRuleTypeLabel(type: string): string {
       </div>
 
       <!-- Existing Rules Summaries -->
-      <div v-if="outgoingRules.length > 0 || incomingRules.length > 0" class="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-700/80">
+      <div v-if="outgoingRules.length > 0 || incomingRules.length > 0" class="space-y-4 pt-2 border-t border-surface ">
         <!-- Outgoing Rules (Triggered by active question) -->
         <div v-if="outgoingRules.length > 0" class="space-y-2">
           <div class="flex items-center gap-2">
@@ -741,13 +741,13 @@ function getRuleTypeLabel(type: string): string {
             <div
               v-for="(r, index) in outgoingRules"
               :key="index"
-              class="flex items-center justify-between gap-3 p-3 border border-amber-200 dark:border-amber-800/50 bg-amber-50/30 dark:bg-amber-950/20 rounded-xl"
+              class="flex items-center justify-between gap-3 p-3 border border-surface  bg-emphasis  rounded-xl"
             >
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-slate-900 dark:text-white leading-relaxed">
+                <p class="text-sm font-semibold text-color -contrast leading-relaxed">
                   {{ getRuleDescriptionText(r) }}
                 </p>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                <p class="text-sm text-muted-color  mt-0.5">
                   Type : {{ getRuleTypeLabel(r.type) }}
                 </p>
               </div>
@@ -774,10 +774,10 @@ function getRuleTypeLabel(type: string): string {
             <div
               v-for="(inc, index) in incomingRules"
               :key="index"
-              class="flex items-center justify-between gap-3 p-3 border border-blue-200 dark:border-blue-800/50 bg-blue-50/30 dark:bg-blue-950/20 rounded-xl"
+              class="flex items-center justify-between gap-3 p-3 border border-primary  bg-emphasis  rounded-xl"
             >
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-slate-900 dark:text-white leading-relaxed">
+                <p class="text-sm font-semibold text-color -contrast leading-relaxed">
                   {{ getRuleDescriptionText(inc.rule) }}
                 </p>
               </div>

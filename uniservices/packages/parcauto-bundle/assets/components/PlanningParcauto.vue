@@ -224,7 +224,7 @@ watch(periode, () => {
     <section v-for="[jour, reservations] in jours" v-else :key="jour" class="mb-5">
       <h2 class="mb-2 text-base font-semibold capitalize">{{ new Date(jour + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) }}</h2>
       <ul class="grid gap-2">
-        <li v-for="(mission, index) in reservations" :key="mission.id ?? index" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-surface-200 p-3 dark:border-surface-700">
+        <li v-for="(mission, index) in reservations" :key="mission.id ?? index" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-surface-200 p-3 -700">
           <div>
             <div class="font-semibold">{{ noms.get(mission.vehicule) }}</div>
             <div class="text-sm">{{ dateHeure(mission.debut) }} – {{ dateHeure(mission.fin) }}</div>

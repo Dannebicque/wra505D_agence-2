@@ -38,18 +38,18 @@ export function etapeTerminee(statut, etape) {
  * Classes Tailwind écrites en entier (détectées à la compilation).
  */
 export const ETAPES = [
-    { id: 1, titre: 'Demande et avis', icone: 'pi pi-file-edit', couleur: 'blue', iconeClasse: 'text-blue-600 dark:text-blue-400', tag: 'bg-blue-100! text-blue-800! dark:bg-blue-950! dark:text-blue-200!', bordure: 'border-l-4 border-l-blue-600', fond: 'bg-blue-600', anneau: 'ring-blue-100 dark:ring-blue-950', texte: 'text-blue-700 dark:text-blue-400' },
-    { id: 2, titre: 'Vérification', icone: 'pi pi-search', couleur: 'amber', iconeClasse: 'text-amber-600 dark:text-amber-400', tag: 'bg-amber-100! text-amber-800! dark:bg-amber-950! dark:text-amber-200!', bordure: 'border-l-4 border-l-amber-500', fond: 'bg-amber-500', anneau: 'ring-amber-100 dark:ring-amber-950', texte: 'text-amber-700 dark:text-amber-400' },
-    { id: 3, titre: 'Engagement', icone: 'pi pi-check-circle', couleur: 'purple', iconeClasse: 'text-purple-600 dark:text-purple-400', tag: 'bg-purple-100! text-purple-800! dark:bg-purple-950! dark:text-purple-200!', bordure: 'border-l-4 border-l-purple-600', fond: 'bg-purple-600', anneau: 'ring-purple-100 dark:ring-purple-950', texte: 'text-purple-700 dark:text-purple-400' },
-    { id: 4, titre: 'Service fait', icone: 'pi pi-box', couleur: 'teal', iconeClasse: 'text-teal-600 dark:text-teal-400', tag: 'bg-teal-100! text-teal-800! dark:bg-teal-950! dark:text-teal-200!', bordure: 'border-l-4 border-l-teal-600', fond: 'bg-teal-600', anneau: 'ring-teal-100 dark:ring-teal-950', texte: 'text-teal-700 dark:text-teal-400' },
-    { id: 5, titre: 'Facture et paiement', icone: 'pi pi-wallet', couleur: 'pink', iconeClasse: 'text-pink-600 dark:text-pink-400', tag: 'bg-pink-100! text-pink-800! dark:bg-pink-950! dark:text-pink-200!', bordure: 'border-l-4 border-l-pink-600', fond: 'bg-pink-600', anneau: 'ring-pink-100 dark:ring-pink-950', texte: 'text-pink-700 dark:text-pink-400' },
+    { id: 1, titre: 'Demande et avis', icone: 'pi pi-file-edit', couleur: 'blue', iconeClasse: 'text-primary ', tag: 'bg-emphasis! text-primary! ! !', bordure: 'border-l-4 border-l-blue-600', fond: 'bg-primary', anneau: 'ring-primary ', texte: 'text-primary ' },
+    { id: 2, titre: 'Vérification', icone: 'pi pi-search', couleur: 'amber', iconeClasse: 'text-muted-color ', tag: 'bg-emphasis! text-color! ! !', bordure: 'border-l-4 border-l-amber-500', fond: 'bg-emphasis', anneau: 'ring-surface ', texte: 'text-color ' },
+    { id: 3, titre: 'Engagement', icone: 'pi pi-check-circle', couleur: 'purple', iconeClasse: 'text-primary ', tag: 'bg-emphasis! text-primary! ! !', bordure: 'border-l-4 border-l-purple-600', fond: 'bg-primary', anneau: 'ring-primary ', texte: 'text-primary ' },
+    { id: 4, titre: 'Service fait', icone: 'pi pi-box', couleur: 'teal', iconeClasse: 'text-muted-color ', tag: 'bg-emphasis! text-color! ! !', bordure: 'border-l-4 border-l-teal-600', fond: 'bg-emphasis', anneau: 'ring-surface ', texte: 'text-color ' },
+    { id: 5, titre: 'Facture et paiement', icone: 'pi pi-wallet', couleur: 'pink', iconeClasse: 'text-muted-color ', tag: 'bg-emphasis! text-color! ! !', bordure: 'border-l-4 border-l-pink-600', fond: 'bg-emphasis', anneau: 'ring-surface ', texte: 'text-color ' },
 ];
 
 export const etapeParId = (id) => ETAPES.find(e => e.id === id);
 
-const TAG_VERT = 'bg-emerald-100! text-emerald-800! dark:bg-emerald-950! dark:text-emerald-200!';
-const TAG_GRIS = 'bg-gray-100! text-gray-700! dark:bg-gray-800! dark:text-gray-200!';
-const TAG_ROUGE = 'bg-red-100! text-red-800! dark:bg-red-950! dark:text-red-200!';
+const TAG_VERT = 'bg-emphasis! text-color! ! !';
+const TAG_GRIS = 'bg-emphasis! text-color! ! !';
+const TAG_ROUGE = 'bg-emphasis! text-color! ! !';
 
 /** Demande finalisée en entier : clôturée, ou payée et soldée (facture finale). */
 export const estFinalisee = (commande) => commande?.statut === 'CLOTURE' || (commande?.statut === 'PAYE' && Boolean(commande?.factureFinale));

@@ -38,7 +38,7 @@ const etape = etapeParId(3);
                 <label for="engagement-date-bc" class="q-label">Date du bon de commande</label>
                 <input id="engagement-date-bc" v-model="form.dateBonCommande" type="date" :disabled="!modifiable('dateBonCommande')" class="q-input" />
             </div>
-            <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div class="mt-4 pt-3 border-t border-surface ">
                 <ActionsWorkflow :actions="actions" :etape="3" :envoi="envoi" @executer="emit('executer', $event)" />
             </div>
         </Card>

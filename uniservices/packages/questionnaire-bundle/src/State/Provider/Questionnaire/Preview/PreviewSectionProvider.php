@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Preview;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Domain\Questionnaire\Mapping\QuestionRuntimeMapper;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Security\QuestionnaireResolver;
@@ -24,7 +25,7 @@ final readonly class PreviewSectionProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): PreviewSectionDto
     {
         $q = $this->questionnaires->charger($uriVariables['questionnaireUuid'] ?? '', QuestionnaireVoter::CAN_EDIT_QUESTIONNAIRE);
-        $key = (string) $uriVariables['key'];
+        $key = LooseValue::castString($uriVariables['key']);
 
         // key format: tpl:12|matiere:45
         [$tplId, $repeatType, $repeatId] = $this->parseKey($key);

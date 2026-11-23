@@ -405,7 +405,7 @@ onMounted(async () => {
           <InputText
             v-model="filters['global'].value"
             placeholder="Recherche rapide..."
-            class="py-1 px-3 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+            class="py-1 px-3 text-sm rounded-lg border border-surface  bg-surface-0 "
           />
         </IconField>
       </template>
@@ -414,13 +414,13 @@ onMounted(async () => {
       <transition name="slide-down">
         <div
           v-if="selectedResponses.length > 0"
-          class="flex flex-wrap items-center justify-between gap-3 p-3 mb-4 bg-primary-50/90 dark:bg-surface-900 border border-primary-200 dark:border-primary-800/60 rounded-2xl shadow-xs"
+          class="flex flex-wrap items-center justify-between gap-3 p-3 mb-4 bg-primary-50/90 -900 border border-primary-200 -800/60 rounded-2xl shadow-xs"
         >
           <div class="flex items-center gap-2.5">
-            <span class="inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-full bg-primary-600 text-white text-sm font-bold">
+            <span class="inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-full -primary text-primary-contrast text-sm font-bold">
               {{ selectedResponses.length }}
             </span>
-            <span class="text-sm sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
+            <span class="text-sm sm:text-sm font-semibold text-color ">
               {{ selectedResponses.length }} ligne{{ selectedResponses.length > 1 ? 's' : '' }} sélectionnée{{ selectedResponses.length > 1 ? 's' : '' }}
             </span>
             <Tag
@@ -429,7 +429,7 @@ onMounted(async () => {
               severity="warn"
               class="text-sm font-sans"
             />
-            <span v-else class="text-sm text-slate-500 dark:text-slate-400">
+            <span v-else class="text-sm text-muted-color ">
               (toutes terminées)
             </span>
           </div>
@@ -529,16 +529,16 @@ onMounted(async () => {
         <Column field="participantName" header="Participant" sortable style="min-width: 15rem" :showFilterMenu="false">
           <template #body="{ data }">
             <div class="flex items-center">
-              <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div class="w-8 h-8 bg-emphasis  rounded-full flex items-center justify-center">
+                <span class="text-sm font-medium text-color ">
                   {{ initiales(data.participantName) }}
                 </span>
               </div>
               <div class="ml-3">
-                <div class="text-sm font-medium text-gray-900 dark:text-white">
+                <div class="text-sm font-medium text-color -contrast">
                   {{ data.participantName }}
                 </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
+                <div class="text-sm text-muted-color ">
                   {{ data.participantEmail }}
                 </div>
               </div>
@@ -546,7 +546,7 @@ onMounted(async () => {
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Filtrer par nom"
-              class="w-full text-sm border border-gray-300 dark:border-gray-700 rounded p-1 px-2 focus:ring-1 focus:ring-primary-500" />
+              class="w-full text-sm border border-surface  rounded p-1 px-2 focus:ring-1 focus:ring-primary-500" />
           </template>
         </Column>
 
@@ -559,17 +559,17 @@ onMounted(async () => {
             />
           </template>
           <template #filter="{ filterModel, filterCallback }">
-            <Select v-model="filterModel.value" @change="filterCallback()" :options="['Terminé', 'En cours', 'Non commencé']" placeholder="Tous" :showClear="true" class="w-full text-sm border border-gray-300 dark:border-gray-700 rounded focus:ring-1 focus:ring-primary-500" />
+            <Select v-model="filterModel.value" @change="filterCallback()" :options="['Terminé', 'En cours', 'Non commencé']" placeholder="Tous" :showClear="true" class="w-full text-sm border border-surface  rounded focus:ring-1 focus:ring-primary-500" />
           </template>
         </Column>
 
         <Column field="progress" header="Progression" sortable style="min-width: 12rem">
           <template #body="{ data }">
             <div class="flex items-center w-full">
-              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
-                <div class="bg-primary-600 h-2 rounded-full" :style="{ width: `${data.progress}%` }" />
+              <div class="w-full bg-emphasis  rounded-full h-2 mr-2">
+                <div class="-primary h-2 rounded-full" :style="{ width: `${data.progress}%` }" />
               </div>
-              <span class="text-sm text-gray-600 dark:text-gray-400 shrink-0">
+              <span class="text-sm text-muted-color  shrink-0">
                 {{ data.progress }}%
               </span>
             </div>
@@ -583,18 +583,18 @@ onMounted(async () => {
                 <button
                   v-if="data.remindersCount > 0"
                   type="button"
-                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-semibold bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors cursor-pointer"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-semibold bg-emphasis text-color   border border-surface  hover:bg-emphasis dark:hover:bg-emphasis transition-colors cursor-pointer"
                   title="Cliquer pour consulter l'historique des relances"
                   @click="openHistoryModal(data)"
                 >
                   <i class="pi pi-bell text-sm" />
                   <span>{{ data.remindersCount }} relance{{ data.remindersCount > 1 ? 's' : '' }}</span>
                 </button>
-                <span v-else class="text-sm text-slate-400 dark:text-slate-500 italic">
+                <span v-else class="text-sm text-muted-color  italic">
                   Aucune relance
                 </span>
               </div>
-              <span v-if="data.remindedAt" class="text-sm text-slate-500 dark:text-slate-400">
+              <span v-if="data.remindedAt" class="text-sm text-muted-color ">
                 Dernière : {{ formatRelativeTime(data.remindedAt) }}
               </span>
             </div>
@@ -606,7 +606,7 @@ onMounted(async () => {
               :options="['Relancé', 'Non relancé']"
               placeholder="Tous"
               :showClear="true"
-              class="w-full text-sm border border-gray-300 dark:border-gray-700 rounded focus:ring-1 focus:ring-primary-500"
+              class="w-full text-sm border border-surface  rounded focus:ring-1 focus:ring-primary-500"
               @change="filterCallback()"
             />
           </template>

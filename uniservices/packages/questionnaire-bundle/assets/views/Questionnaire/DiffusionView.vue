@@ -149,9 +149,9 @@ onMounted(charger);
 
       <Card v-else title="Destinataires par section" icon="pi pi-users" color="green">
         <ul class="space-y-5">
-          <li v-for="section in etat.sections" :key="section.id" class="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-800 last:border-0">
+          <li v-for="section in etat.sections" :key="section.id" class="space-y-2 pb-4 border-b border-surface  last:border-0">
             <div class="flex flex-wrap items-center gap-2">
-              <span :id="`titre-${section.id}`" class="font-semibold text-slate-900 dark:text-white">{{ section.titre }}</span>
+              <span :id="`titre-${section.id}`" class="font-semibold text-color -contrast">{{ section.titre }}</span>
               <Tag v-if="section.enseignement" severity="secondary" :value="section.enseignement.code || section.enseignement.libelle" />
               <Tag v-if="section.intervenant" severity="info" :value="`Intervenant : ${section.intervenant}`" />
             </div>

@@ -181,7 +181,7 @@ class StagePdfController extends AbstractController
     {
         $this->denyAccessUnlessGranted('SUPER_ADMIN');
         $data = json_decode($request->getContent(), true) ?? [];
-        $texte = (string) ($data['texte'] ?? '');
+        $texte = LooseValue::castString($data['texte'] ?? '');
         $repo = $this->em->getRepository(StageEtudiant::class);
         $stage = isset($data['stageEtudiantId']) && is_numeric($data['stageEtudiantId'])
             ? $repo->find((int) $data['stageEtudiantId'])

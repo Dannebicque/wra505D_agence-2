@@ -3,6 +3,7 @@
 namespace QuestionnaireBundle\Controller;
 
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireRetour;
@@ -65,12 +66,12 @@ class QuestionnaireRetourController extends AbstractController
         $q = $this->questionnaires->charger($uuid, QuestionnaireVoter::SYNTHESE);
         $user = $this->getUser();
         $donnees = json_decode($request->getContent(), true);
-        $sectionId = \is_array($donnees) ? (int) ($donnees['section'] ?? 0) : 0;
+        $sectionId = \is_array($donnees) ? LooseValue::castInt($donnees['section'] ?? 0) : 0;
         if (!$user instanceof Personnel || !\in_array($sectionId, $this->access->sectionsDestinataire($user, $q), true)) {
             throw new AccessDeniedHttpException('Seul un destinataire des résultats de cette section peut y répondre.');
         }
-        $commentaire = isset($donnees['commentaire']) ? (string) $donnees['commentaire'] : null;
-        $plan = isset($donnees['planAction']) ? (string) $donnees['planAction'] : null;
+        $commentaire = isset($donnees['commentaire']) ? LooseValue::castString($donnees['commentaire']) : null;
+        $plan = isset($donnees['planAction']) ? LooseValue::castString($donnees['planAction']) : null;
         if (mb_strlen((string) $commentaire) > self::LONGUEUR_MAX || mb_strlen((string) $plan) > self::LONGUEUR_MAX) {
             throw new UnprocessableEntityHttpException('Texte trop long.');
         }

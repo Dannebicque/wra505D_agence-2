@@ -5,6 +5,7 @@ namespace QuestionnaireBundle\ApiDto\Questionnaire\Analytics;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\State\Provider\Questionnaire\Analytics\QuestionnaireAnalyticsProvider;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -77,15 +78,15 @@ final class QuestionnaireAnalyticsDto
     {
         $lesSections = [];
         foreach ($archive['sections'] ?? [] as $s) {
-            if ($sections !== null && !\in_array((int) $s['sectionInstanceId'], $sections, true)) {
+            if ($sections !== null && !\in_array(LooseValue::castInt($s['sectionInstanceId']), $sections, true)) {
                 continue;
             }
             $lesSections[] = new SectionInstanceAnalyticsDto(
-                sectionInstanceId: (int) $s['sectionInstanceId'],
-                sectionTitle: (string) $s['sectionTitle'],
-                sectionType: (string) $s['sectionType'],
-                repeatItemType: $s['repeatItemType'] ?? null,
-                repeatItemId: $s['repeatItemId'] ?? null,
+                sectionInstanceId: LooseValue::castInt($s['sectionInstanceId']),
+                sectionTitle: LooseValue::castString($s['sectionTitle']),
+                sectionType: LooseValue::castString($s['sectionType']),
+                repeatItemType: LooseValue::nullableString($s['repeatItemType'] ?? null),
+                repeatItemId: LooseValue::nullableString($s['repeatItemId'] ?? null),
                 questions: array_map(static fn (array $q) => new QuestionStatsDto(
                     (string) $q['questionId'],
                     (string) $q['questionLabel'],
@@ -93,28 +94,28 @@ final class QuestionnaireAnalyticsDto
                     (int) $q['totalResponses'],
                     (array) $q['stats'],
                 ), $s['questions'] ?? []),
-                reponses: (int) ($s['reponses'] ?? 0),
+                reponses: LooseValue::castInt($s['reponses'] ?? 0),
                 masquee: (bool) ($s['masquee'] ?? false),
-                enseignement: $s['enseignement'] ?? null,
-                intervenant: $s['intervenant'] ?? null,
+                enseignement: LooseValue::nullableString($s['enseignement'] ?? null),
+                intervenant: LooseValue::nullableString($s['intervenant'] ?? null),
             );
         }
 
         return new self(
-            surveyId: (string) $archive['surveyId'],
-            totalInvited: (int) $archive['totalInvited'],
-            totalResponses: (int) $archive['totalResponses'],
-            completionRate: (float) $archive['completionRate'],
-            averageTimeSpent: (float) $archive['averageTimeSpent'],
+            surveyId: LooseValue::castString($archive['surveyId']),
+            totalInvited: LooseValue::castInt($archive['totalInvited']),
+            totalResponses: LooseValue::castInt($archive['totalResponses']),
+            completionRate: LooseValue::castFloat($archive['completionRate']),
+            averageTimeSpent: LooseValue::castFloat($archive['averageTimeSpent']),
             responsesByDate: (array) ($archive['responsesByDate'] ?? []),
             statusCounts: (array) ($archive['statusCounts'] ?? []),
             sections: $lesSections,
-            seuilMinReponses: (int) ($archive['seuilMinReponses'] ?? 0),
+            seuilMinReponses: LooseValue::castInt($archive['seuilMinReponses'] ?? 0),
             seuilAtteint: (bool) ($archive['seuilAtteint'] ?? true),
-            title: (string) ($archive['title'] ?? ''),
-            openingDate: $archive['openingDate'] ?? null,
-            publishedAt: $archive['publishedAt'] ?? null,
-            status: $archive['status'] ?? null,
+            title: LooseValue::castString($archive['title'] ?? ''),
+            openingDate: LooseValue::nullableString($archive['openingDate'] ?? null),
+            publishedAt: LooseValue::nullableString($archive['publishedAt'] ?? null),
+            status: LooseValue::nullableString($archive['status'] ?? null),
             archiveLe: $archiveLe,
         );
     }

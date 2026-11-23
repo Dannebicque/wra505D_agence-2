@@ -158,7 +158,7 @@ const etape = etapeParId(4);
                     v-for="(r, index) in commande.receptions"
                     :key="r.id"
                     class="rounded-lg border p-4"
-                    :class="r.visee ? 'border-gray-200 dark:border-gray-700' : 'border-amber-300 dark:border-amber-700'"
+                    :class="r.visee ? 'border-surface ' : 'border-surface '"
                     :aria-label="`Réception ${index + 1}`"
                 >
                     <div class="flex flex-wrap items-center justify-between gap-2">
@@ -181,12 +181,12 @@ const etape = etapeParId(4);
                     <section class="mt-4" :aria-label="`Bons de livraison de la réception ${index + 1}`">
                         <h4 class="q-label mb-2">Bon(s) de livraison</h4>
                         <ul v-if="r.documents?.length" class="flex flex-col gap-1">
-                            <li v-for="d in r.documents" :key="d.id" class="flex items-center justify-between gap-2 rounded border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-sm">
+                            <li v-for="d in r.documents" :key="d.id" class="flex items-center justify-between gap-2 rounded border border-surface  px-3 py-1.5 text-sm">
                                 <button type="button" class="flex items-center gap-2 min-w-0 text-left hover:underline" :aria-label="`Ouvrir ${d.nomFichier}`" @click="ouvrirBl(r, d)">
-                                    <i :class="enCours === `lire-${d.id}` ? 'pi pi-spin pi-spinner' : 'pi pi-file-pdf text-red-500'" aria-hidden="true" />
+                                    <i :class="enCours === `lire-${d.id}` ? 'pi pi-spin pi-spinner' : 'pi pi-file-pdf text-muted-color'" aria-hidden="true" />
                                     <span class="truncate">{{ d.nomFichier }}</span>
                                 </button>
-                                <span class="flex items-center gap-2 shrink-0 text-xs text-gray-500">
+                                <span class="flex items-center gap-2 shrink-0 text-xs text-muted-color">
                                     {{ formatDate(d.dateDepot) }}
                                     <Button v-if="modifiable(r)" icon="pi pi-trash" text rounded severity="danger" size="small" :aria-label="`Retirer ${d.nomFichier}`" :loading="enCours === `retrait-${d.id}`" @click="retirerBl(r, d)" />
                                 </span>
@@ -194,7 +194,7 @@ const etape = etapeParId(4);
                         </ul>
                         <Message v-else severity="warn" :closable="false">Aucun bon de livraison : il doit être déposé avant le visa.</Message>
                         <template v-if="modifiable(r)">
-                            <label :for="`bl-ajout-${r.id}`" class="mt-2 inline-flex items-center gap-2 cursor-pointer rounded border border-dashed border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <label :for="`bl-ajout-${r.id}`" class="mt-2 inline-flex items-center gap-2 cursor-pointer rounded border border-dashed border-surface  px-3 py-1.5 text-sm hover:bg-emphasis dark:hover:bg-emphasis">
                                 <i :class="enCours === `ajout-${r.id}` ? 'pi pi-spin pi-spinner' : 'pi pi-upload'" aria-hidden="true" />
                                 Ajouter un bon de livraison (PDF)
                             </label>
@@ -203,7 +203,7 @@ const etape = etapeParId(4);
                     </section>
 
                     <!-- 2. Visa et informations SIFAC (service financier) -->
-                    <section v-if="sifac[r.id]" class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 grid grid-cols-1 sm:grid-cols-3 gap-3" :aria-label="`Visa et SIFAC de la réception ${index + 1}`">
+                    <section v-if="sifac[r.id]" class="mt-4 pt-3 border-t border-surface  grid grid-cols-1 sm:grid-cols-3 gap-3" :aria-label="`Visa et SIFAC de la réception ${index + 1}`">
                         <div class="flex flex-col gap-1 sm:col-span-3">
                             <label :for="`migo-${r.id}`" class="q-label">Numéros MIGO (SIFAC)</label>
                             <div class="flex flex-wrap gap-2">
@@ -211,13 +211,13 @@ const etape = etapeParId(4);
                                     <span class="text-sm">{{ m }}</span>
                                     <button v-if="gererReceptions" type="button" class="ml-1" :aria-label="`Retirer le numéro ${m}`" @click="sifac[r.id].numerosMigo.splice(i, 1)"><i class="pi pi-times text-sm" /></button>
                                 </Tag>
-                                <span v-if="!sifac[r.id].numerosMigo.length" class="text-sm text-gray-500">Aucun numéro</span>
+                                <span v-if="!sifac[r.id].numerosMigo.length" class="text-sm text-muted-color">Aucun numéro</span>
                             </div>
                             <div v-if="gererReceptions" class="flex gap-2 mt-1">
                                 <input :id="`migo-${r.id}`" v-model="nouveauMigo[r.id]" type="text" maxlength="30" class="q-input" placeholder="Ex. : 5000412345" @keydown.enter.prevent="ajouterMigo(r.id)" />
                                 <Button label="Ajouter" icon="pi pi-plus" size="small" severity="secondary" outlined @click="ajouterMigo(r.id)" />
                             </div>
-                            <small v-if="erreurMigo[r.id]" class="text-red-600">{{ erreurMigo[r.id] }}</small>
+                            <small v-if="erreurMigo[r.id]" class="text-muted-color">{{ erreurMigo[r.id] }}</small>
                         </div>
                         <div class="flex flex-col gap-1">
                             <label :for="`migo103-${r.id}`" class="q-label">Date MIGO 103</label>
@@ -250,7 +250,7 @@ const etape = etapeParId(4);
             <dl v-if="commande.dateCertificationServiceFait" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div><dt class="q-label">Certifié par</dt><dd>{{ nomPersonne(commande.certificateurServiceFait) }}</dd></div>
             </dl>
-            <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div class="mt-4 pt-3 border-t border-surface ">
                 <ActionsWorkflow :actions="actions" :etape="4" :envoi="envoi" @executer="emit('executer', $event)" />
             </div>
         </Card>

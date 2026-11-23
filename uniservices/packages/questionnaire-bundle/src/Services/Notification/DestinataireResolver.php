@@ -29,7 +29,7 @@ class DestinataireResolver
                 ->setMaxResults(1)
                 ->getQuery()
                 ->getOneOrNullResult();
-            if ($compte !== null) {
+            if ($compte instanceof Etudiant || $compte instanceof Personnel) {
                 return $compte;
             }
         }

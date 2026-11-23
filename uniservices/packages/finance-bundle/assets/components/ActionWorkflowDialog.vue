@@ -108,17 +108,17 @@ function valider() {
                     <div class="flex flex-col gap-2 sm:col-span-2">
                         <span class="q-label q-label-required">Bon(s) de livraison (PDF)</span>
                         <ul v-if="bonsLivraison.length" class="flex flex-col gap-1" aria-label="Bons de livraison sélectionnés">
-                            <li v-for="(f, i) in bonsLivraison" :key="f.name + f.size" class="flex items-center justify-between gap-2 rounded border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-sm">
-                                <span class="flex items-center gap-2 min-w-0"><i class="pi pi-file-pdf text-red-500" aria-hidden="true" /><span class="truncate">{{ f.name }}</span></span>
-                                <button type="button" class="text-gray-500 hover:text-red-600" :aria-label="`Retirer ${f.name}`" @click="bonsLivraison.splice(i, 1)"><i class="pi pi-times" /></button>
+                            <li v-for="(f, i) in bonsLivraison" :key="f.name + f.size" class="flex items-center justify-between gap-2 rounded border border-surface  px-3 py-1.5 text-sm">
+                                <span class="flex items-center gap-2 min-w-0"><i class="pi pi-file-pdf text-muted-color" aria-hidden="true" /><span class="truncate">{{ f.name }}</span></span>
+                                <button type="button" class="text-muted-color hover:text-muted-color" :aria-label="`Retirer ${f.name}`" @click="bonsLivraison.splice(i, 1)"><i class="pi pi-times" /></button>
                             </li>
                         </ul>
-                        <label for="sf-bl" class="self-start inline-flex items-center gap-2 cursor-pointer rounded border border-dashed border-gray-300 dark:border-gray-600 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <label for="sf-bl" class="self-start inline-flex items-center gap-2 cursor-pointer rounded border border-dashed border-surface  px-3 py-2 text-sm hover:bg-emphasis dark:hover:bg-emphasis">
                             <i class="pi pi-upload" aria-hidden="true" />
                             {{ bonsLivraison.length ? 'Ajouter un autre PDF' : 'Choisir le ou les PDF' }}
                         </label>
                         <input id="sf-bl" type="file" accept="application/pdf" multiple class="sr-only" @change="ajouterFichiers" />
-                        <small v-if="erreurFichier" class="text-red-600">{{ erreurFichier }}</small>
+                        <small v-if="erreurFichier" class="text-muted-color">{{ erreurFichier }}</small>
                         <small v-else class="q-hint">Un ou plusieurs PDF, 10 Mo au plus chacun. Le service financier visera ensuite la réception.</small>
                     </div>
                 </div>

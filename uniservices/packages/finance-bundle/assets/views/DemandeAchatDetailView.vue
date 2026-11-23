@@ -354,10 +354,10 @@ onMounted(async () => {
                 <TabList>
                     <Tab v-for="e in ETAPES" :key="e.id" :value="String(e.id)">
                         <span class="flex items-center gap-2 text-sm">
-                            <span class="w-2.5 h-2.5 rounded-full" :class="atteinte(e.id) ? e.fond : 'bg-gray-300 dark:bg-gray-600'" aria-hidden="true" />
+                            <span class="w-2.5 h-2.5 rounded-full" :class="atteinte(e.id) ? e.fond : 'bg-emphasis '" aria-hidden="true" />
                             {{ e.id }}. {{ e.titre }}
-                            <i v-if="etapeTerminee(statut, e.id)" class="pi pi-check text-emerald-600" aria-label="terminée" />
-                            <i v-else-if="!atteinte(e.id)" class="pi pi-lock text-gray-400" aria-label="pas encore ouverte" />
+                            <i v-if="etapeTerminee(statut, e.id)" class="pi pi-check text-muted-color" aria-label="terminée" />
+                            <i v-else-if="!atteinte(e.id)" class="pi pi-lock text-muted-color" aria-label="pas encore ouverte" />
                         </span>
                     </Tab>
                 </TabList>

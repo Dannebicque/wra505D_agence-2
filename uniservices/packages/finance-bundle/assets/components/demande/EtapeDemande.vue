@@ -61,7 +61,7 @@ watch(imputation, (valeur) => {
 });
 
 /** Couleur du département (référentiel), à défaut une teinte neutre. */
-const couleurDepartement = (d) => (/^#[0-9a-f]{3,8}$/i.test(d?.couleur || '') ? d.couleur : '#64748b');
+const couleurDepartement = (d) => (/^#[0-9a-f]{3,8}$/i.test(d?.couleur || '') ? d.couleur : 'var(--p-text-muted-color)');
 
 const tauxProposes = computed(() => props.tauxTva.filter(t => t.actif || Number(t.taux) === Number(props.form.tauxTva)));
 const incoherents = computed(() => montantsIncoherents(props.form.montantHt, props.form.montantTtc, props.form.tauxTva));
@@ -128,25 +128,25 @@ const pdfASigner = computed(() => !props.nouvelle && ['SOUMIS', 'AVIS_DIRECTION'
         <section
             v-if="pdfASigner"
             aria-labelledby="pdf-a-signer-titre"
-            class="rounded-xl border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/40 p-5 shadow-sm"
+            class="rounded-xl border-2 border-primary bg-emphasis  p-5 shadow-sm"
         >
             <div class="flex items-start gap-3">
-                <i class="pi pi-file-pdf text-2xl text-blue-600 dark:text-blue-400 mt-0.5" aria-hidden="true" />
+                <i class="pi pi-file-pdf text-2xl text-primary  mt-0.5" aria-hidden="true" />
                 <div class="flex-1 min-w-0">
-                    <h2 id="pdf-a-signer-titre" class="text-lg font-semibold text-blue-900 dark:text-blue-100">Prochaine étape : faire signer la demande</h2>
-                    <p class="text-sm text-blue-900/80 dark:text-blue-100/80">Sans document signé, la demande ne peut pas avancer dans le circuit.</p>
+                    <h2 id="pdf-a-signer-titre" class="text-lg font-semibold text-primary ">Prochaine étape : faire signer la demande</h2>
+                    <p class="text-sm text-primary ">Sans document signé, la demande ne peut pas avancer dans le circuit.</p>
                     <ol class="mt-4 grid gap-3 md:grid-cols-3">
-                        <li class="flex flex-col gap-2 rounded-lg bg-white dark:bg-gray-900 p-3 border border-blue-200 dark:border-blue-800">
-                            <span class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">1. Télécharger</span>
+                        <li class="flex flex-col gap-2 rounded-lg bg-surface-0  p-3 border border-primary ">
+                            <span class="text-xs font-semibold uppercase tracking-wide text-primary ">1. Télécharger</span>
                             <span class="text-sm">Le PDF de la demande, prêt à être signé.</span>
                             <Button label="Télécharger le PDF à signer" icon="pi pi-download" class="mt-auto self-start" @click="emit('telecharger-pdf', 1)" />
                         </li>
-                        <li class="flex flex-col gap-2 rounded-lg bg-white dark:bg-gray-900 p-3 border border-blue-200 dark:border-blue-800">
-                            <span class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">2. Faire signer</span>
+                        <li class="flex flex-col gap-2 rounded-lg bg-surface-0  p-3 border border-primary ">
+                            <span class="text-xs font-semibold uppercase tracking-wide text-primary ">2. Faire signer</span>
                             <span class="text-sm">{{ commande?.service ? 'Par le demandeur, puis visa du service financier.' : 'Par le demandeur et le directeur ou le chef de service.' }}</span>
                         </li>
-                        <li class="flex flex-col gap-2 rounded-lg bg-white dark:bg-gray-900 p-3 border border-blue-200 dark:border-blue-800">
-                            <span class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">3. Déposer</span>
+                        <li class="flex flex-col gap-2 rounded-lg bg-surface-0  p-3 border border-primary ">
+                            <span class="text-xs font-semibold uppercase tracking-wide text-primary ">3. Déposer</span>
                             <template v-if="peutDecider">
                                 <span class="text-sm">Le document signé, avec la décision.</span>
                                 <Button label="Avis favorable : déposer" icon="pi pi-check" severity="success" outlined class="mt-auto self-start" :loading="depotEnCours" @click="choisirFichier('favorable')" />
@@ -201,7 +201,7 @@ const pdfASigner = computed(() => !props.nouvelle && ['SOUMIS', 'AVIS_DIRECTION'
                             {{ d.libelle }}
                             <i v-if="form.departement === d.id && departements.length > 1" class="pi pi-check text-xs" aria-hidden="true" />
                         </button>
-                        <span v-if="!departements.length" class="text-sm text-gray-500">Aucun département disponible</span>
+                        <span v-if="!departements.length" class="text-sm text-muted-color">Aucun département disponible</span>
                     </div>
                     <div v-else class="flex flex-col gap-1">
                         <select id="demande-service" v-model="form.service" required aria-label="Service d'imputation" class="q-input">
@@ -275,7 +275,7 @@ const pdfASigner = computed(() => !props.nouvelle && ['SOUMIS', 'AVIS_DIRECTION'
                     <textarea id="demande-note" v-model="form.noteExplicative" rows="3" :disabled="!modifiable('noteExplicative')" class="q-input" />
                 </div>
             </div>
-            <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex flex-wrap justify-between gap-2">
+            <div class="mt-4 pt-3 border-t border-surface  flex flex-wrap justify-between gap-2">
                 <Button v-if="!nouvelle" label="PDF à signer" icon="pi pi-file-pdf" :severity="pdfASigner ? undefined : 'secondary'" :outlined="!pdfASigner" size="small" @click="emit('telecharger-pdf', 1)" />
                 <ActionsWorkflow :actions="actions" :etape="1" :envoi="envoi" @executer="emit('executer', $event)" />
             </div>
@@ -285,11 +285,11 @@ const pdfASigner = computed(() => !props.nouvelle && ['SOUMIS', 'AVIS_DIRECTION'
             <template #header-actions>
                 <Tag :severity="commande?.pdfSigne ? 'success' : 'secondary'" :value="commande?.pdfSigne ? 'Déposé' : 'Non déposé'" />
             </template>
-            <p v-if="peutDecider" class="text-sm text-gray-600 dark:text-gray-400">
+            <p v-if="peutDecider" class="text-sm text-muted-color ">
                 Téléchargez le PDF de la demande, faites-le signer, puis déposez le document <strong>avec la décision</strong> :
                 elle est enregistrée telle quelle, sans ressaisie de la demande.
             </p>
-            <p v-else class="text-sm text-gray-600 dark:text-gray-400">
+            <p v-else class="text-sm text-muted-color ">
                 Document de la demande signé par le directeur ou le chef de service (PDF, 10 Mo au plus).
             </p>
             <input id="demande-document" ref="fichier" type="file" accept="application/pdf" class="hidden" @change="fichierSelectionne" />
@@ -318,7 +318,7 @@ const pdfASigner = computed(() => !props.nouvelle && ['SOUMIS', 'AVIS_DIRECTION'
 
         <Dialog v-model:visible="dialogueRefus" header="La demande est refusée" modal class="w-full max-w-lg">
             <form id="form-refus" class="q-form" @submit.prevent="validerRefus">
-                <p class="text-sm text-gray-600 dark:text-gray-400">La demande sera rejetée et le motif lui sera communiqué.</p>
+                <p class="text-sm text-muted-color ">La demande sera rejetée et le motif lui sera communiqué.</p>
                 <div class="flex flex-col gap-1">
                     <label for="refus-motif" class="q-label q-label-required">Motif du refus</label>
                     <textarea id="refus-motif" v-model="refus.motif" rows="4" required class="q-input" />
@@ -344,7 +344,7 @@ const pdfASigner = computed(() => !props.nouvelle && ['SOUMIS', 'AVIS_DIRECTION'
     gap: 0.5rem;
     padding: 0.375rem 0.75rem;
     border-radius: 9999px;
-    border: 1px solid var(--p-content-border-color, #e2e8f0);
+    border: 1px solid var(--p-content-border-color);
     border-left: 4px solid var(--couleur-departement);
     font-size: 0.875rem;
     font-weight: 500;

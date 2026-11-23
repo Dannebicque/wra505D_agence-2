@@ -50,7 +50,7 @@ onMounted(async () => {
     >
       <template #actions>
         <!-- Sélecteur de vue pour les enseignants ayant également un rôle de pilotage qualité / chef de département -->
-        <div v-if="canSwitchViews" class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div v-if="canSwitchViews" class="flex items-center gap-1.5 bg-emphasis  p-1 rounded-xl border border-surface ">
           <Button
             type="button"
             size="small"

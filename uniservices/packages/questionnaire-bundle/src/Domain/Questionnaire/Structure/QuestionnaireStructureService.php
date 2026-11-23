@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Structure;
 
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
 use QuestionnaireBundle\Enum\QuestTypeSectionEnum;
@@ -29,17 +30,17 @@ final class QuestionnaireStructureService
 
             // Les options ont des valeurs par défaut vides : « ?: » plutôt que « ?? ».
             $opts = $st->getOpt();
-            $type = (string) ($opts['sourceType'] ?: 'matiere');
-            $patron = (string) ($opts['titleTemplate'] ?: 'Évaluation de {element}');
+            $type = LooseValue::castString($opts['sourceType'] ?: 'matiere');
+            $patron = LooseValue::castString($opts['titleTemplate'] ?: 'Évaluation de {element}');
             foreach ($opts['elements'] ?? [] as $element) {
                 if (!\is_array($element)) {
                     continue;
                 }
                 $plan[] = [
                     'sectionTemplate' => $st,
-                    'title' => str_replace('{element}', (string) ($element['name'] ?? ''), $patron),
+                    'title' => str_replace('{element}', LooseValue::castString($element['name'] ?? ''), $patron),
                     'repeatItemType' => $type,
-                    'repeatItemId' => isset($element['id']) ? (string) $element['id'] : null,
+                    'repeatItemId' => isset($element['id']) ? LooseValue::castString($element['id']) : null,
                     'sortOrder' => $ordre++,
                     // Enseignement évalué et, pour une ligne de prévisionnel, l'intervenant (renseignés par l'éditeur).
                     'enseignementId' => is_numeric($element['enseignementId'] ?? null) ? (int) $element['enseignementId'] : null,

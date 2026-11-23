@@ -155,7 +155,7 @@ function saveSettings() {
                 placeholder="ex: 10"
                 class="q-input pr-12"
               />
-              <span class="absolute right-3 top-2.5 text-sm text-slate-400 dark:text-slate-500 pointer-events-none">min</span>
+              <span class="absolute right-3 top-2.5 text-sm text-muted-color  pointer-events-none">min</span>
             </div>
           </FormField>
         </div>

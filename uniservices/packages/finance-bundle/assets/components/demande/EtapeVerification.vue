@@ -70,7 +70,7 @@ const etape = etapeParId(2);
                     <div v-if="commande.motifRejet && commande.statut === 'REJETE'"><dt class="q-label">Motif du rejet</dt><dd class="whitespace-pre-line">{{ commande.motifRejet }}</dd></div>
                 </dl>
             </div>
-            <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div class="mt-4 pt-3 border-t border-surface ">
                 <ActionsWorkflow :actions="actions" :etape="2" :envoi="envoi" @executer="emit('executer', $event)" />
             </div>
         </Card>

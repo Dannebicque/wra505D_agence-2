@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Runtime;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Domain\Questionnaire\Mapping\QuestionRuntimeMapper;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
@@ -27,7 +28,7 @@ final class InvitationRuntime
 
     public function invitation(mixed $token): QuestionnaireInvitation
     {
-        $token = (string) $token;
+        $token = LooseValue::castString($token);
         $invitation = $token !== '' && \strlen($token) <= 64
             ? $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token])
             : null;

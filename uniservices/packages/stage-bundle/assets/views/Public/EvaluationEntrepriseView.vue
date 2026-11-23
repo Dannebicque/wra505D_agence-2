@@ -65,7 +65,7 @@ const envoyer = async () => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-8">
+  <main class="min-h-screen bg-emphasis  px-4 py-8">
     <div class="max-w-3xl mx-auto space-y-6">
       <HeaderComponent titre="Évaluation du stagiaire" :description="description" icon="pi pi-star" color="violet" :show-back="false" />
 

@@ -5,6 +5,7 @@ namespace QuestionnaireBundle\Controller;
 use App\Entity\Users\Personnel;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireDiffusion;
+use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -39,6 +40,9 @@ class MesResultatsController extends AbstractController
         foreach ($diffusions as $diffusion) {
             $section = $diffusion->getSectionInstance();
             $q = $section->getQuestionnaire();
+            if (!$q instanceof Questionnaire) {
+                continue;
+            }
             $questionnaires[$q->getUuidString()] ??= [
                 'uuid' => $q->getUuidString(),
                 'title' => $q->getTitle(),

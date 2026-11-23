@@ -175,7 +175,7 @@ onMounted(charger);
             <Button label="Actualiser" icon="pi pi-refresh" size="small" severity="secondary" :loading="apercuEnCours" :disabled="!texte.trim()" @click="actualiserApercu" />
           </template>
           <!-- Document isolé : aucun script, aucun accès à l'application -->
-          <iframe v-if="apercu" :srcdoc="apercu" sandbox="" title="Aperçu de la convention" class="w-full h-[55vh] bg-white rounded-lg border border-slate-200 dark:border-slate-700"></iframe>
+          <iframe v-if="apercu" :srcdoc="apercu" sandbox="" title="Aperçu de la convention" class="w-full h-[55vh] bg-surface-0 rounded-lg border border-surface "></iframe>
           <EmptyState v-else compact icon="pi pi-eye" title="Pas encore d'aperçu" description="Actualisez pour voir le modèle rempli avec un vrai dossier." />
         </Card>
       </div>

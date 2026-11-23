@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Security;
 
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireRepository;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -24,7 +25,7 @@ final class QuestionnaireResolver
 
     public function charger(mixed $uuid, string $attribut = QuestionnaireVoter::VIEW): Questionnaire
     {
-        $uuid = (string) $uuid;
+        $uuid = LooseValue::castString($uuid);
         $questionnaire = Uuid::isValid($uuid) ? $this->repository->findOneBy(['uuid' => Uuid::fromString($uuid)]) : null;
         if (!$questionnaire instanceof Questionnaire) {
             throw new NotFoundHttpException('Questionnaire introuvable.');

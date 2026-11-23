@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\Controller;
 
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Security\QuestionnaireAccess;
 use QuestionnaireBundle\Services\QuestionnaireReglages;
@@ -48,7 +49,7 @@ class QuestionnaireReglagesController extends AbstractController
         }
         // Le référent qualité doit être un personnel du département.
         if (($donnees['responsable_qualite'] ?? null) !== null && $donnees['responsable_qualite'] !== '') {
-            $responsable = $this->em->getRepository(Personnel::class)->find((int) $donnees['responsable_qualite']);
+            $responsable = $this->em->getRepository(Personnel::class)->find(LooseValue::castInt($donnees['responsable_qualite']));
             $rattache = false;
             foreach ($responsable?->getDepartementsPersonnel() ?? [] as $affectation) {
                 $rattache = $rattache || $affectation->getDepartement()?->getId() === $departement->getId();
@@ -60,7 +61,7 @@ class QuestionnaireReglagesController extends AbstractController
             $donnees['responsable_qualite'] = null;
         }
 
-        $resultat = $this->reglages->enregistrer($departement, $donnees);
+        $resultat = $this->reglages->enregistrer($departement, LooseValue::assoc($donnees));
         $this->em->flush();
 
         return new JsonResponse($resultat);

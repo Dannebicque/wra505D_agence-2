@@ -202,30 +202,30 @@ onMounted(charger);
                 <template #body-reference="{ data }">
                     <div class="flex flex-col">
                         <span class="font-mono font-semibold">{{ data.numeroBonCommande ? `BC ${data.numeroBonCommande}` : `Demande n° ${data.id}` }}</span>
-                        <span v-if="data.centreFinancier" class="text-sm text-gray-500 dark:text-gray-400">CF {{ data.centreFinancier }}</span>
+                        <span v-if="data.centreFinancier" class="text-sm text-muted-color ">CF {{ data.centreFinancier }}</span>
                     </div>
                 </template>
                 <template #body-objetDemande="{ data }">
                     <div class="flex flex-col">
                         <span class="font-semibold line-clamp-1" :title="data.objetDemande">{{ data.objetDemande || 'Sans objet' }}</span>
-                        <span v-if="data.prestation" class="text-sm text-gray-500 dark:text-gray-400">{{ data.prestation }}</span>
+                        <span v-if="data.prestation" class="text-sm text-muted-color ">{{ data.prestation }}</span>
                     </div>
                 </template>
                 <template #body-fournisseurLibelle="{ data }">
                     <span v-if="data.fournisseur?.nomFournisseur">{{ data.fournisseur.nomFournisseur }}</span>
-                    <span v-else-if="data.fournisseurPropose" class="italic text-gray-600 dark:text-gray-300" :title="'Fournisseur proposé, non encore référencé'">{{ data.fournisseurPropose }} <span class="text-xs">(proposé)</span></span>
-                    <span v-else class="text-gray-400">—</span>
+                    <span v-else-if="data.fournisseurPropose" class="italic text-muted-color " :title="'Fournisseur proposé, non encore référencé'">{{ data.fournisseurPropose }} <span class="text-xs">(proposé)</span></span>
+                    <span v-else class="text-muted-color">—</span>
                 </template>
                 <template #body-structure="{ data }">
                     <div class="flex flex-col">
                         <span>{{ data.structureLibelle || '—' }}</span>
-                        <span v-if="data.structureLibelle" class="text-sm text-gray-500 dark:text-gray-400">{{ data.service ? 'Service' : 'Département' }}</span>
+                        <span v-if="data.structureLibelle" class="text-sm text-muted-color ">{{ data.service ? 'Service' : 'Département' }}</span>
                     </div>
                 </template>
                 <template #body-montantTtc="{ data }">
                     <div class="flex flex-col items-end">
                         <span class="font-semibold">{{ formatMontant(data.montantTtc ?? data.montantHt) }}</span>
-                        <span v-if="data.montantHt" class="text-sm text-gray-500 dark:text-gray-400">{{ formatMontant(data.montantHt) }} HT</span>
+                        <span v-if="data.montantHt" class="text-sm text-muted-color ">{{ formatMontant(data.montantHt) }} HT</span>
                     </div>
                 </template>
                 <template #body-statut="{ data }">

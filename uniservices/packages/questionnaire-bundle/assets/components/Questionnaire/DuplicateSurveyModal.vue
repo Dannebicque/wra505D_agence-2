@@ -60,13 +60,13 @@ function confirmDuplicate() {
 
       <FormSection :icon="ClipboardDocumentListIcon" tone="slate" title="Contenu qui sera dupliqué">
         <div class="grid grid-cols-2 gap-3">
-          <div class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-center">
-            <span class="block text-xl font-bold text-primary-600 dark:text-primary-400">{{ totalSections }}</span>
-            <span class="text-sm text-slate-500 dark:text-slate-400">section(s)</span>
+          <div class="p-3 rounded-xl bg-surface-0  border border-surface  text-center">
+            <span class="block text-xl font-bold -primary -400">{{ totalSections }}</span>
+            <span class="text-sm text-muted-color ">section(s)</span>
           </div>
-          <div class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-center">
-            <span class="block text-xl font-bold text-primary-600 dark:text-primary-400">{{ totalQuestions }}</span>
-            <span class="text-sm text-slate-500 dark:text-slate-400">question(s)</span>
+          <div class="p-3 rounded-xl bg-surface-0  border border-surface  text-center">
+            <span class="block text-xl font-bold -primary -400">{{ totalQuestions }}</span>
+            <span class="text-sm text-muted-color ">question(s)</span>
           </div>
         </div>
       </FormSection>

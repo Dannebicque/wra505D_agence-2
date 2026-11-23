@@ -552,25 +552,25 @@ onUnmounted(async () => {
 });
 </script>
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+  <div class="min-h-screen bg-emphasis  py-8">
     <div class="max-w-2xl mx-auto px-4">
       <!-- Survey Header -->
       <div v-if="survey" class="text-center mb-8">
         <HeaderComponent :titre="survey.title" :description="survey.description || 'Merci de prendre quelques minutes pour répondre.'" icon="pi pi-check-square" color="green" :show-back="false" />
 
         <!-- Estimated Response Time -->
-        <div v-if="survey.estimatedTime" class="flex items-center justify-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
-          <ClockIcon class="w-4 h-4 text-gray-400" />
+        <div v-if="survey.estimatedTime" class="flex items-center justify-center space-x-2 text-sm text-muted-color  mb-6">
+          <ClockIcon class="w-4 h-4 text-muted-color" />
           <span>Temps de réponse estimé : {{ formatEstimatedTime(survey.estimatedTime) }}</span>
         </div>
 
         <!-- Progress Bar -->
         <div v-if="survey.settings.showProgress && !isCompleted" class="mb-8">
-          <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+          <div class="flex items-center justify-between text-sm text-muted-color  mb-2">
             <span>Progression</span>
             <span>{{ progress }}%</span>
           </div>
-          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+          <div class="w-full bg-emphasis  rounded-full h-3">
             <div
               class="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all duration-500"
               :style="{ width: `${progress}%` }"
@@ -584,27 +584,27 @@ onUnmounted(async () => {
 
       <!-- Survey Not Found -->
       <div v-else-if="!survey" class="text-center py-12">
-        <ExclamationTriangleIcon class="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <ExclamationTriangleIcon class="w-16 h-16 text-muted-color mx-auto mb-4" />
+        <h2 class="text-2xl font-bold text-color -contrast mb-2">
           Questionnaire introuvable
         </h2>
-        <p class="text-gray-600 dark:text-gray-400">
+        <p class="text-muted-color ">
           Le lien que vous avez suivi n'est pas valide ou le questionnaire n'est plus disponible.
         </p>
       </div>
 
       <!-- Survey Completed -->
       <div v-else-if="isCompleted" class="text-center py-12">
-        <CheckCircleIcon class="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <CheckCircleIcon class="w-16 h-16 text-muted-color mx-auto mb-4" />
+        <h2 class="text-2xl font-bold text-color -contrast mb-4">
           Merci pour votre participation !
         </h2>
         <div v-if="survey.settings.thankYouMessage" class="mb-6">
-          <p class="text-gray-600 dark:text-gray-400 whitespace-pre-line">
+          <p class="text-muted-color  whitespace-pre-line">
             {{ survey.settings.thankYouMessage }}
           </p>
         </div>
-        <div class="flex items-center justify-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+        <div class="flex items-center justify-center space-x-4 text-sm text-muted-color ">
           <div class="flex items-center space-x-1">
             <ClockIcon class="w-4 h-4" />
             <span>Temps passé: {{ formatDuration(timeSpent) }}</span>
@@ -624,10 +624,10 @@ onUnmounted(async () => {
         <form @submit.prevent="handleNext" class="space-y-8">
           <!-- Section Header -->
           <div class="text-center mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h2 class="text-2xl font-semibold text-color -contrast mb-2">
               {{ currentSection.title }}
             </h2>
-            <p v-if="currentSection.description" class="text-gray-600 dark:text-gray-400">
+            <p v-if="currentSection.description" class="text-muted-color ">
               {{ currentSection.description }}
             </p>
           </div>
@@ -637,14 +637,14 @@ onUnmounted(async () => {
             <div
               v-for="(question, questionIndex) in visibleQuestions"
               :key="question.id"
-              class="p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-2xs space-y-3"
+              class="p-5 bg-surface-0  rounded-2xl border border-surface  shadow-2xs space-y-3"
             >
               <div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white">
+                <h3 class="text-base font-bold text-color -contrast">
                   {{ getSectionQuestionNumber(questionIndex) }}. {{ question.title }}
-                  <span v-if="question.required" class="text-red-500 ml-1">*</span>
+                  <span v-if="question.required" class="text-muted-color ml-1">*</span>
                 </h3>
-                <p v-if="question.description" class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                <p v-if="question.description" class="text-sm text-muted-color  mt-1">
                   {{ question.description }}
                 </p>
               </div>
@@ -666,7 +666,7 @@ onUnmounted(async () => {
                       class="q-check mt-0.5"
                       @change="setAnswer(question.id, option.text)"
                     />
-                    <span class="flex-1 text-sm font-medium text-slate-800 dark:text-slate-200">
+                    <span class="flex-1 text-sm font-medium text-color ">
                       {{ option.text }}
                     </span>
                   </label>
@@ -685,7 +685,7 @@ onUnmounted(async () => {
                       class="q-check mt-0.5"
                       @change="toggleMultipleChoice(question.id, option.text)"
                     />
-                    <span class="flex-1 text-sm font-medium text-slate-800 dark:text-slate-200">
+                    <span class="flex-1 text-sm font-medium text-color ">
                       {{ option.text }}
                     </span>
                   </label>
@@ -703,7 +703,7 @@ onUnmounted(async () => {
                   />
                   <div
                     v-if="question.validation?.maxLength"
-                    class="text-sm text-slate-500 dark:text-slate-400 mt-1 text-right"
+                    class="text-sm text-muted-color  mt-1 text-right"
                   >
                     {{ (answers[question.id] as string || '').length }} / {{ question.validation.maxLength }}
                   </div>
@@ -721,7 +721,7 @@ onUnmounted(async () => {
                   />
                   <div
                     v-if="question.validation?.maxLength"
-                    class="text-sm text-slate-500 dark:text-slate-400 mt-1 text-right"
+                    class="text-sm text-muted-color  mt-1 text-right"
                   >
                     {{ (answers[question.id] as string || '').length }} / {{ question.validation.maxLength }}
                   </div>
@@ -729,7 +729,7 @@ onUnmounted(async () => {
 
                 <!-- Scale -->
                 <div v-else-if="question.type === 'scale'" class="space-y-2">
-                  <div class="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+                  <div class="flex items-center justify-between text-sm text-muted-color ">
                     <span>{{ question.validation?.min || 1 }}</span>
                     <span>{{ question.validation?.max || 10 }}</span>
                   </div>
@@ -742,8 +742,8 @@ onUnmounted(async () => {
                       :class="[
                         'w-9 h-9 rounded-xl border text-sm font-bold transition-all cursor-pointer flex items-center justify-center',
                         answers[question.id] === (question.validation?.min || 1) + n - 1
-                          ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                          : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:border-primary-400'
+                          ? '-primary text-primary-contrast -primary shadow-sm'
+                          : 'bg-surface-0  border-surface  text-color  hover:-primary'
                       ]"
                     >
                       {{ (question.validation?.min || 1) + n - 1 }}
@@ -752,9 +752,9 @@ onUnmounted(async () => {
                 </div>
 
                 <!-- Matrix (simplified) -->
-                <div v-else-if="question.type === 'matrix'" class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700/80">
+                <div v-else-if="question.type === 'matrix'" class="overflow-x-auto rounded-xl border border-surface ">
                   <table class="w-full text-sm">
-                    <thead class="bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 font-semibold">
+                    <thead class="bg-emphasis  text-color  font-semibold">
                       <tr>
                         <th class="p-2.5 text-left font-semibold"></th>
                         <th
@@ -766,12 +766,12 @@ onUnmounted(async () => {
                         </th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700/80 bg-white dark:bg-slate-800">
+                    <tbody class="divide-y divide-surface  bg-surface-0 ">
                       <tr
                         v-for="row in ['Critère 1', 'Critère 2']"
                         :key="row"
                       >
-                        <td class="p-2.5 font-medium text-slate-800 dark:text-slate-200">{{ row }}</td>
+                        <td class="p-2.5 font-medium text-color ">{{ row }}</td>
                         <td v-for="(col) in ['Pas du tout', 'Peu', 'Moyennement', 'Beaucoup', 'Énormément']" :key="col" class="p-2.5 text-center">
                           <input
                             type="radio"
@@ -788,7 +788,7 @@ onUnmounted(async () => {
 
                 <!-- Ranking -->
                 <div v-else-if="question.type === 'ranking'">
-                  <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">
+                  <p class="text-sm text-muted-color  mb-2">
                     Glissez les éléments pour les classer par ordre de préférence
                   </p>
                   <draggable
@@ -799,13 +799,13 @@ onUnmounted(async () => {
                     <div
                       v-for="(item, index) in rankingItems[question.id] || []"
                       :key="item"
-                      class="flex items-center gap-3 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-2xs cursor-move hover:shadow-md transition-all"
+                      class="flex items-center gap-3 p-2.5 bg-surface-0  border border-surface  rounded-xl shadow-2xs cursor-move hover:shadow-md transition-all"
                     >
-                      <div class="flex items-center justify-center w-6 h-6 bg-primary-100 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-bold">
+                      <div class="flex items-center justify-center w-6 h-6 bg-primary-100 -950/60 -primary -300 rounded-lg text-sm font-bold">
                         {{ index + 1 }}
                       </div>
-                      <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ item }}</span>
-                      <div class="ml-auto text-slate-400">
+                      <span class="text-sm font-medium text-color ">{{ item }}</span>
+                      <div class="ml-auto text-muted-color">
                         <Bars3Icon class="w-4 h-4" />
                       </div>
                     </div>
@@ -821,7 +821,7 @@ onUnmounted(async () => {
           </div>
 
           <!-- Navigation -->
-          <div class="flex items-center justify-between pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between pt-8 mt-8 border-t border-surface ">
             <Button
               v-if="survey.settings.allowBack && currentSectionIndex > 0"
               type="button"

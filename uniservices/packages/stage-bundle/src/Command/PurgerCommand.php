@@ -2,6 +2,7 @@
 
 namespace StageBundle\Command;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StageEvaluationEntreprise;
@@ -42,7 +43,7 @@ final class PurgerCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $annees = max(1, (int) $input->getOption('annees'));
+        $annees = max(1, LooseValue::castInt($input->getOption('annees')));
         $seuil = new \DateTimeImmutable(sprintf('-%d years', $annees));
 
         $qb = $this->em->createQueryBuilder()->select('s')->from(StageEtudiant::class, 's')

@@ -3,6 +3,7 @@
 namespace FinanceBundle\Workflow;
 
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use FinanceBundle\Entity\FinanceBonCommande;
 use FinanceBundle\Entity\FinanceReception;
 use FinanceBundle\Entity\FinanceReceptionDocument;
@@ -167,7 +168,7 @@ class FinanceWorkflow
         if (!$this->peut($user, $commande, $action)) {
             throw new ActionRefuseeException(sprintf('Vous ne pouvez pas faire « %s » sur cette demande.', $action->getLibelle()));
         }
-        $commentaire = trim((string) ($donnees['commentaire'] ?? ''));
+        $commentaire = trim(LooseValue::castString($donnees['commentaire'] ?? ''));
         if ($action->exigeCommentaire() && $commentaire === '') {
             throw new \DomainException('Un commentaire est obligatoire pour cette action.');
         }
@@ -366,11 +367,11 @@ class FinanceWorkflow
     /** @param array<string, mixed> $donnees */
     private function reception(Personnel $user, FinanceBonCommande $commande, array $donnees, \DateTime $maintenant): FinanceReception
     {
-        $type = TypeReceptionEnum::tryFrom((string) ($donnees['typeReception'] ?? TypeReceptionEnum::TOTALE->value));
+        $type = TypeReceptionEnum::tryFrom(LooseValue::castString($donnees['typeReception'] ?? TypeReceptionEnum::TOTALE->value));
         if ($type === null) {
             throw new \DomainException('Type de réception inconnu.');
         }
-        $details = trim((string) ($donnees['detailsReceptionPartielle'] ?? ''));
+        $details = trim(LooseValue::castString($donnees['detailsReceptionPartielle'] ?? ''));
         if ($type === TypeReceptionEnum::PARTIELLE && $details === '') {
             throw new \DomainException('Précisez ce qui a été reçu pour une réception partielle.');
         }
@@ -390,7 +391,7 @@ class FinanceWorkflow
             ->setMontantTtcConstate($montant === null || $montant === '' ? $commande->getMontantTtc() : number_format((float) $montant, 2, '.', ''))
             ->setPrestationsConformes((bool) ($donnees['prestationsConformes'] ?? true))
             ->setDetailsReceptionPartielle($details !== '' ? $details : null)
-            ->setQualiteReceptionnaire(($q = trim((string) ($donnees['qualiteReceptionnaire'] ?? ''))) !== '' ? mb_substr($q, 0, 100) : null)
+            ->setQualiteReceptionnaire(($q = trim(LooseValue::castString($donnees['qualiteReceptionnaire'] ?? ''))) !== '' ? mb_substr($q, 0, 100) : null)
             ->setReceptionnaire($user);
     }
 

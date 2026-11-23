@@ -86,18 +86,18 @@ const envoyer = async () => {
 </script>
 
 <template>
-  <div v-if="peutDemander || avenants.length > 0" class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-3">
+  <div v-if="peutDemander || avenants.length > 0" class="mt-4 pt-4 border-t border-surface  space-y-3">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h4 class="text-sm font-bold text-slate-800 dark:text-white">Avenants à la convention</h4>
+      <h4 class="text-sm font-bold text-color -contrast">Avenants à la convention</h4>
       <Button v-if="peutDemander" label="Demander un avenant" icon="pi pi-file-edit" size="small" :disabled="enAttente"
         v-tooltip.top="enAttente ? 'Une demande est déjà en attente de validation' : null" @click="ouvrir" />
     </div>
 
-    <ul v-if="avenants.length > 0" class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+    <ul v-if="avenants.length > 0" class="divide-y divide-surface  text-sm">
       <li v-for="a in avenants" :key="a.id" class="py-2 flex flex-wrap items-center justify-between gap-2">
         <div class="min-w-0">
-          <span class="font-semibold text-slate-800 dark:text-slate-200">{{ a.libelle }}</span>
-          <span class="text-slate-500 dark:text-slate-400"> — {{ libelleType(a.typeModification) }}, demandé le {{ dateFr(a.dateCreation) }}</span>
+          <span class="font-semibold text-color ">{{ a.libelle }}</span>
+          <span class="text-muted-color "> — {{ libelleType(a.typeModification) }}, demandé le {{ dateFr(a.dateCreation) }}</span>
         </div>
         <Tag v-if="a.valide" severity="success" :value="`Validé le ${dateFr(a.dateValidation)}`" />
         <Tag v-else severity="warn" value="En attente de validation" />

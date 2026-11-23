@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireQuestion;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
@@ -92,7 +93,7 @@ final class QuestionnaireStructureProcessor implements ProcessorInterface
 
     private function section(mixed $uuid): QuestionnaireSection
     {
-        $uuid = (string) $uuid;
+        $uuid = LooseValue::castString($uuid);
         $section = Uuid::isValid($uuid) ? $this->em->getRepository(QuestionnaireSection::class)->findOneBy(['uuid' => Uuid::fromString($uuid)]) : null;
         if (!$section instanceof QuestionnaireSection) {
             throw new NotFoundHttpException('Section introuvable.');

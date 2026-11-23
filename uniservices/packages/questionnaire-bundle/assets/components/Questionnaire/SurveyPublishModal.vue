@@ -479,9 +479,9 @@ onMounted(async () => {
     </template>
 
     <div class="q-form">
-      <p class="text-sm text-slate-600 dark:text-slate-400">
+      <p class="text-sm text-muted-color ">
         Vous êtes sur le point de publier le questionnaire
-        <span class="font-semibold text-slate-900 dark:text-white">"{{ survey?.title }}"</span>.
+        <span class="font-semibold text-color -contrast">"{{ survey?.title }}"</span>.
       </p>
 
       <!-- Dates Section -->
@@ -515,17 +515,17 @@ onMounted(async () => {
               v-model="closingDate"
               type="datetime-local"
               class="q-input"
-              :class="{ '!border-red-500': dateError }"
+              :class="{ '!border-surface': dateError }"
             />
           </FormField>
         </div>
 
-        <div v-if="dateError" class="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center gap-1.5">
+        <div v-if="dateError" class="text-sm text-muted-color  mt-1 flex items-center gap-1.5">
           <ExclamationTriangleIcon class="w-4 h-4 shrink-0" />
           <span>{{ dateError }}</span>
         </div>
 
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <p class="text-sm text-muted-color  mt-1">
           Ces dates sont éditables ici et mettent à jour la configuration globale du questionnaire.
         </p>
       </FormSection>
@@ -536,15 +536,15 @@ onMounted(async () => {
           <div
             v-for="kpi in kpis"
             :key="kpi.label"
-            class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80"
+            class="p-3 rounded-xl bg-surface-0  border border-surface "
           >
-            <span :class="['block font-bold text-primary-600 dark:text-primary-400', kpi.small ? 'text-lg mt-0.5' : 'text-2xl']">
+            <span :class="['block font-bold -primary -400', kpi.small ? 'text-lg mt-0.5' : 'text-2xl']">
               {{ kpi.value }}
             </span>
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 block">
+            <span class="text-sm font-medium text-color  block">
               {{ kpi.label }}
             </span>
-            <span v-if="kpi.detail" class="block text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+            <span v-if="kpi.detail" class="block text-sm text-muted-color  mt-0.5 truncate">
               {{ kpi.detail }}
             </span>
           </div>
@@ -553,9 +553,9 @@ onMounted(async () => {
         <!-- Alerte informative si sections dynamiques -->
         <div
           v-if="configurableSectionsCount > 0"
-          class="mt-2.5 text-sm text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 p-2.5 rounded-lg border border-purple-200 dark:border-purple-800/60 flex items-center gap-2"
+          class="mt-2.5 text-sm text-primary  bg-emphasis  p-2.5 rounded-lg border border-primary  flex items-center gap-2"
         >
-          <InformationCircleIcon class="w-4 h-4 shrink-0 text-purple-600 dark:text-purple-400" />
+          <InformationCircleIcon class="w-4 h-4 shrink-0 text-primary " />
           <span>
             Ce questionnaire comporte <strong>{{ configurableSectionsCount }} section{{ configurableSectionsCount > 1 ? 's' : '' }} dynamique{{ configurableSectionsCount > 1 ? 's' : '' }}</strong> répétant les questions pour <strong>{{ totalDynamicElements }} élément{{ totalDynamicElements > 1 ? 's' : '' }}</strong> (chaque élément génère une section distincte pour les participants).
           </span>
@@ -564,9 +564,9 @@ onMounted(async () => {
         <!-- Alerte si questionnaire sans questions -->
         <div
           v-if="uniqueQuestionsCount === 0"
-          class="mt-2.5 text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-lg border border-amber-200 dark:border-amber-800/60 flex items-center gap-2"
+          class="mt-2.5 text-sm text-color  bg-emphasis  p-2.5 rounded-lg border border-surface  flex items-center gap-2"
         >
-          <ExclamationTriangleIcon class="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <ExclamationTriangleIcon class="w-4 h-4 shrink-0 text-muted-color " />
           <span>
             Le questionnaire ne comporte actuellement aucune question. Veuillez ajouter des questions avant de le publier.
           </span>
@@ -597,13 +597,13 @@ onMounted(async () => {
               <button
                 v-if="existingParticipants.length > 0 && !hasImported"
                 type="button"
-                class="text-sm font-semibold text-primary-600 dark:text-primary-400 hover:underline border-0 bg-transparent cursor-pointer"
+                class="text-sm font-semibold -primary -400 hover:underline border-0 bg-transparent cursor-pointer"
                 @click="importExistingParticipants"
               >
                 Importer existants ({{ existingParticipants.length }})
               </button>
 
-              <label class="inline-flex items-center gap-1.5 px-2.5 py-1 text-sm font-medium rounded-lg text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/60 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-200 dark:border-primary-800/80 cursor-pointer transition-colors shadow-2xs">
+              <label class="inline-flex items-center gap-1.5 px-2.5 py-1 text-sm font-medium rounded-lg -primary -300 bg-primary-50 -950/60 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-200 -800/80 cursor-pointer transition-colors shadow-2xs">
                 <ArrowUpTrayIcon class="w-3.5 h-3.5 shrink-0" />
                 <span>Importer CSV / XLSX</span>
                 <input
@@ -630,8 +630,8 @@ onMounted(async () => {
             :class="[
               'text-sm p-2.5 rounded-lg border flex items-center justify-between gap-2 transition-all',
               importMessage.type === 'success'
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
-                : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/60'
+                ? 'bg-emphasis  text-color  border-surface '
+                : 'bg-emphasis  text-color  border-surface '
             ]"
           >
             <div class="flex items-center gap-2">
@@ -641,7 +641,7 @@ onMounted(async () => {
             </div>
             <button
               type="button"
-              class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-0 bg-transparent cursor-pointer p-0.5"
+              class="text-muted-color hover:text-muted-color dark:hover:text-color border-0 bg-transparent cursor-pointer p-0.5"
               @click="importMessage = null"
             >
               <i class="pi pi-times text-sm"></i>
@@ -651,8 +651,8 @@ onMounted(async () => {
 
         <!-- 2. PERSONNEL MODE -->
         <div v-else-if="activeMode === 'personnels'" class="space-y-3">
-          <div v-if="surveyDept" class="text-sm text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/40 p-2.5 rounded-lg border border-primary-200 dark:border-primary-800/60 flex items-center gap-2">
-            <BuildingOfficeIcon class="w-4 h-4 shrink-0 text-primary-600 dark:text-primary-400" />
+          <div v-if="surveyDept" class="text-sm -primary -300 bg-primary-50 -950/40 p-2.5 rounded-lg border border-primary-200 -800/60 flex items-center gap-2">
+            <BuildingOfficeIcon class="w-4 h-4 shrink-0 -primary -400" />
             <span>Personnels filtrés pour le département <strong>{{ surveyDept.libelle || surveyDept.id }}</strong></span>
           </div>
 
@@ -672,15 +672,15 @@ onMounted(async () => {
             </FormField>
           </div>
           <SimpleSkeleton v-if="isLoadingData" width="220px" />
-          <p v-else class="text-sm text-slate-700 dark:text-slate-300">
+          <p v-else class="text-sm text-color ">
             <strong>{{ filteredPersonnels.length }}</strong> personnels sélectionnés.
           </p>
         </div>
 
         <!-- 3. STUDENT MODE -->
         <div v-else-if="activeMode === 'etudiants'" class="space-y-3">
-          <div v-if="surveyDept" class="text-sm text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/40 p-2.5 rounded-lg border border-primary-200 dark:border-primary-800/60 flex items-center gap-2">
-            <BuildingOfficeIcon class="w-4 h-4 shrink-0 text-primary-600 dark:text-primary-400" />
+          <div v-if="surveyDept" class="text-sm -primary -300 bg-primary-50 -950/40 p-2.5 rounded-lg border border-primary-200 -800/60 flex items-center gap-2">
+            <BuildingOfficeIcon class="w-4 h-4 shrink-0 -primary -400" />
             <span>Semestres préselectionnés pour le département <strong>{{ surveyDept.libelle || surveyDept.id }}</strong></span>
           </div>
 
@@ -688,26 +688,26 @@ onMounted(async () => {
             <div class="flex items-center justify-between gap-2 mb-2">
               <p class="q-label !mb-0">Semestres cibles</p>
               <div v-if="semesters.length > 0" class="flex items-center gap-3 text-sm">
-                <button type="button" class="font-semibold text-primary-600 dark:text-primary-400 hover:underline border-0 bg-transparent cursor-pointer" @click="selectAllTargetSemestres">
+                <button type="button" class="font-semibold -primary -400 hover:underline border-0 bg-transparent cursor-pointer" @click="selectAllTargetSemestres">
                   Tout sélectionner
                 </button>
-                <span class="text-slate-300 dark:text-slate-600">|</span>
-                <button type="button" class="text-slate-500 dark:text-slate-400 hover:underline border-0 bg-transparent cursor-pointer" @click="clearTargetSemestres">
+                <span class="text-color ">|</span>
+                <button type="button" class="text-muted-color  hover:underline border-0 bg-transparent cursor-pointer" @click="clearTargetSemestres">
                   Effacer
                 </button>
               </div>
             </div>
 
             <ListSkeleton v-if="semesters.length === 0 && isLoadingData" />
-            <div v-else-if="semesters.length > 0" class="flex flex-wrap items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-800">
+            <div v-else-if="semesters.length > 0" class="flex flex-wrap items-center gap-2 p-2.5 rounded-xl border border-surface  bg-surface-0 ">
               <label
                 v-for="sem in semesters"
                 :key="sem.id"
                 :class="[
                   'px-3 py-1.5 rounded-lg border text-sm font-medium cursor-pointer transition-all flex items-center gap-2 select-none',
                   selectedSemestres.includes(sem.id)
-                    ? 'bg-primary-50 dark:bg-primary-950/60 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300 font-semibold'
-                    : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                    ? 'bg-primary-50 -950/60 -primary -700 -primary -300 font-semibold'
+                    : 'bg-emphasis  border-surface  text-muted-color  hover:border-surface'
                 ]"
               >
                 <input
@@ -724,21 +724,21 @@ onMounted(async () => {
           </div>
 
           <SimpleSkeleton v-if="isLoadingData" width="220px" />
-          <p v-else-if="selectedSemestres.length > 0" class="text-sm text-slate-700 dark:text-slate-300">
+          <p v-else-if="selectedSemestres.length > 0" class="text-sm text-color ">
             <strong>{{ filteredStudents.length }}</strong> étudiants sélectionnés ({{ selectedSemestres.length }} semestre{{ selectedSemestres.length > 1 ? 's' : '' }}).
           </p>
         </div>
 
         <!-- Email Count Indicators -->
-        <div class="flex flex-wrap items-center gap-4 text-sm pt-3 border-t border-slate-200 dark:border-slate-700/80">
-          <span class="flex items-center text-slate-600 dark:text-slate-400">
+        <div class="flex flex-wrap items-center gap-4 text-sm pt-3 border-t border-surface ">
+          <span class="flex items-center text-muted-color ">
             Total détectés : <strong class="ms-1">{{ totalRecipientsCount }}</strong>
           </span>
-          <span v-if="validEmails.length > 0" class="flex items-center text-emerald-600 dark:text-emerald-400">
+          <span v-if="validEmails.length > 0" class="flex items-center text-muted-color ">
             <CheckCircleIcon class="w-4 h-4 me-1" />
             Valides : <strong class="ms-1">{{ validEmails.length }}</strong>
           </span>
-          <span v-if="activeMode === 'manual' && invalidEmails.length > 0" class="flex items-center text-red-600 dark:text-red-400">
+          <span v-if="activeMode === 'manual' && invalidEmails.length > 0" class="flex items-center text-muted-color ">
             <ExclamationTriangleIcon class="w-4 h-4 me-1" />
             Invalides (ignorés) : <strong class="ms-1">{{ invalidEmails.length }}</strong>
           </span>

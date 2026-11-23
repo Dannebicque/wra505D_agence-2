@@ -84,15 +84,15 @@ async function envoyer() {
         <div
           v-for="response in targets"
           :key="response.id"
-          class="flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2"
+          class="flex items-center justify-between bg-surface-0  border border-surface  rounded-xl px-3 py-2"
         >
           <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center text-sm font-bold text-slate-700 dark:text-slate-300">
+            <div class="w-7 h-7 bg-emphasis  rounded-full flex items-center justify-center text-sm font-bold text-color ">
               {{ initiales(response.participantName) }}
             </div>
             <div>
-              <p class="text-sm font-medium text-slate-900 dark:text-white">{{ response.participantName }}</p>
-              <p class="text-sm text-slate-500 dark:text-slate-400">{{ response.participantEmail }}</p>
+              <p class="text-sm font-medium text-color -contrast">{{ response.participantName }}</p>
+              <p class="text-sm text-muted-color ">{{ response.participantEmail }}</p>
             </div>
           </div>
           <Tag
@@ -109,7 +109,7 @@ async function envoyer() {
       <template #actions>
         <button
           type="button"
-          class="text-sm font-semibold text-primary-600 dark:text-primary-400 hover:underline border-0 bg-transparent cursor-pointer"
+          class="text-sm font-semibold -primary -400 hover:underline border-0 bg-transparent cursor-pointer"
           @click="reinitialiser"
         >
           Réinitialiser
@@ -138,7 +138,7 @@ async function envoyer() {
         />
       </FormField>
 
-      <p class="text-sm text-slate-500 dark:text-slate-400">
+      <p class="text-sm text-muted-color ">
         Chaque participant reçoit son lien personnel sous le message.
       </p>
     </FormSection>

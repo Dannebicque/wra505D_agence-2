@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Mapping;
 
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireQuestion;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\ChoiceDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\QuestionRuntimeDto;
@@ -67,14 +68,14 @@ final class QuestionRuntimeMapper
 
                 if (!empty($targetIds) && is_array($targetIds)) {
                     foreach ($targetIds as $tid) {
-                        $tidStr = (string) $tid;
+                        $tidStr = LooseValue::castString($tid);
                         if ($tidStr === $qId || ($qUuid !== null && $tidStr === $qUuid)) {
                             $isTargeted = true;
                             break;
                         }
                     }
                 } else {
-                    $dep = (string) ($r['dependsOnQuestionId'] ?? $r['dependsOn'] ?? '');
+                    $dep = LooseValue::castString($r['dependsOnQuestionId'] ?? $r['dependsOn'] ?? '');
                     if ($dep !== '' && $dep !== $qId && ($qUuid === null || $dep !== $qUuid) && ((string)$sq->getId() === $qId || ($qUuid !== null && (string)$sq->getUuid() === $qUuid))) {
                         $isTargeted = true;
                     }
@@ -89,8 +90,8 @@ final class QuestionRuntimeMapper
 
         if ($targetedRule !== null) {
             $conditions = [];
-            $logicalOperator = (string) ($targetedRule['logicalOperator'] ?? 'AND');
-            $action = (string) ($targetedRule['action'] ?? 'show');
+            $logicalOperator = LooseValue::castString($targetedRule['logicalOperator'] ?? 'AND');
+            $action = LooseValue::castString($targetedRule['action'] ?? 'show');
 
             if (!empty($targetedRule['conditions']) && is_array($targetedRule['conditions'])) {
                 foreach ($targetedRule['conditions'] as $cond) {
@@ -99,7 +100,7 @@ final class QuestionRuntimeMapper
                     }
                     $dep = $cond['dependsOnQuestionId'] ?? $cond['dependsOn'] ?? null;
                     if ($dep !== null) {
-                        $depStr = (string) $dep;
+                        $depStr = LooseValue::castString($dep);
                         $resolvedId = null;
                         foreach ($searchQuestions as $item) {
                             if ((string)$item->getUuid() === $depStr || (string)$item->getId() === $depStr) {
@@ -109,7 +110,7 @@ final class QuestionRuntimeMapper
                         }
                         $conditions[] = [
                             'dependsOnQuestionId' => $resolvedId ?? (is_numeric($dep) ? (int) $dep : $depStr),
-                            'operator' => (string) ($cond['operator'] ?? ''),
+                            'operator' => LooseValue::castString($cond['operator'] ?? ''),
                             'value' => $cond['value'] ?? null,
                         ];
                     }
@@ -121,7 +122,7 @@ final class QuestionRuntimeMapper
                 $dep = $targetedRule['dependsOnQuestionId'] ?? $targetedRule['dependsOn'] ?? null;
                 $operator = $targetedRule['operator'] ?? null;
                 if ($dep !== null && $operator !== null) {
-                    $depStr = (string) $dep;
+                    $depStr = LooseValue::castString($dep);
                     $resolvedId = null;
                     foreach ($searchQuestions as $item) {
                         if ((string)$item->getUuid() === $depStr || (string)$item->getId() === $depStr) {
@@ -131,7 +132,7 @@ final class QuestionRuntimeMapper
                     }
                     $conditions[] = [
                         'dependsOnQuestionId' => $resolvedId ?? (is_numeric($dep) ? (int) $dep : $depStr),
-                        'operator' => (string) $operator,
+                        'operator' => LooseValue::castString($operator),
                         'value' => $targetedRule['value'] ?? null,
                     ];
                 }

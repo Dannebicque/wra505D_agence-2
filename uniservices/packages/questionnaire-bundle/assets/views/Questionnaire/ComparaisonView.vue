@@ -57,7 +57,7 @@ onMounted(async () => {
         <table class="w-full text-sm border-collapse">
           <caption class="sr-only">Participation par campagne</caption>
           <thead>
-            <tr class="text-left border-b border-slate-200 dark:border-slate-700">
+            <tr class="text-left border-b border-surface ">
               <th scope="col" class="py-1">Campagne</th>
               <th scope="col" class="py-1">Année</th>
               <th scope="col" class="py-1 text-right">Invités</th>
@@ -66,7 +66,7 @@ onMounted(async () => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="c in campagnes" :key="c.uuid" class="border-b border-slate-100 dark:border-slate-800">
+            <tr v-for="c in campagnes" :key="c.uuid" class="border-b border-surface ">
               <th scope="row" class="py-1 font-normal">{{ c.title }}</th>
               <td class="py-1">{{ c.annee || '—' }}</td>
               <td class="py-1 text-right">{{ c.invites }}</td>
@@ -83,13 +83,13 @@ onMounted(async () => {
           <table class="w-full text-sm border-collapse">
             <caption class="sr-only">Résultats par question et par campagne</caption>
             <thead>
-              <tr class="text-left border-b border-slate-200 dark:border-slate-700">
+              <tr class="text-left border-b border-surface ">
                 <th scope="col" class="py-1">Question</th>
                 <th v-for="c in campagnes" :key="c.uuid" scope="col" class="py-1">{{ c.annee || c.title }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="q in questions" :key="q.cle" class="border-b border-slate-100 dark:border-slate-800 align-top">
+              <tr v-for="q in questions" :key="q.cle" class="border-b border-surface  align-top">
                 <th scope="row" class="py-1 font-normal">{{ q.label }}</th>
                 <td v-for="(v, i) in q.valeurs" :key="i" class="py-1">{{ cellule(v, q) }}</td>
               </tr>

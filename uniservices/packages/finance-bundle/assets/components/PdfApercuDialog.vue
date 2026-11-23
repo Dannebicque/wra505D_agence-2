@@ -78,7 +78,7 @@ onBeforeUnmount(liberer);
                 <Button label="Télécharger ce PDF" icon="pi pi-download" severity="secondary" outlined :disabled="!blob" @click="telecharger" />
             </div>
             <ListSkeleton v-if="chargement" />
-            <iframe v-else-if="url" :src="url" title="Aperçu du PDF" class="w-full h-[70vh] rounded-lg border border-gray-200 dark:border-gray-700" />
+            <iframe v-else-if="url" :src="url" title="Aperçu du PDF" class="w-full h-[70vh] rounded-lg border border-surface " />
             <EmptyState v-else title="Aucun aperçu disponible" description="Le document n'a pas pu être généré." icon="pi pi-file-pdf" compact />
         </div>
         <template #footer>

@@ -99,14 +99,14 @@ async function sendInvitations() {
 
       <FormSection v-else :icon="DocumentArrowUpIcon" tone="purple" title="Fichier CSV" subtitle="Colonne « email » (séparateur , ou ;)">
         <div
-          class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center bg-white dark:bg-slate-800"
+          class="border-2 border-dashed border-surface  rounded-xl p-6 text-center bg-surface-0 "
           @drop="handleDrop"
           @dragover.prevent
           @dragenter.prevent
         >
           <input ref="fileInput" type="file" accept=".csv,text/csv" class="hidden" aria-label="Fichier CSV" @change="handleFileSelect" />
-          <DocumentArrowUpIcon class="w-10 h-10 text-slate-400 mx-auto mb-3" />
-          <p class="text-sm text-slate-600 dark:text-slate-400">
+          <DocumentArrowUpIcon class="w-10 h-10 text-muted-color mx-auto mb-3" />
+          <p class="text-sm text-muted-color ">
             Glissez votre fichier ici ou
             <Button link label="choisissez un fichier" class="!p-0 text-sm" @click="fileInput?.click()" />
           </p>
@@ -123,7 +123,7 @@ async function sendInvitations() {
       </div>
 
       <div class="q-actions !justify-between">
-        <span class="text-sm text-slate-600 dark:text-slate-400">
+        <span class="text-sm text-muted-color ">
           {{ adresses.valides.length }} adresse{{ adresses.valides.length !== 1 ? 's' : '' }} à inviter
         </span>
         <div class="flex items-center gap-3">

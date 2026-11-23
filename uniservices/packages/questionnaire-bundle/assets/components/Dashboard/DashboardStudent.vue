@@ -55,22 +55,22 @@ async function loadData() {
   <div class="space-y-8">
     <!-- Banner Info -->
     <div
-      class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+      class="bg-gradient-to-r from-primary to-primary text-primary-contrast rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
       <div class="z-10">
-        <h2 class="text-2xl font-bold mt-2 text-white">Votre avis compte pour améliorer nos formations !</h2>
-        <p class="text-blue-100 mt-1 max-w-xl">
+        <h2 class="text-2xl font-bold mt-2 text-primary-contrast">Votre avis compte pour améliorer nos formations !</h2>
+        <p class="text-primary mt-1 max-w-xl">
           Prenez quelques minutes pour évaluer vos enseignements. Vos réponses sont totalement anonymes et permettent
           d'adapter les cours et équipements.
         </p>
       </div>
       <div class="flex items-center gap-4 z-10 shrink-0">
-        <div class="text-center bg-white/10 px-4 py-3 rounded-xl backdrop-blur-md">
+        <div class="text-center bg-surface-0 px-4 py-3 rounded-xl backdrop-blur-md">
           <p class="text-2xl font-bold">{{ studentPendingSurveys.length }}</p>
-          <p class="text-sm text-blue-100">À remplir</p>
+          <p class="text-sm text-primary">À remplir</p>
         </div>
-        <div class="text-center bg-white/10 px-4 py-3 rounded-xl backdrop-blur-md">
+        <div class="text-center bg-surface-0 px-4 py-3 rounded-xl backdrop-blur-md">
           <p class="text-2xl font-bold">{{ studentCompletedSurveys.length }}</p>
-          <p class="text-sm text-blue-100">Complétés</p>
+          <p class="text-sm text-primary">Complétés</p>
         </div>
       </div>
     </div>
@@ -80,8 +80,8 @@ async function loadData() {
     <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Pending Surveys -->
       <div class="lg:col-span-2 space-y-4">
-        <h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-          <ClockIcon class="w-5 h-5 text-orange-500" />
+        <h3 class="text-xl font-bold text-color -contrast flex items-center gap-2">
+          <ClockIcon class="w-5 h-5 text-muted-color" />
           Questionnaires en attente
         </h3>
 
@@ -89,21 +89,21 @@ async function loadData() {
 
         <div v-else class="space-y-4">
           <div v-for="survey in studentPendingSurveys" :key="survey.uuid"
-            class="card hover:shadow-lg transition-shadow border-l-4 border-orange-500 flex flex-col md:flex-row md:items-center justify-between p-5 gap-4">
+            class="card hover:shadow-lg transition-shadow border-l-4 border-surface flex flex-col md:flex-row md:items-center justify-between p-5 gap-4">
             <div>
-              <h4 class="font-bold text-gray-900 dark:text-white text-lg">{{ survey.title }}</h4>
-              <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">{{ survey.description }}</p>
-              <p class="text-sm mt-2 italic flex items-center gap-1.5" :class="survey.anonymous ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'">
-                <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="survey.anonymous ? 'bg-green-500' : 'bg-amber-500'"></span>
+              <h4 class="font-bold text-color -contrast text-lg">{{ survey.title }}</h4>
+              <p class="text-muted-color  text-sm mt-1">{{ survey.description }}</p>
+              <p class="text-sm mt-2 italic flex items-center gap-1.5" :class="survey.anonymous ? 'text-muted-color ' : 'text-muted-color '">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="survey.anonymous ? 'bg-emphasis' : 'bg-emphasis'"></span>
                 <span v-if="survey.anonymous">L'accès est authentifié pour le suivi mais les réponses resteront anonymes.</span>
                 <span v-else>Les réponses à ce questionnaire ne sont pas anonymes.</span>
               </p>
               <div class="flex items-center gap-4 mt-3 flex-wrap">
-                <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400">
+                <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-color ">
                   <ClockIcon class="w-3.5 h-3.5" /> Environ {{ survey.duration }}
                 </span>
                 <span v-if="survey.deadline"
-                  class="inline-flex items-center gap-1.5 text-sm font-semibold text-red-500">
+                  class="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-color">
                   <ExclamationCircleIcon class="w-3.5 h-3.5" /> Clôture : {{ survey.deadline }}
                 </span>
                
@@ -119,8 +119,8 @@ async function loadData() {
 
         <!-- Answered Surveys -->
         <div class="pt-6 space-y-4">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <CheckCircleIcon class="w-5 h-5 text-green-500" />
+          <h3 class="text-xl font-bold text-color -contrast flex items-center gap-2">
+            <CheckCircleIcon class="w-5 h-5 text-muted-color" />
             Questionnaires répondus
           </h3>
 
@@ -128,10 +128,10 @@ async function loadData() {
 
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div v-for="survey in studentCompletedSurveys" :key="survey.uuid"
-              class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-750/30 transition-colors">
+              class="bg-surface-0  border border-surface  rounded-xl p-4 flex items-center justify-between hover:bg-emphasis dark:hover:bg-emphasis transition-colors">
               <div class="truncate">
-                <h4 class="font-bold text-gray-900 dark:text-white truncate">{{ survey.title }}</h4>
-                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Soumis : {{ survey.submittedAt }}</p>
+                <h4 class="font-bold text-color -contrast truncate">{{ survey.title }}</h4>
+                <p class="text-muted-color  text-sm mt-1">Soumis : {{ survey.submittedAt }}</p>
               </div>
               <div class="flex items-center gap-2 shrink-0">
                 <router-link v-if="survey.modifiable" :to="{ name: 'questionnaire_take-survey', params: { token: survey.token } }">
@@ -146,8 +146,8 @@ async function loadData() {
 
       <!-- Mes résultats : questionnaires dont les résultats sont publiés pour moi (diffusion ciblée) -->
       <div v-if="estPersonnel" class="space-y-4">
-        <h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-          <ChartBarIcon class="w-5 h-5 text-purple-500" />
+        <h3 class="text-xl font-bold text-color -contrast flex items-center gap-2">
+          <ChartBarIcon class="w-5 h-5 text-primary" />
           Mes résultats
         </h3>
         <EmptyState
@@ -159,10 +159,10 @@ async function loadData() {
         />
         <ul v-else class="space-y-2">
           <li v-for="analysis in publishedAnalytics" :key="analysis.uuid"
-            class="flex items-center justify-between gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+            class="flex items-center justify-between gap-3 p-3 rounded-lg border border-surface ">
             <div>
-              <p class="font-semibold text-gray-900 dark:text-white">{{ analysis.title }}</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">
+              <p class="font-semibold text-color -contrast">{{ analysis.title }}</p>
+              <p class="text-sm text-muted-color ">
                 {{ analysis.sections.length }} section(s)<span v-if="analysis.anneeUniversitaire"> · {{ analysis.anneeUniversitaire }}</span>
               </p>
             </div>

@@ -67,25 +67,25 @@ const kpis = computed(() => [
     label: 'Réponses totales',
     value: detailedAnalytics.value?.totalResponses || 0,
     icon: ChartBarIcon,
-    iconColorClass: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+    iconColorClass: 'bg-emphasis  text-primary '
   },
   {
     label: 'Taux de complétion',
     value: `${(detailedAnalytics.value?.completionRate || 0).toFixed(1)}%`,
     icon: CheckCircleIcon,
-    iconColorClass: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+    iconColorClass: 'bg-emphasis  text-muted-color '
   },
   {
     label: 'Temps moyen',
     value: formatDuration(detailedAnalytics.value?.averageTimeSpent || 0),
     icon: ClockIcon,
-    iconColorClass: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-500 dark:text-yellow-400'
+    iconColorClass: 'bg-emphasis  text-muted-color '
   },
   {
     label: 'Participants uniques',
     value: detailedAnalytics.value?.totalInvited || 0,
     icon: UserGroupIcon,
-    iconColorClass: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+    iconColorClass: 'bg-emphasis  text-primary '
   }
 ]);
 
@@ -178,8 +178,8 @@ const responseChartData = computed(() => {
       {
         label: 'Réponses',
         data,
-        borderColor: '#3B82F6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: 'var(--p-primary-color)',
+        backgroundColor: 'color-mix(in srgb, var(--p-primary-color) 10%, transparent)',
         fill: true,
         tension: 0.3
       }
@@ -195,7 +195,7 @@ const statusChartData = computed(() => {
     datasets: [
       {
         data: [statusCounts.submitted, statusCounts.started, statusCounts.pending],
-        backgroundColor: ['#10B981', '#F59E0B', '#6B7280'],
+        backgroundColor: ['var(--p-primary-color)', 'var(--p-primary-400)', 'var(--p-text-muted-color)'],
         borderWidth: 0
       }
     ]
@@ -210,12 +210,12 @@ function getChoiceChartData(question: any) {
       {
         data: choices.map((c: any) => c.count),
         backgroundColor: [
-          '#3B82F6',
-          '#10B981',
-          '#F59E0B',
-          '#EF4444',
-          '#8B5CF6',
-          '#F97316'
+          'var(--p-primary-color)',
+          'var(--p-primary-400)',
+          'var(--p-primary-600)',
+          'var(--p-primary-700)',
+          'var(--p-primary-300)',
+          'var(--p-primary-500)'
         ].slice(0, choices.length),
         borderWidth: 0
       }
@@ -233,7 +233,7 @@ function getScaleDistributionChartData(question: any) {
     datasets: [
       {
         data,
-        backgroundColor: '#3B82F6',
+        backgroundColor: 'var(--p-primary-color)',
         borderWidth: 0
       }
     ]
@@ -248,7 +248,7 @@ function getRankingDistributionChartData(question: any) {
       {
         label: 'Position moyenne',
         data: ranking.map((r: any) => r.averageRank),
-        backgroundColor: '#8B5CF6',
+        backgroundColor: 'var(--p-primary-400)',
         borderWidth: 0
       }
     ]
@@ -352,9 +352,9 @@ onMounted(async () => {
         :icon="CheckCircleIcon" color="green" />
 
       <Kpi label="Temps moyen" , :value="formatDuration(detailedAnalytics?.averageTimeSpent || 0)" :icon="ClockIcon"
-        color="text-yellow-500" />
+        color="text-muted-color" />
       <Kpi label="Participants uniques" , :value="detailedAnalytics?.totalInvited || 0" :icon="UserGroupIcon"
-        color="text-purple-500" />
+        color="text-primary" />
     </div>
   </div>
 
@@ -389,16 +389,16 @@ onMounted(async () => {
   <!-- Question Analytics -->
   <div class="space-y-8 mt-8">
     <div v-for="section in detailedAnalytics?.sections" :key="section.sectionInstanceId"
-      class="border-t border-gray-200 dark:border-gray-700 pt-8">
+      class="border-t border-surface  pt-8">
       <div class="mb-6">
         <h2 class="card-header flex items-center gap-2">
           {{ section.sectionTitle }}
           <span v-if="section.sectionType === 'configurable'"
-            class="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-950/50 px-2 py-1 text-sm font-medium text-indigo-700 dark:text-indigo-300 ring-1 ring-inset ring-indigo-700/10">
+            class="inline-flex items-center rounded-md bg-emphasis  px-2 py-1 text-sm font-medium text-primary  ring-1 ring-inset ring-primary">
             Instance répétable
           </span>
         </h2>
-        <p class="text-sm text-gray-500 mt-1" v-if="section.repeatItemType">
+        <p class="text-sm text-muted-color mt-1" v-if="section.repeatItemType">
           Sujet évalué : {{ section.repeatItemType }} (ID: {{ section.repeatItemId }})
         </p>
       </div>
@@ -412,13 +412,13 @@ onMounted(async () => {
             </div>
             <div class="space-y-2 mt-4 max-h-48 overflow-y-auto pr-1">
               <div v-for="choice in question.stats.choices" :key="choice.text"
-                class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+                class="flex justify-between items-center text-sm text-muted-color ">
                 <span class="truncate pr-4" :title="choice.text">{{ choice.text }}</span>
                 <span class="font-medium whitespace-nowrap">{{ choice.count }} réponses ({{ choice.percentage
                   }}%)</span>
               </div>
             </div>
-            <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 text-sm text-gray-500">
+            <div class="mt-4 pt-3 border-t border-surface  text-sm text-muted-color">
               Total : {{ question.totalResponses }} réponses
             </div>
           </div>
@@ -428,7 +428,7 @@ onMounted(async () => {
             <div class="h-48 mb-4">
               <Bar :ref="setChartRef(question.questionId)" :data="getScaleDistributionChartData(question)" :options="questionChartOptions" />
             </div>
-            <div class="flex items-center justify-between mt-3 text-sm text-gray-600 dark:text-gray-400">
+            <div class="flex items-center justify-between mt-3 text-sm text-muted-color ">
               <span>Total : {{ question.totalResponses }} réponses</span>
               <span class="font-semibold">Moyenne : {{ question.stats.average }} / {{ question.stats.max }}</span>
             </div>
@@ -437,27 +437,27 @@ onMounted(async () => {
           <!-- Text Response Summary / Comments -->
           <div v-else-if="['text_short', 'text_long'].includes(question.questionType)">
             <div class="space-y-4">
-              <div class="grid grid-cols-2 gap-4 text-sm bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+              <div class="grid grid-cols-2 gap-4 text-sm bg-emphasis  p-3 rounded-lg">
                 <div>
-                  <span class="text-gray-500">Réponses :</span>
-                  <span class="font-semibold ml-2 text-gray-900 dark:text-white">{{ question.totalResponses }}</span>
+                  <span class="text-muted-color">Réponses :</span>
+                  <span class="font-semibold ml-2 text-color -contrast">{{ question.totalResponses }}</span>
                 </div>
                 <div>
-                  <span class="text-gray-500">Longueur moy. :</span>
-                  <span class="font-semibold ml-2 text-gray-900 dark:text-white">{{ question.stats.averageLength }}
+                  <span class="text-muted-color">Longueur moy. :</span>
+                  <span class="font-semibold ml-2 text-color -contrast">{{ question.stats.averageLength }}
                     chars</span>
                 </div>
               </div>
 
               <div>
-                <h5 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                <h5 class="text-sm font-semibold text-color -contrast mb-2">
                   Commentaires et réponses :
                 </h5>
                 <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
                   <EmptyState v-if="!question.stats.samples || question.stats.samples.length === 0"
                     compact icon="pi pi-comment" title="Aucune réponse textuelle" />
                   <div v-for="(sample, index) in question.stats.samples" :key="index"
-                    class="text-sm text-gray-700 dark:text-gray-300 p-2.5 bg-gray-50 dark:bg-gray-700/40 rounded-lg border border-gray-100 dark:border-gray-700/50 line-clamp-3 hover:line-clamp-none transition-all duration-200">
+                    class="text-sm text-color  p-2.5 bg-emphasis  rounded-lg border border-surface  line-clamp-3 hover:line-clamp-none transition-all duration-200">
                     "{{ sample }}"
                   </div>
                 </div>
@@ -468,26 +468,26 @@ onMounted(async () => {
           <!-- Matrix Heatmap/Table -->
           <div v-else-if="question.questionType === 'matrix'">
             <div class="overflow-x-auto">
-              <table class="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                <thead class="bg-gray-50 dark:bg-gray-700/50">
+              <table class="w-full text-sm border border-surface  rounded-lg overflow-hidden">
+                <thead class="bg-emphasis ">
                   <tr>
                     <th
-                      class="p-2 text-left font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                      class="p-2 text-left font-medium text-color  border-b border-surface ">
                       Critère</th>
                     <th v-for="col in question.stats.columns" :key="col"
-                      class="p-2 text-center font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                      class="p-2 text-center font-medium text-color  border-b border-surface ">
                       {{ col }}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="row in question.stats.rows" :key="row"
-                    class="border-b border-gray-100 dark:border-gray-800 last:border-none">
-                    <td class="p-2 font-medium text-gray-900 dark:text-white">{{ row }}</td>
+                    class="border-b border-surface  last:border-none">
+                    <td class="p-2 font-medium text-color -contrast">{{ row }}</td>
                     <td v-for="col in question.stats.columns" :key="col"
-                      class="p-2 text-center text-gray-600 dark:text-gray-400">
+                      class="p-2 text-center text-muted-color ">
                       <span class="px-2 py-0.5 rounded-full"
-                        :class="question.stats.grid[row][col] > 0 ? 'bg-primary-50 dark:bg-primary-950/30 text-primary-700 dark:text-primary-400 font-semibold' : ''">
+                        :class="question.stats.grid[row][col] > 0 ? 'bg-primary-50 -950/30 -primary -400 font-semibold' : ''">
                         {{ question.stats.grid[row][col] || 0 }}
                       </span>
                     </td>
@@ -495,7 +495,7 @@ onMounted(async () => {
                 </tbody>
               </table>
             </div>
-            <div class="mt-3 text-sm text-gray-500">
+            <div class="mt-3 text-sm text-muted-color">
               Total : {{ question.totalResponses }} réponses
             </div>
           </div>
@@ -507,12 +507,12 @@ onMounted(async () => {
             </div>
             <div class="space-y-2 mt-4 max-h-48 overflow-y-auto pr-1">
               <div v-for="rank in question.stats.ranking" :key="rank.text"
-                class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+                class="flex justify-between items-center text-sm text-muted-color ">
                 <span class="truncate pr-4" :title="rank.text">{{ rank.text }}</span>
                 <span class="font-medium">Rang moyen : {{ rank.averageRank }}</span>
               </div>
             </div>
-            <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 text-sm text-gray-500">
+            <div class="mt-4 pt-3 border-t border-surface  text-sm text-muted-color">
               Total : {{ question.totalResponses }} réponses
             </div>
           </div>

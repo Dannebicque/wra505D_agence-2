@@ -74,9 +74,9 @@ const retirer = async () => {
     <!-- Rapport déjà déposé -->
     <div v-if="stage.reportUploaded" class="q-section flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 !space-y-0">
       <div class="flex items-center gap-3 min-w-0">
-        <i class="pi pi-file-pdf text-2xl text-emerald-600 dark:text-emerald-400" aria-hidden="true"></i>
+        <i class="pi pi-file-pdf text-2xl text-muted-color " aria-hidden="true"></i>
         <div class="min-w-0">
-          <a :href="rapportStageUrl(stage.id)" class="text-sm font-semibold text-slate-900 dark:text-white block truncate hover:underline" title="Télécharger le rapport">
+          <a :href="rapportStageUrl(stage.id)" class="text-sm font-semibold text-color -contrast block truncate hover:underline" title="Télécharger le rapport">
             {{ stage.reportName }}
           </a>
           <span class="q-hint !mt-0">Transmis le {{ stage.reportDate || 'récemment' }}</span>
@@ -90,7 +90,7 @@ const retirer = async () => {
 
     <!-- Transfert en cours -->
     <div v-else-if="envoiEnCours" class="q-section text-center">
-      <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Transfert du rapport en cours…</p>
+      <p class="text-sm font-semibold text-color ">Transfert du rapport en cours…</p>
       <ProgressBar :value="progression" class="max-w-xs mx-auto" />
     </div>
 
@@ -98,9 +98,9 @@ const retirer = async () => {
     <button v-else type="button" @click="choisirFichier"
       @dragover.prevent="survol = true" @dragleave.prevent="survol = false" @drop.prevent="fichierDepose"
       class="w-full border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors"
-      :class="survol ? 'border-primary-500 bg-primary-50/40 dark:bg-primary-950/20' : 'border-slate-300 dark:border-slate-700 hover:border-primary-500'">
-      <i class="pi pi-cloud-upload text-3xl text-primary-600 dark:text-primary-400" aria-hidden="true"></i>
-      <span class="block text-sm font-semibold text-slate-800 dark:text-white mt-3">Déposer mon rapport de stage (PDF)</span>
+      :class="survol ? '-primary bg-primary-50/40 -950/20' : 'border-surface  hover:-primary'">
+      <i class="pi pi-cloud-upload text-3xl -primary -400" aria-hidden="true"></i>
+      <span class="block text-sm font-semibold text-color -contrast mt-3">Déposer mon rapport de stage (PDF)</span>
       <span class="q-hint block">Glissez votre fichier ici ou cliquez pour le choisir (15 Mo au plus).</span>
     </button>
 

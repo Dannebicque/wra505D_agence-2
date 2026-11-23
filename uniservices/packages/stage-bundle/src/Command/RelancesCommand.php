@@ -2,6 +2,7 @@
 
 namespace StageBundle\Command;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Entity\Stages\StageSoutenance;
@@ -47,7 +48,7 @@ final class RelancesCommand extends Command
         $lignes = [];
 
         // 1. Demandes en attente, regroupées par période puis par responsable
-        $joursDemande = max(1, (int) $input->getOption('jours-demande'));
+        $joursDemande = max(1, LooseValue::castInt($input->getOption('jours-demande')));
         $parPeriode = [];
         foreach ($this->dossiers(EtatStageEnum::DEPOSE, 'dateDepotFormulaire', $maintenant->modify(sprintf('-%d days', $joursDemande))) as $stage) {
             $parPeriode[$stage->getStagePeriode()?->getId() ?? 0][] = $stage;
@@ -62,7 +63,7 @@ final class RelancesCommand extends Command
         }
 
         // 2. Conventions envoyées, pas revenues
-        $joursConvention = max(1, (int) $input->getOption('jours-convention'));
+        $joursConvention = max(1, LooseValue::castInt($input->getOption('jours-convention')));
         foreach ($this->dossiers(EtatStageEnum::CONVENTION_ENVOYEE, 'dateConventionEnvoyee', $maintenant->modify(sprintf('-%d days', $joursConvention))) as $stage) {
             $lignes[] = ['Convention non revenue', $stage->getEtudiant()?->getDisplay() ?? '?', 'envoyée le '.$stage->getDateConventionEnvoyee()?->format('d/m/Y')];
             if (!$dryRun) {
@@ -71,7 +72,7 @@ final class RelancesCommand extends Command
         }
 
         // 3. Rapports manquants : soutenance dans les N jours, ou stage terminé depuis moins de N jours (sans soutenance)
-        $joursRapport = max(1, (int) $input->getOption('jours-rapport'));
+        $joursRapport = max(1, LooseValue::castInt($input->getOption('jours-rapport')));
         $limite = $maintenant->modify(sprintf('+%d days', $joursRapport));
         $relances = [];
         /** @var list<StageSoutenance> $soutenances */

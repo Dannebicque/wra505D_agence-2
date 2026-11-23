@@ -4,6 +4,7 @@ namespace QuestionnaireBundle\Controller;
 
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Domain\Questionnaire\Duplicate\DuplicateQuestionnaireService;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
@@ -89,10 +90,10 @@ class QuestionnaireModeleController extends AbstractController
     {
         $donnees = json_decode($request->getContent(), true);
         $donnees = \is_array($donnees) ? $donnees : [];
-        $titre = trim((string) ($donnees['title'] ?? '')) ?: null;
+        $titre = trim(LooseValue::castString($donnees['title'] ?? '')) ?: null;
 
         if (\array_key_exists('departement', $donnees)) {
-            $departement = $donnees['departement'] === null ? null : $this->em->find(StructureDepartement::class, (int) $donnees['departement']);
+            $departement = $donnees['departement'] === null ? null : $this->em->find(StructureDepartement::class, LooseValue::castInt($donnees['departement']));
             if ($donnees['departement'] !== null && $departement === null) {
                 throw new NotFoundHttpException('Département introuvable.');
             }

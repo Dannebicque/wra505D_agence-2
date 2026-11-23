@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Controller;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
 use QuestionnaireBundle\Security\QuestionnaireResolver;
@@ -39,12 +40,12 @@ class QuestionnaireReminderController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $data = is_array($data) ? $data : [];
         // Invitations désignées par leur identifiant (le jeton, clé d'accès du répondant, n'est jamais exposé).
-        $ids = array_values(array_filter(array_map('intval', is_array($data['invitations'] ?? null) ? $data['invitations'] : [])));
+        $ids = array_values(array_filter(array_map(static fn (mixed $id): int => LooseValue::castInt($id), is_array($data['invitations'] ?? null) ? $data['invitations'] : []), static fn (int $id): bool => $id !== 0));
         if ($ids === []) {
             return new JsonResponse(['error' => 'Aucun participant spécifié.'], Response::HTTP_BAD_REQUEST);
         }
-        $objet = mb_substr(trim((string) ($data['subject'] ?? '')), 0, 255);
-        $message = mb_substr(trim((string) ($data['message'] ?? '')), 0, 5000);
+        $objet = mb_substr(trim(LooseValue::castString($data['subject'] ?? '')), 0, 255);
+        $message = mb_substr(trim(LooseValue::castString($data['message'] ?? '')), 0, 5000);
 
         $invitations = $this->em->getRepository(QuestionnaireInvitation::class)->findBy(['questionnaire' => $questionnaire, 'id' => $ids]);
         $type = count($invitations) > 1 ? 'bulk' : 'manual';

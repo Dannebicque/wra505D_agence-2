@@ -82,7 +82,7 @@ class QuestionnaireDiffusionController extends AbstractController
                 'id' => $section->getId(),
                 'titre' => $section->getTitleSnapshot(),
                 'type' => $section->getRepeatSectionItemType(),
-                'enseignement' => $section->getEnseignement() ? [
+                'enseignement' => $section->getEnseignement() !== null ? [
                     'id' => $section->getEnseignement()->getId(),
                     'libelle' => $section->getEnseignement()->getLibelle(),
                     'code' => $section->getEnseignement()->getCodeEnseignement(),

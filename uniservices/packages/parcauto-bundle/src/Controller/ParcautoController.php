@@ -6,6 +6,7 @@ namespace ParcautoBundle\Controller;
 
 use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -399,7 +400,7 @@ final class ParcautoController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        return (int) $vehiculeId['vehiculeId'];
+        return LooseValue::castInt($vehiculeId['vehiculeId']);
     }
 
     private function missionVerrouillee(int $id, int $vehiculeId): Reservation

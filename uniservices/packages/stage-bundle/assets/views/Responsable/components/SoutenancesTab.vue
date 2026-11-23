@@ -311,27 +311,27 @@ const getSoutenanceEnd = (startStr, durationMin) => {
 <template>
   <div class="space-y-6 text-xs">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-surface  pb-5">
       <div>
-        <h2 class="text-lg font-bold text-slate-850 dark:text-white">Planning par Grille de Soutenances</h2>
-        <p class="text-xs text-slate-400">
-          Générez une grille de créneaux et affectez-y directement les étudiants et les jurys pour <strong class="text-violet-600 dark:text-violet-400">{{ activePeriodName }}</strong>.
+        <h2 class="text-lg font-bold text-color -contrast">Planning par Grille de Soutenances</h2>
+        <p class="text-xs text-muted-color">
+          Générez une grille de créneaux et affectez-y directement les étudiants et les jurys pour <strong class="text-primary ">{{ activePeriodName }}</strong>.
         </p>
       </div>
 
       <!-- Duration Config -->
-      <div class="bg-slate-50 dark:bg-slate-900/40 p-3 rounded-2xl border border-slate-150 dark:border-slate-800/80 flex items-center gap-3">
+      <div class="bg-emphasis  p-3 rounded-2xl border border-surface  flex items-center gap-3">
         <div class="flex flex-col">
-          <label class="text-[9px] font-black uppercase text-slate-400">Durée par soutenance</label>
+          <label class="text-[9px] font-black uppercase text-muted-color">Durée par soutenance</label>
           <div class="flex items-center gap-1.5 mt-0.5">
             <input 
               v-model.number="defaultDuration"
               type="number"
               min="10"
               max="180"
-              class="w-16 p-1 text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200"
+              class="w-16 p-1 text-xs font-bold border border-surface  rounded-lg bg-surface-0  text-color "
             />
-            <span class="text-slate-500 font-semibold">min</span>
+            <span class="text-muted-color font-semibold">min</span>
           </div>
         </div>
         <Button label="Enregistrer" icon="pi pi-check" size="small" :loading="isUpdatingDuration" @click="updatePeriodDuration" />
@@ -339,135 +339,135 @@ const getSoutenanceEnd = (startStr, durationMin) => {
     </div>
 
     <!-- Scheduled Sessions Info -->
-    <div v-if="sessions.length > 0" class="p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-2">
-      <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-        <i class="pi pi-info-circle text-violet-600 dark:text-violet-400"></i>
+    <div v-if="sessions.length > 0" class="p-4 bg-emphasis  border border-surface  rounded-3xl space-y-2">
+      <div class="font-bold text-color  flex items-center gap-1.5">
+        <i class="pi pi-info-circle text-primary "></i>
         <span>Sessions de soutenances prévues pour cette période :</span>
       </div>
       <div class="flex flex-wrap gap-2">
-        <span v-for="s in sessions" :key="s.id" class="px-3 py-1.5 bg-violet-100 dark:bg-violet-950/40 text-violet-750 dark:text-violet-400 font-bold rounded-xl text-[10px]">
+        <span v-for="s in sessions" :key="s.id" class="px-3 py-1.5 bg-emphasis  text-primary  font-bold rounded-xl text-[10px]">
           Du {{ new Date(s.dateDebut).toLocaleDateString('fr-FR') }} au {{ new Date(s.dateFin).toLocaleDateString('fr-FR') }}
-          <span class="text-slate-400 dark:text-slate-500 font-medium"> (Rapport avant le {{ new Date(s.dateRenduRapport).toLocaleDateString('fr-FR') }})</span>
+          <span class="text-muted-color  font-medium"> (Rapport avant le {{ new Date(s.dateRenduRapport).toLocaleDateString('fr-FR') }})</span>
         </span>
       </div>
     </div>
 
     <!-- Bulk Slot Generator Panel -->
-    <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-150 dark:border-slate-800/80 shadow-sm space-y-4">
-      <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-        <i class="pi pi-calendar-plus text-violet-600 dark:text-violet-400 text-base"></i>
-        <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Générateur de créneaux vides en lot</h3>
+    <div class="bg-surface-0  p-5 rounded-3xl border border-surface  shadow-sm space-y-4">
+      <div class="flex items-center gap-2 border-b border-surface  pb-2">
+        <i class="pi pi-calendar-plus text-primary  text-base"></i>
+        <h3 class="text-sm font-bold text-color ">Générateur de créneaux vides en lot</h3>
       </div>
       
       <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
         <!-- Date -->
         <div class="flex flex-col gap-1">
-          <label class="text-[10px] font-bold text-slate-400">Date des examens</label>
+          <label class="text-[10px] font-bold text-muted-color">Date des examens</label>
           <input 
             v-model="bulkDate"
             type="date"
-            class="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200"
+            class="p-2 border border-surface  rounded-xl bg-emphasis  text-color "
           />
         </div>
 
         <!-- Start Time -->
         <div class="flex flex-col gap-1">
-          <label class="text-[10px] font-bold text-slate-400">Heure de début</label>
+          <label class="text-[10px] font-bold text-muted-color">Heure de début</label>
           <input 
             v-model="bulkStartTime"
             type="time"
-            class="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200"
+            class="p-2 border border-surface  rounded-xl bg-emphasis  text-color "
           />
         </div>
 
         <!-- End Time -->
         <div class="flex flex-col gap-1">
-          <label class="text-[10px] font-bold text-slate-400">Heure de fin</label>
+          <label class="text-[10px] font-bold text-muted-color">Heure de fin</label>
           <input 
             v-model="bulkEndTime"
             type="time"
-            class="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200"
+            class="p-2 border border-surface  rounded-xl bg-emphasis  text-color "
           />
         </div>
 
         <!-- Duration -->
         <div class="flex flex-col gap-1">
-          <label class="text-[10px] font-bold text-slate-400">Durée (minutes)</label>
+          <label class="text-[10px] font-bold text-muted-color">Durée (minutes)</label>
           <input 
             v-model.number="bulkDuree"
             type="number"
             min="10"
-            class="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200"
+            class="p-2 border border-surface  rounded-xl bg-emphasis  text-color "
           />
         </div>
 
         <!-- Pause -->
         <div class="flex flex-col gap-1">
-          <label class="text-[10px] font-bold text-slate-400">Pause entre créneaux</label>
+          <label class="text-[10px] font-bold text-muted-color">Pause entre créneaux</label>
           <input 
             v-model.number="bulkPause"
             type="number"
             min="0"
-            class="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200"
+            class="p-2 border border-surface  rounded-xl bg-emphasis  text-color "
           />
         </div>
 
         <!-- Salle -->
         <div class="flex flex-col gap-1">
-          <label class="text-[10px] font-bold text-slate-400">Salle par défaut</label>
+          <label class="text-[10px] font-bold text-muted-color">Salle par défaut</label>
           <input 
             v-model="bulkSalle"
             type="text"
             placeholder="Ex: Salle B05"
-            class="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200"
+            class="p-2 border border-surface  rounded-xl bg-emphasis  text-color "
           />
         </div>
       </div>
 
-      <div class="flex justify-end pt-2 border-t border-slate-50 dark:border-slate-800">
+      <div class="flex justify-end pt-2 border-t border-surface ">
         <Button label="Générer la grille" icon="pi pi-calendar-plus" :loading="isGeneratingBulk" @click="generateBulkSlots" />
       </div>
     </div>
 
     <!-- KPIs -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 p-4 rounded-3xl shadow-sm flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-2xl bg-violet-50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+      <div class="bg-surface-0  border border-surface  p-4 rounded-3xl shadow-sm flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-2xl bg-emphasis  text-primary  flex items-center justify-center shrink-0">
           <i class="pi pi-calendar text-lg"></i>
         </div>
         <div>
-          <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Créneaux dans la grille</span>
-          <span class="text-lg font-black text-slate-850 dark:text-white mt-0.5 block">{{ slots.length }}</span>
+          <span class="text-[9px] font-black uppercase tracking-wider text-muted-color block">Créneaux dans la grille</span>
+          <span class="text-lg font-black text-color -contrast mt-0.5 block">{{ slots.length }}</span>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 p-4 rounded-3xl shadow-sm flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+      <div class="bg-surface-0  border border-surface  p-4 rounded-3xl shadow-sm flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-2xl bg-emphasis  text-muted-color  flex items-center justify-center shrink-0">
           <i class="pi pi-users text-lg"></i>
         </div>
         <div>
-          <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Créneaux libres</span>
-          <span class="text-lg font-black text-slate-850 dark:text-white mt-0.5 block">{{ slots.filter(s => !s.stageEtudiantId).length }}</span>
+          <span class="text-[9px] font-black uppercase tracking-wider text-muted-color block">Créneaux libres</span>
+          <span class="text-lg font-black text-color -contrast mt-0.5 block">{{ slots.filter(s => !s.stageEtudiantId).length }}</span>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800/80 p-4 rounded-3xl shadow-sm flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+      <div class="bg-surface-0  border border-surface  p-4 rounded-3xl shadow-sm flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-2xl bg-emphasis  text-muted-color  flex items-center justify-center shrink-0">
           <i class="pi pi-user-minus text-lg"></i>
         </div>
         <div>
-          <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Étudiants restants à planifier</span>
-          <span class="text-lg font-black text-slate-850 dark:text-white mt-0.5 block">{{ unscheduledStudents.length }}</span>
+          <span class="text-[9px] font-black uppercase tracking-wider text-muted-color block">Étudiants restants à planifier</span>
+          <span class="text-lg font-black text-color -contrast mt-0.5 block">{{ unscheduledStudents.length }}</span>
         </div>
       </div>
     </div>
 
     <!-- Interactive Grid Table -->
-    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-150 dark:border-slate-800/80 shadow-sm overflow-hidden">
+    <div class="bg-surface-0  rounded-3xl border border-surface  shadow-sm overflow-hidden">
       <div v-if="slots.length > 0" class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-slate-50 dark:bg-slate-800/40 text-slate-400 uppercase font-black tracking-wider text-[10px] border-b border-slate-150 dark:border-slate-800">
+            <tr class="bg-emphasis  text-muted-color uppercase font-black tracking-wider text-[10px] border-b border-surface ">
               <th class="p-4 w-48">Date &amp; Horaire</th>
               <th class="p-4 w-28">Salle</th>
               <th class="p-4 w-64">Étudiant (Stagiaire)</th>
@@ -477,19 +477,19 @@ const getSoutenanceEnd = (startStr, durationMin) => {
               <th class="p-4 text-right w-36">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+          <tbody class="divide-y divide-surface ">
             <tr 
               v-for="s in slots" 
               :key="s.id" 
-              class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"
-              :class="{'bg-violet-50/10 dark:bg-violet-950/5': s.isEdited}"
+              class="hover:bg-emphasis dark:hover:bg-emphasis transition-colors"
+              :class="{'bg-emphasis ': s.isEdited}"
             >
               <!-- Time slot -->
               <td class="p-4">
-                <div class="font-bold text-slate-800 dark:text-slate-200">
+                <div class="font-bold text-color ">
                   {{ new Date(s.dateSoutenance).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) }}
                 </div>
-                <div class="text-violet-600 dark:text-violet-400 font-black mt-0.5">
+                <div class="text-primary  font-black mt-0.5">
                   {{ new Date(s.dateSoutenance).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }}
                   -
                   {{ getSoutenanceEnd(s.dateSoutenance, s.duree) }}
@@ -503,7 +503,7 @@ const getSoutenanceEnd = (startStr, durationMin) => {
                   type="text"
                   @change="onSlotFieldChange(s)"
                   placeholder="Ex: B05"
-                  class="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 text-xs text-slate-800 dark:text-slate-200 focus:outline-violet-500 font-bold"
+                  class="w-full p-2 border border-surface  rounded-xl bg-emphasis  text-xs text-color  focus:outline-primary font-bold"
                 />
               </td>
 
@@ -512,7 +512,7 @@ const getSoutenanceEnd = (startStr, durationMin) => {
                 <select 
                   v-model="s.stageEtudiantId"
                   @change="onSlotFieldChange(s)"
-                  class="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 text-xs text-slate-800 dark:text-slate-200 focus:outline-violet-500 font-semibold"
+                  class="w-full p-2 border border-surface  rounded-xl bg-emphasis  text-xs text-color  focus:outline-primary font-semibold"
                 >
                   <option :value="null">-- Créneau libre (Libre) --</option>
                   <option 
@@ -523,7 +523,7 @@ const getSoutenanceEnd = (startStr, durationMin) => {
                     {{ std.studentName }}
                   </option>
                 </select>
-                <div v-if="s.stageEtudiantId && getStudentDetails(s.stageEtudiantId)" class="text-[10px] text-slate-400 font-medium mt-1 pl-1">
+                <div v-if="s.stageEtudiantId && getStudentDetails(s.stageEtudiantId)" class="text-[10px] text-muted-color font-medium mt-1 pl-1">
                   {{ getStudentDetails(s.stageEtudiantId).company }}
                 </div>
               </td>
@@ -532,11 +532,11 @@ const getSoutenanceEnd = (startStr, durationMin) => {
               <td class="p-4">
                 <span 
                   v-if="s.stageEtudiantId && getStudentDetails(s.stageEtudiantId)"
-                  class="px-2 py-1 rounded-lg bg-violet-50 dark:bg-violet-950/20 text-violet-750 dark:text-violet-400 font-bold border border-violet-100 dark:border-violet-900/40 text-[10px] block text-center"
+                  class="px-2 py-1 rounded-lg bg-emphasis  text-primary  font-bold border border-primary  text-[10px] block text-center"
                 >
                   {{ getStudentDetails(s.stageEtudiantId).tutor }}
                 </span>
-                <span v-else class="text-slate-400 italic text-[10px]">Auto-rempli</span>
+                <span v-else class="text-muted-color italic text-[10px]">Auto-rempli</span>
               </td>
 
               <!-- Assesseur / Candide Dropdown -->
@@ -544,7 +544,7 @@ const getSoutenanceEnd = (startStr, durationMin) => {
                 <select 
                   v-model="s.enseignantJuryId"
                   @change="onSlotFieldChange(s)"
-                  class="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-950 text-xs text-slate-800 dark:text-slate-200 focus:outline-violet-500"
+                  class="w-full p-2 border border-surface  rounded-xl bg-emphasis  text-xs text-color  focus:outline-primary"
                 >
                   <option :value="null">Aucun assesseur (Candide)</option>
                   <option 
@@ -559,15 +559,15 @@ const getSoutenanceEnd = (startStr, durationMin) => {
 
               <!-- Conflict Status Badge -->
               <td class="p-4 text-center">
-                <div v-if="slotConflicts[s.id] && slotConflicts[s.id].length > 0" class="inline-flex items-center justify-center gap-1 text-rose-600 font-bold bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 px-2.5 py-1 rounded-xl" :title="slotConflicts[s.id].join('\n')">
+                <div v-if="slotConflicts[s.id] && slotConflicts[s.id].length > 0" class="inline-flex items-center justify-center gap-1 text-muted-color font-bold bg-emphasis  border border-surface  px-2.5 py-1 rounded-xl" :title="slotConflicts[s.id].join('\n')">
                   <i class="pi pi-exclamation-triangle"></i>
                   <span>Conflit</span>
                 </div>
-                <div v-else-if="s.stageEtudiantId" class="inline-flex items-center justify-center gap-1 text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-250 dark:border-emerald-900/50 px-2.5 py-1 rounded-xl">
+                <div v-else-if="s.stageEtudiantId" class="inline-flex items-center justify-center gap-1 text-muted-color font-bold bg-emphasis  border border-surface  px-2.5 py-1 rounded-xl">
                   <i class="pi pi-check"></i>
                   <span>Prêt</span>
                 </div>
-                <span v-else class="text-slate-400 italic">Libre</span>
+                <span v-else class="text-muted-color italic">Libre</span>
               </td>
 
               <!-- Actions -->
@@ -582,7 +582,7 @@ const getSoutenanceEnd = (startStr, durationMin) => {
                   <button 
                     @click="clearSlot(s)"
                     v-if="s.stageEtudiantId"
-                    class="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-500 hover:text-amber-600 hover:border-amber-300 transition-all cursor-pointer"
+                    class="p-2 border border-surface  rounded-xl bg-surface-0  text-muted-color hover:text-muted-color hover:border-surface transition-all cursor-pointer"
                     title="Libérer le créneau (Désassigner)"
                   >
                     <i class="pi pi-user-minus"></i>
@@ -591,7 +591,7 @@ const getSoutenanceEnd = (startStr, durationMin) => {
                   <!-- Delete Slot completely -->
                   <button 
                     @click="deleteSlot(s.id)"
-                    class="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-500 hover:text-rose-600 hover:border-rose-300 transition-all cursor-pointer"
+                    class="p-2 border border-surface  rounded-xl bg-surface-0  text-muted-color hover:text-muted-color hover:border-surface transition-all cursor-pointer"
                     title="Supprimer le créneau de la grille"
                   >
                     <i class="pi pi-trash"></i>
@@ -602,10 +602,10 @@ const getSoutenanceEnd = (startStr, durationMin) => {
           </tbody>
         </table>
       </div>
-      <div v-else class="p-12 text-center text-slate-400">
-        <i class="pi pi-calendar-times text-4xl text-slate-300 block mb-3"></i>
-        <h3 class="text-sm font-bold text-slate-800 dark:text-slate-350">Grille vide</h3>
-        <p class="text-xs text-slate-400 mt-1">Utilisez le générateur ci-dessus pour ajouter des créneaux horaires.</p>
+      <div v-else class="p-12 text-center text-muted-color">
+        <i class="pi pi-calendar-times text-4xl text-color block mb-3"></i>
+        <h3 class="text-sm font-bold text-color ">Grille vide</h3>
+        <p class="text-xs text-muted-color mt-1">Utilisez le générateur ci-dessus pour ajouter des créneaux horaires.</p>
       </div>
     </div>
   </div>

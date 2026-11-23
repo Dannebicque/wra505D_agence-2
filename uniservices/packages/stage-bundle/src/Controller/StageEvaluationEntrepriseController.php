@@ -5,6 +5,7 @@ namespace StageBundle\Controller;
 use App\Repository\EtablissementRepository;
 use App\Entity\Users\Personnel;
 use App\Service\Email\EmailService;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use StageBundle\Entity\Stages\StageEtudiant;
@@ -166,7 +167,7 @@ class StageEvaluationEntrepriseController extends AbstractController
         $erreurs = [];
         foreach ($stage->getStagePeriode()?->getCriteresEvaluation() ?? [] as $critere) {
             $saisie = $saisies[(string) $critere->getId()] ?? $saisies[$critere->getId()] ?? null;
-            $niveau = \is_array($saisie) ? (int) ($saisie['niveau'] ?? 0) : 0;
+            $niveau = \is_array($saisie) ? LooseValue::castInt($saisie['niveau'] ?? 0) : 0;
             if (!isset(StageEvaluationEntreprise::NIVEAUX[$niveau])) {
                 $erreurs[] = sprintf('Choisissez un niveau pour « %s ».', $critere->getLibelle());
                 continue;
@@ -187,7 +188,7 @@ class StageEvaluationEntrepriseController extends AbstractController
         }
 
         $appreciation = \is_string($data['appreciation'] ?? null) ? mb_substr(trim($data['appreciation']), 0, 5000) : null;
-        $evaluation->soumettre($reponses, $appreciation !== '' ? $appreciation : null, $note === null || $note === '' ? null : round((float) $note, 2), $nom);
+        $evaluation->soumettre($reponses, $appreciation !== '' ? $appreciation : null, $note === null || $note === '' ? null : round(LooseValue::castFloat($note), 2), $nom);
         $this->em->flush();
         $this->notifier->evaluationEntrepriseRecue($stage);
 

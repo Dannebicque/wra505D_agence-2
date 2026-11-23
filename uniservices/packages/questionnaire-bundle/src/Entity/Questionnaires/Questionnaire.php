@@ -20,6 +20,7 @@ use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Personnel;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\OptionTrait;
+use App\Utils\LooseValue;
 use QuestionnaireBundle\Enum\QuestStatutEnum;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireRepository;
@@ -446,7 +447,7 @@ class Questionnaire implements TimestampableInterface
     /** Seuil d'anonymat : nombre minimal de réponses envoyées pour consulter les résultats (0 si sans objet). */
     public function seuilResultats(): int
     {
-        return $this->estAnonyme() ? max(0, (int) ($this->getOpt()['seuilMinReponses'] ?? 0)) : 0;
+        return $this->estAnonyme() ? max(0, LooseValue::castInt($this->getOpt()['seuilMinReponses'] ?? 0)) : 0;
     }
 
     /** Ouvert aux réponses : publié, et dans la période d'ouverture si elle est fixée. */

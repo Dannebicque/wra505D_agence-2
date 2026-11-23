@@ -118,7 +118,7 @@ watch(() => props.periodeId, charger);
         </form>
         <div v-else class="flex items-start justify-between gap-2">
           <div class="min-w-0">
-            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ i + 1 }}. {{ c.libelle }}</span>
+            <span class="font-semibold text-color ">{{ i + 1 }}. {{ c.libelle }}</span>
             <p v-if="c.description" class="q-hint whitespace-pre-line">{{ c.description }}</p>
           </div>
           <div v-if="modifiable" class="flex gap-1 shrink-0">
@@ -131,7 +131,7 @@ watch(() => props.periodeId, charger);
       </li>
     </ol>
 
-    <form v-if="modifiable" class="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800" @submit.prevent="ajouter">
+    <form v-if="modifiable" class="space-y-2 pt-3 border-t border-surface " @submit.prevent="ajouter">
       <label for="critere-nouveau" class="q-label">Nouveau critère</label>
       <input id="critere-nouveau" v-model="nouveau.libelle" maxlength="150" placeholder="Ex. : autonomie, qualité du travail…" class="q-input" />
       <textarea v-model="nouveau.description" rows="2" placeholder="Précisions pour l'évaluateur (facultatif)" aria-label="Description du nouveau critère" class="q-input"></textarea>

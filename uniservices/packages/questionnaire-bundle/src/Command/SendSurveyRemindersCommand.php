@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Command;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireInvitationRepository;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireRepository;
@@ -42,7 +43,7 @@ class SendSurveyRemindersCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $days = (int) $input->getOption('days');
+        $days = LooseValue::castInt($input->getOption('days'));
         $simulation = (bool) $input->getOption('dry-run');
         if ($days <= 0) {
             $io->error('L\'option --days doit être un entier strictement positif.');
