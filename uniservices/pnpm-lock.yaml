@@ -157,6 +157,8 @@ importers:
 
   packages/message-bundle: {}
 
+  packages/parcauto-bundle: {}
+
   packages/questionnaire-bundle: {}
 
   packages/shell:
