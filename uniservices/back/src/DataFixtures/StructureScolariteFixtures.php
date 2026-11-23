@@ -12,6 +12,7 @@ use App\Repository\Structure\StructureSemestreRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use IntranetBundle\Commission\Service\CommissionWriteContext;
 use Symfony\Component\Uid\Uuid;
 
 class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterface
@@ -27,6 +28,7 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         StructureAnneeUniversitaireRepository $anneeUniversitaireRepository,
         private readonly StructureGroupeRepository $groupeRepository,
         private readonly StructureDepartementRepository $departementRepository,
+        private readonly CommissionWriteContext $commissionWriteContext,
     ) {
         $this->semestreRepository = $semestreRepository;
         $this->etudiantRepository = $etudiantRepository;
@@ -106,6 +108,7 @@ class StructureScolariteFixtures extends Fixture implements OrderedFixtureInterf
         $manager->persist($scolarite2);
         $manager->persist($scolariteSemestre2);
 
-        $manager->flush();
+        // Le semestre jugé simule une sous-commission passée : seule la validation écrit ses résultats.
+        $this->commissionWriteContext->run(static fn () => $manager->flush());
     }
 }
