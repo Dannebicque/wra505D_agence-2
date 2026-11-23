@@ -33,12 +33,6 @@ final class InvitationSectionProvider implements ProviderInterface
         foreach ($this->em->getRepository(QuestionnaireAnswer::class)->findBy(['invitation' => $invitation, 'section' => $section]) as $reponse) {
             $reponses[$reponse->getQuestion()?->getId()] = $reponse->getValue();
         }
-        $section = $psi->getSection();
-        $title = $psi->getTitleSnapshot();
-        $publishedSectionInstanceId = $psi->getId();
-        if ($section === null || $title === null || $publishedSectionInstanceId === null) {
-            throw new \LogicException('Section instance fields are required');
-        }
 
         $toutes = $this->runtime->toutesLesQuestions($invitation);
         $questions = [];

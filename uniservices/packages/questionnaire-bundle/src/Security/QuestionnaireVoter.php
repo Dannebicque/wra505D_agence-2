@@ -17,7 +17,6 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  * Voter pour les opérations sur les entités Questionnaire
  * Gère les droits d'accès pour : Questionnaire, Section, Question, Invitation, Réponses
  */
-/** @extends Voter<string, mixed> */
 class QuestionnaireVoter extends Voter
 {
     /** Consulter le questionnaire, sa structure, ses invitations et ses résultats. */
@@ -171,7 +170,6 @@ class QuestionnaireVoter extends Voter
         return $this->effectivePermissionService->isSuperAdmin($user);
     }
 
-    /** @param list<string> $roles */
     private function hasAnyRole(Personnel $user, array $roles, mixed $subject = null): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles, $subject);
@@ -325,7 +323,7 @@ class QuestionnaireVoter extends Voter
 
         // Un étudiant peut voir ses propres invitations (via token)
         // La vérification se fait au niveau du token dans le contrôleur
-        return true;
+        return $user instanceof Etudiant;
     }
 
     private function canEditInvitation(Personnel|Etudiant $user): bool
@@ -368,7 +366,7 @@ class QuestionnaireVoter extends Voter
         }
 
         // Le personnel peut aussi répondre aux questionnaires s'ils y sont invités
-        return true;
+        return $user instanceof Personnel;
     }
     public static function questionnaire(mixed $subject): ?Questionnaire
     {

@@ -46,11 +46,6 @@ final class InvitationIndexProvider implements ProviderInterface
             );
         }
 
-        $questionnaireTitle = $q->getTitle();
-        if ($questionnaireTitle === null) {
-            throw new \LogicException('Questionnaire title is required');
-        }
-
         return new InvitationIndexDto(
             questionnaireTitle: (string) $questionnaire->getTitle(),
             invitationStatus: $invitation->getStatus()->value,

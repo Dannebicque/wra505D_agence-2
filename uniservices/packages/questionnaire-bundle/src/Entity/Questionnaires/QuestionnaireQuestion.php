@@ -72,7 +72,6 @@ class QuestionnaireQuestion
     #[Groups(['questionnaire_section:read'])]
     private ?int $sortOrder = null;
 
-    /** @var array<int|string, mixed>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['questionnaire_section:read'])]
     private ?array $choices = null;
@@ -85,7 +84,6 @@ class QuestionnaireQuestion
     #[Groups(['questionnaire_section:read'])]
     private Uuid $uuid;
 
-    /** @var array<int|string, mixed>|null */
     #[ORM\Column(nullable: true)]
     #[Groups(['questionnaire_section:read'])]
     private ?array $conditionalRules = null;
@@ -222,13 +220,11 @@ class QuestionnaireQuestion
         return $this;
     }
 
-    /** @return array<int|string, mixed>|null */
     public function getChoices(): ?array
     {
         return $this->choices ?? [];
     }
 
-    /** @param array<int|string, mixed>|null $choices */
     public function setChoices(?array $choices): static
     {
         $this->choices = $choices;
@@ -248,13 +244,11 @@ class QuestionnaireQuestion
         return $this;
     }
 
-    /** @return array<int|string, mixed>|null */
     public function getConditionalRules(): ?array
     {
         return $this->conditionalRules ?? [];
     }
 
-    /** @param array<int|string, mixed>|null $conditionalRules */
     public function setConditionalRules(?array $conditionalRules): static
     {
         $this->conditionalRules = $conditionalRules;

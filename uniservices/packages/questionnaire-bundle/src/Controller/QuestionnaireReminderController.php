@@ -35,7 +35,6 @@ class QuestionnaireReminderController extends AbstractController
         if (!$questionnaire->estOuvert()) {
             return new JsonResponse(['error' => 'Ce questionnaire n\'est pas ouvert aux réponses : aucune relance possible.'], Response::HTTP_CONFLICT);
         }
-        $this->denyAccessUnlessGranted(QuestionnaireFollowUpVoter::CAN_REMIND_QUESTIONNAIRE, $questionnaire);
 
         $data = json_decode($request->getContent(), true);
         $data = is_array($data) ? $data : [];

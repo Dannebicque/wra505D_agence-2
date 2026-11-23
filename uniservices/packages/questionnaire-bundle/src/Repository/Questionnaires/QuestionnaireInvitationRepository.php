@@ -9,7 +9,6 @@ use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 use QuestionnaireBundle\Enum\QuestStatutEnum;
 
-/** @extends ServiceEntityRepository<QuestionnaireInvitation> */
 class QuestionnaireInvitationRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

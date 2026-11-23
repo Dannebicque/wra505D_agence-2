@@ -4,7 +4,6 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Preview;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Utils\LooseValue;
 use QuestionnaireBundle\Domain\Questionnaire\Mapping\QuestionRuntimeMapper;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Security\QuestionnaireResolver;
@@ -14,7 +13,6 @@ use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewSectionDto;
 use QuestionnaireBundle\Enum\QuestTypeRepeatEnum;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSection;
 
-/** @implements ProviderInterface<PreviewSectionDto> */
 final readonly class PreviewSectionProvider implements ProviderInterface
 {
     public function __construct(
@@ -65,7 +63,6 @@ final readonly class PreviewSectionProvider implements ProviderInterface
         );
     }
 
-    /** @return array{int, QuestTypeRepeatEnum|null, string} */
     private function parseKey(string $key): array
     {
         // "tpl:12|matiere:45"
@@ -86,13 +83,13 @@ final readonly class PreviewSectionProvider implements ProviderInterface
             return (string) $section->getTitle();
         }
         $opts = $section->getOpt();
-        $elements = LooseValue::rows($opts['elements'] ?? []);
+        $elements = $opts['elements'] ?? [];
         foreach ($elements as $el) {
             if (($el['id'] ?? '') === $repeatId) {
                 $titleTemplate = $opts['titleTemplate'] ?? 'Évaluation de {element}';
-                return str_replace('{element}', LooseValue::castString($el['name'] ?? ''), LooseValue::castString($titleTemplate));
+                return str_replace('{element}', $el['name'] ?? '', $titleTemplate);
             }
         }
-        return sprintf('%s – %s %s', $section->getTitle() ?? '', $repeatType->value, $repeatId);
+        return sprintf('%s – %s %s', $section->getTitle(), $repeatType->value, $repeatId);
     }
 }

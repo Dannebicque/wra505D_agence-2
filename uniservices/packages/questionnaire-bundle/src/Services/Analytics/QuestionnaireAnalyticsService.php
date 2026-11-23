@@ -2,7 +2,6 @@
 
 namespace QuestionnaireBundle\Services\Analytics;
 
-use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireAnswer;
@@ -55,7 +54,7 @@ class QuestionnaireAnalyticsService
 
                 $startedAt = $inv->getStartedAt();
                 $submittedAt = $inv->getSubmittedAt();
-                if ($startedAt instanceof \DateTimeImmutable && $submittedAt instanceof \DateTimeImmutable) {
+                if ($startedAt && $submittedAt) {
                     $diff = $submittedAt->getTimestamp() - $startedAt->getTimestamp();
                     if ($diff > 0) {
                         $totalDuration += $diff;
@@ -63,7 +62,7 @@ class QuestionnaireAnalyticsService
                     }
                 }
 
-                if ($submittedAt instanceof \DateTimeImmutable) {
+                if ($submittedAt) {
                     $dateStr = $submittedAt->format('Y-m-d');
                     $responsesByDate[$dateStr] = ($responsesByDate[$dateStr] ?? 0) + 1;
                 }
@@ -123,7 +122,7 @@ class QuestionnaireAnalyticsService
                 $qAnswers = $answersMap[$instance->getId()][$qId] ?? [];
                 $qTotalResponses = count($qAnswers);
                 $type = $question->getTypeQuestion();
-                $typeStr = $type instanceof QuestTypeQuestionEnum ? $type->value : 'text_short';
+                $typeStr = $type ? $type->value : 'text_short';
 
                 $stats = [];
 
@@ -132,7 +131,7 @@ class QuestionnaireAnalyticsService
                     $optionTexts = [];
                     foreach ($choices as $choice) {
                         if (is_array($choice)) {
-                            $optionTexts[] = LooseValue::key($choice['text'] ?? $choice['label'] ?? '');
+                            $optionTexts[] = $choice['text'] ?? $choice['label'] ?? '';
                         } elseif (is_string($choice)) {
                             $optionTexts[] = $choice;
                         }
@@ -166,15 +165,15 @@ class QuestionnaireAnalyticsService
                     $stats = ['choices' => $statsList];
                 } elseif ($type === QuestTypeQuestionEnum::Scale) {
                     $opts = $question->getOpt();
-                    $min = LooseValue::castInt($opts['min'] ?? 1);
-                    $max = LooseValue::castInt($opts['max'] ?? 10);
+                    $min = $opts['min'] ?? 1;
+                    $max = $opts['max'] ?? 10;
 
                     $sum = 0;
                     $numCount = 0;
                     $distribution = array_fill($min, $max - $min + 1, 0);
 
                     foreach ($qAnswers as $ansVal) {
-                        $val = LooseValue::castInt($ansVal);
+                        $val = (int)$ansVal;
                         if ($val >= $min && $val <= $max) {
                             $sum += $val;
                             $numCount++;
@@ -201,7 +200,7 @@ class QuestionnaireAnalyticsService
                     $optionTexts = [];
                     foreach ($choices as $choice) {
                         if (is_array($choice)) {
-                            $optionTexts[] = LooseValue::key($choice['text'] ?? $choice['label'] ?? '');
+                            $optionTexts[] = $choice['text'] ?? $choice['label'] ?? '';
                         } elseif (is_string($choice)) {
                             $optionTexts[] = $choice;
                         }
@@ -316,7 +315,7 @@ class QuestionnaireAnalyticsService
             $sectionsAnalytics[] = new SectionInstanceAnalyticsDto(
                 sectionInstanceId: (int)$instance->getId(),
                 sectionTitle: $instance->getTitleSnapshot() ?? '',
-                sectionType: $sectionTemplate->getTypeSection() instanceof QuestTypeSectionEnum ? $sectionTemplate->getTypeSection()->value : 'normal',
+                sectionType: $sectionTemplate->getTypeSection() ? $sectionTemplate->getTypeSection()->value : 'normal',
                 repeatItemType: $instance->getRepeatSectionItemType(),
                 repeatItemId: $instance->getRepeatSectionItemId(),
                 questions: $masquee ? [] : $questionsStats,

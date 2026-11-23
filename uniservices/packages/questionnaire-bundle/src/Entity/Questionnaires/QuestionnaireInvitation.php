@@ -5,15 +5,14 @@ namespace QuestionnaireBundle\Entity\Questionnaires;
 use App\Entity\Contracts\TimestampableInterface;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireInvitationRepository;
-use QuestionnaireBundle\State\Provider\QuestionnaireInvitationCollectionProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\SerializedName;
 
@@ -78,7 +77,7 @@ class QuestionnaireInvitation implements TimestampableInterface
     private int $remindersCount = 0;
 
     /**
-     * @var array<int, array{id: string, sentAt: string, subject?: string, message?: string|null, type?: string}>|null
+     * @var array<int, array{id: string, sentAt: string, subject?: string, message?: string, type?: string}>|null
      */
     #[ORM\Column(type: 'json', nullable: true)]
     #[Groups(['invitation:read'])]
@@ -305,7 +304,7 @@ class QuestionnaireInvitation implements TimestampableInterface
     }
 
     /**
-     * @return array<int, array{id: string, sentAt: string, subject?: string, message?: string|null, type?: string}>
+     * @return array<int, array{id: string, sentAt: string, subject?: string, message?: string, type?: string}>
      */
     public function getRemindersHistory(): array
     {
@@ -313,7 +312,7 @@ class QuestionnaireInvitation implements TimestampableInterface
     }
 
     /**
-     * @param array<int, array{id: string, sentAt: string, subject?: string, message?: string|null, type?: string}>|null $remindersHistory
+     * @param array<int, array{id: string, sentAt: string, subject?: string, message?: string, type?: string}>|null $remindersHistory
      */
     public function setRemindersHistory(?array $remindersHistory): static
     {

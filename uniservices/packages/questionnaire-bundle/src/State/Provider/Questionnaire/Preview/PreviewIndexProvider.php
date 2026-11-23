@@ -11,7 +11,6 @@ use QuestionnaireBundle\Security\QuestionnaireVoter;
 use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewIndexDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Preview\PreviewSectionIndexDto;
 
-/** @implements ProviderInterface<PreviewIndexDto> */
 final readonly class PreviewIndexProvider implements ProviderInterface
 {
     public function __construct(
@@ -41,14 +40,9 @@ final readonly class PreviewIndexProvider implements ProviderInterface
             );
         }
 
-        $title = $q->getTitle();
-        if ($title === null) {
-            throw new \LogicException('Questionnaire title is required');
-        }
-
         return new PreviewIndexDto(
             $q->getUuidString(),
-            $title,
+            $q->getTitle(),
             $q->getOpt(),
             $q->getStartText(),
             $q->getEndText(),

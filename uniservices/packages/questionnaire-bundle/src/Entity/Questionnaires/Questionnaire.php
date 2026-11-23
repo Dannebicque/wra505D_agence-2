@@ -16,8 +16,8 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Contracts\TimestampableInterface;
 use App\Entity\Structure\StructureAnneeUniversitaire;
-use App\Entity\Users\Personnel;
 use App\Entity\Structure\StructureDepartement;
+use App\Entity\Users\Personnel;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\OptionTrait;
 use QuestionnaireBundle\Enum\QuestStatutEnum;
@@ -359,10 +359,6 @@ class Questionnaire implements TimestampableInterface
     #[Groups(['questionnaire:read'])]
     public function getStatutSeverity(): string
     {
-        if ($this->status === null) {
-            throw new \LogicException('Questionnaire status is required');
-        }
-
         return $this->status->getBadge();
     }
 
@@ -661,6 +657,25 @@ class Questionnaire implements TimestampableInterface
 
     public function isCompletionNotified(): bool
     {
-        return $this->estModele;
+        return $this->completionNotified;
+    }
+
+    public function setCompletionNotified(bool $completionNotified): static
+    {
+        $this->completionNotified = $completionNotified;
+
+        return $this;
+    }
+
+    public function getCompletionNotifiedAt(): ?\DateTimeImmutable
+    {
+        return $this->completionNotifiedAt;
+    }
+
+    public function setCompletionNotifiedAt(?\DateTimeImmutable $completionNotifiedAt): static
+    {
+        $this->completionNotifiedAt = $completionNotifiedAt;
+
+        return $this;
     }
 }

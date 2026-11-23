@@ -35,7 +35,7 @@ final class DuplicateQuestionnaireService
         try {
             $duplicate = new Questionnaire();
             $duplicate->setUuid(Uuid::v4());
-            $duplicate->setTitle($newTitle !== null && $newTitle !== '' && $newTitle !== '0' && trim($newTitle) !== '' ? trim($newTitle) : ($source->getTitle() . ' (Copie)'));
+            $duplicate->setTitle($newTitle && trim($newTitle) !== '' ? trim($newTitle) : ($source->getTitle() . ' (Copie)'));
             $duplicate->setDescription($source->getDescription());
             $duplicate->setStatus(QuestStatutEnum::DRAFT);
             $duplicate->setOpeningDate(null);
@@ -65,21 +65,16 @@ final class DuplicateQuestionnaireService
             foreach ($source->getSections() as $section) {
                 $sectionsCount++;
                 $newSection = new QuestionnaireSection();
-                $sectionTitle = $section->getTitle();
-                $sectionSortOrder = $section->getSortOrder();
-                if ($sectionSortOrder === null) {
-                    throw new \LogicException('Section fields are required');
-                }
                 $newSection->setUuid(Uuid::v4());
-                $newSection->setTitle($sectionTitle);
+                $newSection->setTitle($section->getTitle());
                 $newSection->setDescription($section->getDescription());
-                $newSection->setSortOrder($sectionSortOrder);
+                $newSection->setSortOrder($section->getSortOrder());
                 $newSection->setTypeSection($section->getTypeSection());
                 $newSection->setOpt($section->getOpt());
                 $newSection->setQuestionnaire($duplicate);
 
                 $sectionUuidMap[(string)$section->getUuid()] = (string)$newSection->getUuid();
-                if (!in_array($section->getId(), [null, 0], true)) {
+                if ($section->getId()) {
                     $sectionUuidMap[(string)$section->getId()] = (string)$newSection->getUuid();
                 }
 
@@ -88,13 +83,8 @@ final class DuplicateQuestionnaireService
                 foreach ($section->getQuestions() as $q) {
                     $questionsCount++;
                     $newQ = new QuestionnaireQuestion();
-                    $label = $q->getLabel();
-                    $sortOrder = $q->getSortOrder();
-                    if ($label === null || $sortOrder === null) {
-                        throw new \LogicException('Question fields are required');
-                    }
                     $newQ->setUuid(Uuid::v4());
-                    $newQ->setLabel($label);
+                    $newQ->setLabel($q->getLabel());
                     $newQ->setTypeQuestion($q->getTypeQuestion());
                     $newQ->setRequired((bool)$q->isObligatoire());
                     $newQ->setHelp($q->getHelp());
@@ -106,7 +96,7 @@ final class DuplicateQuestionnaireService
                     $newQ->setSection($newSection);
 
                     $questionUuidMap[(string)$q->getUuid()] = (string)$newQ->getUuid();
-                    if (!in_array($q->getId(), [null, 0], true)) {
+                    if ($q->getId()) {
                         $questionUuidMap[(string)$q->getId()] = (string)$newQ->getUuid();
                     }
 
@@ -127,7 +117,7 @@ final class DuplicateQuestionnaireService
                             continue;
                         }
 
-                        $dependsOn = LooseValue::castString($r['dependsOnQuestionId'] ?? $r['dependsOn'] ?? '');
+                        $dependsOn = (string)($r['dependsOnQuestionId'] ?? $r['dependsOn'] ?? '');
                         if (isset($questionUuidMap[$dependsOn])) {
                             $r['dependsOn'] = $questionUuidMap[$dependsOn];
                             $r['dependsOnQuestionId'] = $questionUuidMap[$dependsOn];
@@ -139,7 +129,7 @@ final class DuplicateQuestionnaireService
                                 if (!is_array($cond)) {
                                     continue;
                                 }
-                                $cDep = LooseValue::castString($cond['dependsOnQuestionId'] ?? $cond['dependsOn'] ?? '');
+                                $cDep = (string)($cond['dependsOnQuestionId'] ?? $cond['dependsOn'] ?? '');
                                 if (isset($questionUuidMap[$cDep])) {
                                     if (isset($cond['dependsOn'])) {
                                         $cond['dependsOn'] = $questionUuidMap[$cDep];
@@ -156,14 +146,14 @@ final class DuplicateQuestionnaireService
                         if (isset($r['targetQuestionIds']) && is_array($r['targetQuestionIds'])) {
                             $newTargets = [];
                             foreach ($r['targetQuestionIds'] as $tid) {
-                                $tidStr = LooseValue::castString($tid);
+                                $tidStr = (string)$tid;
                                 $newTargets[] = $questionUuidMap[$tidStr] ?? $tid;
                             }
                             $r['targetQuestionIds'] = $newTargets;
                         }
 
                         if (isset($r['targetSectionId'])) {
-                            $secIdStr = LooseValue::castString($r['targetSectionId']);
+                            $secIdStr = (string)$r['targetSectionId'];
                             if (isset($sectionUuidMap[$secIdStr])) {
                                 $r['targetSectionId'] = $sectionUuidMap[$secIdStr];
                             }

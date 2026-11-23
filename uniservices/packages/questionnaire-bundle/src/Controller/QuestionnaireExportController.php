@@ -2,7 +2,6 @@
 
 namespace QuestionnaireBundle\Controller;
 
-use App\Security\UserTypeVoter;
 use App\Service\Pdf\PdfExportOptions;
 use App\Service\Pdf\PdfExportService;
 use Davidannebicque\HtmlToSpreadsheetBundle\Spreadsheet\SpreadsheetRenderer;
@@ -62,7 +61,7 @@ class QuestionnaireExportController extends AbstractController
         if (is_array($payload) && is_array($payload['charts'] ?? null)) {
             foreach ($payload['charts'] as $key => $image) {
                 // N'accepte que des images PNG/JPEG en data URI
-                if (is_string($image) && preg_match('#^data:image/(png|jpeg);base64,[A-Za-z0-9+/=]+$#', $image) === 1) {
+                if (is_string($image) && preg_match('#^data:image/(png|jpeg);base64,[A-Za-z0-9+/=]+$#', $image)) {
                     $charts[(string) $key] = $image;
                 }
             }
@@ -100,15 +99,12 @@ class QuestionnaireExportController extends AbstractController
         if (!$analytics->seuilAtteint) {
             throw new ConflictHttpException(sprintf('Questionnaire anonyme : les résultats sont disponibles à partir de %d réponses envoyées.', $q->seuilResultats()));
         }
-        $this->denyAccessUnlessGranted(QuestionnaireFollowUpVoter::CAN_EXPORT_QUESTIONNAIRE, $q);
 
         return [$q, $analytics];
     }
 
     private function safeName(Questionnaire $q): string
     {
-        $name = preg_replace('/[^a-zA-Z0-9]+/', '_', $q->getTitle() ?? '');
-
-        return $name === null || $name === '' ? 'questionnaire' : $name;
+        return preg_replace('/[^a-zA-Z0-9]+/', '_', (string) $q->getTitle()) ?: 'questionnaire';
     }
 }

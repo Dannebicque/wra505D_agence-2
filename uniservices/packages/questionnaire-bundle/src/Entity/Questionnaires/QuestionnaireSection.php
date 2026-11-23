@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Traits\OptionTrait;
-use App\Utils\LooseValue;
 use QuestionnaireBundle\Enum\QuestTypeRepeatEnum;
 use QuestionnaireBundle\Enum\QuestTypeSectionEnum;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireSectionRepository;
@@ -25,6 +24,7 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: QuestionnaireSectionRepository::class)]
 #[ApiResource(
+    uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections',
     operations: [
         // Accès défini par les règles locales ; invitations filtrées par DepartmentCollectionAccessExtension.
         new GetCollection(normalizationContext: ['groups' => ['questionnaire_section:read']]),
@@ -282,6 +282,6 @@ class QuestionnaireSection
         if (!array_key_exists('repeat_source', $opts) || $opts['repeat_source'] === null) {
             return null;
         }
-        return QuestTypeRepeatEnum::tryFrom(LooseValue::key($opts['repeat_source']));
+        return QuestTypeRepeatEnum::tryFrom($opts['repeat_source']);
     }
 }

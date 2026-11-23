@@ -11,7 +11,6 @@ use QuestionnaireBundle\Security\QuestionnaireVoter;
 use QuestionnaireBundle\ApiDto\Questionnaire\Publish\PublishInputDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Publish\PublishOutputDto;
 
-/** @implements ProcessorInterface<PublishInputDto, PublishOutputDto> */
 final class PublishProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -26,14 +25,10 @@ final class PublishProcessor implements ProcessorInterface
         $q = $this->questionnaires->charger($uriVariables['questionnaireUuid'] ?? '', QuestionnaireVoter::CAN_PUBLISH_QUESTIONNAIRE);
 
         $result = $this->service->publish($q, $data->recipients);
-        $status = $q->getStatus();
-        if ($status === null) {
-            throw new \LogicException('Questionnaire status is required');
-        }
 
         return new PublishOutputDto(
-            questionnaireUuid: $q->getUuidString(),
-            status: $status,
+            questionnaireUuid: $q->getUuid(),
+            status: $q->getStatus(),
             publishedAt: $result['publishedAt'],
             sectionsCount: $result['sectionsCount'],
             invitationsCount: $result['invitationsCount'],

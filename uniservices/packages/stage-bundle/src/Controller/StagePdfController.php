@@ -14,6 +14,7 @@ use App\Entity\Users\Personnel;
 use App\Utils\LooseValue;
 use App\ValueObject\Adresse;
 use Doctrine\ORM\EntityManagerInterface;
+use StageBundle\Entity\Stages\StagePeriode;
 use StageBundle\Entity\Stages\StageContact;
 use StageBundle\Entity\Stages\StageEntreprise;
 use App\Service\Pdf\PdfExportOptions;
