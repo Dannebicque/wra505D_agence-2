@@ -39,12 +39,12 @@
       <RouterLink
         :to="lien({ categorie: category.id })"
         :aria-current="selectedCategory === category.id ? 'page' : undefined"
-        class="flex items-center gap-2 flex-1 min-h-[44px] rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+        class="flex items-center gap-2 flex-1 min-w-0 min-h-[44px] rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
       >
         <i :class="[category.icon, 'text-lg']" aria-hidden="true"></i>
-        <span class="flex-1 text-left">{{ category.name }}</span>
+        <span class="flex-1 min-w-0 break-words hyphens-auto text-left">{{ category.name }}</span>
 
-        <span class="text-xs bg-(--p-content-hover-background) text-muted-color px-2 py-1 rounded-full" aria-hidden="true">
+        <span class="shrink-0 text-xs bg-(--p-content-hover-background) text-muted-color px-2 py-1 rounded-full" aria-hidden="true">
           {{ category.documentCount }}
         </span>
         <span class="sr-only">{{ category.documentCount }} {{ category.documentCount > 1 ? 'documents' : 'document' }}</span>
