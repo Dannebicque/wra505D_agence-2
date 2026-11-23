@@ -78,7 +78,7 @@ provide('ligneGraphiques', {
                 <span class="matiere__nom">
                   <!-- La fiche ne couvre que l'année en cours : les semestres passés gardent un titre simple. -->
                   <router-link v-if="semestre.actif && enseignement.id" :to="lienFicheMatiere(enseignement.id)" class="matiere__titre matiere__lien">
-                    <span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}
+                    <span><span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}</span>
                   </router-link>
                   <span v-else class="matiere__titre"><span class="matiere__code">{{ enseignement.code }}</span> {{ enseignement.libelle }}</span>
                   <span class="matiere__poids">coef. {{ formatNote(enseignement.coefficient) }} · {{ poidsMatiere(ue, enseignement) }} % de l'UE</span>
@@ -282,7 +282,6 @@ provide('ligneGraphiques', {
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
-  gap: 0.3em;
   min-height: 44px;
   color: var(--p-primary-color);
   text-decoration: underline;

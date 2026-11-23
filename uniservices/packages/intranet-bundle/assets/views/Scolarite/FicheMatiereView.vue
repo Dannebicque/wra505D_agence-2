@@ -48,7 +48,7 @@ const BLOCS = [
 </script>
 
 <template>
-  <section class="fiche col-span-12 mt-16 md:mt-0">
+  <section class="fiche col-span-12">
     <div v-if="chargement" class="fiche__chargement" aria-hidden="true">
       <Skeleton height="10rem" border-radius="18px"/>
       <div class="fiche__grille">
