@@ -72,7 +72,6 @@ class StructureAnneeUniversitaireFixtures extends Fixture implements OrderedFixt
             ->setAnnee(self::anneeDeDebut() - 1)
             ->addPn($pn1)
             ->addPn($pn2)
-            ->addPersonnel($personnel)
             ->setActif(false)
         ;
         $manager->persist($anneeUniversitaire1);
@@ -82,7 +81,6 @@ class StructureAnneeUniversitaireFixtures extends Fixture implements OrderedFixt
             ->setAnnee(self::anneeDeDebut())
             ->addPn($pn1)
             ->addPn($pn2)
-            ->addPersonnel($personnel)
             ->setActif(true)
         ;
         $manager->persist($anneeUniversitaire2);

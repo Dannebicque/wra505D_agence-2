@@ -94,7 +94,6 @@ class ScolariteNotesFixtures extends Fixture implements OrderedFixtureInterface
             }
             $note = new EtudiantNote();
             $note->setEvaluation($evaluation)
-                ->setScolarite($scolarite)
                 ->setScolariteSemestre($scolariteSemestre)
                 ->setPresenceStatut($statut);
             if (null !== $valeur) {

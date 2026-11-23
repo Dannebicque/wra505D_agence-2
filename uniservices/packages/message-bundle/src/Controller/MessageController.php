@@ -444,7 +444,7 @@ class MessageController extends AbstractController
         $etudiants = [];
         $etudiantIdsMap = [];
 
-        foreach ($semestresAnnee as $s) {
+        foreach ($semestresActifs as $s) {
             $semestres[] = [
                 'id' => $s->getId(),
                 'libelle' => $s->getLibelle(),

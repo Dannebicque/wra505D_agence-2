@@ -60,10 +60,6 @@ use Symfony\Component\Uid\UuidV4;
             normalizationContext: ['groups' => ['edt_pointage:read']],
             security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
-        new Get(
-            normalizationContext: ['groups' => ['edt_event:read:agenda']],
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
-        ),
         new Get(normalizationContext: ['groups' => ['edt_event:read:agenda']], security: "is_granted('CAN_VIEW_EDT', object)"),
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_EDT', object)"),
         new Patch(

@@ -314,88 +314,18 @@ class Etablissement
     #[Groups(['etablissement:read'])]
     public function getIntegrations(): array
     {
-        $defaults = $this->defaultSettings();
+        $integrations = [];
+        foreach ($this->getSettings()['integrations'] as $name => $integration) {
+            $integrations[$name] = ['enabled' => $integration['enabled'], 'scope' => $integration['scope']];
+        }
 
-        $resolver = new OptionsResolver();
-        $resolver->setDefaults($defaults);
-        $resolver->setAllowedTypes('integrations', 'array');
-        $resolver->setNormalizer('integrations', function ($options, array $integrations): array {
-            $integrationsResolver = new OptionsResolver();
-            $integrationsResolver->setDefaults([
-                'edusign' => [
-                    'enabled' => false,
-                    'scope' => [],
-                    'apiKey' => null,
-                    'apiUrl' => null,
-                ],
-                'orebut' => [
-                    'enabled' => false,
-                    'apiUrl' => null,
-                ],
-            ]);
-            $integrationsResolver->setAllowedTypes('edusign', 'array');
-            $integrationsResolver->setAllowedTypes('orebut', 'array');
-            $resolvedIntegrations = $integrationsResolver->resolve($integrations);
-
-            $edusignResolver = new OptionsResolver();
-            $edusignResolver->setDefaults([
-                'enabled' => false,
-                'scope' => [],
-                'apiKey' => null,
-                'apiUrl' => null,
-            ]);
-            $edusignResolver->setAllowedTypes('enabled', 'bool');
-            $edusignResolver->setAllowedTypes('scope', 'array');
-            $edusignResolver->setAllowedTypes('apiKey', ['null', 'string']);
-            $edusignResolver->setAllowedTypes('apiUrl', ['null', 'string']);
-
-            $orebutResolver = new OptionsResolver();
-            $orebutResolver->setDefaults([
-                'enabled' => false,
-                'apiKey' => null,
-                'apiUrl' => null,
-            ]);
-            $orebutResolver->setAllowedTypes('enabled', 'bool');
-            $orebutResolver->setAllowedTypes('apiKey', ['null', 'string']);
-            $orebutResolver->setAllowedTypes('apiUrl', ['null', 'string']);
-
-            $resolvedIntegrations['edusign'] = $edusignResolver->resolve($resolvedIntegrations['edusign']);
-            $resolvedIntegrations['orebut'] = $orebutResolver->resolve($resolvedIntegrations['orebut']);
-
-            return $resolvedIntegrations;
-        });
-
-        $resolver->setAllowedTypes('emails', 'array');
-        $resolver->setNormalizer('emails', function ($options, array $emails): array {
-            $emailsResolver = new OptionsResolver();
-            $emailsResolver->setDefaults(self::HABILLAGE_EMAILS_DEFAUT);
-            $emailsResolver->setAllowedTypes('couleur', 'string');
-            $emailsResolver->setAllowedTypes('expediteur_nom', ['null', 'string']);
-            $emailsResolver->setAllowedTypes('reply_to', ['null', 'string']);
-            $emailsResolver->setAllowedTypes('signature', 'string');
-            $emailsResolver->setAllowedTypes('mentions_legales', 'string');
-            $emailsResolver->setAllowedTypes('contact_rgpd', ['null', 'string']);
-
-            return $emailsResolver->resolve($emails);
-        });
-
-        $resolver->setAllowedTypes('stage', 'array');
-        $resolver->setNormalizer('stage', function ($options, array $stage): array {
-            $stageResolver = new OptionsResolver();
-            $stageResolver->setDefaults([
-                'gratification_minimale' => 4.35,
-            ]);
-            $stageResolver->setAllowedTypes('gratification_minimale', ['float', 'int']);
-            return $stageResolver->resolve($stage);
-        });
-
-        return $resolver->resolve($settings);
+        return $integrations;
     }
 
     /**
      * @param array<array-key, mixed> $settings
      *
-     * @return array{integrations: array<string, array{enabled: bool, scope: list<string>, apiKey: ?string, apiUrl: ?string}>, stage: array{gratification_minimale: float}}
+     * @return array{integrations: array<string, array{enabled: bool, scope: list<string>, apiKey: ?string, apiUrl: ?string}>, stage: array{gratification_minimale: float}, emails: array{couleur: string, expediteur_nom: ?string, reply_to: ?string, signature: string, mentions_legales: string, contact_rgpd: ?string}}
      */
     private static function normalizeSettings(array $settings): array
     {
@@ -421,7 +351,7 @@ class Etablissement
                 // Taux légal horaire en vigueur, faute de réglage de l'établissement.
                 'gratification_minimale' => (is_int($gratification) || is_float($gratification)) && $gratification > 0 ? (float) $gratification : self::GRATIFICATION_MINIMALE,
             ],
-            'emails' => self::HABILLAGE_EMAILS_DEFAUT,
+            'emails' => self::normalizeEmails(is_array($settings['emails'] ?? null) ? $settings['emails'] : []),
         ];
     }
 
@@ -452,6 +382,27 @@ class Etablissement
         $settings['emails'] = array_merge($settings['emails'], array_intersect_key($habillage, self::HABILLAGE_EMAILS_DEFAUT));
 
         return $this->setSettings($settings);
+    }
+
+    /**
+     * @param array<array-key, mixed> $emails
+     *
+     * @return array{couleur: string, expediteur_nom: ?string, reply_to: ?string, signature: string, mentions_legales: string, contact_rgpd: ?string}
+     */
+    private static function normalizeEmails(array $emails): array
+    {
+        $defaut = self::HABILLAGE_EMAILS_DEFAUT;
+        $texte = static fn (string $cle): string => is_string($emails[$cle] ?? null) ? $emails[$cle] : $defaut[$cle];
+        $couleur = $texte('couleur');
+
+        return [
+            'couleur' => preg_match('/^#[0-9a-fA-F]{6}$/', $couleur) === 1 ? $couleur : $defaut['couleur'],
+            'expediteur_nom' => self::nonEmptyString($emails['expediteur_nom'] ?? null),
+            'reply_to' => self::nonEmptyString($emails['reply_to'] ?? null),
+            'signature' => $texte('signature'),
+            'mentions_legales' => $texte('mentions_legales'),
+            'contact_rgpd' => self::nonEmptyString($emails['contact_rgpd'] ?? null),
+        ];
     }
 
     private static function nonEmptyString(mixed $value): ?string
