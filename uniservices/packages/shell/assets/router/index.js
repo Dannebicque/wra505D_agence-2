@@ -3,6 +3,10 @@ import { bundles } from '../bundles-registry';
 import { useUsersStore, useSecurity } from '@stores';
 import { hasPermission } from '@utils';
 import { resolveServerErrorRoute } from '@helpers/serverError.js';
+import { initializeAppData } from '@requests/initializeData';
+
+// Les données privées ne se chargent qu'une fois, à la première navigation qui en a besoin.
+let privateDataInitialization;
 
 // Gather routes from all registered bundles
 const bundleRoutes = [];
