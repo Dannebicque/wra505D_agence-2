@@ -38,6 +38,21 @@ export default [
     },
   },
   {
+    path: 'services',
+    component: () => import('../../views/configuration/ServicesView.vue'),
+    name: 'services-etablissement',
+    meta: {
+      permission: 'isSuperAdmin',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Services de l\'établissement',
+        route: null
+      }]
+    },
+  },
+  {
     path: 'integrations',
     component: IntegrationsView,
     name: 'integrations',
@@ -153,6 +168,24 @@ export default [
         route: '/configuration'
       }, {
         label: 'Modèles de mails',
+        route: null
+      }]
+    },
+  },
+  {
+    path: 'emails/habillage',
+    component: () => import('../../views/configuration/emails/EmailHabillageView.vue'),
+    name: 'emails-habillage',
+    meta: {
+      permission: 'isSuperAdmin',
+      breadcrumb: [{ label: 'Portail', route: '/portail' }, {
+        label: 'Configuration',
+        route: '/configuration'
+      }, {
+        label: 'Modèles de mails',
+        route: '/auth/configuration/emails'
+      }, {
+        label: 'Habillage',
         route: null
       }]
     },

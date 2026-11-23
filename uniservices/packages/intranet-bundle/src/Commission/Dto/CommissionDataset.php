@@ -11,15 +11,19 @@ use App\Entity\Structure\StructureSemestre;
 final readonly class CommissionDataset
 {
     /**
-     * @param EtudiantScolariteSemestre[]            $scolarites
+     * @param array<int, EtudiantScolariteSemestre>  $scolarites
      * @param array<int, array<int, float>>          $moyennesUe          [scolariteSemestreId][ueId] => moyenne
      * @param array<int, array<int, float>>          $moyennesEnseignement [scolariteSemestreId][enseignementId] => moyenne
+     * @param array<string, mixed>                   $sources
+     * @param list<string>                           $erreurs
      */
     public function __construct(
         public StructureSemestre $semestre,
         public array $scolarites,
         public array $moyennesUe,
         public array $moyennesEnseignement,
+        public array $sources = [],
+        public array $erreurs = [],
     ) {
     }
 }

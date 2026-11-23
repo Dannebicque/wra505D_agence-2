@@ -32,7 +32,6 @@ final class GroupMigrator extends AbstractMigrator
         $created = $updated = $skipped = $failed = 0;
         $messages = [];
         $unknownTypes = [];
-        $legacyParcoursLinks = 0;
         $legacyEduSignIds = 0;
 
         $schemaManager = $this->source->createSchemaManager();
@@ -47,7 +46,7 @@ final class GroupMigrator extends AbstractMigrator
 
             if ($hasJoinTable) {
                 $groupSql = <<<'SQL'
-SELECT DISTINCT g.id, g.parent_id, g.libelle, g.code_apogee, g.ordre, g.parcours_id, g.apc_parcours_id, g.id_edu_sign, tg.type
+SELECT DISTINCT g.id, g.parent_id, g.libelle, g.code_apogee, g.ordre, g.id_edu_sign, tg.type
 FROM groupe g
 INNER JOIN type_groupe tg ON tg.id = g.type_groupe_id
 INNER JOIN type_groupe_semestre tgs ON tgs.type_groupe_id = tg.id
@@ -67,7 +66,7 @@ WHERE a.diplome_id = :diplome_id
 SQL;
             } else {
                 $groupSql = <<<'SQL'
-SELECT DISTINCT g.id, g.parent_id, g.libelle, g.code_apogee, g.ordre, g.parcours_id, g.apc_parcours_id, g.id_edu_sign, tg.type
+SELECT DISTINCT g.id, g.parent_id, g.libelle, g.code_apogee, g.ordre, g.id_edu_sign, tg.type
 FROM groupe g
 INNER JOIN type_groupe tg ON tg.id = g.type_groupe_id
 INNER JOIN semestre s ON s.id = tg.semestre_id
@@ -95,9 +94,6 @@ SQL;
                         $unknownTypes[LooseValue::castString($row['type'])] = ($unknownTypes[LooseValue::castString($row['type'])] ?? 0) + 1;
                         $type = TypeGroupeEnum::TYPE_GROUPE_AUTRE;
                     }
-                    if (LooseValue::truthyString($row['parcours_id']) !== null || LooseValue::truthyString($row['apc_parcours_id']) !== null) {
-                        ++$legacyParcoursLinks;
-                    }
                     if (LooseValue::truthyString($row['id_edu_sign']) !== null) {
                         ++$legacyEduSignIds;
                     }
@@ -111,7 +107,8 @@ SQL;
                         ->setLibelle(LooseValue::castString($row['libelle']))
                         ->setType($type)
                         ->setOrdre(null !== $row['ordre'] ? LooseValue::castInt($row['ordre']) : null)
-                        ->setCodeApogee(LooseValue::truthyString($row['code_apogee']));
+                        ->setCodeApogee(LooseValue::truthyString($row['code_apogee']))
+                        ->setKeyEduSign(LooseValue::truthyString($row['id_edu_sign']));
 
                     if ($isNew) {
                         $this->entityManager->persist($entity);
@@ -159,9 +156,6 @@ SQL;
                 array_keys($unknownTypes),
                 array_values($unknownTypes),
             )).'.';
-        }
-        if ($legacyParcoursLinks > 0) {
-            $messages[] = sprintf('Occurrences groupe V3 avec parcours/apcParcours non transposées automatiquement: %d.', $legacyParcoursLinks);
         }
         if ($legacyEduSignIds > 0) {
             $messages[] = sprintf('Occurrences groupe V3 avec idEduSign sans équivalent dans StructureGroupe V4: %d.', $legacyEduSignIds);

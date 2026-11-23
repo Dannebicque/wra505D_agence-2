@@ -166,7 +166,7 @@ export const useUsersStore = defineStore('users', () => {
                         if (!departement.departementPersonnels) return departement;
 
                         const targetUserId = Number(userId.value);
-                        const personnelDepartements = departement.departementPersonnels.filter(dp => 
+                        const personnelDepartements = departement.departementPersonnels.filter(dp =>
                             dp?.personnel && (
                                 Number(dp.personnel.id) === targetUserId ||
                                 dp.personnel['@id'] === `/api/personnels/${targetUserId}`
@@ -210,7 +210,7 @@ export const useUsersStore = defineStore('users', () => {
                         actif: true,
                         etudiant: userId.value
                     };
-                    const scolaritesActives = await getEtudiantScolaritesService(params, '/user');
+                    const scolaritesActives = await getEtudiantScolaritesService(params, '/user', false, 'toutes');
                     const activeFromList = Array.isArray(scolaritesActives)
                         ? (scolaritesActives.find(s => s.actif === true) || scolaritesActives.find(s => s.anneeUniversitaire?.actif === true) || scolaritesActives[0])
                         : null;

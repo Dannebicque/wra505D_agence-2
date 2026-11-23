@@ -25,6 +25,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Travail sur la maquette ou les données de l’année demandée.')]
 class CreateEtudiantController extends AbstractController
 {
     public function __construct(
@@ -66,13 +68,18 @@ class CreateEtudiantController extends AbstractController
             return new JsonResponse(['message' => 'Année pédagogique introuvable'], Response::HTTP_NOT_FOUND);
         }
 
+        $newScolarite = $this->createEtudiantScolariteFromData($etudiant, $anneeUniv, $annee);
+        $this->denyAccessUnlessGranted('CAN_EDIT_ETUDIANT_SCOLARITE', $newScolarite);
+
         $scolarite = $this->etudiantScolariteRepository->findOneBy([
             'etudiant' => $etudiant,
             'anneeUniversitaire' => $anneeUniv,
         ]);
 
-        if (!$scolarite instanceof EtudiantScolarite) {
-            $scolarite = $this->createEtudiantScolariteFromData($etudiant, $anneeUniv, $annee);
+        if ($scolarite instanceof EtudiantScolarite) {
+            $this->denyAccessUnlessGranted('CAN_EDIT_ETUDIANT_SCOLARITE', $scolarite);
+        } else {
+            $scolarite = $newScolarite;
             $this->entityManager->persist($scolarite);
         }
 
@@ -89,10 +96,12 @@ class CreateEtudiantController extends AbstractController
     #[Route('/api/etudiants/new', methods: ['POST'], name: 'create_etudiant')]
     #[Route('/api/new/etudiants', methods: ['POST'])]
     #[IsGranted('CAN_EDIT_ETUDIANT_SCOLARITE')]
+    #[IsGranted('IS_SUPER_ADMIN')]
     public function create(Request $request): Response
     {
         // Récupérer les données JSON envoyées dans la requête
         $data = $request->toArray();
+        $data['anneeUniversitaireId'] = $request->attributes->get('_annee_universitaire_id');
         $fileContent = $data['fileContent'] ?? null;
         $anneeUniv = $this->structureAnneeUniversitaireRepository->findOneBy(['id' => $data['anneeUniversitaireId'] ?? null]);
 

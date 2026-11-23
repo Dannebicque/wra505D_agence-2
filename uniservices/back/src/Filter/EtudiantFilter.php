@@ -60,6 +60,13 @@ class EtudiantFilter implements FilterInterface
                 ->andWhere(sprintf('%s.id = :anneeUniversitaire', $anneeUnivAlias))
                 ->setParameter('anneeUniversitaire', $value);
 
+            $filters = LooseValue::row($context['filters'] ?? []);
+            if (isset($filters['annee'])) {
+                $anneeAlias = $this->getAnneeFormationAlias($queryBuilder, $queryNameGenerator, $scolaritesAlias);
+                $queryBuilder
+                    ->andWhere(sprintf('%s.id = :annee', $anneeAlias))
+                    ->setParameter('annee', $filters['annee']);
+            }
         }
 
         if ('semestre' === $property) {
@@ -108,6 +115,13 @@ class EtudiantFilter implements FilterInterface
                 ->andWhere(sprintf('%s.annee_sortie = :anneeSortie', $alias))
                 ->setParameter('anneeSortie', LooseValue::castInt($value));
         }
+    }
+
+    private function getAnneeFormationAlias(QueryBuilder $qb, QueryNameGeneratorInterface $names, string $scolarite): string
+    {
+        $inscription = $this->getOrCreateJoin($qb, $names, $scolarite, 'scolariteSemestre');
+        $semestre = $this->getOrCreateJoin($qb, $names, $inscription, 'semestre');
+        return $this->getOrCreateJoin($qb, $names, $semestre, 'annee');
     }
 
     private function getOrCreateJoin(QueryBuilder $qb, QueryNameGeneratorInterface $queryNameGenerator, string $fromAlias, string $association): string

@@ -1,8 +1,8 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {useEtablissementStore} from "@stores";
-import {ValidatedInput, ErrorView, ListSkeleton} from "@components";
-import {getEtablissementSettingsService, updateEtablissementService} from "@requests";
+import {ValidatedInput, ErrorState, ListSkeleton} from "@components";
+import {updateEtablissementService} from "@requests";
 
 const etablissementStore = useEtablissementStore();
 const etablissement = ref();
@@ -118,7 +118,7 @@ const toggleEdusignScope = (scope) => {
     <em>Gestion des intégrations externes de l'établissement</em>
     </div>
 
-    <ErrorView v-if="hasError"/>
+    <ErrorState v-if="hasError"/>
     <template v-else>
       <div class="card-body">
         <ListSkeleton v-if="isLoadingEtablissement"/>

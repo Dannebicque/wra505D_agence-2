@@ -2,10 +2,10 @@
 
 namespace IntranetBundle\Repository\Etudiant;
 
-use App\Entity\Structure\StructureSemestre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use IntranetBundle\Entity\Etudiant\MoyenneUe;
+use App\Entity\Structure\StructureSemestre;
 
 /**
  * @extends ServiceEntityRepository<MoyenneUe>

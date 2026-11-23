@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { rememberServerError } from './serverError.js';
+import { prepareContexteAnnuel, reponseAnnuelleObsolete } from './contexteAnnuel.js';
 
 const baseURL = import.meta.env.VITE_BASE_URL || '';
 
@@ -38,7 +39,8 @@ const refreshToken = async () => {
 // Fonction de déconnexion
 const logout = () => {
     // Éviter les boucles de déconnexion si on est déjà sur la page de login
-    if (window.location.pathname === '/auth/login' || window.location.pathname === '/auth/login/') return;
+    const currentPath = window.location.pathname.replace(/\/+$/, '');
+    if (currentPath === '/app/auth/login' || currentPath === '/auth/login') return;
 
     // Appeler l'endpoint de logout pour supprimer les cookies côté serveur
     axios.post(`${baseURL}/api/logout`, {}, { withCredentials: true })
@@ -91,7 +93,7 @@ api.interceptors.request.use(
 
         // Les cookies sont envoyés automatiquement grâce à withCredentials: true
         // Plus besoin de gérer le token manuellement dans le header
-        return config;
+        return prepareContexteAnnuel(config);
     },
     error => {
         return Promise.reject(error);
@@ -99,12 +101,18 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-    response => response,
+    response => {
+        if (reponseAnnuelleObsolete(response)) throw new axios.CanceledError('Réponse ignorée après un changement d’année universitaire.');
+        return response;
+    },
     async error => {
         const originalRequest = error.config;
 
         if (!originalRequest) {
             return Promise.reject(error);
+        }
+        if (reponseAnnuelleObsolete({ config: originalRequest, headers: error.response?.headers })) {
+            return Promise.reject(new axios.CanceledError('Erreur ignorée après un changement d’année universitaire.'));
         }
 
         // Skip refresh pour les endpoints publics

@@ -18,9 +18,15 @@ final readonly class CommissionService implements CommissionServiceInterface
 
     public function getCommissionView(StructureSemestre $semestre): CommissionView
     {
+        return $this->calculate($semestre)[0];
+    }
+
+    /** @return array{\IntranetBundle\Commission\Dto\CommissionView, \IntranetBundle\Commission\Dto\CommissionDataset} */
+    public function calculate(StructureSemestre $semestre): array
+    {
         $dataset = $this->dataLoader->loadDataset($semestre);
         $strategy = $this->strategyResolver->resolve($semestre);
 
-        return $strategy->build($semestre, $dataset);
+        return [$strategy->build($semestre, $dataset), $dataset];
     }
 }

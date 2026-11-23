@@ -163,7 +163,9 @@ SQL;
                         $legacySemestreOldId = self::legacySemesterOldId($evaluation->getLegacyContext());
                         if ($legacySemestreOldId > 0) {
                             foreach ($scolarite->getScolariteSemestre() as $candidate) {
-                                if (self::legacySemesterOldId($candidate->getLegacyContext()) === $legacySemestreOldId) {
+                                $candidateOldId = $candidate->getSemestre()?->getOldId()
+                                    ?? self::legacySemesterOldId($candidate->getLegacyContext());
+                                if ($candidateOldId === $legacySemestreOldId) {
                                     $scolariteSemestre = $candidate;
                                     break;
                                 }
@@ -173,11 +175,16 @@ SQL;
 
                     if (null === $scolariteSemestre) {
                         ++$partial['scolariteSemestre'];
+                        ++$skipped;
+                        ++$processed;
+                        $this->addSample($messages, $sampleCount, sprintf('Note V3 #%s non importée : inscription semestrielle non résolue.', LooseValue::nullableString($row['id'])));
+                        $this->flushBatch($context, $processed);
+                        continue;
                     }
 
                     $note = $this->entityManager->getRepository(EtudiantNote::class)->findOneBy([
                         'evaluation' => $evaluation,
-                        'scolarite' => $scolarite,
+                        'scolariteSemestre' => $scolariteSemestre,
                     ]);
                     $isNew = null === $note;
                     $note ??= new EtudiantNote();
@@ -185,7 +192,6 @@ SQL;
                     $note
                         ->setUuid($this->resolveUuid($row['uuid'] ?? null))
                         ->setEvaluation($evaluation)
-                        ->setScolarite($scolarite)
                         ->setScolariteSemestre($scolariteSemestre)
                         ->setCommentaire(LooseValue::truthyString($row['commentaire']))
                         ->setPubliee($evaluation->isVisible());

@@ -20,7 +20,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('independant', 'Identité, paramétrage partagé ou données sans année universitaire.')]
 class DashboardController extends AbstractController
 {
     private function getDashboard(string $code): \App\Domain\Dashboard\DashboardDefinitionInterface
@@ -442,6 +445,7 @@ class DashboardController extends AbstractController
     }
 
     #[Route('/api/widgets/{code}/data', name: 'api_widgets_data', methods: ['GET'])]
+    #[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Données des widgets dans le contexte annuel de travail.')]
     public function getWidgetData(string $code): JsonResponse
     {
         $user = $this->getCurrentPersonnel();

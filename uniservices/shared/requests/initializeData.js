@@ -1,3 +1,4 @@
+import { setSelectedAnneeUniversitaireId } from '@helpers/contexteAnnuel.js';
 import { useAnneeUnivStore, useUsersStore, useDiplomeStore, useAnneeStore, useEtablissementStore } from '@stores';
 
 export const initializeAppData = async () => {
@@ -20,18 +21,25 @@ const initAnneeUnivData = async () => {
 
   // Check if a selected annee universitaire exists in localStorage
   const selectedAnneeUnivStr = localStorage.getItem('selectedAnneeUniv');
-  const selectedAnneeUniv = selectedAnneeUnivStr ? JSON.parse(selectedAnneeUnivStr) : null;
-  // Find the corresponding annee in the list to get the current actif status
-  const foundAnnee = selectedAnneeUniv
-    ? anneeUnivStore.anneesUniv.find(annee => annee.id === selectedAnneeUniv.id)
-    : null;
-
-  if (foundAnnee) {
-    // Update the selected annee with the current actif status
-    anneeUnivStore.setSelectedAnneeUniv({
-      ...selectedAnneeUniv,
-      isActif: foundAnnee.actif
-    });
+  if (selectedAnneeUnivStr) {
+    // Load the selected annee from localStorage
+    const selectedAnneeUniv = JSON.parse(selectedAnneeUnivStr);
+    // Find the corresponding annee in the list to get the current actif status
+    const foundAnnee = anneeUnivStore.anneesUniv.find(annee => annee.id === selectedAnneeUniv.id);
+    if (foundAnnee) {
+      // Update the selected annee with the current actif status
+      anneeUnivStore.setSelectedAnneeUniv({
+        ...selectedAnneeUniv,
+        isActif: foundAnnee.actif
+      });
+    } else {
+      // Une ancienne sélection supprimée ne doit pas devenir un contexte valide.
+      localStorage.removeItem('selectedAnneeUniv');
+      setSelectedAnneeUniversitaireId(null);
+      anneeUnivStore.selectedAnneeUniv = null;
+      await anneeUnivStore.getCurrentAnneeUniv();
+      if (anneeUnivStore.anneeUniv) anneeUnivStore.setSelectedAnneeUniv(anneeUnivStore.anneeUniv);
+    }
   } else {
     // Aucune année mémorisée, ou une année qui n'existe plus (base rechargée) : on prend l'année en cours.
     await anneeUnivStore.getCurrentAnneeUniv();

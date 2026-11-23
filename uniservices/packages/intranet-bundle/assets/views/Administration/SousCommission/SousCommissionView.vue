@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import ContexteSelection from '@/components/Structure/ContexteSelection.vue';
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { HeaderComponent, SimpleSkeleton, Kpi } from '@components';
 import {
   UsersIcon,
@@ -9,10 +10,12 @@ import {
   CheckCircleIcon,
   AcademicCapIcon,
 } from '@heroicons/vue/24/outline';
-import { useAnneeStore, useAnneeUnivStore } from '@stores';
-import { getSemestresService } from '@requests';
+import { useAnneeStore, useAnneeUnivStore, useUsersStore } from '@stores';
+import { getAnneesService, getSemestresService } from '@requests';
 import {
   getCommissionSemestre,
+  validerCommission, rouvrirCommission, restaurerCommission, getHistoriqueCommission,
+  type CommissionRevision,
   type CommissionViewData,
   type CommissionRow,
 } from '@/service/commissionService';
@@ -20,11 +23,23 @@ import SousCommissionApcTable from './components/SousCommissionApcTable.vue';
 import SousCommissionClassiqueTable from './components/SousCommissionClassiqueTable.vue';
 
 const route = useRoute();
+const router = useRouter();
 const anneeStore = useAnneeStore();
 const anneeUnivStore = useAnneeUnivStore();
+const usersStore = useUsersStore();
 
-const anneeId = computed(() => route.params.anneeId || anneeStore.annee?.id);
+const annee = ref<any>(null);
+const annees = ref<any[]>([]);
+const isLoadingAnnees = ref(true);
+const isInitialLoading = ref(true);
+const departementId = computed(() => usersStore.departementDefaut?.id ?? null);
+const anneeId = computed(() => annee.value?.id ?? null);
 const selectedAnneeUnivId = computed(() => anneeUnivStore.selectedAnneeUniv?.id ?? null);
+const sameId = (left: any, right: any) => String(left ?? '') === String(right ?? '');
+
+let anneesRequestId = 0;
+let semestresRequestId = 0;
+let commissionRequestId = 0;
 
 // Données du semestre
 const semestres = ref<any[]>([]);
@@ -35,6 +50,85 @@ const isLoadingSemestres = ref(true);
 const commissionData = ref<CommissionViewData | null>(null);
 const isLoadingCommission = ref(false);
 const errorMessage = ref<string | null>(null);
+
+const validationDialog = ref(false);
+const reouvertureDialog = ref(false);
+const historiqueDialog = ref(false);
+const historique = ref<CommissionRevision[]>([]);
+const historiqueSelection = ref<CommissionRevision | null>(null);
+const revisionARestaurer = ref<CommissionRevision | null>(null);
+const motifRestauration = ref('');
+const erreurRestauration = ref<string | null>(null);
+const saving = ref(false);
+const motifReouverture = ref('');
+const decisionsJury = ref<Record<number, { decision: boolean | null; motif: string }>>({});
+const estValidee = computed(() => commissionData.value?.validation?.etat === 'validee');
+const decisionsValides = computed(() => (commissionData.value?.rows ?? []).every(row => {
+  const d = decisionsJury.value[row.scolariteSemestreId];
+  return d && typeof d.decision === 'boolean' && (d.decision === row.decision || d.motif.trim().length > 0);
+}));
+watch(commissionData, (data) => {
+  decisionsJury.value = Object.fromEntries((data?.rows ?? []).map(row => [row.scolariteSemestreId, { decision: row.decisionJury ?? row.decision ?? null, motif: row.motifJury ?? '' }]));
+});
+const messageErreur = (e: any) => e?.response?.data?.detail ?? e?.response?.data?.message ?? 'Impossible de mettre à jour la sous-commission.';
+const valider = async () => {
+  if (!commissionData.value || !selectedSemestre.value) return;
+  saving.value = true;
+  try {
+    const decisions = Object.entries(decisionsJury.value).map(([id, d]) => ({ inscriptionId: Number(id), decision: d.decision as boolean, motif: d.motif || null }));
+    commissionData.value = await validerCommission(selectedSemestre.value.id, commissionData.value.empreinte, decisions);
+    validationDialog.value = false;
+    errorMessage.value = null;
+  } catch (e) { errorMessage.value = messageErreur(e); }
+  finally { saving.value = false; }
+};
+const rouvrir = async () => {
+  const revision = commissionData.value?.validation.revision;
+  if (!revision || !selectedSemestre.value) return;
+  saving.value = true;
+  try {
+    commissionData.value = await rouvrirCommission(selectedSemestre.value.id, revision.numero, motifReouverture.value);
+    reouvertureDialog.value = false;
+    motifReouverture.value = '';
+    errorMessage.value = null;
+  } catch (e) { errorMessage.value = messageErreur(e); }
+  finally { saving.value = false; }
+};
+const voirHistorique = async () => {
+  if (!selectedSemestre.value) return;
+  saving.value = true;
+  try {
+    historique.value = await getHistoriqueCommission(selectedSemestre.value.id);
+    historiqueSelection.value = null;
+    revisionARestaurer.value = null;
+    motifRestauration.value = '';
+    erreurRestauration.value = null;
+    historiqueDialog.value = true;
+  } catch (e) { errorMessage.value = messageErreur(e); }
+  finally { saving.value = false; }
+};
+
+const preparerRestauration = (revision: CommissionRevision) => {
+  revisionARestaurer.value = revision;
+  motifRestauration.value = '';
+  erreurRestauration.value = null;
+};
+const restaurer = async () => {
+  const numeroRevision = historique.value[0]?.numero;
+  if (saving.value || !selectedSemestre.value || !revisionARestaurer.value || numeroRevision === undefined || !motifRestauration.value.trim()) return;
+
+  saving.value = true;
+  erreurRestauration.value = null;
+  try {
+    commissionData.value = await restaurerCommission(selectedSemestre.value.id, revisionARestaurer.value.numero, numeroRevision, motifRestauration.value.trim());
+    historiqueDialog.value = false;
+    errorMessage.value = null;
+  } catch (e) {
+    erreurRestauration.value = messageErreur(e);
+  } finally {
+    saving.value = false;
+  }
+};
 
 // Options d'affichage
 const searchQuery = ref('');
@@ -58,32 +152,50 @@ const filteredRows = computed<CommissionRow[]>(() => {
 });
 
 // Chargement des semestres de l'année
-const loadSemestres = async () => {
+const getSemestres = async () => {
+  const requestId = ++semestresRequestId;
   isLoadingSemestres.value = true;
+  commissionRequestId++;
+  isLoadingCommission.value = false;
+  commissionData.value = null;
+  semestres.value = [];
+  selectedSemestre.value = null;
+
+  if (!anneeId.value || !selectedAnneeUnivId.value) {
+    isLoadingSemestres.value = false;
+    return;
+  }
+
   try {
     const params: Record<string, any> = {};
     if (anneeId.value) params.annee = anneeId.value;
     if (selectedAnneeUnivId.value) params.anneeUniversitaire = selectedAnneeUnivId.value;
 
     const list = await getSemestresService(params);
+    if (requestId !== semestresRequestId) return;
     semestres.value = Array.isArray(list) ? list : [];
 
     if (semestres.value.length > 0) {
       selectedSemestre.value = semestres.value[0];
-    } else {
-      selectedSemestre.value = null;
     }
   } catch (e: any) {
     console.error('Erreur chargement semestres:', e);
+    if (requestId === semestresRequestId) {
+      semestres.value = [];
+      selectedSemestre.value = null;
+    }
   } finally {
-    isLoadingSemestres.value = false;
+    if (requestId === semestresRequestId) isLoadingSemestres.value = false;
   }
 };
 
 // Chargement de la vue commission
 const loadCommission = async () => {
-  if (!selectedSemestre.value?.id) {
+  const requestId = ++commissionRequestId;
+  const semestreId = selectedSemestre.value?.id;
+  if (!semestreId) {
     commissionData.value = null;
+    isLoadingCommission.value = false;
     return;
   }
 
@@ -91,14 +203,65 @@ const loadCommission = async () => {
   errorMessage.value = null;
 
   try {
-    commissionData.value = await getCommissionSemestre(selectedSemestre.value.id);
+    const data = await getCommissionSemestre(semestreId);
+    if (requestId === commissionRequestId && sameId(selectedSemestre.value?.id, semestreId)) {
+      commissionData.value = data;
+    }
   } catch (e: any) {
     console.error('Erreur chargement commission:', e);
-    errorMessage.value = e?.response?.data?.error || 'Impossible de charger la commission pour ce semestre.';
-    commissionData.value = null;
+    if (requestId === commissionRequestId) {
+      errorMessage.value = e?.response?.data?.error || 'Impossible de charger la commission pour ce semestre.';
+      commissionData.value = null;
+    }
   } finally {
-    isLoadingCommission.value = false;
+    if (requestId === commissionRequestId) isLoadingCommission.value = false;
   }
+};
+
+const getAnnees = async () => {
+  const requestId = ++anneesRequestId;
+  isLoadingAnnees.value = true;
+
+  if (!departementId.value || !selectedAnneeUnivId.value) {
+    annees.value = [];
+    annee.value = null;
+    isLoadingAnnees.value = false;
+    return;
+  }
+
+  try {
+    const params = {
+      departement: departementId.value,
+      anneeUniversitaire: selectedAnneeUnivId.value,
+      actif: true,
+    };
+    const response = await getAnneesService(params, '/liste', false);
+    if (requestId !== anneesRequestId) return;
+    annees.value = Array.isArray(response) ? response : [];
+
+    const requestedId = route.params.anneeId ?? annee.value?.id ?? anneeStore.annee?.id;
+    annee.value = annees.value.find((item) => sameId(item.id, requestedId)) ?? annees.value[0] ?? null;
+  } catch (e: any) {
+    console.error('Erreur lors de la récupération des années :', e);
+    if (requestId === anneesRequestId) {
+      annees.value = [];
+      annee.value = null;
+    }
+  } finally {
+    if (requestId === anneesRequestId) isLoadingAnnees.value = false;
+  }
+};
+
+const syncRouteAnnee = async (selectedAnnee: any) => {
+  if (!selectedAnnee?.id || sameId(route.params.anneeId, selectedAnnee.id)) return;
+  await router.replace({
+    name: route.name,
+    params: {
+      ...route.params,
+      anneeId: String(selectedAnnee.id),
+    },
+    query: route.query,
+  });
 };
 
 // Export CSV de la grille
@@ -145,25 +308,67 @@ const exportCsv = () => {
 };
 
 onMounted(async () => {
-  await loadSemestres();
-  if (selectedSemestre.value?.id) {
+  try {
+    await getAnnees();
+    await syncRouteAnnee(annee.value);
+    await getSemestres();
     await loadCommission();
+  } finally {
+    isInitialLoading.value = false;
   }
 });
 
 watch(selectedSemestre, async (newSem, oldSem) => {
-  if (newSem?.id && newSem.id !== oldSem?.id) {
-    await loadCommission();
-  }
-});
-
-watch(anneeId, async () => {
-  await loadSemestres();
+  if (isInitialLoading.value || isLoadingSemestres.value || sameId(newSem?.id, oldSem?.id)) return;
   await loadCommission();
+}, { flush: 'sync' });
+
+watch(annee, async (newAnnee, oldAnnee) => {
+  if (isInitialLoading.value || isLoadingAnnees.value || sameId(newAnnee?.id, oldAnnee?.id)) return;
+  await syncRouteAnnee(newAnnee);
+  await getSemestres();
+  await loadCommission();
+}, { flush: 'sync' });
+
+watch(() => route.params.anneeId, (routeAnneeId) => {
+  const selectedFromRoute = annees.value.find((item) => sameId(item.id, routeAnneeId));
+  if (selectedFromRoute && !sameId(annee.value?.id, selectedFromRoute.id)) {
+    annee.value = selectedFromRoute;
+  }
+}, { flush: 'sync' });
+
+let contexteRequestId = 0;
+watch([departementId, selectedAnneeUnivId], async () => {
+  if (isInitialLoading.value) return;
+  const requestId = ++contexteRequestId;
+  commissionRequestId++;
+  commissionData.value = null;
+  semestres.value = [];
+  selectedSemestre.value = null;
+
+  await getAnnees();
+  if (requestId !== contexteRequestId) return;
+  await syncRouteAnnee(annee.value);
+  await getSemestres();
+  if (requestId === contexteRequestId) await loadCommission();
 });
 </script>
 
 <template>
+  <ContexteSelection titre="Semestre de travail" :valeur="[annee?.libelle, selectedSemestre?.libelle].filter(Boolean).join(' · ')">
+    <div class="flex flex-col gap-2"><label for="contexte-annee" class="text-sm font-semibold text-muted-color">Année de formation</label>
+      <Select :loading="isLoadingAnnees" :disabled="isLoadingAnnees || saving" input-id="contexte-annee" class="w-full sm:w-60" v-model="annee" option-label="libelle" :options="annees" placeholder="Changer d'année"/>
+    </div>
+    <div class="flex flex-col gap-2"><label for="contexte-selectedSemestre" class="text-sm font-semibold text-muted-color">Semestre</label>
+      <Select :loading="isLoadingSemestres" :disabled="isLoadingSemestres || saving" input-id="contexte-selectedSemestre"
+            v-model="selectedSemestre"
+            :options="semestres"
+            option-label="libelle"
+            placeholder="Choisir un semestre" class="w-full sm:w-60"
+          />
+    </div>
+  </ContexteSelection>
+
   <div class="flex flex-col gap-6">
     <!-- Header principal -->
     <HeaderComponent
@@ -175,18 +380,6 @@ watch(anneeId, async () => {
     <!-- Bandeau de configuration & sélection du semestre -->
     <div class="card p-4 rounded-xl border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 shadow-xs flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-4 flex-wrap">
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-semibold text-surface-700 dark:text-surface-300">Semestre :</label>
-          <SimpleSkeleton v-if="isLoadingSemestres" class="w-48 h-9" />
-          <Select
-            v-else
-            v-model="selectedSemestre"
-            :options="semestres"
-            option-label="libelle"
-            placeholder="Choisir un semestre"
-            class="w-56"
-          />
-        </div>
 
         <!-- Badge du mode détecté (APC vs Classique) -->
         <div v-if="commissionData" class="flex items-center gap-2">
@@ -333,10 +526,7 @@ watch(anneeId, async () => {
     </div>
 
     <!-- Message d'erreur -->
-    <div v-if="errorMessage" class="p-4 rounded-xl bg-emphasis border border-surface text-color text-sm flex items-center gap-3">
-      <i class="pi pi-exclamation-circle text-lg"></i>
-      <span>{{ errorMessage }}</span>
-    </div>
+    <Message v-if="errorMessage" severity="error" icon="pi pi-exclamation-circle">{{ errorMessage }}</Message>
 
     <!-- Loader de commission -->
     <div v-if="isLoadingCommission" class="card p-8 rounded-xl border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 flex flex-col items-center justify-center gap-3">
@@ -344,7 +534,29 @@ watch(anneeId, async () => {
       <span class="text-sm text-surface-500">Calcul et chargement des moyennes de la sous-commission en cours...</span>
     </div>
 
-    <!-- Affichage du tableau selon le mode (APC vs Classique) -->
+    <section v-if="commissionData && !isLoadingCommission" class="card space-y-4">
+      <p v-if="estValidee" class="font-medium">
+        Résultats validés — révision {{ commissionData.validation.revision?.numero }} par
+        {{ commissionData.validation.revision?.validePar.prenom }} {{ commissionData.validation.revision?.validePar.nom }}.
+      </p>
+      <p v-else>Résultats provisoires calculés depuis les notes courantes. La validation arrête les résultats de tout le semestre.</p>
+      <Message v-if="commissionData.erreurs?.length" severity="warn">
+        <p>Validation impossible tant que ces points ne sont pas résolus :</p>
+        <ul class="list-disc pl-5"><li v-for="erreur in commissionData.erreurs" :key="erreur">{{ erreur }}</li></ul>
+      </Message>
+      <div class="flex flex-wrap gap-3">
+        <Button v-if="!estValidee" label="Valider le semestre" icon="pi pi-check" :disabled="saving || !commissionData.rows.length || !!commissionData.erreurs?.length" @click="validationDialog = true" />
+        <Button v-else label="Rouvrir la sous-commission" severity="warn" icon="pi pi-lock-open" :disabled="saving" @click="reouvertureDialog = true" />
+        <Button label="Historique des validations" severity="secondary" :loading="saving" @click="voirHistorique" />
+      </div>
+      <table v-if="estValidee" class="w-full text-sm">
+        <thead><tr><th class="text-left">Étudiant</th><th>Proposition calculée</th><th>Décision du jury</th><th>Motif</th></tr></thead>
+        <tbody><tr v-for="row in filteredRows" :key="row.scolariteSemestreId">
+          <td>{{ row.nom }} {{ row.prenom }}</td><td class="text-center">{{ row.decisionLibelle }}</td>
+          <td class="text-center">{{ row.decisionJury ? 'Validé' : 'Non validé' }}</td><td>{{ row.motifJury || '—' }}</td>
+        </tr></tbody>
+      </table>
+    </section>
     <template v-else-if="commissionData">
       <div v-if="!commissionData.rows.length" class="card p-8 rounded-xl border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 text-center text-surface-500">
         <i class="pi pi-info-circle text-2xl mb-2"></i>
@@ -373,5 +585,54 @@ watch(anneeId, async () => {
         :sticky-column="stickyColumn"
       />
     </template>
+
+
+    <Dialog v-model:visible="validationDialog" modal header="Valider les résultats du semestre" :closable="!saving" :style="{ width: '70rem', maxWidth: '95vw' }">
+      <p class="mb-4">Vérifiez les décisions du jury. Toute différence avec la proposition calculée exige un motif. Les notes et la maquette seront verrouillées jusqu’à une réouverture explicite.</p>
+      <table class="w-full text-sm">
+        <thead><tr><th class="text-left">Étudiant</th><th>Proposition calculée</th><th>Décision du jury</th><th>Motif de dérogation</th></tr></thead>
+        <tbody><tr v-for="row in commissionData?.rows ?? []" :key="row.scolariteSemestreId">
+          <td>{{ row.nom }} {{ row.prenom }}</td><td>{{ row.decisionLibelle }}</td>
+          <td class="p-2"><select v-if="decisionsJury[row.scolariteSemestreId]" v-model="decisionsJury[row.scolariteSemestreId].decision" class="border rounded p-2" :disabled="saving">
+            <option :value="null">Choisir</option><option :value="true">Validé</option><option :value="false">Non validé</option>
+          </select></td>
+          <td><input v-if="decisionsJury[row.scolariteSemestreId]" v-model="decisionsJury[row.scolariteSemestreId].motif" class="border rounded p-2 w-full" aria-label="Motif de dérogation" :disabled="saving" /></td>
+        </tr></tbody>
+      </table>
+      <Message v-if="errorMessage" severity="error" class="mt-4">{{ errorMessage }}</Message>
+      <template #footer><Button label="Annuler" severity="secondary" :disabled="saving" @click="validationDialog = false" /><Button label="Valider tout le semestre" :loading="saving" :disabled="!decisionsValides" @click="valider" /></template>
+    </Dialog>
+    <Dialog v-model:visible="reouvertureDialog" modal header="Rouvrir la sous-commission" :closable="!saving">
+      <p class="mb-4">La révision actuelle sera invalidée et conservée dans l’historique. Les résultats redeviendront provisoires.</p>
+      <label for="motif-reouverture" class="block mb-2">Motif obligatoire</label>
+      <textarea id="motif-reouverture" v-model="motifReouverture" class="border rounded p-2 w-full" :disabled="saving" />
+      <Message v-if="errorMessage" severity="error">{{ errorMessage }}</Message>
+      <template #footer><Button label="Annuler" severity="secondary" :disabled="saving" @click="reouvertureDialog = false" /><Button label="Rouvrir et invalider" severity="warn" :loading="saving" :disabled="!motifReouverture.trim()" @click="rouvrir" /></template>
+    </Dialog>
+    <Dialog v-model:visible="historiqueDialog" modal header="Historique des sous-commissions" :style="{ width: '75rem', maxWidth: '95vw' }">
+      <p v-if="!historique.length">Aucune validation enregistrée.</p>
+      <div v-for="revision in historique" :key="revision.id" class="border rounded p-3 mb-3">
+        <p>Révision {{ revision.numero }} — {{ revision.valideLe }} — {{ revision.validePar.prenom }} {{ revision.validePar.nom }}</p>
+        <p v-if="revision.invalideeLe">Invalidée le {{ revision.invalideeLe }} : {{ revision.motifReouverture }}</p>
+        <p v-if="revision.restaureeDepuis">Restaurée depuis la révision {{ revision.restaureeDepuis }}. {{ revision.motifRestauration }}</p>
+        <Button label="Consulter les résultats figés" text @click="historiqueSelection = revision" />
+        <Button v-if="revision.invalideeLe" label="Restaurer cette révision" text :disabled="saving" @click="preparerRestauration(revision)" />
+      </div>
+      <form v-if="revisionARestaurer" class="border rounded p-3 mb-3" @submit.prevent="restaurer">
+        <p class="mb-3">Les résultats de la révision {{ revisionARestaurer.numero }} deviendront officiels dans une nouvelle révision validée.</p>
+        <label for="motif-restauration" class="block">Motif de restauration</label>
+        <InputText id="motif-restauration" v-model="motifRestauration" class="w-full mb-3" required :disabled="saving" />
+        <Message v-if="erreurRestauration" severity="error" class="mb-3">{{ erreurRestauration }}</Message>
+        <Button type="button" label="Annuler" text :disabled="saving" @click="revisionARestaurer = null" />
+        <Button type="submit" label="Confirmer la restauration" :loading="saving" :disabled="saving || !motifRestauration.trim()" />
+      </form>
+      <template v-if="historiqueSelection">
+        <h3 class="font-bold my-4">Résultats de la révision {{ historiqueSelection.numero }}</h3>
+        <SousCommissionClassiqueTable :rows="historiqueSelection.vue.rows" :columns="historiqueSelection.vue.columns" :show-details="true" />
+        <table class="w-full mt-4"><thead><tr><th>Étudiant</th><th>Décision du jury</th><th>Motif</th></tr></thead><tbody>
+        <tr v-for="row in historiqueSelection.vue.rows" :key="row.scolariteSemestreId"><td>{{ row.nom }} {{ row.prenom }}</td><td>{{ row.decisionJury ? 'Validé' : 'Non validé' }}</td><td>{{ row.motifJury || '—' }}</td></tr>
+        </tbody></table>
+      </template>
+    </Dialog>
   </div>
 </template>

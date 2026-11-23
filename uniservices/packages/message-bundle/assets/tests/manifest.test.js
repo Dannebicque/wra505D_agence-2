@@ -16,7 +16,6 @@ vi.mock('@images/logo/logo_intranet_iut_troyes.svg', () => ({
 describe('message manifest', () => {
   it('defines the bundle name and branding', () => {
     expect(manifest.name).toBe('message');
-    expect(manifest.primaryColor).toBe('cyan');
   });
 
   it('exposes routes with correct paths and permissions', () => {

@@ -8,7 +8,9 @@ use App\ApiDto\Timetable\StudentTimetable;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Users\Etudiant;
 use App\Repository\Edt\EdtEventRepository;
-use App\Repository\Structure\StructureCalendrierRepository;
+use App\Entity\Structure\StructureAnneeUniversitaire;
+use App\Repository\Structure\StructureAnneeUniversitaireRepository;
+use App\Service\Calendrier\CalendrierUniversitaireService;
 use App\Service\Notification\StudentSemesters;
 
 /**
@@ -26,7 +28,8 @@ class StudentTimetableBuilder
     public function __construct(
         private readonly StudentSemesters $studentSemesters,
         private readonly EdtEventRepository $edtEvents,
-        private readonly StructureCalendrierRepository $calendar,
+        private readonly StructureAnneeUniversitaireRepository $academicYears,
+        private readonly CalendrierUniversitaireService $calendar,
     ) {
     }
 
@@ -42,7 +45,7 @@ class StudentTimetableBuilder
 
         return new StudentTimetable(
             $monday->format('Y-m-d'),
-            $this->calendar->findOneBy(['dateLundi' => \DateTime::createFromImmutable($monday)])?->getSemaineFormation(),
+            $this->trainingWeek($this->academicYears->findOneBy(['actif' => true]), $monday),
             TimeRange::covering($this->edtEvents->findTimesByGroupes($groupIds)),
             $courses,
         );
@@ -61,18 +64,10 @@ class StudentTimetableBuilder
             return [];
         }
 
-        $trainingWeeks = [];
-        $mondays = array_map(static fn (string $monday) => new \DateTime($monday), array_keys($load));
-        foreach ($this->calendar->findBy(['dateLundi' => $mondays]) as $week) {
-            $monday = $week->getDateLundi();
-            if (null !== $monday) {
-                $trainingWeeks[$monday->format('Y-m-d')] = $week->getSemaineFormation();
-            }
-        }
-
+        $academicYear = $this->academicYears->findOneBy(['actif' => true]);
         $weeks = [];
         foreach ($load as $monday => $minutes) {
-            $weeks[] = ['lundi' => $monday, 'semaineFormation' => $trainingWeeks[$monday] ?? null, 'minutes' => $minutes];
+            $weeks[] = ['lundi' => $monday, 'semaineFormation' => $this->trainingWeek($academicYear, new \DateTimeImmutable($monday)), 'minutes' => $minutes];
         }
 
         return $weeks;
@@ -129,5 +124,22 @@ class StudentTimetableBuilder
 
         return (new \DateTimeImmutable($time->format('Y-m-d H:i:s'), new \DateTimeZone(self::TIMEZONE)))
             ->format(\DateTimeInterface::ATOM);
+    }
+
+    /**
+     * Le calendrier se déduit du début de la semaine de formation n°1 de l'année active ; sans
+     * cette date, la semaine n'a pas de numéro.
+     */
+    private function trainingWeek(?StructureAnneeUniversitaire $academicYear, \DateTimeImmutable $monday): ?int
+    {
+        if (null === $academicYear) {
+            return null;
+        }
+
+        try {
+            return $this->calendar->getSemaineFormation($academicYear, $monday);
+        } catch (\DomainException) {
+            return null;
+        }
     }
 }

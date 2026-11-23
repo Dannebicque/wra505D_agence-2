@@ -42,6 +42,9 @@ class EtudiantApplicationsController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
+        if (is_array($data)) {
+            $data['anneeUniversitaireId'] = $request->attributes->get('_annee_universitaire_id');
+        }
         if (!is_array($data)) {
             return $this->json(['message' => 'Requête JSON invalide.'], Response::HTTP_BAD_REQUEST);
         }

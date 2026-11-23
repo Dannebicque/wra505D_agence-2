@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { TopbarComponent, WidgetCard, GlobalLoader, HeaderComponent, PermissionGuard } from '@components';
-import { getApplicationMeta } from '@utils';
+import { getApplicationMeta, normalizeAppSlug } from '@utils';
 import { tools } from '@config/uniServices.js';
 import { getWidgetDataByCodeService, getWidgetsCatalogService, updateDashboardWidgetLayoutService, getActualitesService } from '@requests';
 import { useUsersStore, useAnneeUnivStore, useEtablissementStore } from "@stores";
@@ -27,11 +27,18 @@ defineProps({
   },
 });
 
-const activatedBundles = computed(() => tools
-    .filter((bundle) => userStore.applications.includes(bundle.urlSlug))
+const departementLabel = computed(() => userStore.departementDefaut?.libelle || 'votre département');
+
+const activatedBundles = computed(() => {
+  const userApps = (userStore.applications || []).map(normalizeAppSlug);
+  return (tools || [])
+    .filter((bundle) => {
+      const slug = normalizeAppSlug(bundle.urlSlug || bundle.name);
+      return userApps.includes(slug);
+    })
     .map((bundle) => ({ ...bundle, meta: getApplicationMeta(bundle.urlSlug) }))
-    .sort((a, b) => Number(b.urlSlug === 'intranet') - Number(a.urlSlug === 'intranet'))
-);
+    .sort((a, b) => Number(b.urlSlug === 'intranet') - Number(a.urlSlug === 'intranet'));
+});
 const isLoadingBundles = ref(false);
 const widgets = ref([]);
 const isLoadingWidgets = ref(false);
@@ -47,6 +54,7 @@ const titrePortail = computed(() => {
 onMounted(async () => {
   isLoadingBundles.value = true;
   try {
+    await userStore.getUser(true);
     etablissement.value = await etablissementStore.etablissement;
     await getWidgets();
   } finally {
@@ -191,9 +199,9 @@ watch(() => route.path, async (newPath, oldPath) => {
           <div class="card card-body h-full overflow-y-auto flex flex-col">
             <div class="flex flex-col gap-4">
               <div class="flex items-center justify-between gap-3">
-                <h2 id="portail-applications-title" class="m-0! text-base! font-semibold">Mes applications</h2>
+                <h2 id="portail-applications-title" class="m-0! text-base! font-semibold">Vos applications pour ce département</h2>
               </div>
-              <p class="m-0! text-sm text-muted-color">Retrouvez les outils de votre espace de travail.</p>
+              <p class="m-0! text-sm text-muted-color">Les applications disponibles dépendent de vos droits dans le département {{ departementLabel }}.</p>
               <GlobalLoader v-if="isLoadingBundles" text="Chargement des applications..."/>
               <nav v-else-if="activatedBundles.length" aria-labelledby="portail-applications-title" class="flex flex-col gap-3">
                   <a
@@ -212,7 +220,7 @@ watch(() => route.path, async (newPath, oldPath) => {
                 </button>
               </nav>
               <Message v-else severity="info">
-                Aucune application accessible dans cet espace. Contactez votre administrateur pour faire vérifier vos accès.
+                Aucune application accessible dans le département {{ departementLabel }}. Contactez votre administrateur pour faire vérifier vos accès.
               </Message>
             </div>
           </div>

@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from "vue";
 import { getEtudiantScolaritesService, getEtudiantScolariteSemestresService } from "@requests";
 import { updateEtudiantScolariteSemestreService, getUeService, getGroupesService } from "@requests";
-import { ValidatedInput, ErrorView } from "@components";
+import { ValidatedInput, ErrorState } from "@components";
 import { useUsersStore } from "@stores";
 import { SimpleSkeleton } from "@components";
 
@@ -40,7 +40,7 @@ const getEtudiantScolarites = async () => {
     const params = {
       etudiant: props.etudiantId,
     };
-    etudiantScolarites.value = await getEtudiantScolaritesService(params);
+    etudiantScolarites.value = await getEtudiantScolaritesService(params, '', false, 'toutes');
 
     // Trier et définir l'onglet actif
     etudiantScolarites.value.sort((a, b) => b.anneeUniversitaire.annee - a.anneeUniversitaire.annee);
@@ -139,7 +139,7 @@ const updateScolariteSemestreGroupe = async (scolariteSemestre, groupId, groupTy
 </script>
 
 <template>
-  <ErrorView v-if="hasError" message="Une erreur est survenue lors du chargement des données."></ErrorView>
+  <ErrorState v-if="hasError" message="Une erreur est survenue lors du chargement des données."></ErrorState>
   <SimpleSkeleton v-else-if="isLoadingScolarites" />
   <div v-else>
     <div class="md:px-12 px-4">

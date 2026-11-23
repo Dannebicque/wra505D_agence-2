@@ -1,13 +1,14 @@
 import dashboardRoutes from './router/modules/dashboardRoutes.js';
 import agendaRoutes from './router/modules/agendaRoutes.js';
 import trombinoscopeRoutes from './router/modules/trombinoscopeRoutes.js';
+import pedagogieRoutes from './router/modules/pedagogieRoutes.js';
 import scolariteRoutes from './router/modules/scolariteRoutes.js';
 import notificationsRoutes from './router/modules/notificationsRoutes.js';
 import cahierDeTexteRoutes from './router/modules/cahierDeTexteRoutes.js';
 import profilRoutes from './router/modules/profilRoutes.js';
+import configurationRoutes from './router/modules/configurationRoutes.js';
 import administrationRoutes from './router/modules/administrationRoutes.js';
 import superAdministrationRoutes from './router/modules/superAdministrationRoutes.js';
-import planCoursRoutes from './router/modules/planCoursRoutes.js';
 import Logo from "@images/logo/logo_intranet_iut_troyes.svg";
 import LayoutComponent from '@components/components/layout/AppLayout.vue';
 import { registerWidgets } from './components/Personnel/dashboard/registerWidgets';
@@ -96,7 +97,8 @@ export default {
         ...notificationsRoutes,
         ...cahierDeTexteRoutes,
         ...profilRoutes,
-        ...planCoursRoutes,
+        ...pedagogieRoutes,
+        ...configurationRoutes,
         ...administrationRoutes,
         ...superAdministrationRoutes,
       ]

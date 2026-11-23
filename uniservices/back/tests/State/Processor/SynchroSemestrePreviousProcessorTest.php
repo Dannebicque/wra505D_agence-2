@@ -16,6 +16,7 @@ use App\Repository\Structure\StructureGroupeRepository;
 use App\Repository\Structure\StructureSemestreRepository;
 use App\State\Processor\EtudiantScolariteSemestre\SynchroSemestrePreviousProcessor;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -61,7 +62,11 @@ final class SynchroSemestrePreviousProcessorTest extends TestCase
             'anneeUniversitaireId' => 24,
         ], JSON_THROW_ON_ERROR));
 
+        $security = $this->createStub(Security::class);
+        $security->method('isGranted')->willReturn(true);
+
         $result = (new SynchroSemestrePreviousProcessor(
+            $security,
             $semestreRepository,
             $groupeRepository,
             $scoSemestreRepository,

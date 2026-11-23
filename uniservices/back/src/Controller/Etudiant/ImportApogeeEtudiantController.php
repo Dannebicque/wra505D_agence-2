@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Travail sur la maquette ou les données de l’année demandée.')]
 class ImportApogeeEtudiantController extends AbstractController
 {
     #[Route('/api/etudiants/import_apogee', methods: ['POST'])]
@@ -19,6 +21,7 @@ class ImportApogeeEtudiantController extends AbstractController
     {
         // Récupérer les données JSON envoyées dans la requête
         $data = $request->toArray();
+        $data['anneeUnivId'] = $request->attributes->get('_annee_universitaire_id');
 
         $anneeId = $data['anneeId'] ?? null;
         $semestreId = $data['semestreId'] ?? null;

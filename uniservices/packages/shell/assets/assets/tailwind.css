@@ -8,9 +8,11 @@
 @variant dark (&:where(.app-dark, .app-dark *));
 
 @source "../../../../packages/*/assets/**/*.vue";
+@source "../../../../packages/*/assets/utils/**/*.js";
 @source "../../../../shared/**/*.vue";
 @source "../../../../shared/**/*.js";
 @source "../../../../shared/**/*.ts";
+
 
 .card {
     @apply bg-surface-0 rounded-2xl border border-surface shadow-sm;

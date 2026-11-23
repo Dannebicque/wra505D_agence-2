@@ -31,7 +31,6 @@ class PrevisionnelSemestreTestProvider implements ProviderInterface
                 return [];
             }
 
-            $prevSem = [];
             $output = [
                 'prevSem' => [],
                 'heures' => [],

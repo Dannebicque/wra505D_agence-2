@@ -1,5 +1,5 @@
 <script setup>
-import { ErrorView } from '@components';
+import { ErrorState } from '@components';
 import { lastServerErrorDebugMessage } from '@helpers/serverError.js';
 
 const debugMessage = lastServerErrorDebugMessage(window.sessionStorage);
@@ -8,7 +8,7 @@ const debugMessage = lastServerErrorDebugMessage(window.sessionStorage);
 <template>
   <main id="contenu-principal" class="flex flex-col items-center justify-center w-full h-screen px-4">
     <div class="w-full max-w-4xl">
-      <ErrorView :debug-message="debugMessage" />
+      <ErrorState :debug-message="debugMessage" />
     </div>
   </main>
 </template>

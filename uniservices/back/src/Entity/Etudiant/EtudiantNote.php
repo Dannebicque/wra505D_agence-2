@@ -18,8 +18,11 @@ use App\Repository\EtudiantNoteRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: EtudiantNoteRepository::class)]
+#[ORM\UniqueConstraint(name: 'UNIQ_NOTE_EVALUATION_INSCRIPTION', columns: ['evaluation_id', 'scolarite_semestre_id'])]
 #[ApiResource(
     operations: [
         // Un étudiant lisait ici les notes de tous les autres, publiées ou non. Il a son propre
@@ -33,12 +36,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
             security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
         new Post(
-            normalizationContext: ['groups' => ['note:write']],
+            normalizationContext: ['groups' => ['note:detail']],
+            denormalizationContext: ['groups' => ['note:write']],
             securityPostDenormalize: "is_granted('CAN_EDIT_NOTES', object)",
             processor: EtudiantNotePersistProcessor::class
         ),
         new Patch(
-            normalizationContext: ['groups' => ['note:write']],
+            normalizationContext: ['groups' => ['note:detail']],
+            denormalizationContext: ['groups' => ['note:write']],
+            security: "is_granted('CAN_EDIT_NOTES', object)",
             securityPostDenormalize: "is_granted('CAN_EDIT_NOTES', object)",
             processor: EtudiantNotePersistProcessor::class
         ),
@@ -72,28 +78,39 @@ class EtudiantNote implements TimestampableInterface
     private ?string $commentaire = null;
 
     #[ORM\ManyToOne(inversedBy: 'notes')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     #[Groups(['note:write', 'note:detail'])]
     private ?ScolEvaluation $evaluation = null;
-
-    #[ORM\ManyToOne()]
-    #[Groups(['note:detail'])]
-    private ?EtudiantScolarite $scolarite = null;
 
     #[ORM\Column(length: 32)]
     #[Groups(['note:write', 'note:detail'])]
     private ?string $presenceStatut = self::STATUT_PRESENT;
 
-    /** @var array<string, mixed>|null */
+    /** @var list<array<array-key, mixed>>|null */
     #[ORM\Column(nullable: true)]
+    #[Groups(['note:detail'])]
     private ?array $historique = null;
 
     #[ORM\Column(nullable: false)]
     private ?bool $publiee = false;
 
     #[ORM\ManyToOne(inversedBy: 'note')]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
     #[Groups(['note:write', 'note:detail'])]
     private ?EtudiantScolariteSemestre $scolariteSemestre = null;
+
+    #[Groups(['note:write'])]
+    private ?string $motifModification = null;
+
+    public function getMotifModification(): ?string
+    {
+        return $this->motifModification;
+    }
+    public function setMotifModification(?string $motif): static
+    {
+        $this->motifModification = $motif;
+        return $this;
+    }
 
     public function __construct()
     {
@@ -119,9 +136,28 @@ class EtudiantNote implements TimestampableInterface
         }
     }
 
-    public function setNote(float $note): static
+    #[Groups(['note:detail'])]
+    public function getNoteBrute(): ?float
     {
-        if ($note < -0.01 || $note > 20.0) {
+        return $this->note;
+    }
+
+    #[Assert\Callback]
+    public function validateRattachements(ExecutionContextInterface $context): void
+    {
+        $evaluation = $this->evaluation;
+        $inscription = $this->scolariteSemestre;
+        if ($evaluation === null || $inscription === null
+            || $evaluation->getSemestre() !== $inscription->getSemestre()
+            || $evaluation->getAnneeUniversitaire() !== $inscription->getScolarite()?->getAnneeUniversitaire()) {
+            $context->buildViolation('La note doit relier une évaluation et une inscription du même semestre et de la même année universitaire.')
+                ->atPath('scolariteSemestre')->addViolation();
+        }
+    }
+
+    public function setNote(?float $note): static
+    {
+        if ($note !== null && ($note < -0.01 || $note > 20.0)) {
             throw new \InvalidArgumentException('La valeur doit être comprise entre 0 et 20.');
         }
 
@@ -154,18 +190,6 @@ class EtudiantNote implements TimestampableInterface
         return $this;
     }
 
-    public function getScolarite(): ?EtudiantScolarite
-    {
-        return $this->scolarite;
-    }
-
-    public function setScolarite(?EtudiantScolarite $scolarite): static
-    {
-        $this->scolarite = $scolarite;
-
-        return $this;
-    }
-
     // Nouveaux accesseurs pour le statut de présence
     public function getPresenceStatut(): ?string
     {
@@ -190,13 +214,13 @@ class EtudiantNote implements TimestampableInterface
         return $this;
     }
 
-    /** @return array<string, mixed>|null */
+    /** @return list<array<array-key, mixed>>|null */
     public function getHistorique(): ?array
     {
         return $this->historique;
     }
 
-    /** @param array<string, mixed>|null $historique */
+    /** @param list<array<array-key, mixed>>|null $historique */
     public function setHistorique(?array $historique): static
     {
         $this->historique = $historique;

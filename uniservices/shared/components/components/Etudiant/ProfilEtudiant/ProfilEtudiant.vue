@@ -4,7 +4,7 @@ import { useToast } from "primevue/usetoast";
 import { formatAdresse } from "@helpers/adresse.js";
 import { formatNaissance } from "@helpers/date.js";
 import { updateEtudiantService, getEtudiantService, getGroupesService } from "@requests";
-import { ValidatedInput, validationRules, ErrorView, PermissionGuard, ApplicationBadge } from "@components";
+import { ValidatedInput, validationRules, ErrorState, PermissionGuard, ApplicationBadge } from "@components";
 import { PhotoUser } from "@components";
 import { useUsersStore } from "@stores";
 import { SimpleSkeleton } from "@components";
@@ -191,7 +191,7 @@ const updateEtudiantData = async () => {
 </script>
 
 <template>
-  <ErrorView v-if="hasError" message="Une erreur est survenue lors du chargement des données."></ErrorView>
+  <ErrorState v-if="hasError" message="Une erreur est survenue lors du chargement des données."></ErrorState>
   <SimpleSkeleton v-else-if="isLoadingEtudiant" />
   <div v-else>
     <div class="flex items-stretch md:flex-row flex-col gap-6 md:px-12">

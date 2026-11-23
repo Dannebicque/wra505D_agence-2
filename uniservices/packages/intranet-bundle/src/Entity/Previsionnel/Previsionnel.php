@@ -9,8 +9,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Utils\LooseValue;
+use ApiPlatform\Metadata\QueryParameter;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelAllPersonnelsDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelEnseignementDto;
 use IntranetBundle\Dto\Previsionnel\PrevisionnelPersonnelDto;
@@ -33,6 +33,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: PrevisionnelRepository::class)]
 #[ApiResource(
@@ -77,7 +79,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             provider: PreviStatsEdtProvider::class,
             output: PreviStatsEdtDto::class,
         ),
-        new Patch(normalizationContext: ['groups' => ['previsionnel:read']], securityPostDenormalize: "is_granted('CAN_EDIT_PREVISIONNEL', object)"),
+        new Patch(normalizationContext: ['groups' => ['previsionnel:read']], security: "is_granted('CAN_EDIT_PREVISIONNEL', object)", securityPostDenormalize: "is_granted('CAN_EDIT_PREVISIONNEL', object)"),
         new Post(normalizationContext: ['groups' => ['previsionnel:read']], securityPostDenormalize: "is_granted('CAN_EDIT_PREVISIONNEL', object)"),
         new Delete(normalizationContext: ['groups' => ['previsionnel:read']], security: "is_granted('CAN_DELETE_PREVISIONNEL', object)"),
     ],
@@ -96,6 +98,7 @@ class Previsionnel
 
     #[ORM\ManyToOne(inversedBy: 'previsionnels')]
     #[Groups(['previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read', 'previsionnel_enseignement:read', 'previsionnel_personnel:read', 'previsionnel_all_personnels:read', 'edt_event:read:agenda'])]
+    #[Assert\NotNull]
     private ?Personnel $personnel = null;
 
     #[ORM\ManyToOne(inversedBy: 'previsionnels')]
@@ -104,20 +107,21 @@ class Previsionnel
 
     #[ORM\Column]
     #[Groups(['previsionnel:read'])]
-    private ?bool $referent = null;
+    private ?bool $referent = false;
 
     /** @var array<string, float> */
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read','previsionnel_all_personnels:read', 'previsionnel_personnel:read'])]
     private array $heures = [];
 
-    /** @var array<string, int>|null */
+    /** @var array<string, int> */
     #[ORM\Column(type: Types::JSON)]
     #[Groups(['previsionnel:read', 'enseignement:read', 'previsionnel_semestre:read'])]
-    private ?array $groupes = [];
+    private array $groupes = [];
 
     #[ORM\ManyToOne(inversedBy: 'previsionnels')]
     #[Groups(['previsionnel:read', 'previsionnel_semestre:read', 'previsionnel_all_personnels:read', 'previsionnel_personnel:read'])]
+    #[Assert\NotNull]
     private ?ScolEnseignement $enseignement = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'], fetch: 'EAGER')]
@@ -215,6 +219,51 @@ class Previsionnel
         return $this->heures;
     }
 
+    #[Assert\Callback]
+    public function verifierSaisie(ExecutionContextInterface $context): void
+    {
+        foreach ($this->heures as $type => $heures) {
+            if (!is_finite($heures) || $heures < 0) {
+                $context->buildViolation('Le nombre d’heures doit être positif ou nul.')
+                    ->atPath('heures['.$type.']')->addViolation();
+            }
+        }
+        foreach ($this->groupes as $type => $groupes) {
+            if ($groupes < 0) {
+                $context->buildViolation('Le nombre de groupes doit être positif ou nul.')
+                    ->atPath('groupes['.$type.']')->addViolation();
+            }
+        }
+
+        if ($this->anneeUniversitaire === null || $this->enseignement === null) {
+            return;
+        }
+        foreach ($this->enseignement->getEnseignementUes() as $lien) {
+            if ($lien->getUe()?->getSemestre()?->getAnnee()?->getPn()?->getAnneeUniversitaire() === $this->anneeUniversitaire) {
+                return;
+            }
+        }
+        $context->buildViolation('L’enseignement doit appartenir à la maquette de l’année universitaire.')
+            ->atPath('enseignement')->addViolation();
+    }
+
+    /** @return array<string, array{NbHrGrp: float, NbGrp: int, NbSeanceGrp: float}> */
+    public function getRepartitionHeures(): array
+    {
+        $repartition = [];
+        foreach (['CM', 'TD', 'TP', 'Projet'] as $type) {
+            $heures = $this->heures[$type] ?? 0;
+            $groupes = $this->groupes[$type] ?? 0;
+            $repartition[$type] = [
+                'NbHrGrp' => $type !== 'Projet' && $groupes > 0 ? $heures / $groupes : $heures,
+                'NbGrp' => $groupes,
+                'NbSeanceGrp' => round($heures / self::DUREE_SEANCE, 1),
+            ];
+        }
+
+        return $repartition;
+    }
+
     /** @param array<string, float|int> $heures */
     public function setHeures(array $heures): static
     {
@@ -249,10 +298,6 @@ class Previsionnel
     /** @return array<string, int> */
     public function getGroupes(): array
     {
-        if ($this->groupes === null) {
-            throw new \LogicException('Groupes are required');
-        }
-
         return $this->groupes;
     }
 

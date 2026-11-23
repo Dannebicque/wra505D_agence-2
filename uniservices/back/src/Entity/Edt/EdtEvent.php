@@ -23,6 +23,7 @@ use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\UuidTrait;
 use IntranetBundle\Entity\Edt\EdtAppel;
 use App\Entity\Users\Personnel;
+use App\Enum\TypeEvenementEdt;
 use App\Filter\EdtFilter;
 use App\Repository\Edt\EdtEventRepository;
 use App\State\Provider\Edt\EdtStatsProvider;
@@ -38,6 +39,7 @@ use Symfony\Component\Uid\UuidV4;
 #[ORM\Entity(repositoryClass: EdtEventRepository::class)]
 #[ApiFilter(BooleanFilter::class, properties: ['aPlacer'])]
 #[ApiResource(
+    security: "is_granted('IS_AUTHENTICATED_FULLY')",
     paginationEnabled: false,
     operations: [
         // Un créneau nomme son enseignant, sa salle et son groupe : rien pour un visiteur anonyme.
@@ -58,12 +60,12 @@ use Symfony\Component\Uid\UuidV4;
             normalizationContext: ['groups' => ['edt_pointage:read']],
             security: "is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')",
         ),
-        new Get(
-            normalizationContext: ['groups' => ['edt_event:read:agenda']],
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
-        ),
+        new Get(normalizationContext: ['groups' => ['edt_event:read:agenda']], security: "is_granted('CAN_VIEW_EDT', object)"),
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_EDT', object)"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_EDT', object)"),
+        new Patch(
+            security: "is_granted('CAN_EDIT_EDT', object)",
+            securityPostDenormalize: "is_granted('CAN_EDIT_EDT', object)",
+        ),
         new Delete(security: "is_granted('CAN_DELETE_EDT', object)"),
     ],
     parameters: [
@@ -168,6 +170,11 @@ class EdtEvent implements TimestampableInterface
     #[ORM\Column(length: 20, nullable: true)]
     #[Groups(['edt_event:read:agenda'])]
     private ?string $type = null;
+
+    // Le champ type historique décrit le format du cours (CM, TD, TP…).
+    #[ORM\Column(length: 20, enumType: TypeEvenementEdt::class, options: ['default' => 'autre'])]
+    #[Groups(['edt_event:read:agenda'])]
+    private TypeEvenementEdt $typeEvenement = TypeEvenementEdt::Autre;
 
     #[ORM\ManyToOne(inversedBy: 'edtEvents')]
     #[Groups(['edt_event:read:agenda'])]
@@ -446,6 +453,18 @@ class EdtEvent implements TimestampableInterface
     public function setType(?string $type): static
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getTypeEvenement(): TypeEvenementEdt
+    {
+        return $this->typeEvenement;
+    }
+
+    public function setTypeEvenement(TypeEvenementEdt $typeEvenement): static
+    {
+        $this->typeEvenement = $typeEvenement;
 
         return $this;
     }

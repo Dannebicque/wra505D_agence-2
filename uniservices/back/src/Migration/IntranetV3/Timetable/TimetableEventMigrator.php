@@ -3,6 +3,7 @@
 namespace App\Migration\IntranetV3\Timetable;
 
 use App\Entity\Edt\EdtEvent;
+use App\Enum\TypeEvenementEdt;
 use App\Entity\Scolarite\ScolEnseignement;
 use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureGroupe;
@@ -151,6 +152,7 @@ SQL;
                     ->setEnseignement($enseignement)
                     ->setGroupe($groupe)
                     ->setType(LooseValue::truthyString($row['type']))
+                    ->setTypeEvenement(null === $enseignement ? TypeEvenementEdt::Autre : TypeEvenementEdt::Cours)
                     ->setAnneeUniversitaire($anneeUniversitaire)
                     ->setSemestre($semestre)
                     ->setEvaluation((bool) $row['evaluation'])

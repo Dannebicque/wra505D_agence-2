@@ -21,9 +21,9 @@ use IntranetBundle\Entity\Etudiant\EtudiantAbsence;
 use App\Entity\Personnel\PersonnelEnseignantHrs;
 use IntranetBundle\Entity\Previsionnel\Previsionnel;
 use App\Entity\Scolarite\ScolEvaluation;
-use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDepartementPersonnel;
 use App\Entity\Structure\StructureDiplome;
+use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Contracts\TimestampableInterface;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\OldIdTrait;
@@ -37,9 +37,13 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PersonnelRepository::class)]
+#[UniqueEntity(fields: ['username'], message: 'Ce login est déjà utilisé par un autre personnel.')]
+#[UniqueEntity(fields: ['mailUniv'], message: 'Ce mail universitaire est déjà utilisé par un autre personnel.')]
+#[UniqueEntity(fields: ['numeroHarpege'], message: 'Ce code RH est déjà utilisé par un autre personnel.')]
 #[ApiFilter(OrderFilter::class, properties: ['nom', 'prenom', 'mailUniv', 'username', 'numeroHarpege'])]
 #[ApiResource(
     operations: [
@@ -59,8 +63,16 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['personnel:config']],
             provider: PersonnelConfigProvider::class
         ),
-        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_PERSONNEL', object)"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_PERSONNEL', object)"),
+        // Les affectations et leurs permissions ont des opérations dédiées.
+        new Post(
+            denormalizationContext: ['ignored_attributes' => ['departementsPersonnel']],
+            securityPostDenormalize: "is_granted('CAN_EDIT_PERSONNEL', object)",
+        ),
+        new Patch(
+            denormalizationContext: ['ignored_attributes' => ['departementsPersonnel']],
+            security: "is_granted('CAN_EDIT_PERSONNEL', object)",
+            securityPostDenormalize: "is_granted('CAN_EDIT_PERSONNEL', object)",
+        ),
         new Delete(security: "is_granted('CAN_DELETE_PERSONNEL', object)"),
     ],
     order: ['nom' => 'ASC'],
@@ -69,6 +81,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
         'enseignement' => new QueryParameter(filter: PersonnelFilter::class),
         'enseignant' => new QueryParameter(filter: PersonnelFilter::class),
         'biatss' => new QueryParameter(filter: PersonnelFilter::class),
+        'nom' => new QueryParameter(filter: PersonnelFilter::class),
+        'prenom' => new QueryParameter(filter: PersonnelFilter::class),
+        'mailUniv' => new QueryParameter(filter: PersonnelFilter::class),
+        'statut' => new QueryParameter(filter: PersonnelFilter::class),
         'username' => new QueryParameter(filter: PersonnelFilter::class),
         'numeroHarpege' => new QueryParameter(filter: PersonnelFilter::class),
     ],
@@ -121,11 +137,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     #[Groups(['personnel:detail', 'personnel:config'])]
     private Collection $assistantDiplome;
 
-    #[ORM\ManyToOne(inversedBy: 'personnels')]
-    #[Groups(['personnel:detail'])]
-    private ?StructureAnneeUniversitaire $anneeUniversitaire = null;
-
-    /** @var array{adresse: string, complement1: string, complement2: string, ville: string, codePostal: string, pays: string}|null */
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['personnel:detail'])]
     private ?array $adressePersonnelle = null;
@@ -448,18 +460,6 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
                 $assistantDiplome->setAssistantDiplome(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getAnneeUniversitaire(): ?StructureAnneeUniversitaire
-    {
-        return $this->anneeUniversitaire;
-    }
-
-    public function setAnneeUniversitaire(?StructureAnneeUniversitaire $anneeUniversitaire): static
-    {
-        $this->anneeUniversitaire = $anneeUniversitaire;
 
         return $this;
     }
@@ -845,7 +845,7 @@ class Personnel implements UserInterface, PasswordAuthenticatedUserInterface, Ti
     #[Groups(['personnel:detail', 'previsionnel_personnel:read', 'previsionnel_all_personnels:read', 'personnel:liste'])]
     public function getStatutSeverity(): string
     {
-        return $this->statut?->getBadge() ?? '';
+        return $this->statut?->getBadge() ?? 'secondary';
     }
 
     /**

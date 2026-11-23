@@ -21,6 +21,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Travail sur la maquette ou les données de l’année demandée.')]
 #[IsGranted(new Expression("is_granted('IS_AUTHENTICATED_FULLY') and not is_granted('ROLE_ETUDIANT')"))]
 class PlanCoursApiController extends AbstractController
 {
@@ -51,8 +53,10 @@ class PlanCoursApiController extends AbstractController
         if (!in_array($anneeUniversitaireId, [null, '', '0', 0], true)) {
             $anneeUniversitaire = $this->entityManager->getRepository(StructureAnneeUniversitaire::class)->find($anneeUniversitaireId);
         } else {
-            $anneeUniversitaire = $this->entityManager->getRepository(StructureAnneeUniversitaire::class)->findOneBy(['actif' => true]);
+            throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Une année universitaire doit être fournie par le contexte annuel.');
         }
+
+        $this->denyAccessUnlessGranted('CAN_EDIT_DIPLOME', $diplome);
 
         $semestres = $diplome->getSemestres();
         $enseignementsData = [];
@@ -183,6 +187,7 @@ class PlanCoursApiController extends AbstractController
         $user = $this->getUser();
         $personnelId = !in_array($request->query->get('personnel'), [null, '', '0', 0], true) ? $request->query->get('personnel') : ($user instanceof Personnel ? $user->getId() : null);
         $anneeUniversitaireId = $request->query->get('anneeUniversitaire');
+        $semestreId = $request->query->getInt('semestre');
 
         if (in_array($personnelId, [null, '', '0', 0], true)) {
             return new JsonResponse(['message' => 'Personnel non spécifié.'], Response::HTTP_BAD_REQUEST);
@@ -215,6 +220,19 @@ class PlanCoursApiController extends AbstractController
         foreach ($previsionnels as $previsionnel) {
             $ens = $previsionnel->getEnseignement();
             if ($ens === null) {
+                continue;
+            }
+
+            $semestre = null;
+            foreach ($ens->getEnseignementUes() as $enseignementUe) {
+                $candidat = $enseignementUe->getUe()?->getSemestre();
+                if ($semestreId === 0 || $candidat?->getId() === $semestreId) {
+                    $semestre = $candidat;
+                    break;
+                }
+            }
+
+            if ($semestreId !== 0 && $semestre === null) {
                 continue;
             }
 
@@ -298,6 +316,7 @@ class PlanCoursApiController extends AbstractController
     }
 
     #[Route('/plan_cours/{id}/recopie', name: 'api_plan_cours_recopie', methods: ['POST'])]
+    #[\App\AnneeUniversitaire\ContexteAnnuel('transversal', 'Copie volontaire entre deux années universitaires.')]
     public function recopie(int $id, Request $request): JsonResponse
     {
         $planCours = $this->entityManager->getRepository(PlanCours::class)->find($id);
@@ -317,6 +336,9 @@ class PlanCoursApiController extends AbstractController
         if ($source === null) {
             return new JsonResponse(['message' => 'Plan de cours source non trouvé.'], Response::HTTP_NOT_FOUND);
         }
+
+        $this->denyAccessUnlessGranted('CAN_MANAGE_PLAN_COURS', $planCours);
+        $this->denyAccessUnlessGranted('CAN_MANAGE_PLAN_COURS', $source);
 
         // Recopie des informations pédagogiques
         $planCours->setCmPrevu($source->getCmPrevu());
@@ -367,7 +389,7 @@ class PlanCoursApiController extends AbstractController
         $payload = json_decode($request->getContent(), true);
         $payload = is_array($payload) ? $payload : [];
         $enseignementId = $payload['enseignementId'] ?? null;
-        $anneeUniversitaireId = $payload['anneeUniversitaireId'] ?? null;
+        $anneeUniversitaireId = $request->attributes->get('_annee_universitaire_id') ?? ($payload['anneeUniversitaireId'] ?? null);
 
         if (in_array($enseignementId, [null, '', '0', 0], true) || in_array($anneeUniversitaireId, [null, '', '0', 0], true)) {
             return new JsonResponse(['message' => 'enseignementId et anneeUniversitaireId sont requis.'], Response::HTTP_BAD_REQUEST);
@@ -409,9 +431,12 @@ class PlanCoursApiController extends AbstractController
             $planCours->setLivrables($enseignement->getLivrables());
             $planCours->setEtatPlanCours(PlanCoursEnum::EN_COURS);
 
+            $this->denyAccessUnlessGranted('CAN_MANAGE_PLAN_COURS', $planCours);
             $this->entityManager->persist($planCours);
             $this->entityManager->flush();
         }
+
+        $this->denyAccessUnlessGranted('CAN_MANAGE_PLAN_COURS', $planCours);
 
         return new JsonResponse([
             'id' => $planCours->getId(),

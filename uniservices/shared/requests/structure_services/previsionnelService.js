@@ -28,23 +28,23 @@ const getPrevisService = async (params, scope ='', showToast = false) => {
     }
 }
 
-const getSemestrePreviService = async (semestreId, anneeUnivId, showToast = false) => {
+const getSemestrePreviService = async (semestreId, anneeUnivId, showToast = false, personnelId = null) => {
     try {
         const response = await apiCall(
             api.get,
-            [`/api/previsionnels_semestre?anneeUniversitaire=${anneeUnivId}&semestre=${semestreId}`],
+            ['/api/previsionnels_semestre', { params: { semestre: semestreId, anneeUniversitaire: anneeUnivId } }],
             'Prévisionnel du semestre récupéré avec succès',
             'Erreur lors de la récupération du prévisionnel du semestre',
             showToast
         );
-        return response.member;
+        return response?.member ?? response;
     } catch (error) {
         console.error('Erreur dans getSemestrePreviService:', error);
         throw error;
     }
 }
 
-const getSemestrePreviTestService = async (semestreId, anneeUnivId, showToast = false) => {
+const getSemestrePreviTestService = async (semestreId, anneeUnivId, showToast = false, personnelId = null) => {
     try {
         const response = await apiCall(
             api.get,
@@ -60,16 +60,16 @@ const getSemestrePreviTestService = async (semestreId, anneeUnivId, showToast = 
     }
 }
 
-const getSemestreEnseignementPreviService = async (semestreId, enseignementId, anneeUnivId, showToast = false) => {
+const getSemestreEnseignementPreviService = async (semestreId, enseignementId, anneeUnivId, showToast = false, personnelId = null) => {
     try {
         const response = await apiCall(
             api.get,
-            [`/api/previsionnels_enseignement?anneeUniversitaire=${anneeUnivId}&semestre=${semestreId}&enseignement=${enseignementId}`],
+            ['/api/previsionnels_enseignement', { params: { semestre: semestreId, enseignement: enseignementId, anneeUniversitaire: anneeUnivId, personnel: personnelId } }],
             'Prévisionnel de l\'enseignement récupéré avec succès',
             'Erreur lors de la récupération du prévisionnel de l\'enseignement',
             showToast
         );
-        return response.member;
+        return response?.member ?? response;
     } catch (error) {
         console.error('Erreur dans getSemestreEnseignementPreviService:', error);
         throw error;
@@ -85,7 +85,7 @@ const getAnneeUnivPreviService = async (params, showToast = false) => {
             'Erreur lors de la récupération des prévisionnels de l\'année universitaire',
             showToast
         );
-        return response.member;
+        return response?.member ?? response;
     } catch (error) {
         console.error('Erreur dans getAnneeUnivPreviService:', error);
         throw error;
@@ -101,7 +101,7 @@ const getPersonnelPreviService = async (params, showToast = false) => {
             'Erreur lors de la récupération du prévisionnel du personnel',
             showToast
         );
-        return response.member;
+        return response?.member ?? response;
     } catch (error) {
         console.error('Erreur dans getPersonnelPreviService:', error);
         throw error;

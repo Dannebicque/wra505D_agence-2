@@ -78,7 +78,7 @@ router.beforeEach(async (to, from) => {
   // Public routes
   if (to.meta.public) {
     if (to.path === '/auth/login' && userStore.isAuthInitialized && userStore.userId) {
-      return '/app/auth/portail';
+      return '/auth/portail';
     }
     return true;
   }
@@ -86,10 +86,14 @@ router.beforeEach(async (to, from) => {
   // Protected routes
   try {
     const authInfo = await userStore.initAuth();
-    if (!authInfo) {
+    if (!authInfo?.userId) {
       // Redirect to login page inside the Shell
-      return '/app/auth/login';
+      return '/auth/login';
     }
+
+    // Les routes publiques ne déclenchent aucune lecture des données privées.
+    privateDataInitialization ??= initializeAppData();
+    await privateDataInitialization;
 
     if (!userStore.isLoaded && !userStore.isLoading) {
       await userStore.getUser();
@@ -98,6 +102,10 @@ router.beforeEach(async (to, from) => {
     const security = useSecurity();
     if (!security.isLoaded && !security.isLoading) {
       await security.loadSecurityContext();
+    }
+
+    if (userStore.hasRole('SUPER_ADMIN')) {
+      return true;
     }
 
     // Check package access
@@ -125,7 +133,7 @@ router.beforeEach(async (to, from) => {
     return true;
   } catch (error) {
     console.error('Auth error in router guard:', error);
-    return '/app/auth/login';
+    return '/auth/login';
   }
 });
 

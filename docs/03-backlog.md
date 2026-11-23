@@ -571,6 +571,9 @@ généré.
 | E26.12 · en revue | configuration des modules et ses pages | `cad0a0ab9`, `6a30dbb22` |
 | E26.13 · en revue | messagerie : bundle, widget, purge, tests ; pièces jointes hors de `public/`, cibles limitées au département ; les messages reçus rejoignent le fil de notifications de l'étudiant | `b2d2c639d`, `1d31012d9`, `ab39d0de6`, `d2beffc79`, `39c2fb9f6` |
 | E26.14 · en revue | tableau de bord enseignant : suivi d'avancement des enseignements (écran, dialogues), entrée « Pédagogie » ; l'API d'avancement est déjà reprise par la routine du 04/11 | front de `c46cebced`, `aa48a33a6`, `284c9204a`, `ae705e047`, `a1af79380` |
+| E27.1 · en revue | socle de `f5bb12d5a..e53f30040` (0.9.0 à 0.11.0) : révision des accès, contexte d'année universitaire, calendrier calculé, notifications enregistrées et préférences, université de rattachement, LDAP, prévisionnel, sous-commission restaurable, configuration des services ; hors bundles des lots 2 et 3 | `73489f21f`, `930148fad`, `646715552`, `e86c5c96a`, `bb221212e`, `5bea07ab0`, `fd540709b`, `a00067b88`, `a7ba8c6f5`, `4b6efd1de`, `ccc0d4910`, `b27c9d88e`, `1c010f86f`, `dd967f8f0`, `479007fc6`, `2437d0e84`, `e2f0c21cd`, `a47f43087` |
+| E27.2 | Unifolio v2 : portfolio de compétences de l'étudiant | `d917e09ad` (partie `unifolio-bundle`), `6a6f8bce0` |
+| E27.3 | questionnaire, stage, finance et parc auto | parties de `d917e09ad`, `155284c60`, `21023c01a`, `64854ef60`, `213d680d0`, `28d4de6f1`, `e53f30040`, `372970e9b`, `a8e7f2b1c` |
 
 **Décisions de reprise**
 - Filtres (E26.1) : on adopte les `QueryParameter` du client pour nos filtres et on revient sur le
@@ -680,6 +683,44 @@ généré.
   contenu s'affiche en texte, sans `v-html` ni `|raw`. Le marquage « tout lu » visait une colonne
   inexistante. Reste chez le client : le modèle d'e-mail garde des couleurs hexadécimales en ligne,
   les clients mail ne lisant pas nos variables CSS.
+- Reprise amont `264bac7b9..d58b90811` (routine du 05/11/2026) : droits d'initialisation des
+  évaluations repris tel quel. `CAN_EDIT_EVAL` est vérifié avant la désérialisation du PATCH et
+  n'est plus accordé qu'au personnel autorisé, aux intervenants prévus cette année tant que
+  l'évaluation n'est pas initialisée, et aux rôles de gestion du département actif de
+  l'évaluation ; `ROLE_ADMIN` perd ce droit, choix du client gardé. Test unitaire du voter ajouté.
+  Le dialogue des évaluations du tableau de bord enseignant prend le `Message` du client à la
+  place de notre texte vide. Cypress non rejoué : base locale arrêtée.
+- Reprise amont `d58b90811..f5bb12d5a` (routine du 08/11/2026) : filtre `enseignement` des
+  absences et dialogues du tableau de bord enseignant (liens vers les pages absences, évaluations,
+  plans de cours, prévisionnel) repris tels quels. Le filtre s'ajoute à la description
+  d'`AbsenceFilter`, notre entité gardant `#[ApiFilter]` ; la collection reste derrière
+  `CAN_VIEW_ABSENCE`. Les couleurs CM, TD et TP du prévisionnel restent celles du client, écran du
+  personnel. Écartée : la release 0.9.0 (version et CHANGELOG à nous). Cypress non rejoué : base
+  locale arrêtée.
+- Socle E27.1 (`f5bb12d5a..e53f30040`, hors bundles unifolio, questionnaire, stage, finance,
+  parcauto) :
+  - accès : la révision du client est reprise (voters par ressource, extensions Doctrine par
+    département, `security` par défaut d'API Platform) ; là où deux règles se superposaient, les deux
+    s'appliquent. Gardés chez nous, plus stricts : l'attribution groupée des applications, les
+    cibles de la messagerie, l'export des listings (avec le contrôle groupe-semestre du client), les
+    notes cachées aux étudiants, les applications d'un étudiant hors du groupe d'écriture (le client
+    les rendait modifiables par l'étudiant lui-même) ;
+  - packages de l'étudiant : `UserPackageResolver` du client, mais l'intranet et les documents
+    restent toujours ouverts et `UniTranet` reste lu comme l'intranet ;
+  - calendrier : la table des semaines disparaît, le calendrier se calcule depuis le début de la
+    semaine de formation n°1 ; l'emploi du temps étudiant et la synchronisation Celcat suivent. Un
+    groupe partagé entre plusieurs semestres reste sans semestre dans Celcat (plus de parcours) ;
+  - semestre actif = semestre de l'année universitaire active (le champ `actif` disparaît) ;
+  - notifications : le personnel a la cloche et les préférences du client (store renommé
+    `staffNotificationStore`) ; l'étudiant les reçoit dans son fil unique, par une nouvelle source ;
+  - barre du haut : la nôtre est gardée (recherche, cloche étudiante, mobile) ; le bandeau de
+    département du client n'est pas repris ;
+  - prévisionnel : l'import CSV se lit sans le paquet `xlsx` (lecteur testé) ; les actions sont
+    réservées au personnel ;
+  - couleurs : celles des écrans repris passent aux jetons ; l'habillage des e-mails prend la
+    primaire en clair, les clients de messagerie ignorant les variables CSS ;
+  - dépendance ajoutée avec accord : `symfony/ldap` 8.1 ;
+  - Cypress (`acces-socle-e27.cy.js`) non rejoué en local : base locale arrêtée.
 
 ---
 

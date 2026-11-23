@@ -62,7 +62,6 @@ doctrine:
                         prefix: 'MessageBundle\Entity'
                         alias: Message
 
-
 when@test:
     doctrine:
         dbal:

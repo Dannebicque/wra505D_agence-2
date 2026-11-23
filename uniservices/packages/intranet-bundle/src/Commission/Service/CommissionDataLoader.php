@@ -4,6 +4,7 @@ namespace IntranetBundle\Commission\Service;
 
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Structure\StructureSemestre;
+use App\Utils\LooseValue;
 use App\Repository\EtudiantScolariteSemestreRepository;
 use IntranetBundle\Commission\Contract\CommissionDataLoaderInterface;
 use IntranetBundle\Commission\Dto\CommissionDataset;
@@ -31,8 +32,8 @@ final readonly class CommissionDataLoader implements CommissionDataLoaderInterfa
             ->getQuery()
             ->getResult();
 
-        $moyennesUe = $this->moyenneUeRepository->findIndexedBySemestre($semestre);
-        $moyennesEnseignement = $this->moyenneEnseignementRepository->findIndexedBySemestre($semestre);
+        $moyennesUe = $this->normalizeIndexed((new \ReflectionMethod($this->moyenneUeRepository, 'findIndexedBySemestre'))->invoke($this->moyenneUeRepository, $semestre));
+        $moyennesEnseignement = $this->normalizeIndexed((new \ReflectionMethod($this->moyenneEnseignementRepository, 'findIndexedBySemestre'))->invoke($this->moyenneEnseignementRepository, $semestre));
 
         return new CommissionDataset(
             $semestre,
@@ -40,5 +41,18 @@ final readonly class CommissionDataLoader implements CommissionDataLoaderInterfa
             $moyennesUe,
             $moyennesEnseignement,
         );
+    }
+
+    /** @return array<int, array<int, float>> */
+    private function normalizeIndexed(mixed $value): array
+    {
+        $result = [];
+        foreach (LooseValue::rows($value) as $scolariteId => $rows) {
+            foreach (LooseValue::row($rows) as $itemId => $moyenne) {
+                $result[LooseValue::castInt($scolariteId)][LooseValue::castInt($itemId)] = LooseValue::castFloat($moyenne);
+            }
+        }
+
+        return $result;
     }
 }

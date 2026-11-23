@@ -8,6 +8,7 @@ import LogoNom from '@components/components/LogoNom.vue';
 import logoIutUrl from '@images/logo/logo_intranet_iut_troyes.svg';
 import AppSearch from './AppSearch.vue';
 import NotificationsCloche from './NotificationsCloche.vue';
+import NotificationBell from './NotificationBell.vue';
 import { useAnneeUnivStore, useUsersStore } from "@stores";
 import { useRoute, useRouter } from 'vue-router';
 import { tools } from '@config/uniServices.js';
@@ -473,10 +474,7 @@ const selectAnneeUniversitaire = (annee) => {
             <span>Messages</span>
           </button>
           <NotificationsCloche v-if="estEtudiant" />
-          <button v-else type="button" class="layout-topbar-action">
-            <i class="pi pi-bell" aria-hidden="true"></i>
-            <span>Notifications</span>
-          </button>
+          <NotificationBell v-else />
           <div class="layout-config-menu">
             <button type="button" class="layout-topbar-action" aria-label="Mode sombre" :aria-pressed="isDarkTheme" @click="toggleDarkMode">
               <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]" aria-hidden="true"></i>

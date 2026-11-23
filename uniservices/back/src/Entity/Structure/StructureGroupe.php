@@ -9,9 +9,9 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Entity\Apc\ApcParcours;
 use App\Entity\Edt\EdtEvent;
 use App\Entity\Etudiant\EtudiantScolariteSemestre;
+use App\Entity\Apc\ApcParcours;
 use App\Entity\Traits\ApogeeTrait;
 use App\Entity\Traits\EduSignTrait;
 use App\Entity\Traits\OldIdTrait;
@@ -51,7 +51,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['groupe:structure']],
         ),
         new Post(securityPostDenormalize: "is_granted('CAN_EDIT_GROUPE', object)"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_GROUPE', object)"),
+        new Patch(security: "is_granted('CAN_EDIT_GROUPE', object)", securityPostDenormalize: "is_granted('CAN_EDIT_GROUPE', object)"),
         new Patch(
             uriTemplate: '/semestre/structure_groupes/{id}',
             securityPostDenormalize: "is_granted('CAN_EDIT_GROUPE_STRUCTURE')",
@@ -104,10 +104,6 @@ class StructureGroupe
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent', cascade: ['persist', 'remove'])]
     #[Groups(['groupe:detail', 'edt_event:read:agenda', 'groupe:structure'])]
     private Collection $enfants;
-
-    #[ORM\ManyToOne(targetEntity: ApcParcours::class, inversedBy: 'groupes')]
-    #[Groups(['groupe:detail', 'groupe:structure'])]
-    private ?ApcParcours $parcours = null;
 
     /**
      * @var Collection<int, EdtEvent>
@@ -242,18 +238,6 @@ class StructureGroupe
                 $enfant->setParent(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getParcours(): ?ApcParcours
-    {
-        return $this->parcours;
-    }
-
-    public function setParcours(?ApcParcours $parcours): static
-    {
-        $this->parcours = $parcours;
 
         return $this;
     }

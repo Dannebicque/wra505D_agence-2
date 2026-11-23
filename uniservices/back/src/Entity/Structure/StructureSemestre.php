@@ -18,6 +18,7 @@ use App\Entity\Contracts\TimestampableInterface;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\OldIdTrait;
 use App\Entity\Traits\OptionTrait;
+use App\Enum\TypeGroupeEnum;
 use App\Filter\SemestreFilter;
 use App\Repository\Structure\StructureSemestreRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -76,7 +77,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         'departement' => new QueryParameter(filter: SemestreFilter::class),
         'diplome' => new QueryParameter(filter: SemestreFilter::class),
         'annee' => new QueryParameter(filter: SemestreFilter::class),
-        'actif' => new QueryParameter(filter: SemestreFilter::class),
+        'anneeUniversitaire' => new QueryParameter(filter: SemestreFilter::class),
     ],
 )]
 class StructureSemestre implements TimestampableInterface
@@ -89,7 +90,7 @@ class StructureSemestre implements TimestampableInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'enseignement:read', 'annee:read', 'stage_periode:read', 'scolarite:user'])]
+    #[Groups(['semestre:detail', 'semestre:light', 'maquette:detail', 'scolarite:read', 'enseignement:read', 'annee:read', 'stage_periode:read', 'scolarite:user', 'enseignement:dashboard'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -103,22 +104,6 @@ class StructureSemestre implements TimestampableInterface
     #[ORM\Column]
     #[Groups(['semestre:detail', 'maquette:detail'])]
     private int $ordreLmd = 0;
-
-    #[ORM\Column]
-    #[Groups(['semestre:detail', 'semestre:light', 'annee:read'])]
-    private bool $actif = true;
-
-    #[ORM\Column]
-    #[Groups(['semestre:detail', 'pn:read'])]
-    private int $nbGroupesCm = 1;
-
-    #[ORM\Column]
-    #[Groups(['semestre:detail', 'pn:read'])]
-    private int $nbGroupesTd = 1;
-
-    #[ORM\Column()]
-    #[Groups(['semestre:detail', 'pn:read'])]
-    private int $nbGroupesTp = 2;
 
     #[ORM\Column(length: 20, nullable: true)]
     #[Groups(['semestre:detail', 'maquette:detail', 'pn:read'])]
@@ -172,6 +157,22 @@ class StructureSemestre implements TimestampableInterface
 
     #[ORM\Column]
     private bool $cloture = false;
+
+    /** Verrou optimiste commun à toute modification influençant les résultats. */
+    #[ORM\Column(type: 'integer'), ORM\Version]
+    private int $resultatsVersion = 1;
+
+    #[ORM\Column]
+    private int $resultatsGeneration = 0;
+
+    public function getResultatsVersion(): int
+    {
+        return $this->resultatsVersion;
+    }
+    public function touchResultats(): void
+    {
+        ++$this->resultatsGeneration;
+    }
 
     public function __construct()
     {
@@ -231,52 +232,34 @@ class StructureSemestre implements TimestampableInterface
         return $this;
     }
 
-    public function isActif(): ?bool
+    #[Groups(['semestre:detail', 'pn:read'])]
+    public function getNbGroupesCm(): int
     {
-        return $this->actif;
+        return $this->compterGroupes(TypeGroupeEnum::TYPE_GROUPE_CM);
     }
 
-    public function setActif(bool $actif): static
+    #[Groups(['semestre:detail', 'pn:read'])]
+    public function getNbGroupesTd(): int
     {
-        $this->actif = $actif;
-
-        return $this;
+        return $this->compterGroupes(TypeGroupeEnum::TYPE_GROUPE_TD);
     }
 
-    public function getNbGroupesCm(): ?int
+    #[Groups(['semestre:detail', 'pn:read'])]
+    public function getNbGroupesTp(): int
     {
-        return $this->nbGroupesCm;
+        return $this->compterGroupes(TypeGroupeEnum::TYPE_GROUPE_TP);
     }
 
-    public function setNbGroupesCm(int $nbGroupesCm): static
+    private function compterGroupes(TypeGroupeEnum $type): int
     {
-        $this->nbGroupesCm = $nbGroupesCm;
+        $nombre = 0;
+        foreach ($this->groupes as $groupe) {
+            if ($groupe->getType() === $type) {
+                ++$nombre;
+            }
+        }
 
-        return $this;
-    }
-
-    public function getNbGroupesTd(): ?int
-    {
-        return $this->nbGroupesTd;
-    }
-
-    public function setNbGroupesTd(int $nbGroupesTd): static
-    {
-        $this->nbGroupesTd = $nbGroupesTd;
-
-        return $this;
-    }
-
-    public function getNbGroupesTp(): ?int
-    {
-        return $this->nbGroupesTp;
-    }
-
-    public function setNbGroupesTp(int $nbGroupesTp): static
-    {
-        $this->nbGroupesTp = $nbGroupesTp;
-
-        return $this;
+        return $nombre;
     }
 
     public function getCodeElement(): ?string

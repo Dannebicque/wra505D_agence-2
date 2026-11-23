@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: EtudiantScolariteRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['scolarite:detail', 'etudiant:light', 'annee:light', 'annee-univ:light']]),
+        new Get(security: "is_granted('CAN_VIEW_ETUDIANT_SCOLARITE', object)", normalizationContext: ['groups' => ['scolarite:detail', 'etudiant:light', 'annee:light', 'annee-univ:light']]),
         new GetCollection(normalizationContext: ['groups' => ['scolarite:detail', 'etudiant:light', 'annee:light', 'annee-univ:light']]),
         new GetCollection(
             uriTemplate: '/all/etudiant_scolarites',
@@ -41,11 +41,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
         new GetCollection(
             uriTemplate: '/liste/etudiant_scolarites',
+            security: "is_granted('IS_PERSONNEL')",
             normalizationContext: ['groups' => ['scolarite:liste']],
             provider: EtudiantListeProvider::class
         ),
         new Get(
             uriTemplate: '/count/etudiant_scolarites',
+            security: "is_granted('IS_PERSONNEL')",
             paginationEnabled: false,
             provider: EtudiantCountProvider::class,
         ),
@@ -57,7 +59,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
         'anneeUniversitaire' => new QueryParameter(filter: EtudiantScolariteFilter::class),
         'etudiant' => new QueryParameter(filter: EtudiantScolariteFilter::class),
         'annee' => new QueryParameter(filter: EtudiantScolariteFilter::class),
-    ],
+        'search' => new QueryParameter(filter: EtudiantScolariteFilter::class),
+        'nom' => new QueryParameter(filter: EtudiantScolariteFilter::class),
+        'prenom' => new QueryParameter(filter: EtudiantScolariteFilter::class),
+        'mailUniv' => new QueryParameter(filter: EtudiantScolariteFilter::class),
+    ]
 )]
 class EtudiantScolarite
 {

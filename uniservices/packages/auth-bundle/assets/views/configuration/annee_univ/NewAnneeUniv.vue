@@ -1,7 +1,7 @@
 <script setup>
 import {ref, onMounted, computed} from "vue";
 import { useRouter } from "vue-router";
-import { ValidatedInput, validationRules, ErrorView, PermissionGuard, ListSkeleton, Access } from "@components";
+import { ValidatedInput, validationRules, ErrorState, PermissionGuard, ListSkeleton, Access } from "@components";
 import {useAnneeUnivStore} from "@stores";
 import {createAnneeUniversitaireService, getDiplomesService} from "@requests";
 
@@ -12,6 +12,7 @@ const hasError = ref(false);
 const anneeUnivStore = useAnneeUnivStore();
 const anneeUniv = ref({
   libelle: "",
+  dateDebutSemaineFormation: null,
   actif: false,
 });
 const currentAnneeUniv = ref(null);
@@ -105,6 +106,7 @@ const createAnneeUniv = async () => {
   try {
     const data = {
       libelle: anneeUniv.value.libelle,
+      dateDebutSemaineFormation: anneeUniv.value.dateDebutSemaineFormation || null,
       annee: anneeUniv.value.annee,
       commentaire: anneeUniv.value.commentaire,
       actif: anneeUniv.value.actif,
@@ -127,7 +129,7 @@ const getDiplomes = async () => {
   isLoadingDiplomes.value = true;
   try {
     // Récupérer tous les diplômes via le service (pas seulement ceux du département)
-    diplomes.value = await getDiplomesService({});
+    diplomes.value = await getDiplomesService({}, '', false, 'toutes');
     // Par défaut, aucun diplôme n'est sélectionné
     selectedDiplomes.value = [];
   } catch (error) {
@@ -158,7 +160,7 @@ const goBack = () => {
       </div>
     </div>
 
-    <ErrorView v-if="hasError"/>
+    <ErrorState v-if="hasError"/>
     <template v-else>
       <PermissionGuard permission="isSuperAdmin" :showFallback="true">
         <Message v-if="currentAnneeUniv" severity="info" class="mb-4 flex items-center flex-col justify-center text-center">
@@ -168,6 +170,11 @@ const goBack = () => {
         </Message>
 
         <form @submit.prevent="createAnneeUniv()" class="flex flex-col">
+          <div class="mb-6">
+            <label for="debut-semaine-formation" class="block mb-2 font-medium">Lundi de la semaine de formation n°1</label>
+            <input id="debut-semaine-formation" v-model="anneeUniv.dateDebutSemaineFormation" type="date" class="border rounded p-2" />
+            <p class="text-sm text-muted-color mt-2">Date communiquée en interne. Le compteur reste continu jusqu’au 31 août de l’année suivante. Sans date, le calendrier n’est pas configuré.</p>
+          </div>
           <div>
             <div class="flex flex-row gap-4 items-center">
               <ValidatedInput

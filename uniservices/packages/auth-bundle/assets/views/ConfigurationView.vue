@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import {ErrorView} from "@components";
+import {ErrorState} from "@components";
 import { hasPermission } from "@utils/permissions";
 
 const isSuperAdmin = computed(() => hasPermission('SUPER_ADMIN'));
@@ -9,6 +9,9 @@ const panelMenuEtablissementItems = computed(() => {
   const items = [
     { label: 'Informations générales', icon: 'pi pi-info-circle', route: '/auth/configuration/etablissement' },
   ];
+  if (isSuperAdmin.value) {
+    items.push({ label: 'Services de l\'établissement', icon: 'pi pi-sitemap', route: '/auth/configuration/services' });
+  }
   return items;
 });
 

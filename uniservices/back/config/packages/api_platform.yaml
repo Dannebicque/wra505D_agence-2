@@ -12,9 +12,10 @@ api_platform:
             - '%kernel.project_dir%/../packages/document-bundle/src/Entity'
             - '%kernel.project_dir%/../packages/message-bundle/src/Entity'
     defaults:
+        security: "is_granted('IS_AUTHENTICATED_FULLY')"
         stateless: true
         cache_headers:
-            vary: ['Content-Type', 'Authorization', 'Origin']
+            vary: ['Content-Type', 'Authorization', 'Origin', 'X-Annee-Universitaire', 'X-Contexte-Annuel']
         pagination_client_enabled: true
         pagination_client_items_per_page: true
     eager_loading:

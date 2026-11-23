@@ -1,0 +1,133 @@
+<?php
+
+declare(strict_types=1);
+
+namespace IntranetBundle\Entity\Commission;
+
+use App\Entity\Contracts\TimestampableInterface;
+use App\Entity\Traits\TimestampableTrait;
+use App\Entity\Users\Personnel;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @phpstan-type CommissionRow array{scolariteSemestreId: int, etudiantId: int|null, nom: string, prenom: string, cells: array<string, float|null>, moyenne: float|null, rang: int|null, decision: bool|null, decisionLibelle: string, uesValidees: int, numeroEtudiant: string|null, dateNaissance: string|null, bac: string|null, propositionCalculee?: bool|null, decisionJury?: bool, motifJury?: string|null}
+ * @phpstan-type CommissionVue array{mode: mixed, modeLibelle: mixed, semestre: mixed, columns: list<array<string, mixed>>, columnsByEnseignement: list<array<string, mixed>>, rows: list<CommissionRow>, statistiques: array<string, mixed>}
+ */
+
+#[ORM\Entity]
+#[ORM\Table(name: 'intranet_sous_commission_revision')]
+#[ORM\UniqueConstraint(name: 'UNIQ_COMMISSION_REVISION', columns: ['sous_commission_id', 'numero'])]
+class SousCommissionRevision implements TimestampableInterface
+{
+    use TimestampableTrait;
+
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
+    private SousCommission $sousCommission;
+
+    #[ORM\Column]
+    private int $numero;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'RESTRICT')]
+    private Personnel $validePar;
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $valideLe;
+
+    /** @var CommissionVue */
+    #[ORM\Column(type: 'json')]
+    private array $vue;
+
+    /** @var array<string, mixed> */
+    #[ORM\Column(type: 'json')]
+    private array $sources;
+
+    #[ORM\Column(length: 64)]
+    private string $empreinte;
+
+    #[ORM\ManyToOne]
+    private ?Personnel $rouvertPar = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $invalideeLe = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $motifReouverture = null;
+
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    #[ORM\JoinColumn(onDelete: 'RESTRICT')]
+    private ?self $restaureeDepuis;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $motifRestauration;
+
+    /**
+     * @param CommissionVue $vue
+     * @param array<string, mixed> $sources
+     */
+    public function __construct(SousCommission $commission, int $numero, Personnel $auteur, array $vue, array $sources, string $empreinte, ?self $restaureeDepuis = null, ?string $motifRestauration = null)
+    {
+        $this->sousCommission = $commission;
+        $this->numero = $numero;
+        $this->validePar = $auteur;
+        $this->valideLe = new \DateTimeImmutable();
+        $this->vue = $vue;
+        $this->sources = $sources;
+        $this->empreinte = $empreinte;
+        $this->restaureeDepuis = $restaureeDepuis;
+        $this->motifRestauration = $motifRestauration;
+    }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+    public function getSousCommission(): SousCommission
+    {
+        return $this->sousCommission;
+    }
+    public function getNumero(): int
+    {
+        return $this->numero;
+    }
+    /** @return CommissionVue */
+    public function getVue(): array
+    {
+        return $this->vue;
+    }
+    /** @return array<string, mixed> */
+    public function getSources(): array
+    {
+        return $this->sources;
+    }
+    public function getEmpreinte(): string
+    {
+        return $this->empreinte;
+    }
+    public function isInvalidee(): bool
+    {
+        return $this->invalideeLe !== null;
+    }
+    public function invalider(Personnel $auteur, string $motif): void
+    {
+        if ($this->isInvalidee()) {
+            throw new \LogicException('Révision déjà invalidée.');
+        }
+        $this->rouvertPar = $auteur;
+        $this->invalideeLe = new \DateTimeImmutable();
+        $this->motifReouverture = $motif;
+    }
+    /** @return array<string, mixed> */
+    public function metadata(): array
+    {
+        return ['id' => $this->id, 'numero' => $this->numero,
+            'validePar' => ['id' => $this->validePar->getId(), 'nom' => $this->validePar->getNom(), 'prenom' => $this->validePar->getPrenom()],
+            'valideLe' => $this->valideLe->format(DATE_ATOM),
+            'invalideeLe' => $this->invalideeLe?->format(DATE_ATOM),
+            'rouvertPar' => $this->rouvertPar?->getId(), 'motifReouverture' => $this->motifReouverture,
+            'restaureeDepuis' => $this->restaureeDepuis?->getNumero(), 'motifRestauration' => $this->motifRestauration];
+    }
+}

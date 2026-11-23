@@ -69,6 +69,14 @@ class AbsenceFilter extends AbstractFilter
                 ->setParameter($param, $value);
         }
 
+        if ('enseignement' === $property) {
+            $eventAlias = $this->getOrCreateJoin($queryBuilder, $queryNameGenerator, $alias, 'event');
+            $param = $queryNameGenerator->generateParameterName('enseignement');
+            $queryBuilder
+                ->andWhere(sprintf('IDENTITY(%s.enseignement) = :%s', $eventAlias, $param))
+                ->setParameter($param, $value);
+        }
+
         if ('personnel' === $property) {
             $personnelAlias = $this->getOrCreateJoin($queryBuilder, $queryNameGenerator, $alias, 'personnel');
             $param = $queryNameGenerator->generateParameterName('personnel');
@@ -122,6 +130,12 @@ class AbsenceFilter extends AbstractFilter
                 'type' => TypeIdentifier::BOOL->value,
                 'required' => false,
                 'description' => 'Filter by justifiee',
+            ],
+            'enseignement' => [
+                'property' => 'enseignement',
+                'type' => TypeIdentifier::INT->value,
+                'required' => false,
+                'description' => 'Filter by enseignement',
             ],
             'event' => [
                 'property' => 'event',

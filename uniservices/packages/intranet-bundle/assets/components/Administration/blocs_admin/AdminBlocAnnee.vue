@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref, computed, watch } from "vue";
 import Tag from "primevue/tag";
-import { ErrorView, ListSkeleton } from "@components";
+import { ErrorState, ListSkeleton } from "@components";
 import { useUsersStore, useSemestreStore, useAnneeStore, useAnneeUnivStore } from "@stores";
 
 const userStore = useUsersStore();
@@ -15,11 +15,9 @@ const isLoading = ref(true);
 const hasError = ref(false);
 const anneesGrouped = ref({ fi: [], fc: [] });
 
-// Vérifier si l'année (ou le diplôme lié) est actif
+// L’API limite déjà les années aux PN de l’année universitaire sélectionnée.
 const isAnneeActive = (annee) => {
   if (annee?.actif === false) return false;
-  if (annee?.diplome && annee.diplome.actif === false) return false;
-  if (annee?.pn?.diplome && annee.pn.diplome.actif === false) return false;
   return annee?.actif === true || annee?.actif === undefined;
 };
 
@@ -27,7 +25,6 @@ const isAnneeActive = (annee) => {
 const getSortedSemestres = (annee) => {
   if (!annee?.semestres || !Array.isArray(annee.semestres)) return [];
   return [...annee.semestres]
-    .filter(s => s.actif === undefined || s.actif === true)
     .sort((a, b) => {
       if (a.ordreAnnee !== undefined && b.ordreAnnee !== undefined && a.ordreAnnee !== b.ordreAnnee) {
         return a.ordreAnnee - b.ordreAnnee;
@@ -146,7 +143,7 @@ const selectAnnee = (annee) => {
         </div>
       </template>
       <ListSkeleton v-if="isLoading" class="mt-4"/>
-      <ErrorView v-else-if="hasError" />
+      <ErrorState v-else-if="hasError" />
       <Message v-else-if="anneesGrouped.fi.length < 1 && anneesGrouped.fc.length < 1" severity="error" icon="pi pi-times-circle" class="m-6">
         Aucune année disponible.
       </Message>
