@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import ContexteSelection from '@/components/Structure/ContexteSelection.vue';
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { HeaderComponent, SimpleSkeleton, Kpi } from '@components';
 import {
   UsersIcon,
@@ -307,25 +308,67 @@ const exportCsv = () => {
 };
 
 onMounted(async () => {
-  await loadSemestres();
-  if (selectedSemestre.value?.id) {
+  try {
+    await getAnnees();
+    await syncRouteAnnee(annee.value);
+    await getSemestres();
     await loadCommission();
+  } finally {
+    isInitialLoading.value = false;
   }
 });
 
 watch(selectedSemestre, async (newSem, oldSem) => {
-  if (newSem?.id && newSem.id !== oldSem?.id) {
-    await loadCommission();
-  }
-});
-
-watch(anneeId, async () => {
-  await loadSemestres();
+  if (isInitialLoading.value || isLoadingSemestres.value || sameId(newSem?.id, oldSem?.id)) return;
   await loadCommission();
+}, { flush: 'sync' });
+
+watch(annee, async (newAnnee, oldAnnee) => {
+  if (isInitialLoading.value || isLoadingAnnees.value || sameId(newAnnee?.id, oldAnnee?.id)) return;
+  await syncRouteAnnee(newAnnee);
+  await getSemestres();
+  await loadCommission();
+}, { flush: 'sync' });
+
+watch(() => route.params.anneeId, (routeAnneeId) => {
+  const selectedFromRoute = annees.value.find((item) => sameId(item.id, routeAnneeId));
+  if (selectedFromRoute && !sameId(annee.value?.id, selectedFromRoute.id)) {
+    annee.value = selectedFromRoute;
+  }
+}, { flush: 'sync' });
+
+let contexteRequestId = 0;
+watch([departementId, selectedAnneeUnivId], async () => {
+  if (isInitialLoading.value) return;
+  const requestId = ++contexteRequestId;
+  commissionRequestId++;
+  commissionData.value = null;
+  semestres.value = [];
+  selectedSemestre.value = null;
+
+  await getAnnees();
+  if (requestId !== contexteRequestId) return;
+  await syncRouteAnnee(annee.value);
+  await getSemestres();
+  if (requestId === contexteRequestId) await loadCommission();
 });
 </script>
 
 <template>
+  <ContexteSelection titre="Semestre de travail" :valeur="[annee?.libelle, selectedSemestre?.libelle].filter(Boolean).join(' · ')">
+    <div class="flex flex-col gap-2"><label for="contexte-annee" class="text-sm font-semibold text-muted-color">Année de formation</label>
+      <Select :loading="isLoadingAnnees" :disabled="isLoadingAnnees || saving" input-id="contexte-annee" class="w-full sm:w-60" v-model="annee" option-label="libelle" :options="annees" placeholder="Changer d'année"/>
+    </div>
+    <div class="flex flex-col gap-2"><label for="contexte-selectedSemestre" class="text-sm font-semibold text-muted-color">Semestre</label>
+      <Select :loading="isLoadingSemestres" :disabled="isLoadingSemestres || saving" input-id="contexte-selectedSemestre"
+            v-model="selectedSemestre"
+            :options="semestres"
+            option-label="libelle"
+            placeholder="Choisir un semestre" class="w-full sm:w-60"
+          />
+    </div>
+  </ContexteSelection>
+
   <div class="flex flex-col gap-6">
     <!-- Header principal -->
     <HeaderComponent
@@ -337,18 +380,6 @@ watch(anneeId, async () => {
     <!-- Bandeau de configuration & sélection du semestre -->
     <div class="card p-4 rounded-xl border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 shadow-xs flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-4 flex-wrap">
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-semibold text-surface-700 dark:text-surface-300">Semestre :</label>
-          <SimpleSkeleton v-if="isLoadingSemestres" class="w-48 h-9" />
-          <Select
-            v-else
-            v-model="selectedSemestre"
-            :options="semestres"
-            option-label="libelle"
-            placeholder="Choisir un semestre"
-            class="w-56"
-          />
-        </div>
 
         <!-- Badge du mode détecté (APC vs Classique) -->
         <div v-if="commissionData" class="flex items-center gap-2">
@@ -495,10 +526,7 @@ watch(anneeId, async () => {
     </div>
 
     <!-- Message d'erreur -->
-    <div v-if="errorMessage" class="p-4 rounded-xl bg-emphasis border border-surface text-color text-sm flex items-center gap-3">
-      <i class="pi pi-exclamation-circle text-lg"></i>
-      <span>{{ errorMessage }}</span>
-    </div>
+    <Message v-if="errorMessage" severity="error" icon="pi pi-exclamation-circle">{{ errorMessage }}</Message>
 
     <!-- Loader de commission -->
     <div v-if="isLoadingCommission" class="card p-8 rounded-xl border border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 flex flex-col items-center justify-center gap-3">

@@ -10,6 +10,8 @@ import { capitalize } from './string.js'
 // Color utilities
 import {
     adjustColor,
+    couleurCompetence,
+    texteSurCompetence,
     rgbToHsl,
     hslToRgb,
     colorNameToRgb,

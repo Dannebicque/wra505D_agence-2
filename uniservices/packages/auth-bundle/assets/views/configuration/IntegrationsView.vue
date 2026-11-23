@@ -2,7 +2,7 @@
 import {onMounted, ref} from "vue";
 import {useEtablissementStore} from "@stores";
 import {ValidatedInput, ErrorState, ListSkeleton} from "@components";
-import {getEtablissementSettingsService, updateEtablissementService} from "@requests";
+import {updateEtablissementService} from "@requests";
 
 const etablissementStore = useEtablissementStore();
 const etablissement = ref();

@@ -180,7 +180,7 @@ onMounted(charger);
         <Tag :value="etat.libelle" :severity="etat.severite" />
         <Tag v-if="modele.categorie === 'notification'" :value="modele.desactivable ? 'Notification — désactivable par le destinataire' : 'Notification — ne peut pas être désactivée'" :severity="modele.desactivable ? 'secondary' : 'warn'" />
         <Tag v-else value="Transactionnel — toujours envoyé" severity="secondary" />
-        <span class="text-sm text-slate-500 font-mono">{{ modele.emailKey }}</span>
+        <span class="text-sm text-muted-color font-mono">{{ modele.emailKey }}</span>
         <span v-if="modele.parentKey && !modele.isCustomized" class="q-hint !mt-0">
           Tant qu'il n'est pas personnalisé, ce message reprend le modèle générique « {{ modele.parentKey }} ».
         </span>
@@ -220,7 +220,7 @@ onMounted(charger);
           </Card>
 
           <Card title="Syntaxe autorisée" icon="pi pi-shield" color="teal">
-            <p class="text-sm text-slate-600 dark:text-slate-300">
+            <p class="text-sm text-muted-color">
               Balises <code>if</code>, <code>for</code>, <code>set</code>. Filtres :
               <code v-for="f in FILTRES" :key="f" class="mr-1">{{ f }}</code>.
               Les valeurs sont échappées automatiquement ; les liens relatifs (« /app/… ») deviennent absolus à l'envoi.
@@ -231,7 +231,7 @@ onMounted(charger);
       </div>
 
       <Card title="Aperçu" icon="pi pi-eye" color="teal" :subtitle="apercu ? `Objet : ${apercu.subject}` : 'Avec des valeurs d\'exemple [nom_variable].'">
-        <iframe v-if="apercu" :srcdoc="apercu.html" sandbox="" title="Aperçu de l'e-mail" class="w-full h-[60vh] bg-white rounded-lg border border-slate-200 dark:border-slate-700"></iframe>
+        <iframe v-if="apercu" :srcdoc="apercu.html" sandbox="" title="Aperçu de l'e-mail" class="w-full h-[60vh] bg-white rounded-lg border border-surface"></iframe>
         <EmptyState v-else compact icon="pi pi-eye" title="Pas encore d'aperçu" description="Cliquez sur « Aperçu » pour voir le message mis en page." />
       </Card>
     </template>

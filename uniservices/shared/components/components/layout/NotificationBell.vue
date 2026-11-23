@@ -5,7 +5,7 @@ import Popover from 'primevue/popover';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { formatDateFr } from '@helpers/date';
-import { cheminRouteur, useNotificationStore } from '@stores/notificationStore';
+import { cheminRouteur, useStaffNotificationStore } from '@stores/staffNotificationStore';
 
 /**
  * Cloche de notifications : pastille de non-lues, panneau des dernières notifications de toute l'application
@@ -14,7 +14,7 @@ import { cheminRouteur, useNotificationStore } from '@stores/notificationStore';
 const INTERVALLE = 60_000;
 
 const router = useRouter();
-const store = useNotificationStore();
+const store = useStaffNotificationStore();
 const panneau = ref(null);
 let minuteur = null;
 
@@ -53,7 +53,7 @@ const preferences = () => {
     <i class="pi pi-bell"></i>
     <span
       v-if="store.nonLues > 0"
-      class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center pointer-events-none"
+      class="absolute -top-1 -right-1 bg-primary text-primary-contrast text-[10px] font-bold rounded-full h-4 min-w-4 px-1 flex items-center justify-center pointer-events-none"
       :aria-label="`${store.nonLues} notification(s) non lue(s)`"
     >
       {{ store.nonLues > 99 ? '99+' : store.nonLues }}
@@ -68,7 +68,7 @@ const preferences = () => {
         <Button v-if="store.nonLues > 0" label="Tout marquer comme lu" size="small" text @click="store.toutLire()" />
       </div>
 
-      <p v-if="store.erreur" class="m-0 text-sm text-red-600">{{ store.erreur }}</p>
+      <Message v-if="store.erreur" severity="error" size="small" variant="simple">{{ store.erreur }}</Message>
       <p v-else-if="!store.items.length && !store.chargement" class="m-0 text-sm text-muted-color py-4 text-center">Aucune notification pour le moment.</p>
 
       <ul v-else class="list-none m-0 p-0 flex flex-col max-h-[26rem] overflow-y-auto">

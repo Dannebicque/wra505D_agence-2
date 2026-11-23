@@ -84,15 +84,11 @@ export const APPLICATION_REGISTRY = {
   },
 };
 
-/**
- * Normalise any slug or app name variation to the canonical registry key.
- */
 export function normalizeAppSlug(appInput) {
   if (!appInput) return '';
   const raw = typeof appInput === 'object'
     ? (appInput.urlSlug || appInput.slug || appInput.name || '')
     : String(appInput);
-
   const clean = raw.trim().toLowerCase();
 
   const aliases = {
@@ -119,15 +115,13 @@ export function normalizeAppSlug(appInput) {
  */
 export function getApplicationMeta(appInput) {
   const slug = normalizeAppSlug(appInput);
-  if (slug && APPLICATION_REGISTRY[slug]) {
+  if (Object.hasOwn(APPLICATION_REGISTRY, slug)) {
     return APPLICATION_REGISTRY[slug];
   }
 
-  // Fallback for unknown / generic tools
-  const rawLabel = typeof appInput === 'object'
+  const rawLabel = typeof appInput === 'object' && appInput
     ? (appInput.name || appInput.urlSlug || 'Application')
     : String(appInput || 'Application');
-
   const formattedLabel = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1);
 
   return {

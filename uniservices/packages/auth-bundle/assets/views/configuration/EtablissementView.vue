@@ -183,6 +183,82 @@ const handleValidation = (field, result) => {
             help-text="Entrez le numéro de téléphone de l'établissement"
             class="w-full"
             />
+          <ValidatedInput
+            v-model="etablissement.directeurNom"
+            name="directeurNom"
+            label="Directeur ou directrice"
+            type="text"
+            :rules="[]"
+            @validation="result => handleValidation('directeurNom', result)"
+            help-text="Prénom et nom de la personne qui dirige l'établissement"
+            class="w-full"
+            />
+
+          <h3 class="text-lg font-bold mt-4 mb-1">Université de rattachement</h3>
+          <ValidatedInput
+            v-model="etablissement.universite.libelle"
+            name="universiteLibelle"
+            label="Nom de l'université"
+            type="text"
+            :rules="[]"
+            @validation="result => handleValidation('universiteLibelle', result)"
+            help-text="Ex. : Université de Reims Champagne-Ardenne"
+            class="w-full"
+            />
+          <ValidatedInput
+            v-model="etablissement.universite.adresse"
+            name="universiteAdresse"
+            label="Adresse de l'université"
+            type="address"
+            :rules="[]"
+            @validation="result => handleValidation('universiteAdresse', result)"
+            placeholder="Entrez une adresse (minimum 3 caractères)"
+            help-text="Adresse du siège de l'université"
+            class="w-full"
+            country="fr"
+            />
+          <ValidatedInput
+            v-model="etablissement.universite.telephone"
+            name="universiteTelephone"
+            label="Téléphone de l'université"
+            type="text"
+            :rules="[]"
+            @validation="result => handleValidation('universiteTelephone', result)"
+            class="w-full"
+            />
+          <ValidatedInput
+            v-model="etablissement.universite.president"
+            name="universitePresident"
+            label="Président ou présidente de l'université"
+            type="text"
+            :rules="[]"
+            @validation="result => handleValidation('universitePresident', result)"
+            help-text="Prénom et nom"
+            class="w-full"
+            />
+
+          <h3 class="text-lg font-bold mt-4 mb-1">Conventions de stage</h3>
+          <ValidatedInput
+            v-model="etablissement.signataireNom"
+            name="signataireNom"
+            label="Signataire des conventions"
+            type="text"
+            :rules="[]"
+            @validation="result => handleValidation('signataireNom', result)"
+            help-text="Représentant de l'établissement qui signe les conventions de stage (prénom et nom)"
+            class="w-full"
+            />
+          <ValidatedInput
+            v-model="etablissement.signataireQualite"
+            name="signataireQualite"
+            label="Qualité du signataire"
+            type="text"
+            :rules="[]"
+            @validation="result => handleValidation('signataireQualite', result)"
+            help-text="Ex. : Directeur de l'IUT, par délégation du Président"
+            class="w-full"
+            />
+
           <Button label="Enregistrer" class="w-full" type="submit" :disabled="!formValid"/>
         </form>
       </div>

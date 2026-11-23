@@ -19,13 +19,13 @@ const toast = useToast();
 const chargement = ref(true);
 const enCours = ref('');
 const infos = ref({ etablissement: '', universite: '', logo: false });
-const reglages = ref({ couleur: '#1a3a5c', expediteur_nom: '', reply_to: '', signature: '', mentions_legales: '', contact_rgpd: '' });
+const reglages = ref({ couleur: '#4D3677', expediteur_nom: '', reply_to: '', signature: '', mentions_legales: '', contact_rgpd: '' });
 const enregistres = ref('');
 const erreur = ref('');
 const apercu = ref('');
 
 const modifie = computed(() => JSON.stringify(reglages.value) !== enregistres.value);
-/** ColorPicker manipule « 1a3a5c » ; l'API attend « #1a3a5c ». */
+/** ColorPicker manipule « 4D3677 » ; l'API attend « #4D3677 ». */
 const couleurSansDiese = computed({
   get: () => reglages.value.couleur.replace(/^#/, ''),
   set: (v) => { reglages.value.couleur = `#${String(v).replace(/^#/, '')}`; }
@@ -33,7 +33,7 @@ const couleurSansDiese = computed({
 
 const appliquer = (r) => {
   reglages.value = {
-    couleur: r.couleur || '#1a3a5c',
+    couleur: r.couleur || '#4D3677',
     expediteur_nom: r.expediteur_nom || '',
     reply_to: r.reply_to || '',
     signature: r.signature || '',

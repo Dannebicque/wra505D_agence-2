@@ -222,47 +222,124 @@ const onSortChange = async (event) => {
   await fetchData()
 }
 
+// En mode serveur, ne recharger que si un filtre de colonne a changé (la recherche globale a son propre délai).
+let dernierEtatFiltres = ''
+const onFilterChange = async () => {
+  if (modeLocal.value || !colonnesFiltrables.value.length) return
+  const etat = JSON.stringify(colonnesFiltrables.value.map(col => filters.value[colFilterField(col)]?.value ?? null))
+  if (etat === dernierEtatFiltres) return
+  dernierEtatFiltres = etat
+  page.value = 0
+  await fetchData()
+}
+
+// Lignes telles qu'affichées (filtres et tri appliqués, toutes pages confondues) : utile aux exports.
+const table = ref(null)
+const lignesAffichees = () => (modeLocal.value ? (table.value?.processedData ?? lignes.value) : lignes.value) ?? []
+defineExpose({ lignesAffichees, recharger: fetchData })
+
 function getNestedValue(obj, path) {
+  if (!path) return undefined
   return path.split('.').reduce((acc, part) => acc && acc[part], obj);
 }
 </script>
 
 <template>
-  <DataTable :value="data" lazy stripedRows paginator :first="offset" :rows="limit" :rowsPerPageOptions="rowOptions"
-    :totalRecords="totalRecords" dataKey="id" :loading="loading" v-model:filterModel="filters" @page="onPageChange"
-    @sort="onSortChange" @update:rows="limit = $event" :globalFilterFields="columns.map(col => col.field)">
-    <template #header>
+  <DataTable
+    ref="table"
+    v-model:filters="filters"
+    v-model:expanded-rows="expandedRows"
+    :value="lignes"
+    :lazy="!modeLocal"
+    striped-rows
+    paginator
+    :first="modeLocal ? undefined : offset"
+    :rows="limit"
+    :rows-per-page-options="rowsPerPageOptions"
+    :total-records="modeLocal ? undefined : totalRecords"
+    :data-key="dataKey"
+    :loading="chargementEnCours"
+    :filter-display="filterDisplay || undefined"
+    :global-filter-fields="champsRecherche"
+    :class="tableClass"
+    @page="onPageChange"
+    @sort="onSortChange"
+    @filter="onFilterChange"
+    @update:rows="limit = $event"
+  >
+    <template v-if="showHeader" #header>
       <div class="flex justify-end">
-        <Button label="Ajouter" icon="pi pi-plus" class="mr-2" @click="actionAdd.handler()" v-if="actionAdd" />
+        <Button v-if="actionAdd?.handler" label="Ajouter" icon="pi pi-plus" class="mr-2" @click="actionAdd.handler()" />
         <IconField>
           <InputIcon>
             <i class="pi pi-search" aria-hidden="true" />
           </InputIcon>
-          <InputText v-model="filters.global.value" placeholder="Rechercher..." />
+          <InputText v-model="filters.global.value" placeholder="Rechercher..." aria-label="Rechercher" />
         </IconField>
       </div>
     </template>
-    <template #empty> Aucun enregistrement trouvé.</template>
+    <template #empty>
+      <slot name="empty">
+        <EmptyState compact :title="emptyTitle" />
+      </slot>
+    </template>
     <template #loading> Chargement des données. Patientez.</template>
-    <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" :style="col.style"
-      :sortable="col.sortable">
-      <template #body="slotProps" v-if="col.type === undefined">
-        {{ getNestedValue(slotProps.data, col.field) }}
+
+    <Column v-if="expandable" expander style="width: 3rem" header-class="sr-only" />
+
+    <Column
+      v-for="col in columns"
+      :key="colKey(col)"
+      :field="col.field"
+      :filter-field="col.filter ? colFilterField(col) : undefined"
+      :header="col.header"
+      :style="col.style"
+      :sortable="col.sortable"
+      :body-class="col.bodyClass"
+      :header-class="col.headerClass"
+      :show-filter-menu="filterDisplay === 'menu'"
+      :show-clear-button="filterDisplay === 'menu'"
+    >
+      <template #body="slotProps">
+        <slot v-if="slots[`body-${colKey(col)}`]" :name="`body-${colKey(col)}`" v-bind="slotProps" />
+        <template v-else-if="col.type === 'date'">
+          {{ getNestedValue(slotProps.data, col.field) ? new Date(getNestedValue(slotProps.data, col.field)).toLocaleDateString() : '' }}
+        </template>
+        <ToggleSwitch v-else-if="col.type === 'boolean'" v-model="slotProps.data[col.field]" @change="col.handler(slotProps.data)" />
+        <template v-else>
+          {{ getNestedValue(slotProps.data, col.field) }}
+        </template>
       </template>
-      <template #body="slotProps" v-else-if="col.type === 'date'">
-        {{ new Date(getNestedValue(slotProps.data, col.field)).toLocaleDateString() }}
+      <template v-if="filterDisplay && col.filter" #filter="{ filterModel, filterCallback }">
+        <Select
+          v-if="col.filter.type === 'select'"
+          v-model="filterModel.value"
+          :options="col.filter.options"
+          :option-label="col.filter.optionLabel ?? 'label'"
+          :option-value="col.filter.optionValue ?? 'value'"
+          :placeholder="col.filter.placeholder ?? 'Tous'"
+          :aria-label="`Filtrer par ${col.header}`"
+          show-clear
+          size="small"
+          class="w-full"
+          @change="filterDisplay === 'row' && filterCallback()"
+        />
+        <InputText
+          v-else
+          v-model="filterModel.value"
+          type="text"
+          size="small"
+          class="w-full"
+          :placeholder="col.filter.placeholder ?? 'Filtrer…'"
+          :aria-label="`Filtrer par ${col.header}`"
+          @input="filterDisplay === 'row' && filterCallback()"
+        />
       </template>
-      <template #body="slotProps" v-else-if="col.type === 'boolean'">
-        <ToggleSwitch @change="col.handler(slotProps.data)" v-model="slotProps.data[col.field]" />
-      </template>
-      <!--      <template #filter="slotProps">-->
-      <!--        <InputText v-model="slotProps.filterModel.value" type="text" @input="slotProps.filterCallback()" :placeholder="`Filter by ${col.header}`"/>-->
-      <!--      </template>-->
     </Column>
     <Column v-if="actions.length" header="Actions" :style="{ minWidth: '10rem' }">
       <template #body="slotProps">
-        <template v-for="action in actions">
-          <ButtonInfo tooltip="Détails" v-if="action.type === 'show'" @click="action.handler(slotProps.data)" />
+        <template v-for="action in actions" :key="action.type">
+          <ButtonInfo v-if="action.type === 'show'" tooltip="Détails" @click="action.handler(slotProps.data)" />
           <ButtonEdit v-if="action.type === 'edit'" tooltip="Modifier" @click="action.handler(slotProps.data)" />
           <ButtonDelete v-if="action.type === 'delete'" tooltip="Supprimer"
             @confirm-delete="action.handler(slotProps.data)" />

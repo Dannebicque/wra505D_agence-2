@@ -130,10 +130,10 @@ const updateDirectField = async (fieldName, value) => {
 
 <template>
   <div class="space-y-6">
-    <!-- Barre de sélection des semestres actifs -->
-    <div v-if="activeSemestres.length > 0" class="flex flex-wrap items-center gap-2 p-2 bg-emphasis rounded-2xl border border-surface">
+    <!-- Barre de sélection des semestres de l’année universitaire -->
+    <div v-if="semestresDisponibles.length > 0" class="flex flex-wrap items-center gap-2 p-2 bg-emphasis rounded-2xl border border-surface">
       <button
-        v-for="s in activeSemestres"
+        v-for="s in semestresDisponibles"
         :key="s.id"
         type="button"
         @click="selectedSemestreId = s.id"

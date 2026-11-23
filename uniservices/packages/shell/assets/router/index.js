@@ -104,6 +104,10 @@ router.beforeEach(async (to, from) => {
       await security.loadSecurityContext();
     }
 
+    if (userStore.hasRole('SUPER_ADMIN')) {
+      return true;
+    }
+
     // Check package access
     const requiredPackage = to.meta.package || to.matched.find(record => record.meta.package)?.meta.package;
     if (requiredPackage && !security.hasPackage(requiredPackage)) {
@@ -129,7 +133,7 @@ router.beforeEach(async (to, from) => {
     return true;
   } catch (error) {
     console.error('Auth error in router guard:', error);
-    return '/app/auth/login';
+    return '/auth/login';
   }
 });
 

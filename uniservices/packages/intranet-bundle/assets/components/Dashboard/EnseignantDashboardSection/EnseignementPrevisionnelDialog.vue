@@ -15,21 +15,21 @@ const error = ref(false);
 const data = ref(null);
 const columns = ref([
   { header: 'Intervenant', field: 'personnel.display', sortable: true, colspan: 1 },
-  { header: 'Nb H/Gr.', field: 'heures.CM.NbHrGrp', colspan: 1, class: '!bg-purple-400/20 !text-nowrap', unit: ' h'},
-  { header: 'Nb Gr.', field: 'heures.CM.NbGrp', colspan: 1, class: '!bg-purple-400/20 !text-nowrap'},
-  { header: 'Nb Seance/Gr.', field: 'heures.CM.NbSeanceGrp', colspan: 1, class: '!bg-purple-400/20 !text-nowrap'},
-  { header: 'Nb H/Gr.', field: 'heures.TD.NbHrGrp', colspan: 1, class: '!bg-green-400/20 !text-nowrap', unit: ' h'},
-  { header: 'Nb Gr.', field: 'heures.TD.NbGrp', colspan: 1, class: '!bg-green-400/20 !text-nowrap'},
-  { header: 'Nb Seance/Gr.', field: 'heures.TD.NbSeanceGrp', colspan: 1, class: '!bg-green-400/20 !text-nowrap'},
-  { header: 'Nb H/Gr.', field: 'heures.TP.NbHrGrp', colspan: 1, class: '!bg-amber-400/20 !text-nowrap', unit: ' h'},
-  { header: 'Nb Gr.', field: 'heures.TP.NbGrp', colspan: 1, class: '!bg-amber-400/20 !text-nowrap'},
-  { header: 'Nb Seance/Gr.', field: 'heures.TP.NbSeanceGrp', colspan: 1, class: '!bg-amber-400/20 !text-nowrap'},
+  { header: 'Nb H/Gr.', field: 'heures.CM.NbHrGrp', colspan: 1, class: '!bg-emphasis !text-nowrap', unit: ' h'},
+  { header: 'Nb Gr.', field: 'heures.CM.NbGrp', colspan: 1, class: '!bg-emphasis !text-nowrap'},
+  { header: 'Nb Seance/Gr.', field: 'heures.CM.NbSeanceGrp', colspan: 1, class: '!bg-emphasis !text-nowrap'},
+  { header: 'Nb H/Gr.', field: 'heures.TD.NbHrGrp', colspan: 1, class: '!bg-emphasis !text-nowrap', unit: ' h'},
+  { header: 'Nb Gr.', field: 'heures.TD.NbGrp', colspan: 1, class: '!bg-emphasis !text-nowrap'},
+  { header: 'Nb Seance/Gr.', field: 'heures.TD.NbSeanceGrp', colspan: 1, class: '!bg-emphasis !text-nowrap'},
+  { header: 'Nb H/Gr.', field: 'heures.TP.NbHrGrp', colspan: 1, class: '!bg-emphasis !text-nowrap', unit: ' h'},
+  { header: 'Nb Gr.', field: 'heures.TP.NbGrp', colspan: 1, class: '!bg-emphasis !text-nowrap'},
+  { header: 'Nb Seance/Gr.', field: 'heures.TP.NbSeanceGrp', colspan: 1, class: '!bg-emphasis !text-nowrap'},
 ]);
 
 const topHeaderCols = ref([
-  { header: 'CM', colspan: 3, class: '!bg-purple-400/20' },
-  { header: 'TD', colspan: 3, class: '!bg-green-400/20' },
-  { header: 'TP', colspan: 3, class: '!bg-amber-400/20' }
+  { header: 'CM', colspan: 3, class: '!bg-emphasis' },
+  { header: 'TD', colspan: 3, class: '!bg-emphasis' },
+  { header: 'TP', colspan: 3, class: '!bg-emphasis' }
 ]);
 
 const additionalRows = computed(() => []);

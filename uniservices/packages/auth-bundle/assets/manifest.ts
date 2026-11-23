@@ -18,7 +18,6 @@ const authMenu = {
 
 export default {
   name: 'auth',
-  primaryColor: 'yellow',
   registerWidgets,
   routes: [
     {
@@ -71,6 +70,22 @@ export default {
       }),
       children: [
         ...ConfigurationRoutes
+      ]
+    },
+    {
+      path: '/auth/notifications',
+      component: LayoutComponent,
+      props: () => ({
+        logoUrl: LogoIut,
+        appName: 'Uniservices',
+        breadcrumbItems: [{ label: 'Portail', route: '/portail' }, { label: 'Notifications', route: null }]
+      }),
+      children: [
+        {
+          path: '',
+          name: 'notifications-preferences',
+          component: () => import('@components/pages/NotificationPreferences.vue'),
+        }
       ]
     },
     {

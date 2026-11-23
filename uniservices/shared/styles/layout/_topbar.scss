@@ -1,13 +1,7 @@
 @use "mixins";
 
-.layout-header {
-    position: fixed;
-    inset: 0 0 auto;
-    z-index: 997;
-}
-
 .layout-topbar {
-    position: relative;
+    position: fixed;
     height: 4rem;
     z-index: 997;
     left: 0;

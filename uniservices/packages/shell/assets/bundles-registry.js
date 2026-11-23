@@ -11,10 +11,7 @@ import document from '../../document-bundle/assets/manifest.ts';
 import finance from '../../finance-bundle/assets/manifest.ts';
 import message from '../../message-bundle/assets/manifest.ts';
 
-import ParcautoBundle from '../../parcauto-bundle/assets/manifest.ts';
-
 export const bundles = [
-  ParcautoBundle,
   auth,
   intranet,
   unifolio,

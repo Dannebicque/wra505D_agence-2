@@ -117,20 +117,20 @@ onMounted(async () => {
       <section v-for="groupe in definitionsFiltrees" :key="groupe.bundle" class="space-y-3">
         <div class="flex items-center gap-2">
           <ApplicationBadge :app="groupe.bundle" size="sm" show-dot />
-          <span class="text-sm text-slate-500">{{ groupe.items.length }} modèle{{ groupe.items.length > 1 ? 's' : '' }}</span>
+          <span class="text-sm text-muted-color">{{ groupe.items.length }} modèle{{ groupe.items.length > 1 ? 's' : '' }}</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           <button v-for="item in groupe.items" :key="item.key" type="button" @click="ouvrir(item)"
             class="q-choice text-left flex-col !gap-2 hover:shadow-md">
             <span class="flex items-start justify-between gap-2 w-full">
-              <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ item.label }}</span>
+              <span class="text-sm font-semibold text-color">{{ item.label }}</span>
               <Tag :value="personnalisation(item).libelle" :severity="personnalisation(item).severite" class="shrink-0" />
             </span>
             <span v-if="item.description" class="q-choice-desc">{{ item.description }}</span>
             <span class="flex items-center justify-between gap-2 w-full">
-              <span class="text-xs text-slate-400 font-mono truncate">{{ item.key }}</span>
-              <span class="text-xs text-slate-500 shrink-0">{{ item.categorie === 'notification' ? (item.desactivable ? 'Notification' : 'Notification non désactivable') : 'Toujours envoyé' }}</span>
+              <span class="text-xs text-muted-color font-mono truncate">{{ item.key }}</span>
+              <span class="text-xs text-muted-color shrink-0">{{ item.categorie === 'notification' ? (item.desactivable ? 'Notification' : 'Notification non désactivable') : 'Toujours envoyé' }}</span>
             </span>
           </button>
         </div>

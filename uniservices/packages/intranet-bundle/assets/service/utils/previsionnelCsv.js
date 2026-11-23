@@ -1,12 +1,39 @@
 const types = ['CM', 'TD', 'TP', 'Projet'];
 export const colonnesPrevisionnel = ['personnel', 'enseignement', ...types.flatMap((type) => [`heures_${type}`, `groupes_${type}`])];
 
+/**
+ * Découpe un CSV séparé par des points-virgules, champs entre guillemets compris (guillemet doublé
+ * pour un guillemet). Les lignes vides sont ignorées.
+ */
+export function decouperCsv(texte) {
+  const lignes = [];
+  let ligne = [];
+  let champ = '';
+  let entreGuillemets = false;
+  const source = texte.replace(/^\uFEFF/, '');
+  for (let i = 0; i < source.length; i++) {
+    const c = source[i];
+    if (entreGuillemets) {
+      if (c === '"' && source[i + 1] === '"') { champ += '"'; i++; }
+      else if (c === '"') entreGuillemets = false;
+      else champ += c;
+    } else if (c === '"') entreGuillemets = true;
+    else if (c === ';') { ligne.push(champ); champ = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && source[i + 1] === '\n') i++;
+      ligne.push(champ); champ = '';
+      if (ligne.some((valeur) => valeur.trim() !== '')) lignes.push(ligne);
+      ligne = [];
+    } else champ += c;
+  }
+  ligne.push(champ);
+  if (ligne.some((valeur) => valeur.trim() !== '')) lignes.push(ligne);
+  return lignes;
+}
+
 export async function lireCsvPrevisionnel(fichier) {
   if (!fichier || fichier.size > 2_000_000) throw new Error('Sélectionnez un fichier CSV de 2 Mo maximum.');
-  const { read, utils } = await import('xlsx');
-  const classeur = read(await fichier.text(), { type: 'string', raw: true, FS: ';' });
-  const feuille = classeur.Sheets[classeur.SheetNames[0]];
-  const [entete, ...lignes] = utils.sheet_to_json(feuille, { header: 1, defval: '', blankrows: false, raw: true });
+  const [entete, ...lignes] = decouperCsv(await fichier.text());
   const index = (entete ?? []).map((colonne) => String(colonne).trim());
   if (colonnesPrevisionnel.some((colonne) => index.filter((nom) => nom === colonne).length !== 1)) {
     throw new Error('Les colonnes du CSV doivent correspondre au modèle.');

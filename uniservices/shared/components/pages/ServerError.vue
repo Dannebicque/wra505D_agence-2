@@ -1,5 +1,5 @@
 <script setup>
-import { ErrorView } from '@components';
+import { ErrorState } from '@components';
 import { lastServerErrorDebugMessage } from '@helpers/serverError.js';
 
 const debugMessage = lastServerErrorDebugMessage(window.sessionStorage);
