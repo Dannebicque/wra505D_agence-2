@@ -11,6 +11,7 @@ import {getMesSemainesService, getMonEmploiDuTempsService} from "@requests";
 import {getISOWeekNumber} from "@helpers/date";
 import {adresseAgenda, annonceAgenda, joursDeLaSemaine, libelleCours, libelleSemaine, lireAdresseAgenda, titrePeriode, typeSeance} from '@/utils/agenda.js';
 import {formatDelai, minutesEntre, parseEdtDate} from '@/utils/prochainCours.js';
+import {lienFicheMatiere} from '@/utils/ficheMatiere.js';
 
 // Bornes de la hauteur d'une heure : 40 px fait tenir 8 h – 19 h sur un écran de 800 px de haut ;
 // au-delà de 80 px, la semaine s'étire pour rien.
@@ -351,6 +352,10 @@ const detail = computed(() => {
         <dd>{{ selectedEvent.enseignant || 'Enseignant non renseigné' }}</dd>
       </div>
     </dl>
+    <router-link v-if="selectedEvent?.enseignement?.id" :to="lienFicheMatiere(selectedEvent.enseignement.id)" class="edt-detail__matiere">
+      Voir la matière
+      <i class="pi pi-arrow-right" aria-hidden="true"></i>
+    </router-link>
   </Dialog>
 
   <p role="status" class="sr-only">{{ annonce }}</p>
@@ -897,5 +902,25 @@ const detail = computed(() => {
 
 .edt-detail__liste dd {
   margin: 0;
+}
+
+/* Le lien vers la fiche, en pilule sur la carte du cours : texte du type sur fond de carte. */
+.edt-detail__matiere {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  margin-top: 1.25rem;
+  padding: 0 1.125rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--seance-couleur);
+  background: var(--p-content-background);
+  text-decoration: none;
+}
+
+.edt-detail__matiere:focus-visible {
+  outline: 2px solid var(--seance-couleur);
+  outline-offset: 2px;
 }
 </style>
