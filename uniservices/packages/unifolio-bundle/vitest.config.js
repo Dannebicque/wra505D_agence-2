@@ -4,6 +4,9 @@ import Components from 'unplugin-vue-components/vite';
 import { PrimeVueResolver } from '@primevue/auto-import-resolver';
 import path from 'path';
 
+// Les instantanés contiennent des heures : le fuseau de l'IUT, quel que soit celui de la machine (la CI est en UTC).
+process.env.TZ = 'Europe/Paris';
+
 const shared = (dossier) => path.resolve(__dirname, '../../shared', dossier);
 
 // Les tests de vues montent des composants .vue : il leur faut le plugin et les alias du shell.
