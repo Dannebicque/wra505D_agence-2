@@ -21,7 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/intranet/previsionnel/semestres/{id}', requirements: ['id' => '\d+'])]
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[IsGranted('IS_PERSONNEL')]
 #[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'Le semestre cible fixe l’année de l’opération.', StructureSemestre::class)]
 final class PrevisionnelActionsController extends AbstractController
 {
