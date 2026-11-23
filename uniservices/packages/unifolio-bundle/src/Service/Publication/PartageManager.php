@@ -2,6 +2,7 @@
 
 namespace UnifolioBundle\Service\Publication;
 
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use UnifolioBundle\Entity\Portfolio;
@@ -27,15 +28,15 @@ class PartageManager
     {
         try {
             if (isset($donnees['visibilite'])) {
-                $visibilite = VisibilitePortfolioEnum::tryFrom((string) $donnees['visibilite'])
+                $visibilite = VisibilitePortfolioEnum::tryFrom(LooseValue::castString($donnees['visibilite']))
                     ?? throw new \InvalidArgumentException('Visibilité inconnue.');
                 $portfolio->setVisibilite($visibilite);
             }
             if (\array_key_exists('description', $donnees)) {
-                $portfolio->setDescription($donnees['description'] !== null ? (string) $donnees['description'] : null);
+                $portfolio->setDescription($donnees['description'] !== null ? LooseValue::castString($donnees['description']) : null);
             }
-            if (isset($donnees['slug']) && $donnees['slug'] !== '' && strtolower((string) $donnees['slug']) !== $portfolio->getSlug()) {
-                $this->changerSlug($portfolio, (string) $donnees['slug']);
+            if (isset($donnees['slug']) && $donnees['slug'] !== '' && strtolower(LooseValue::castString($donnees['slug'])) !== $portfolio->getSlug()) {
+                $this->changerSlug($portfolio, LooseValue::castString($donnees['slug']));
             }
             $visibilite = $portfolio->getVisibilite();
             if ($visibilite === VisibilitePortfolioEnum::PUBLIC || $visibilite === VisibilitePortfolioEnum::LIEN_SECRET) {

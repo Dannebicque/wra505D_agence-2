@@ -2,6 +2,7 @@
 
 namespace UnifolioBundle\Entity;
 
+use App\Utils\LooseValue;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use UnifolioBundle\Enum\TypeCritereEnum;
@@ -63,7 +64,7 @@ class ReponseCritere
                     return null;
                 }
                 foreach ($critere->getVersion()->getEchelons() as $echelon) {
-                    if ((string) $echelon->getId() === (string) $saisie['echelon']) {
+                    if (LooseValue::castString($echelon->getId()) === LooseValue::castString($saisie['echelon'])) {
                         $reponse->echelon = $echelon;
 
                         return $reponse;
@@ -83,7 +84,7 @@ class ReponseCritere
                 if (!isset($saisie['valeur']) || $saisie['valeur'] === '') {
                     return null;
                 }
-                $valeur = (float) $saisie['valeur'];
+                $valeur = LooseValue::castFloat($saisie['valeur']);
                 if ($valeur < 0 || $valeur > (float) $critere->getNoteMax()) {
                     throw new \InvalidArgumentException(sprintf('« %s » : la note doit être comprise entre 0 et %s.', $critere->getLibelle(), $critere->getNoteMax()));
                 }
@@ -92,7 +93,7 @@ class ReponseCritere
                 return $reponse;
 
             case TypeCritereEnum::TEXTE:
-                $texte = isset($saisie['texte']) ? trim((string) $saisie['texte']) : '';
+                $texte = isset($saisie['texte']) ? trim(LooseValue::castString($saisie['texte'])) : '';
                 if ($texte === '') {
                     return null;
                 }

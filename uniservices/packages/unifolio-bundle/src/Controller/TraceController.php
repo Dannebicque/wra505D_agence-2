@@ -3,6 +3,7 @@
 namespace UnifolioBundle\Controller;
 
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -123,16 +124,16 @@ class TraceController extends AbstractController
         $fichier = $request->files->get('fichier');
         $d = $fichier instanceof UploadedFile ? $request->request->all() : $this->corps($request);
 
-        $type = TypeMediaEnum::tryFrom((string) ($d['type'] ?? ''));
-        $legende = isset($d['legende']) ? (string) $d['legende'] : null;
+        $type = TypeMediaEnum::tryFrom(LooseValue::castString($d['type'] ?? ''));
+        $legende = isset($d['legende']) ? LooseValue::castString($d['legende']) : null;
 
         $media = match (true) {
             // Fichier : le type est déduit du format réel si non précisé.
             $fichier instanceof UploadedFile => $this->manager->ajouterFichier($trace, $fichier, $type, $legende),
             $type === null => throw UnifolioValidationException::un('Type de preuve inconnu.'),
             $type->requiertFichier() => throw UnifolioValidationException::un('Fichier manquant.'),
-            \in_array($type, [TypeMediaEnum::LIEN, TypeMediaEnum::EMBED], true) => $this->manager->ajouterUrl($trace, $type, (string) ($d['url'] ?? ''), $legende),
-            default => $this->manager->ajouterTexte($trace, $type, (string) ($d['contenu'] ?? ''), isset($d['langage']) ? (string) $d['langage'] : null, $legende),
+            \in_array($type, [TypeMediaEnum::LIEN, TypeMediaEnum::EMBED], true) => $this->manager->ajouterUrl($trace, $type, LooseValue::castString($d['url'] ?? ''), $legende),
+            default => $this->manager->ajouterTexte($trace, $type, LooseValue::castString($d['contenu'] ?? ''), isset($d['langage']) ? LooseValue::castString($d['langage']) : null, $legende),
         };
 
         return $this->json($this->normalizer->media($trace, $media), Response::HTTP_CREATED);

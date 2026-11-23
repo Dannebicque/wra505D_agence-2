@@ -7,6 +7,7 @@ use App\Entity\Apc\ApcCompetence;
 use App\Entity\Apc\ApcNiveau;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use UnifolioBundle\Entity\Trace;
@@ -61,7 +62,7 @@ class TraceManager
             throw UnifolioValidationException::un('Cette année ne relève pas d\'un BUT.');
         }
 
-        $trace = $this->garder(fn () => new Trace($etudiant, (string) ($donnees['titre'] ?? ''), $scolarite));
+        $trace = $this->garder(fn () => new Trace($etudiant, LooseValue::castString($donnees['titre'] ?? ''), $scolarite));
         $this->hydrater($trace, $donnees);
 
         $this->em->persist($trace);
@@ -74,7 +75,7 @@ class TraceManager
     public function modifier(Trace $trace, array $donnees): Trace
     {
         if (\array_key_exists('titre', $donnees)) {
-            $this->garder(fn () => $trace->setTitre((string) $donnees['titre']));
+            $this->garder(fn () => $trace->setTitre(LooseValue::castString($donnees['titre'])));
         }
         if (\array_key_exists('scolarite', $donnees)) {
             $scolarite = $this->scolariteDe($trace->getEtudiant(), $donnees['scolarite']);
@@ -93,7 +94,7 @@ class TraceManager
     private function hydrater(Trace $trace, array $d): void
     {
         if (\array_key_exists('contexte', $d)) {
-            $trace->setContexte($d['contexte'] !== null ? (string) $d['contexte'] : null);
+            $trace->setContexte($d['contexte'] !== null ? LooseValue::castString($d['contexte']) : null);
         }
         if (\array_key_exists('dateRealisation', $d)) {
             $trace->setDateRealisation($this->date($d['dateRealisation']));
@@ -108,7 +109,7 @@ class TraceManager
             $trace->setRealisationIa($this->enumOuNull(RealisationIaEnum::class, $d['realisationIa'], 'Déclaration IA (réalisation) invalide.') ?? RealisationIaEnum::NON_RENSEIGNE);
         }
         if (\array_key_exists('usageIaDetail', $d)) {
-            $trace->setUsageIaDetail($d['usageIaDetail'] !== null ? (string) $d['usageIaDetail'] : null);
+            $trace->setUsageIaDetail($d['usageIaDetail'] !== null ? LooseValue::castString($d['usageIaDetail']) : null);
         }
         if (\array_key_exists('tags', $d)) {
             $trace->setTags(\is_array($d['tags']) ? $d['tags'] : []);
@@ -219,20 +220,20 @@ class TraceManager
     public function modifierMedia(TraceMedia $media, array $d): TraceMedia
     {
         if (isset($d['type'])) {
-            $type = TypeMediaEnum::tryFrom((string) $d['type']) ?? throw UnifolioValidationException::un('Type de preuve inconnu.');
+            $type = TypeMediaEnum::tryFrom(LooseValue::castString($d['type'])) ?? throw UnifolioValidationException::un('Type de preuve inconnu.');
             $this->garder(fn () => $media->changerType($type));
         }
         if (\array_key_exists('url', $d) && $media->getUrl() !== null) {
-            $this->garder(fn () => $media->changerUrl((string) $d['url']));
+            $this->garder(fn () => $media->changerUrl(LooseValue::castString($d['url'])));
         }
         if (\array_key_exists('langage', $d)) {
-            $media->setLangage($d['langage'] !== null ? (string) $d['langage'] : null);
+            $media->setLangage($d['langage'] !== null ? LooseValue::castString($d['langage']) : null);
         }
         if (\array_key_exists('legende', $d)) {
-            $media->setLegende($d['legende'] !== null ? (string) $d['legende'] : null);
+            $media->setLegende($d['legende'] !== null ? LooseValue::castString($d['legende']) : null);
         }
         if (\array_key_exists('contenu', $d)) {
-            $this->garder(fn () => $media->setContenu((string) $d['contenu']));
+            $this->garder(fn () => $media->setContenu(LooseValue::castString($d['contenu'])));
         }
         $this->em->flush();
 
@@ -316,7 +317,7 @@ class TraceManager
         if ($id === null || $id === '') {
             return null;
         }
-        $scolarite = $this->em->find(EtudiantScolarite::class, (int) $id);
+        $scolarite = $this->em->find(EtudiantScolarite::class, LooseValue::castInt($id));
         if ($scolarite === null || $scolarite->getEtudiant()?->getId() !== $etudiant->getId()) {
             throw UnifolioValidationException::un('Année de BUT inconnue.');
         }
@@ -339,7 +340,7 @@ class TraceManager
         if ($valeur === null || $valeur === '') {
             return null;
         }
-        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', substr((string) $valeur, 0, 10));
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', substr(LooseValue::castString($valeur), 0, 10));
         if ($date === false) {
             throw UnifolioValidationException::un('Date de réalisation invalide (format attendu : AAAA-MM-JJ).');
         }
@@ -359,7 +360,7 @@ class TraceManager
         if ($valeur === null || $valeur === '') {
             return null;
         }
-        $backing = (new \ReflectionEnum($enum))->getBackingType()?->getName() === 'int' ? (int) $valeur : (string) $valeur;
+        $backing = (new \ReflectionEnum($enum))->getBackingType()?->getName() === 'int' ? LooseValue::castInt($valeur) : LooseValue::castString($valeur);
 
         return $enum::tryFrom($backing) ?? throw UnifolioValidationException::un($erreur);
     }

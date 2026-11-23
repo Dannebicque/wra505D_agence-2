@@ -4,6 +4,7 @@ namespace UnifolioBundle\Service\Portfolio;
 
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureDiplome;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use UnifolioBundle\Entity\Campagne;
 use UnifolioBundle\Entity\PortfolioModele;
@@ -23,8 +24,8 @@ class ModeleManager
     /** @param array<string, mixed> $d */
     public function preparer(array $d, ?StructureDepartement $departement, ?StructureDiplome $diplome): PortfolioModele
     {
-        $modele = $this->garder(fn () => new PortfolioModele((string) ($d['libelle'] ?? ''), $departement, $diplome));
-        $modele->setDescription(isset($d['description']) ? (string) $d['description'] : null);
+        $modele = $this->garder(fn () => new PortfolioModele(LooseValue::castString($d['libelle'] ?? ''), $departement, $diplome));
+        $modele->setDescription(isset($d['description']) ? LooseValue::castString($d['description']) : null);
         // Un nouveau modèle démarre avec une page de présentation à compléter.
         $modele->setPages([[
             'titre' => 'Présentation',
@@ -48,10 +49,10 @@ class ModeleManager
     public function modifier(PortfolioModele $modele, array $d): PortfolioModele
     {
         if (\array_key_exists('libelle', $d)) {
-            $this->garder(fn () => $modele->setLibelle((string) $d['libelle']));
+            $this->garder(fn () => $modele->setLibelle(LooseValue::castString($d['libelle'])));
         }
         if (\array_key_exists('description', $d)) {
-            $modele->setDescription($d['description'] !== null ? (string) $d['description'] : null);
+            $modele->setDescription($d['description'] !== null ? LooseValue::castString($d['description']) : null);
         }
         if (\array_key_exists('actif', $d)) {
             $modele->setActif((bool) $d['actif']);
@@ -132,7 +133,7 @@ class ModeleManager
     private function collecterIds(array $blocs, array &$ids): void
     {
         foreach ($blocs as $bloc) {
-            $ids[(string) $bloc['id']] = true;
+            $ids[LooseValue::castString($bloc['id'])] = true;
             $this->collecterIds($bloc['children'] ?? [], $ids);
         }
     }

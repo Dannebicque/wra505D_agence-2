@@ -5,6 +5,7 @@ namespace UnifolioBundle\Service\Campagne;
 use App\Entity\Structure\StructureAnnee;
 use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDiplome;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use UnifolioBundle\Entity\Campagne;
 use UnifolioBundle\Entity\Evaluation;
@@ -28,9 +29,9 @@ class CampagneManager
      */
     public function preparer(StructureDiplome $diplome, array $d): Campagne
     {
-        $annee = $this->em->find(StructureAnneeUniversitaire::class, (int) ($d['anneeUniversitaire'] ?? 0))
+        $annee = $this->em->find(StructureAnneeUniversitaire::class, LooseValue::castInt($d['anneeUniversitaire'] ?? 0))
             ?? throw UnifolioValidationException::un('Choisissez l\'année universitaire.');
-        $campagne = $this->garder(fn () => new Campagne((string) ($d['libelle'] ?? ''), $diplome, $annee, $this->date($d['ouvertureLe'] ?? null) ?? new \DateTimeImmutable('today')));
+        $campagne = $this->garder(fn () => new Campagne(LooseValue::castString($d['libelle'] ?? ''), $diplome, $annee, $this->date($d['ouvertureLe'] ?? null) ?? new \DateTimeImmutable('today')));
         $this->appliquer($campagne, $d + ['anneeFormation' => null]);
         $this->verifierUnicite($campagne);
 
@@ -83,17 +84,17 @@ class CampagneManager
     {
         $this->garder(function () use ($campagne, $d): void {
             if (\array_key_exists('libelle', $d)) {
-                $campagne->setLibelle((string) $d['libelle']);
+                $campagne->setLibelle(LooseValue::castString($d['libelle']));
             }
             if (\array_key_exists('anneeFormation', $d)) {
-                $af = $d['anneeFormation'] ? $this->em->find(StructureAnnee::class, (int) $d['anneeFormation']) : null;
+                $af = $d['anneeFormation'] ? $this->em->find(StructureAnnee::class, LooseValue::castInt($d['anneeFormation'])) : null;
                 if ($d['anneeFormation'] && $af === null) {
                     throw new \InvalidArgumentException('Année de BUT inconnue.');
                 }
                 $campagne->setAnneeFormation($af);
             }
             if (\array_key_exists('modele', $d)) {
-                $modele = $d['modele'] ? $this->modeles->findOneByUuid((string) $d['modele']) : null;
+                $modele = $d['modele'] ? $this->modeles->findOneByUuid(LooseValue::castString($d['modele'])) : null;
                 if ($d['modele'] && $modele === null) {
                     throw new \InvalidArgumentException('Modèle de portfolio introuvable.');
                 }
@@ -130,7 +131,7 @@ class CampagneManager
             return null;
         }
         try {
-            return new \DateTimeImmutable((string) $valeur);
+            return new \DateTimeImmutable(LooseValue::castString($valeur));
         } catch (\Exception) {
             throw UnifolioValidationException::un('Date invalide.');
         }

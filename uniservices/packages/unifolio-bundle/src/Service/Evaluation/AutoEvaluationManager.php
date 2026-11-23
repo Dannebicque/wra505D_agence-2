@@ -7,6 +7,7 @@ use App\Entity\Apc\ApcCompetence;
 use App\Entity\Apc\ApcNiveau;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use UnifolioBundle\Entity\AutoEvaluation;
 use UnifolioBundle\Entity\GrilleVersion;
@@ -99,7 +100,7 @@ class AutoEvaluationManager
                 $saisies = [];
                 foreach (\is_array($d['reponses']) ? $d['reponses'] : [] as $r) {
                     if (\is_array($r) && isset($r['critere'])) {
-                        $saisies[(string) $r['critere']] = $r;
+                        $saisies[LooseValue::castString($r['critere'])] = $r;
                     }
                 }
                 $auto->repondre($saisies);

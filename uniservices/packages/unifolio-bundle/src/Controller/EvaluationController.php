@@ -4,6 +4,7 @@ namespace UnifolioBundle\Controller;
 
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -134,12 +135,12 @@ class EvaluationController extends AbstractController
         $user = $this->personnel();
 
         if (isset($d['rattachement'])) {
-            $rattachement = $this->em->find(TraceRattachement::class, (int) $d['rattachement']) ?? throw $this->createNotFoundException('Rattachement introuvable.');
+            $rattachement = $this->em->find(TraceRattachement::class, LooseValue::castInt($d['rattachement'])) ?? throw $this->createNotFoundException('Rattachement introuvable.');
             $this->denyAccessUnlessGranted(TraceVoter::VOIR, $rattachement->getTrace());
             $evaluation = $this->manager->ouvrirPourRattachement($user, $rattachement);
         } else {
-            $scolarite = $this->em->find(EtudiantScolarite::class, (int) ($d['scolarite'] ?? 0)) ?? throw $this->createNotFoundException('Année introuvable.');
-            $evaluation = $this->manager->ouvrirBilan($user, $scolarite, (string) ($d['type'] ?? ''), (int) ($d['id'] ?? 0));
+            $scolarite = $this->em->find(EtudiantScolarite::class, LooseValue::castInt($d['scolarite'] ?? 0)) ?? throw $this->createNotFoundException('Année introuvable.');
+            $evaluation = $this->manager->ouvrirBilan($user, $scolarite, LooseValue::castString($d['type'] ?? ''), LooseValue::castInt($d['id'] ?? 0));
         }
 
         return $this->json($this->normalizer->detail($evaluation));
@@ -176,7 +177,7 @@ class EvaluationController extends AbstractController
     public function revision(string $uuid, Request $request): JsonResponse
     {
         $e = $this->evaluation($uuid, EvaluationVoter::MODIFIER);
-        $this->manager->demanderRevision($e, (string) ($this->corps($request)['motif'] ?? ''));
+        $this->manager->demanderRevision($e, LooseValue::castString($this->corps($request)['motif'] ?? ''));
 
         return $this->json($this->normalizer->detail($e));
     }
@@ -244,7 +245,7 @@ class EvaluationController extends AbstractController
     {
         $trace = $this->traces->findOneByUuid($uuid) ?? throw $this->createNotFoundException('Trace introuvable.');
         $this->denyAccessUnlessGranted(TraceVoter::VOIR, $trace);
-        $this->lot->demanderRevision($this->personnel(), $trace, (string) ($this->corps($request)['motif'] ?? ''));
+        $this->lot->demanderRevision($this->personnel(), $trace, LooseValue::castString($this->corps($request)['motif'] ?? ''));
 
         return $this->json($this->lot->charger($this->personnel(), $this->lot->porteeTrace($trace)));
     }

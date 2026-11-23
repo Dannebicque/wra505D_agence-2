@@ -7,6 +7,7 @@ use App\Domain\Dashboard\WidgetDataProviderInterface;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Security\UserEffectivePermissionService;
+use App\Utils\LooseValue;
 use UnifolioBundle\Entity\Campagne;
 use UnifolioBundle\Repository\CampagneAffectationRepository;
 use UnifolioBundle\Repository\CampagneRepository;
@@ -110,7 +111,7 @@ class PortfolioWidgetDataProvider implements WidgetDataProviderInterface
     {
         $campagnes = [];
         foreach ($this->file->pour($user) as $groupe) {
-            $c = $this->campagnes->findOneByUuid($groupe['campagne']['uuid']);
+            $c = $this->campagnes->findOneByUuid(LooseValue::string($groupe['campagne']['uuid']));
             if ($c !== null && !$c->isCloturee()) {
                 $campagnes[$c->getId()] = [$c, $groupe['totaux']['aEvaluer'] + $groupe['totaux']['enCours'] + $groupe['totaux']['aReprendre']];
             }

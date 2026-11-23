@@ -6,6 +6,7 @@ use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDiplome;
 use App\Entity\Structure\StructureTypeDiplome;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -136,7 +137,7 @@ class AdminGrilleController extends AbstractController
         $source = $this->grille($uuid, GrilleVoter::VOIR);
         $d = $this->corps($request) + ['portee' => Grille::PORTEE_DEPARTEMENT];
         [, $departement, $diplome] = $this->portee($d, $source->getTypeDiplome());
-        $copie = $this->manager->preparerCopie($source, (string) ($d['libelle'] ?? ($source->getLibelle() . ' (copie)')), $departement, $diplome);
+        $copie = $this->manager->preparerCopie($source, LooseValue::castString($d['libelle'] ?? ($source->getLibelle() . ' (copie)')), $departement, $diplome);
         $this->denyAccessUnlessGranted(GrilleVoter::MODIFIER, $copie);
         $this->manager->enregistrer($copie);
 
@@ -196,7 +197,7 @@ class AdminGrilleController extends AbstractController
 
         $d = $this->corps($request);
         $annee = !empty($d['applicableDepuis'])
-            ? $this->em->find(StructureAnneeUniversitaire::class, (int) $d['applicableDepuis'])
+            ? $this->em->find(StructureAnneeUniversitaire::class, LooseValue::castInt($d['applicableDepuis']))
             : $this->anneeCourante();
         if ($annee === null) {
             throw UnifolioValidationException::un('Année universitaire introuvable.');
@@ -219,11 +220,11 @@ class AdminGrilleController extends AbstractController
      */
     private function portee(array $d, ?StructureTypeDiplome $type = null): array
     {
-        $portee = (string) ($d['portee'] ?? Grille::PORTEE_DEPARTEMENT);
+        $portee = LooseValue::castString($d['portee'] ?? Grille::PORTEE_DEPARTEMENT);
         $personnel = $this->personnel();
 
         if ($portee === Grille::PORTEE_DIPLOME) {
-            $diplome = $this->em->find(StructureDiplome::class, (int) ($d['diplome'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez le diplôme.');
+            $diplome = $this->em->find(StructureDiplome::class, LooseValue::castInt($d['diplome'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez le diplôme.');
 
             return [$diplome->getTypeDiplome() ?? throw UnifolioValidationException::un('Diplôme sans type.'), $diplome->getDepartement(), $diplome];
         }

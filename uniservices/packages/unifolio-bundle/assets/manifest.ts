@@ -38,6 +38,9 @@ const sectionRoutes = unifolioSections.flatMap((section) =>
 export default {
   name: 'unifolio',
   registerWidgets,
+  studentMenu: [
+    { label: 'Mon portfolio', icon: 'pi pi-fw pi-id-card', to: '/unifolio', groupe: 'scolarite', ordre: 70, motsCles: ['portfolio', 'compétences', 'traces', 'unifolio'] },
+  ],
   routes: [
     {
       path: '/unifolio',

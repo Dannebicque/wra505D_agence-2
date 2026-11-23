@@ -3,6 +3,7 @@
 namespace UnifolioBundle\Controller;
 
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -70,7 +71,7 @@ class PortfolioController extends AbstractController
     #[Route('/{uuid}', name: 'unifolio_portfolios_renommer', requirements: ['uuid' => self::UUID], methods: ['PATCH'])]
     public function renommer(string $uuid, Request $request): JsonResponse
     {
-        $portfolio = $this->manager->renommer($this->portfolio($uuid, PortfolioVoter::MODIFIER), (string) ($this->corps($request)['titre'] ?? ''));
+        $portfolio = $this->manager->renommer($this->portfolio($uuid, PortfolioVoter::MODIFIER), LooseValue::castString($this->corps($request)['titre'] ?? ''));
 
         return $this->json($this->normalizer->resume($portfolio));
     }
@@ -80,7 +81,7 @@ class PortfolioController extends AbstractController
     public function ajouterPage(string $uuid, Request $request): JsonResponse
     {
         $portfolio = $this->portfolio($uuid, PortfolioVoter::MODIFIER);
-        $page = $this->manager->ajouterPage($portfolio, (string) ($this->corps($request)['titre'] ?? 'Nouvelle page'));
+        $page = $this->manager->ajouterPage($portfolio, LooseValue::castString($this->corps($request)['titre'] ?? 'Nouvelle page'));
 
         return $this->json($this->normalizer->page($page), Response::HTTP_CREATED);
     }
@@ -101,7 +102,7 @@ class PortfolioController extends AbstractController
     public function renommerPage(string $uuid, string $page, Request $request): JsonResponse
     {
         $portfolio = $this->portfolio($uuid, PortfolioVoter::MODIFIER);
-        $p = $this->manager->renommerPage($portfolio, $this->page($portfolio, $page), (string) ($this->corps($request)['titre'] ?? ''));
+        $p = $this->manager->renommerPage($portfolio, $this->page($portfolio, $page), LooseValue::castString($this->corps($request)['titre'] ?? ''));
 
         return $this->json($this->normalizer->page($p));
     }

@@ -6,6 +6,7 @@ use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDiplome;
 use App\Entity\Structure\StructureGroupe;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -102,7 +103,7 @@ class AdminCampagneController extends AbstractController
     {
         $d = $this->corps($request);
         $d['anneeUniversitaire'] = $this->anneeContext->requireId();
-        $diplome = $this->em->find(StructureDiplome::class, (int) ($d['diplome'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez la formation.');
+        $diplome = $this->em->find(StructureDiplome::class, LooseValue::castInt($d['diplome'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez la formation.');
         $this->denyAccessUnlessGranted(CampagneVoter::GERER, $diplome);
         $this->verifierModele($d);
 
@@ -211,8 +212,8 @@ class AdminCampagneController extends AbstractController
     {
         $campagne = $this->campagne($uuid);
         $d = $this->corps($request);
-        $evaluateur = $this->em->find(Personnel::class, (int) ($d['evaluateur'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez l\'enseignant.');
-        $groupe = !empty($d['groupe']) ? ($this->em->find(StructureGroupe::class, (int) $d['groupe']) ?? throw UnifolioValidationException::un('Groupe introuvable.')) : null;
+        $evaluateur = $this->em->find(Personnel::class, LooseValue::castInt($d['evaluateur'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez l\'enseignant.');
+        $groupe = !empty($d['groupe']) ? ($this->em->find(StructureGroupe::class, LooseValue::castInt($d['groupe'])) ?? throw UnifolioValidationException::un('Groupe introuvable.')) : null;
 
         $crees = $this->affectationManager->affecter($campagne, $evaluateur, isset($d['etudiants']) && \is_array($d['etudiants']) ? $d['etudiants'] : null, $groupe);
 
@@ -225,7 +226,7 @@ class AdminCampagneController extends AbstractController
     {
         $campagne = $this->campagne($uuid);
         $d = $this->corps($request);
-        $evaluateur = $this->em->find(Personnel::class, (int) ($d['evaluateur'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez l\'enseignant.');
+        $evaluateur = $this->em->find(Personnel::class, LooseValue::castInt($d['evaluateur'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez l\'enseignant.');
 
         $retirees = $this->affectationManager->retirer($campagne, $evaluateur, isset($d['etudiants']) && \is_array($d['etudiants']) ? $d['etudiants'] : null);
 
@@ -254,7 +255,7 @@ class AdminCampagneController extends AbstractController
     private function verifierModele(array $d): void
     {
         if (!empty($d['modele'])) {
-            $modele = $this->modeles->findOneByUuid((string) $d['modele']) ?? throw UnifolioValidationException::un('Modèle de portfolio introuvable.');
+            $modele = $this->modeles->findOneByUuid(LooseValue::castString($d['modele'])) ?? throw UnifolioValidationException::un('Modèle de portfolio introuvable.');
             $this->denyAccessUnlessGranted(ModeleVoter::VOIR, $modele);
         }
     }

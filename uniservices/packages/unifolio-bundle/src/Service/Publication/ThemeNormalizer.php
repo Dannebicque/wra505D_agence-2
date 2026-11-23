@@ -2,6 +2,8 @@
 
 namespace UnifolioBundle\Service\Publication;
 
+use App\Utils\LooseValue;
+
 /**
  * Apparence d'un portfolio publié : une poignée de réglages bornés (couleur, police, en-tête, largeur, coins).
  * Tout est validé par liste blanche : aucune valeur libre n'atteint le HTML ou le CSS généré (pas de CSS ni de police externes).
@@ -31,7 +33,7 @@ final class ThemeNormalizer
         $theme = self::DEFAUT;
         foreach (['police' => self::POLICES, 'entete' => self::ENTETES, 'largeur' => self::LARGEURS, 'coins' => self::COINS] as $cle => $autorises) {
             if (isset($donnees[$cle])) {
-                $valeur = (string) $donnees[$cle];
+                $valeur = LooseValue::castString($donnees[$cle]);
                 if (!\in_array($valeur, $autorises, true)) {
                     throw new \InvalidArgumentException(sprintf('Réglage « %s » inconnu : %s.', $cle, mb_substr($valeur, 0, 40)));
                 }
@@ -39,7 +41,7 @@ final class ThemeNormalizer
             }
         }
         if (isset($donnees['couleur'])) {
-            $couleur = strtolower(trim((string) $donnees['couleur']));
+            $couleur = strtolower(trim(LooseValue::castString($donnees['couleur'])));
             if (!preg_match('/^#[0-9a-f]{6}$/', $couleur)) {
                 throw new \InvalidArgumentException('La couleur doit être au format #rrggbb.');
             }

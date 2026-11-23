@@ -4,6 +4,7 @@ namespace UnifolioBundle\Controller;
 
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -74,15 +75,15 @@ class AutoEvaluationController extends AbstractController
         $etudiant = $this->etudiant();
 
         if (isset($d['rattachement'])) {
-            $rattachement = $this->em->find(TraceRattachement::class, (int) $d['rattachement']) ?? throw $this->createNotFoundException('Rattachement introuvable.');
+            $rattachement = $this->em->find(TraceRattachement::class, LooseValue::castInt($d['rattachement'])) ?? throw $this->createNotFoundException('Rattachement introuvable.');
             $this->denyAccessUnlessGranted(TraceVoter::VOIR, $rattachement->getTrace());
             if (!$rattachement->getTrace()->appartientA($etudiant)) {
                 throw $this->createAccessDeniedException();
             }
             $auto = $this->manager->ouvrirPourRattachement($rattachement);
         } else {
-            $scolarite = $this->scolarite($etudiant, (int) ($d['scolarite'] ?? 0));
-            $auto = $this->manager->ouvrirBilan($etudiant, $scolarite, (string) ($d['type'] ?? ''), (int) ($d['id'] ?? 0));
+            $scolarite = $this->scolarite($etudiant, LooseValue::castInt($d['scolarite'] ?? 0));
+            $auto = $this->manager->ouvrirBilan($etudiant, $scolarite, LooseValue::castString($d['type'] ?? ''), LooseValue::castInt($d['id'] ?? 0));
         }
 
         return $this->json($this->normalizer->detail($auto));

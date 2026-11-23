@@ -2,6 +2,7 @@
 
 namespace UnifolioBundle\Service\Suivi;
 
+use App\Utils\LooseValue;
 use UnifolioBundle\Entity\Campagne;
 use UnifolioBundle\Service\Campagne\CampagneEtudiants;
 use UnifolioBundle\Service\Campagne\CampagneNormalizer;
@@ -48,8 +49,8 @@ class SuiviCampagne
 
             $cellules = [];
             foreach ($suivi['competences'] as $c) {
-                $colonnes[(int) $c['id']] ??= ['id' => $c['id'], 'nomCourt' => $c['nomCourt'], 'libelle' => $c['libelle'], 'couleur' => $c['couleur'], 'total' => $c['total']];
-                $cellules[(int) $c['id']] = array_intersect_key($c, array_flip(['total', 'couverts', 'nbTraces', 'evalScore', 'autoScore']));
+                $colonnes[LooseValue::castInt($c['id'])] ??= ['id' => $c['id'], 'nomCourt' => $c['nomCourt'], 'libelle' => $c['libelle'], 'couleur' => $c['couleur'], 'total' => $c['total']];
+                $cellules[LooseValue::castInt($c['id'])] = array_intersect_key($c, array_flip(['total', 'couverts', 'nbTraces', 'evalScore', 'autoScore']));
             }
             $r = $suivi['resume'];
             $alertes = [];
@@ -131,7 +132,7 @@ class SuiviCampagne
 
     private static function neutraliser(mixed $valeur): string
     {
-        $texte = (string) $valeur;
+        $texte = LooseValue::castString($valeur);
 
         return $texte !== '' && str_contains("=+-@\t\r", $texte[0]) ? "'".$texte : $texte;
     }

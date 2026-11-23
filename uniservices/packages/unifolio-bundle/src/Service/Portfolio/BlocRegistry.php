@@ -2,6 +2,8 @@
 
 namespace UnifolioBundle\Service\Portfolio;
 
+use App\Utils\LooseValue;
+
 /**
  * Registre des types de blocs d'un portfolio, chargé depuis blocs.json — source unique partagée avec
  * l'éditeur et le rendu (front) : un même schéma définit ce que l'éditeur propose et ce que le serveur accepte.
@@ -35,7 +37,7 @@ final class BlocRegistry
 
     public function limite(string $nom): int
     {
-        return (int) $this->schema['limites'][$nom];
+        return LooseValue::castInt($this->schema['limites'][$nom]);
     }
 
     /** @return array<string, mixed> */

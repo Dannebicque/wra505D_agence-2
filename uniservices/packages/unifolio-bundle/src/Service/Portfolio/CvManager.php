@@ -3,6 +3,7 @@
 namespace UnifolioBundle\Service\Portfolio;
 
 use App\Entity\Users\Etudiant;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use UnifolioBundle\Entity\Cv;
 use UnifolioBundle\Entity\CvExperience;
@@ -43,7 +44,7 @@ class CvManager
         $experiences = [];
         foreach ($this->elements($d['experiences'] ?? [], 'Les expériences', $erreurs) as $i => $e) {
             try {
-                $experiences[] = new CvExperience($cv, (string) ($e['poste'] ?? ''), $this->texte($e['entreprise'] ?? null, 255, 'L\'entreprise', $erreurs), $this->date($e['dateDebut'] ?? null, $erreurs), $this->date($e['dateFin'] ?? null, $erreurs), $this->texte($e['description'] ?? null, 2000, 'La description', $erreurs));
+                $experiences[] = new CvExperience($cv, LooseValue::castString($e['poste'] ?? ''), $this->texte($e['entreprise'] ?? null, 255, 'L\'entreprise', $erreurs), $this->date($e['dateDebut'] ?? null, $erreurs), $this->date($e['dateFin'] ?? null, $erreurs), $this->texte($e['description'] ?? null, 2000, 'La description', $erreurs));
             } catch (\InvalidArgumentException $ex) {
                 $erreurs[] = sprintf('Expérience %d : %s', $i + 1, $ex->getMessage());
             }
@@ -51,7 +52,7 @@ class CvManager
         $formations = [];
         foreach ($this->elements($d['formations'] ?? [], 'Les formations', $erreurs) as $i => $f) {
             try {
-                $formations[] = new CvFormation($cv, (string) ($f['diplome'] ?? ''), $this->texte($f['etablissement'] ?? null, 255, 'L\'établissement', $erreurs), $this->date($f['dateDebut'] ?? null, $erreurs), $this->date($f['dateFin'] ?? null, $erreurs), $this->texte($f['description'] ?? null, 2000, 'La description', $erreurs));
+                $formations[] = new CvFormation($cv, LooseValue::castString($f['diplome'] ?? ''), $this->texte($f['etablissement'] ?? null, 255, 'L\'établissement', $erreurs), $this->date($f['dateDebut'] ?? null, $erreurs), $this->date($f['dateFin'] ?? null, $erreurs), $this->texte($f['description'] ?? null, 2000, 'La description', $erreurs));
             } catch (\InvalidArgumentException $ex) {
                 $erreurs[] = sprintf('Formation %d : %s', $i + 1, $ex->getMessage());
             }
@@ -155,7 +156,7 @@ class CvManager
     {
         $reseaux = [];
         foreach ($this->elements($v, 'Les liens', $erreurs) as $r) {
-            $url = trim((string) ($r['url'] ?? ''));
+            $url = trim(LooseValue::castString($r['url'] ?? ''));
             if ($url === '') {
                 continue;
             }
@@ -175,7 +176,7 @@ class CvManager
         if ($v === null || $v === '') {
             return null;
         }
-        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', substr((string) $v, 0, 10));
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', substr(LooseValue::castString($v), 0, 10));
         if ($date === false) {
             $erreurs[] = 'Date invalide (format attendu : AAAA-MM-JJ).';
 

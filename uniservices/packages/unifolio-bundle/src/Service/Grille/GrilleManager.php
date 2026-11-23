@@ -6,6 +6,7 @@ use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Structure\StructureDiplome;
 use App\Entity\Structure\StructureTypeDiplome;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use UnifolioBundle\Entity\Grille;
 use UnifolioBundle\Entity\GrilleVersion;
@@ -38,11 +39,11 @@ class GrilleManager
      */
     public function preparer(array $d, StructureTypeDiplome $typeDiplome, ?StructureDepartement $departement, ?StructureDiplome $diplome): Grille
     {
-        $granularite = GranulariteEnum::tryFrom((string) ($d['granularite'] ?? ''))
+        $granularite = GranulariteEnum::tryFrom(LooseValue::castString($d['granularite'] ?? ''))
             ?? throw UnifolioValidationException::un('Choisissez ce que la grille évalue (compétence, niveau ou AC).');
 
-        $grille = $this->garder(fn () => new Grille((string) ($d['libelle'] ?? ''), $typeDiplome, $granularite, $departement, $diplome));
-        $grille->setDescription(isset($d['description']) ? (string) $d['description'] : null);
+        $grille = $this->garder(fn () => new Grille(LooseValue::castString($d['libelle'] ?? ''), $typeDiplome, $granularite, $departement, $diplome));
+        $grille->setDescription(isset($d['description']) ? LooseValue::castString($d['description']) : null);
         $brouillon = $grille->creerBrouillon();
         $brouillon->ajouterCritere(match ($granularite) {
             GranulariteEnum::AC => 'Niveau d\'acquisition de l\'apprentissage critique',
@@ -65,10 +66,10 @@ class GrilleManager
     public function modifier(Grille $grille, array $d): Grille
     {
         if (\array_key_exists('libelle', $d)) {
-            $this->garder(fn () => $grille->setLibelle((string) $d['libelle']));
+            $this->garder(fn () => $grille->setLibelle(LooseValue::castString($d['libelle'])));
         }
         if (\array_key_exists('description', $d)) {
-            $grille->setDescription($d['description'] !== null ? (string) $d['description'] : null);
+            $grille->setDescription($d['description'] !== null ? LooseValue::castString($d['description']) : null);
         }
         if (\array_key_exists('actif', $d)) {
             $grille->setActif((bool) $d['actif']);
@@ -130,23 +131,23 @@ class GrilleManager
             $brouillon->viderContenu();
             foreach ($echelons as $e) {
                 $brouillon->ajouterEchelon(
-                    (string) ($e['libelle'] ?? ''),
-                    (float) ($e['valeur'] ?? 0),
-                    isset($e['couleur']) ? (string) $e['couleur'] : null,
-                    isset($e['descripteur']) ? (string) $e['descripteur'] : null,
+                    LooseValue::castString($e['libelle'] ?? ''),
+                    LooseValue::castFloat($e['valeur'] ?? 0),
+                    isset($e['couleur']) ? LooseValue::castString($e['couleur']) : null,
+                    isset($e['descripteur']) ? LooseValue::castString($e['descripteur']) : null,
                 );
             }
             foreach ($criteres as $c) {
-                $type = TypeCritereEnum::tryFrom((string) ($c['type'] ?? '')) ?? throw new \InvalidArgumentException('Type de critère inconnu.');
-                $critere = $brouillon->ajouterCritere((string) ($c['libelle'] ?? ''), $type)
-                    ->setDescription(isset($c['description']) ? (string) $c['description'] : null)
-                    ->setAide(isset($c['aide']) ? (string) $c['aide'] : null)
-                    ->setSource(SourceCritereEnum::tryFrom((string) ($c['source'] ?? '')) ?? SourceCritereEnum::SAISIE)
+                $type = TypeCritereEnum::tryFrom(LooseValue::castString($c['type'] ?? '')) ?? throw new \InvalidArgumentException('Type de critère inconnu.');
+                $critere = $brouillon->ajouterCritere(LooseValue::castString($c['libelle'] ?? ''), $type)
+                    ->setDescription(isset($c['description']) ? LooseValue::castString($c['description']) : null)
+                    ->setAide(isset($c['aide']) ? LooseValue::castString($c['aide']) : null)
+                    ->setSource(SourceCritereEnum::tryFrom(LooseValue::castString($c['source'] ?? '')) ?? SourceCritereEnum::SAISIE)
                     ->setObligatoire((bool) ($c['obligatoire'] ?? true))
                     ->setVisibleEtudiant((bool) ($c['visibleEtudiant'] ?? true))
                     ->setUtiliseAutoEval((bool) ($c['utiliseAutoEval'] ?? true));
-                $critere->setPoids(isset($c['poids']) ? (float) $c['poids'] : 1.0);
-                $critere->setNoteMax(isset($c['noteMax']) && $c['noteMax'] !== '' ? (float) $c['noteMax'] : null);
+                $critere->setPoids(isset($c['poids']) ? LooseValue::castFloat($c['poids']) : 1.0);
+                $critere->setNoteMax(isset($c['noteMax']) && $c['noteMax'] !== '' ? LooseValue::castFloat($c['noteMax']) : null);
             }
         });
         $this->em->flush();
@@ -183,7 +184,7 @@ class GrilleManager
     /** @param array<string, mixed> $d */
     public function parametrer(StructureDiplome $diplome, StructureAnneeUniversitaire $annee, array $d): ParametrageFormation
     {
-        $granularite = GranulariteEnum::tryFrom((string) ($d['granularite'] ?? ''))
+        $granularite = GranulariteEnum::tryFrom(LooseValue::castString($d['granularite'] ?? ''))
             ?? throw UnifolioValidationException::un('Choisissez la granularité d\'évaluation.');
 
         $parametrage = $this->parametrages->findOneBy(['diplome' => $diplome, 'applicableDepuis' => $annee]);
@@ -193,10 +194,10 @@ class GrilleManager
         }
         $parametrage->setGranularite($granularite);
         if (isset($d['agregation'])) {
-            $parametrage->setAgregation(AgregationEnum::tryFrom((string) $d['agregation']) ?? throw UnifolioValidationException::un('Règle d\'agrégation inconnue.'));
+            $parametrage->setAgregation(AgregationEnum::tryFrom(LooseValue::castString($d['agregation'])) ?? throw UnifolioValidationException::un('Règle d\'agrégation inconnue.'));
         }
         if (\array_key_exists('grille', $d)) {
-            $grille = $d['grille'] ? $this->grilles->findOneByUuid((string) $d['grille']) : null;
+            $grille = $d['grille'] ? $this->grilles->findOneByUuid(LooseValue::castString($d['grille'])) : null;
             if ($d['grille'] && $grille === null) {
                 throw UnifolioValidationException::un('Grille introuvable.');
             }

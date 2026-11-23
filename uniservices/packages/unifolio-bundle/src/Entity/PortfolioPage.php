@@ -5,6 +5,7 @@ namespace UnifolioBundle\Entity;
 use App\Entity\Contracts\TimestampableInterface;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Traits\UuidTrait;
+use App\Utils\LooseValue;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -172,7 +173,7 @@ class PortfolioPage implements TimestampableInterface
         foreach ($blocs as &$bloc) {
             $nouveau = \Symfony\Component\Uid\Uuid::v4()->toRfc4122();
             if (isset($bloc['id'])) {
-                $correspondance[(string) $bloc['id']] = $nouveau;
+                $correspondance[LooseValue::castString($bloc['id'])] = $nouveau;
             }
             $bloc['id'] = $nouveau;
             if (!empty($bloc['children'])) {
@@ -190,7 +191,7 @@ class PortfolioPage implements TimestampableInterface
     private function collecterTypes(array $blocs, array &$types): void
     {
         foreach ($blocs as $bloc) {
-            $types[(string) $bloc['id']] = (string) $bloc['type'];
+            $types[LooseValue::castString($bloc['id'])] = LooseValue::castString($bloc['type']);
             $this->collecterTypes($bloc['children'] ?? [], $types);
         }
     }

@@ -8,6 +8,7 @@ use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureTypeDiplome;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use UnifolioBundle\Entity\Campagne;
@@ -147,7 +148,7 @@ class MigrationV1
         try {
             foreach ($c->fetchAllAssociative("SELECT v1_id, cible_id FROM unifolio_migration_v1 WHERE type = 'trace'") as $l) {
                 foreach ($c->fetchFirstColumn('SELECT chemin FROM unifolio_trace_media WHERE trace_id = ? AND chemin IS NOT NULL', [$l['cible_id']]) as $chemin) {
-                    $this->medias->delete((string) $chemin);
+                    $this->medias->delete(LooseValue::castString($chemin));
                 }
             }
             foreach (['trace' => 'unifolio_trace', 'portfolio' => 'unifolio_portfolio', 'cv' => 'unifolio_cv'] as $type => $table) {
@@ -169,28 +170,28 @@ class MigrationV1
     {
         $validations = [];
         foreach ($this->v1->validations() as $v) {
-            $validations[(int) $v['trace_id']][] = $v;
+            $validations[LooseValue::castInt($v['trace_id'])][] = $v;
         }
 
         foreach ($this->v1->traces($ids) as $t) {
-            $id = (int) $t['id'];
+            $id = LooseValue::castInt($t['id']);
             if ($this->lien('trace', $id) !== null) {
                 $this->rapport->compter('trace', RapportMigration::DEJA);
                 continue;
             }
-            $etudiant = $this->etudiant((int) $t['etudiant_id']);
+            $etudiant = $this->etudiant(LooseValue::castInt($t['etudiant_id']));
             if ($etudiant === null) {
                 $this->rapport->compter('trace', RapportMigration::IGNORE);
                 continue;
             }
-            $scolarite = $this->scolarite($etudiant, (int) $t['annee_universitaire_id'], (int) $t['annee_id'], 'trace', $id);
+            $scolarite = $this->scolarite($etudiant, LooseValue::castInt($t['annee_universitaire_id']), LooseValue::castInt($t['annee_id']), 'trace', $id);
 
             $trace = new Trace($etudiant, $this->titre($t, $id), $scolarite);
             $trace->setContexte($this->contexte($t));
-            $trace->setConceptionIa(ConceptionIaEnum::tryFrom((int) ($t['conception_ia'] ?? 3)) ?? ConceptionIaEnum::NON_RENSEIGNE);
-            $trace->setRealisationIa(RealisationIaEnum::tryFrom((int) ($t['realisation_ia'] ?? 4)) ?? RealisationIaEnum::NON_RENSEIGNE);
+            $trace->setConceptionIa(ConceptionIaEnum::tryFrom(LooseValue::castInt($t['conception_ia'] ?? 3)) ?? ConceptionIaEnum::NON_RENSEIGNE);
+            $trace->setRealisationIa(RealisationIaEnum::tryFrom(LooseValue::castInt($t['realisation_ia'] ?? 4)) ?? RealisationIaEnum::NON_RENSEIGNE);
             if (!empty($t['date_realisation'])) {
-                $trace->setDateRealisation(new \DateTimeImmutable((string) $t['date_realisation']));
+                $trace->setDateRealisation(new \DateTimeImmutable(LooseValue::castString($t['date_realisation'])));
             }
             $this->dates($trace, $t['date_creation'] ?? null, $t['date_modification'] ?? null);
 
@@ -204,10 +205,10 @@ class MigrationV1
 
             $rattaches = [];
             foreach ($validations[$id] ?? [] as $v) {
-                $niveau = $scolarite !== null ? $this->niveau($scolarite, (int) $v['apc_niveau_id'], 'validation', (int) $v['id']) : null;
+                $niveau = $scolarite !== null ? $this->niveau($scolarite, LooseValue::castInt($v['apc_niveau_id']), 'validation', LooseValue::castInt($v['id'])) : null;
                 if ($niveau === null) {
                     if ($scolarite === null) {
-                        $this->rapport->ecart('avertissement', 'validation', (int) $v['id'], 'Année de la trace non résolue : rattachement impossible.');
+                        $this->rapport->ecart('avertissement', 'validation', LooseValue::castInt($v['id']), 'Année de la trace non résolue : rattachement impossible.');
                     }
                     continue;
                 }
@@ -225,9 +226,9 @@ class MigrationV1
             $trace->changerStatut(StatutTraceEnum::DEPOSEE);
             $this->lier('trace', $id, (int) $trace->getId());
             foreach ($validations[$id] ?? [] as $v) {
-                $niveau = $scolarite !== null ? $this->niveauSilencieux($scolarite, (int) $v['apc_niveau_id']) : null;
+                $niveau = $scolarite !== null ? $this->niveauSilencieux($scolarite, LooseValue::castInt($v['apc_niveau_id'])) : null;
                 if ($niveau !== null && isset($rattaches[$niveau->getId()])) {
-                    $this->lier('validation', (int) $v['id'], (int) $rattaches[$niveau->getId()]->getId());
+                    $this->lier('validation', LooseValue::castInt($v['id']), (int) $rattaches[$niveau->getId()]->getId());
                 }
             }
             $this->rapport->compter('trace', RapportMigration::CREE);
@@ -349,17 +350,17 @@ class MigrationV1
         $validations = $this->v1->validations();
         $derniere = [];
         foreach ($validations as $v) {
-            $r = $this->lien('validation', (int) $v['id']);
-            $cle = $r.'-'.(int) ($v['enseignant_id'] ?? 0);
-            if ($r !== null && (!isset($derniere[$cle]) || (string) ($v['date_modification'] ?? '').sprintf('%010d', $v['id']) > $derniere[$cle][0])) {
-                $derniere[$cle] = [(string) ($v['date_modification'] ?? '').sprintf('%010d', $v['id']), (int) $v['id']];
+            $r = $this->lien('validation', LooseValue::castInt($v['id']));
+            $cle = $r.'-'.LooseValue::castInt($v['enseignant_id'] ?? 0);
+            if ($r !== null && (!isset($derniere[$cle]) || LooseValue::castString($v['date_modification'] ?? '').sprintf('%010d', $v['id']) > $derniere[$cle][0])) {
+                $derniere[$cle] = [LooseValue::castString($v['date_modification'] ?? '').sprintf('%010d', $v['id']), LooseValue::castInt($v['id'])];
             }
         }
         foreach ($validations as $v) {
-            $id = (int) $v['id'];
-            $etat = (int) ($v['etat'] ?? 0);
+            $id = LooseValue::castInt($v['id']);
+            $etat = LooseValue::castInt($v['etat'] ?? 0);
             $cleRattachement = $this->lien('validation', $id);
-            if ($cleRattachement !== null && ($derniere[$cleRattachement.'-'.(int) ($v['enseignant_id'] ?? 0)][1] ?? $id) !== $id && $etat !== 0) {
+            if ($cleRattachement !== null && ($derniere[$cleRattachement.'-'.LooseValue::castInt($v['enseignant_id'] ?? 0)][1] ?? $id) !== $id && $etat !== 0) {
                 $this->rapport->compter('evaluation', 'remplacée (plus récente)');
                 $this->rapport->ecart('info', 'evaluation', $id, 'Validation remplacée par une validation plus récente du même enseignant sur le même niveau.');
                 continue;
@@ -378,7 +379,7 @@ class MigrationV1
                 $this->rapport->ecart('avertissement', 'evaluation', $id, 'Validation sans rattachement migré (trace ou niveau non résolu).');
                 continue;
             }
-            $evaluateur = $v['enseignant_id'] !== null ? $this->enseignant((int) $v['enseignant_id']) : null;
+            $evaluateur = $v['enseignant_id'] !== null ? $this->enseignant(LooseValue::castInt($v['enseignant_id'])) : null;
             if ($evaluateur === null) {
                 $this->rapport->compter('evaluation', RapportMigration::IGNORE);
                 $this->rapport->ecart('avertissement', 'evaluation', $id, 'Enseignant introuvable dans uniServices : évaluation non reprise.');
@@ -431,7 +432,7 @@ class MigrationV1
             }
             $toutes = true;
             foreach ($trace->getRattachements() as $r) {
-                $n = (int) $this->em->getConnection()->fetchOne("SELECT COUNT(*) FROM unifolio_evaluation WHERE rattachement_id = ? AND statut = 'rendue'", [$r->getId()]);
+                $n = LooseValue::castInt($this->em->getConnection()->fetchOne("SELECT COUNT(*) FROM unifolio_evaluation WHERE rattachement_id = ? AND statut = 'rendue'", [$r->getId()]));
                 $toutes = $toutes && $n > 0;
             }
             if ($toutes) {
@@ -511,7 +512,7 @@ class MigrationV1
     {
         $crees = [];
         foreach ($this->v1->commentaires() as $c) {
-            $id = (int) $c['id'];
+            $id = LooseValue::castInt($c['id']);
             if ($c['trace_id'] === null) {
                 $this->rapport->compter('commentaire', RapportMigration::IGNORE);
                 $this->rapport->ecart('info', 'commentaire', $id, 'Commentaire de portfolio : la v2 ne commente que les traces, non repris.');
@@ -521,7 +522,7 @@ class MigrationV1
                 $this->rapport->compter('commentaire', RapportMigration::DEJA);
                 continue;
             }
-            $traceId = $this->lien('trace', (int) $c['trace_id']);
+            $traceId = $this->lien('trace', LooseValue::castInt($c['trace_id']));
             $trace = $traceId !== null ? $this->em->find(Trace::class, $traceId) : null;
             $contenu = self::texte($c['contenu'] ?? null);
             if ($trace === null || $contenu === null) {
@@ -533,8 +534,8 @@ class MigrationV1
                 $contenu = mb_substr($contenu, 0, Commentaire::LONGUEUR_MAX);
                 $this->rapport->ecart('info', 'commentaire', $id, 'Commentaire tronqué à la longueur maximale.');
             }
-            $parent = isset($c['commentaire_parent'], $crees[(int) $c['commentaire_parent']]) ? $crees[(int) $c['commentaire_parent']] : null;
-            $auteur = $c['enseignant_id'] !== null ? $this->enseignant((int) $c['enseignant_id']) : null;
+            $parent = isset($c['commentaire_parent'], $crees[LooseValue::castInt($c['commentaire_parent'])]) ? $crees[LooseValue::castInt($c['commentaire_parent'])] : null;
+            $auteur = $c['enseignant_id'] !== null ? $this->enseignant(LooseValue::castInt($c['enseignant_id'])) : null;
             try {
                 $commentaire = $auteur !== null
                     ? Commentaire::parPersonnel($trace, $auteur, $contenu, null, $parent)
@@ -559,13 +560,13 @@ class MigrationV1
     private function portfolios(?array $ids): void
     {
         foreach ($this->v1->portfolios($ids) as $p) {
-            $id = (int) $p['id'];
+            $id = LooseValue::castInt($p['id']);
             if ($this->lien('portfolio', $id) !== null) {
                 $this->rapport->compter('portfolio', RapportMigration::DEJA);
                 continue;
             }
-            $etudiant = $this->etudiant((int) $p['etudiant_id']);
-            $scolarite = $etudiant !== null ? $this->scolariteDeLAnnee($etudiant, (int) ($p['annee_id'] ?? 0)) : null;
+            $etudiant = $this->etudiant(LooseValue::castInt($p['etudiant_id']));
+            $scolarite = $etudiant !== null ? $this->scolariteDeLAnnee($etudiant, LooseValue::castInt($p['annee_id'] ?? 0)) : null;
             if ($etudiant === null || $scolarite === null) {
                 $this->rapport->compter('portfolio', RapportMigration::IGNORE);
                 if ($etudiant !== null) {
@@ -575,7 +576,7 @@ class MigrationV1
             }
 
             $existant = $this->portfolios->findAcademique($etudiant, $scolarite);
-            $portfolio = $existant ?? new Portfolio($etudiant, TypePortfolioEnum::ACADEMIQUE, mb_substr(trim((string) ($p['intitule'] ?? '')) ?: 'Portfolio', 0, 255), $scolarite);
+            $portfolio = $existant ?? new Portfolio($etudiant, TypePortfolioEnum::ACADEMIQUE, mb_substr(trim(LooseValue::castString($p['intitule'] ?? '')) ?: 'Portfolio', 0, 255), $scolarite);
             $prefixe = $existant !== null ? 'Archive v1 — ' : '';
             if ($existant !== null) {
                 $this->rapport->ecart('info', 'portfolio', $id, 'Un portfolio académique existe déjà pour cette année : les pages v1 y sont ajoutées (préfixe « Archive v1 »).');
@@ -615,14 +616,14 @@ class MigrationV1
             }
 
             if ($existant === null) {
-                if ((int) ($p['visibilite'] ?? 0) === 1) {
+                if (LooseValue::castInt($p['visibilite'] ?? 0) === 1) {
                     $portfolio->setVisibilite(VisibilitePortfolioEnum::ETABLISSEMENT);
                     $this->rapport->ecart('info', 'portfolio', $id, 'Portfolio visible dans la v1 : repris en visibilité « établissement » (une vitrine publique se crée depuis la v2) ; à republier.');
                 }
                 $portfolio->setDescription(self::texte($p['description'] ?? null));
                 $this->dates($portfolio, $p['date_creation'] ?? null, $p['date_modification'] ?? null);
             }
-            if (!empty($p['banniere']) && !str_ends_with((string) $p['banniere'], 'banniere.jpg')) {
+            if (!empty($p['banniere']) && !str_ends_with(LooseValue::castString($p['banniere']), 'banniere.jpg')) {
                 $this->rapport->ecart('info', 'portfolio', $id, 'Bannière personnalisée non reprise (non gérée par la v2).');
             }
             $this->em->persist($portfolio);
@@ -639,7 +640,7 @@ class MigrationV1
     {
         $parEtudiant = [];
         foreach ($this->v1->cvs($ids) as $cv) {
-            $parEtudiant[(int) $cv['etudiant_id']][] = $cv;
+            $parEtudiant[LooseValue::castInt($cv['etudiant_id'])][] = $cv;
         }
         foreach ($parEtudiant as $etudiantV1 => $liste) {
             $etudiant = $this->etudiant($etudiantV1);
@@ -648,18 +649,18 @@ class MigrationV1
                 continue;
             }
             // Un seul CV en v2 : le plus récemment modifié.
-            usort($liste, static fn (array $a, array $b) => strcmp((string) ($b['date_modification'] ?? ''), (string) ($a['date_modification'] ?? '')) ?: $b['id'] <=> $a['id']);
+            usort($liste, static fn (array $a, array $b) => strcmp(LooseValue::castString($b['date_modification'] ?? ''), LooseValue::castString($a['date_modification'] ?? '')) ?: $b['id'] <=> $a['id']);
             $retenu = $liste[0];
             if (\count($liste) > 1) {
-                $this->rapport->ecart('info', 'cv', (int) $retenu['id'], sprintf('%d CV dans la v1 : seul le plus récent est repris.', \count($liste)));
+                $this->rapport->ecart('info', 'cv', LooseValue::castInt($retenu['id']), sprintf('%d CV dans la v1 : seul le plus récent est repris.', \count($liste)));
             }
-            if ($this->lien('cv', (int) $retenu['id']) !== null) {
+            if ($this->lien('cv', LooseValue::castInt($retenu['id'])) !== null) {
                 $this->rapport->compter('cv', RapportMigration::DEJA);
                 continue;
             }
             if ($this->em->getRepository(Cv::class)->findOneBy(['etudiant' => $etudiant]) !== null) {
                 $this->rapport->compter('cv', RapportMigration::IGNORE);
-                $this->rapport->ecart('info', 'cv', (int) $retenu['id'], 'L\'étudiant a déjà un CV dans la v2 : conservé tel quel.');
+                $this->rapport->ecart('info', 'cv', LooseValue::castInt($retenu['id']), 'L\'étudiant a déjà un CV dans la v2 : conservé tel quel.');
                 continue;
             }
             try {
@@ -667,11 +668,11 @@ class MigrationV1
             } catch (UnifolioValidationException $e) {
                 $this->rapport->compter('cv', RapportMigration::IGNORE);
                 foreach ($e->getErreurs() as $message) {
-                    $this->rapport->ecart('erreur', 'cv', (int) $retenu['id'], $message);
+                    $this->rapport->ecart('erreur', 'cv', LooseValue::castInt($retenu['id']), $message);
                 }
                 continue;
             }
-            $this->lier('cv', (int) $retenu['id'], (int) $cvV2->getId());
+            $this->lier('cv', LooseValue::castInt($retenu['id']), (int) $cvV2->getId());
             $this->rapport->compter('cv', RapportMigration::CREE);
         }
     }
@@ -685,19 +686,19 @@ class MigrationV1
             return \is_array($v) ? $v : [];
         };
         $textes = static fn (array $l) => array_values(array_filter(array_map(static fn ($x) => \is_scalar($x) ? trim((string) $x) : null, $l)));
-        $langues = array_map(static fn ($l) => \is_array($l) ? ['langue' => (string) ($l['langue'] ?? $l['nom'] ?? $l['name'] ?? ''), 'niveau' => $l['niveau'] ?? $l['level'] ?? null] : ['langue' => (string) $l, 'niveau' => null], $liste($cv['langues'] ?? []));
+        $langues = array_map(static fn ($l) => \is_array($l) ? ['langue' => LooseValue::castString($l['langue'] ?? $l['nom'] ?? $l['name'] ?? ''), 'niveau' => $l['niveau'] ?? $l['level'] ?? null] : ['langue' => (string) $l, 'niveau' => null], $liste($cv['langues'] ?? []));
         // Réseaux v1 : liste d'adresses ou de paires {nom, url}. Seules les adresses http(s) sont gardées.
         $reseaux = [];
         foreach ($liste($cv['reseaux'] ?? []) as $r) {
             $u = \is_array($r) ? ($r['url'] ?? $r['lien'] ?? null) : $r;
             if (\is_string($u) && preg_match('#^https?://#i', trim($u))) {
-                $reseaux[] = ['type' => mb_substr(trim((string) (\is_array($r) ? ($r['type'] ?? $r['nom'] ?? $r['name'] ?? '') : '')) ?: 'site', 0, 40), 'url' => trim($u)];
+                $reseaux[] = ['type' => mb_substr(trim(LooseValue::castString(\is_array($r) ? ($r['type'] ?? $r['nom'] ?? $r['name'] ?? '') : '')) ?: 'site', 0, 40), 'url' => trim($u)];
             } else {
                 $this->rapport->ecart('avertissement', 'cv', (int) $cv['id'], sprintf('Lien de réseau non repris (adresse http(s) attendue) : %s', mb_substr(json_encode($r, \JSON_UNESCAPED_UNICODE) ?: '', 0, 100)));
             }
         }
         $activite = static fn (mixed $a) => implode("\n", array_map(static fn ($x) => '- '.trim((string) $x), array_filter(\is_array($a) ? $a : (\is_string($a) ? (json_decode($a, true) ?? [$a]) : []), static fn ($x) => \is_scalar($x) && trim((string) $x) !== '')));
-        $jour = static fn (mixed $d) => !empty($d) ? substr((string) $d, 0, 10) : null;
+        $jour = static fn (mixed $d) => !empty($d) ? substr(LooseValue::castString($d), 0, 10) : null;
 
         return [
             'poste' => self::texte($cv['poste'] ?? null),
@@ -839,7 +840,7 @@ class MigrationV1
     {
         $cible = $this->em->getConnection()->fetchOne('SELECT cible_id FROM unifolio_migration_v1 WHERE type = ? AND v1_id = ?', [$type, $v1Id]);
 
-        return $cible === false ? null : (int) $cible;
+        return $cible === false ? null : LooseValue::castInt($cible);
     }
 
     private function lier(string $type, int $v1Id, int $cibleId): void
@@ -863,7 +864,7 @@ class MigrationV1
     private function date(mixed $valeur): ?\DateTimeImmutable
     {
         try {
-            return !empty($valeur) ? new \DateTimeImmutable((string) $valeur) : null;
+            return !empty($valeur) ? new \DateTimeImmutable(LooseValue::castString($valeur)) : null;
         } catch (\Exception) {
             return null;
         }

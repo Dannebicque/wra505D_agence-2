@@ -2,6 +2,7 @@
 
 namespace UnifolioBundle\Service\Portfolio;
 
+use App\Utils\LooseValue;
 use Symfony\Component\Uid\Uuid;
 use UnifolioBundle\Service\Media\EmbedPolicy;
 use UnifolioBundle\Service\Trace\UnifolioValidationException;
@@ -63,11 +64,11 @@ final class BlocValidator
     {
         $manques = [];
         foreach ($blocs as $i => $bloc) {
-            $definition = $this->registre->type($bloc['type']);
+            $definition = $this->registre->type(LooseValue::string($bloc['type']));
             if ($definition === null) {
                 continue;
             }
-            $ou = sprintf('%s › %s %d', $chemin, mb_strtolower($definition['libelle']), $i + 1);
+            $ou = sprintf('%s › %s %d', $chemin, mb_strtolower(LooseValue::castString($definition['libelle'])), $i + 1);
             foreach ($definition['attrs'] as $nom => $def) {
                 $v = $bloc['attrs'][$nom] ?? null;
                 if (($def['requis'] ?? false) && ($v === null || $v === '' || $v === [])) {
@@ -97,13 +98,13 @@ final class BlocValidator
                 continue;
             }
             ++$total;
-            $type = (string) ($bloc['type'] ?? '');
+            $type = LooseValue::castString($bloc['type'] ?? '');
             $definition = $this->registre->type($type);
             if ($definition === null) {
                 $erreurs[] = sprintf('%s : type de bloc inconnu « %s ».', $ou, $type);
                 continue;
             }
-            $ou = sprintf('%s › %s %d', $chemin, mb_strtolower($definition['libelle']), $i + 1);
+            $ou = sprintf('%s › %s %d', $chemin, mb_strtolower(LooseValue::castString($definition['libelle'])), $i + 1);
 
             if ($profondeur > $this->registre->limite('profondeur')) {
                 $erreurs[] = sprintf('%s : imbrication trop profonde (%d niveaux maximum).', $ou, $this->registre->limite('profondeur'));
@@ -121,7 +122,7 @@ final class BlocValidator
                 }
             }
 
-            $id = (string) ($bloc['id'] ?? '');
+            $id = LooseValue::castString($bloc['id'] ?? '');
             if ($id === '') {
                 $id = Uuid::v4()->toRfc4122();
             }
@@ -196,7 +197,7 @@ final class BlocValidator
                     return null;
                 }
                 $v = $def['type'] === 'texte' ? trim(preg_replace('/\s+/u', ' ', $v) ?? '') : trim(str_replace("\r\n", "\n", $v));
-                if (mb_strlen($v) > (int) $def['max']) {
+                if (mb_strlen($v) > LooseValue::castInt($def['max'])) {
                     $erreurs[] = sprintf('%s : %d caractères maximum.', $ou, $def['max']);
 
                     return null;
@@ -229,7 +230,7 @@ final class BlocValidator
                 return (string) $v;
 
             case 'url':
-                return $this->url($v, ($def['embed'] ?? false), $ou, $erreurs);
+                return $this->url($v, LooseValue::bool(($def['embed'] ?? false)), $ou, $erreurs);
 
             case 'liste_texte':
                 if (!\is_array($v) || !array_is_list($v) || \count($v) > $def['max_items']) {
@@ -239,7 +240,7 @@ final class BlocValidator
                 }
                 $liste = [];
                 foreach ($v as $element) {
-                    if (!\is_string($element) || mb_strlen($element) > (int) $def['max']) {
+                    if (!\is_string($element) || mb_strlen($element) > LooseValue::castInt($def['max'])) {
                         $erreurs[] = sprintf('%s : élément invalide (%d caractères maximum).', $ou, $def['max']);
 
                         return null;

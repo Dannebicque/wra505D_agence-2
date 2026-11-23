@@ -4,6 +4,7 @@ namespace UnifolioBundle\Controller;
 
 use App\Entity\Structure\StructureDiplome;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -99,7 +100,7 @@ class AdminModeleController extends AbstractController
         $source = $this->modele($uuid, ModeleVoter::VOIR);
         $d = $this->corps($request) + ['portee' => 'departement'];
         [$departement, $diplome] = $this->portee($d);
-        $copie = $this->manager->preparerCopie($source, (string) ($d['libelle'] ?? ($source->getLibelle() . ' (copie)')), $departement, $diplome);
+        $copie = $this->manager->preparerCopie($source, LooseValue::castString($d['libelle'] ?? ($source->getLibelle() . ' (copie)')), $departement, $diplome);
         $this->denyAccessUnlessGranted(ModeleVoter::MODIFIER, $copie);
         $this->manager->enregistrer($copie);
 
@@ -121,12 +122,12 @@ class AdminModeleController extends AbstractController
      */
     private function portee(array $d): array
     {
-        $portee = (string) ($d['portee'] ?? 'departement');
+        $portee = LooseValue::castString($d['portee'] ?? 'departement');
         if ($portee === 'national') {
             return [null, null];
         }
         if ($portee === 'diplome') {
-            $diplome = $this->em->find(StructureDiplome::class, (int) ($d['diplome'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez la formation.');
+            $diplome = $this->em->find(StructureDiplome::class, LooseValue::castInt($d['diplome'] ?? 0)) ?? throw UnifolioValidationException::un('Choisissez la formation.');
 
             return [$diplome->getDepartement(), $diplome];
         }

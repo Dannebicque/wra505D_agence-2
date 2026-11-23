@@ -3,6 +3,7 @@
 namespace UnifolioBundle\Command;
 
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,7 +40,7 @@ final class RelancerEvaluateursCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $jours = max(0, (int) $input->getOption('jours'));
+        $jours = max(0, LooseValue::castInt($input->getOption('jours')));
         $seuil = new \DateTimeImmutable(sprintf('+%d days', $jours));
         $dryRun = (bool) $input->getOption('dry-run');
 

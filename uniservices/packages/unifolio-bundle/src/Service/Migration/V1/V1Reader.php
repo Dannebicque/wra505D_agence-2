@@ -2,6 +2,7 @@
 
 namespace UnifolioBundle\Service\Migration\V1;
 
+use App\Utils\LooseValue;
 use Doctrine\DBAL\Connection;
 
 /**
@@ -159,7 +160,7 @@ class V1Reader
     {
         $resultat = [];
         foreach ($this->lignes($sql) as $ligne) {
-            $resultat[(int) $ligne['id']] = $ligne;
+            $resultat[LooseValue::castInt($ligne['id'])] = $ligne;
         }
 
         return $resultat;

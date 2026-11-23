@@ -2,6 +2,7 @@
 
 namespace UnifolioBundle\Service\Publication;
 
+use App\Utils\LooseValue;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use UnifolioBundle\Entity\Portfolio;
 use UnifolioBundle\Service\Portfolio\BlocValidator;
@@ -115,29 +116,29 @@ class PublicationInstantane
             switch ($type) {
                 case 'trace':
                     if (!empty($attrs['trace'])) {
-                        $uuids[strtolower((string) $attrs['trace'])] = true;
+                        $uuids[strtolower(LooseValue::castString($attrs['trace']))] = true;
                     }
                     break;
                 case 'traces':
                     $competence = $attrs['competence'] ?? null;
                     $retenues = array_values(array_filter(
                         $traces,
-                        static fn (array $t) => !$competence || array_filter($t['competences'] ?? [], static fn (array $c) => (int) $c['id'] === (int) $competence) !== []
+                        static fn (array $t) => !$competence || array_filter($t['competences'] ?? [], static fn (array $c) => LooseValue::castInt($c['id']) === LooseValue::castInt($competence)) !== []
                     ));
-                    foreach (\array_slice($retenues, 0, (int) ($attrs['maximum'] ?? 6)) as $t) {
-                        $uuids[strtolower((string) $t['uuid'])] = true;
+                    foreach (\array_slice($retenues, 0, LooseValue::castInt($attrs['maximum'] ?? 6)) as $t) {
+                        $uuids[strtolower(LooseValue::castString($t['uuid']))] = true;
                     }
                     break;
                 case 'image':
                 case 'file':
                     if (!empty($attrs['source']['trace'])) {
-                        $uuids[strtolower((string) $attrs['source']['trace'])] = true;
+                        $uuids[strtolower(LooseValue::castString($attrs['source']['trace']))] = true;
                     }
                     break;
                 case 'gallery':
                     foreach ($attrs['images'] ?? [] as $image) {
                         if (!empty($image['trace'])) {
-                            $uuids[strtolower((string) $image['trace'])] = true;
+                            $uuids[strtolower(LooseValue::castString($image['trace']))] = true;
                         }
                     }
                     break;
@@ -158,22 +159,22 @@ class PublicationInstantane
     {
         $resultat = [];
         foreach ($traces as $t) {
-            if (!isset($retenues[strtolower((string) $t['uuid'])])) {
+            if (!isset($retenues[strtolower(LooseValue::castString($t['uuid']))])) {
                 continue;
             }
-            $court = substr(str_replace('-', '', (string) $t['uuid']), 0, 8);
+            $court = substr(str_replace('-', '', LooseValue::castString($t['uuid'])), 0, 8);
             $adresses = [];
             $medias = [];
             foreach ($t['medias'] ?? [] as $m) {
                 $fichier = null;
                 if (!empty($m['fichier']['url'])) {
-                    $extension = $this->extension((string) ($m['fichier']['nom'] ?? ''), (string) ($m['fichier']['mimeType'] ?? ''));
-                    $destination = sprintf('media/%s-%d.%s', $court, (int) $m['id'], $extension);
+                    $extension = $this->extension(LooseValue::castString($m['fichier']['nom'] ?? ''), LooseValue::castString($m['fichier']['mimeType'] ?? ''));
+                    $destination = sprintf('media/%s-%d.%s', $court, LooseValue::castInt($m['id']), $extension);
                     $adresses[$m['fichier']['url']] = $destination;
-                    $fichier = ['url' => $destination, 'nom' => (string) ($m['fichier']['nom'] ?? 'fichier'), 'mediaId' => (int) $m['id']];
+                    $fichier = ['url' => $destination, 'nom' => LooseValue::castString($m['fichier']['nom'] ?? 'fichier'), 'mediaId' => LooseValue::castInt($m['id'])];
                 }
                 $medias[] = [
-                    'id' => (int) $m['id'],
+                    'id' => LooseValue::castInt($m['id']),
                     'type' => $m['type'],
                     'icone' => $m['icone'] ?? 'pi pi-file',
                     'legende' => $m['legende'] ?? null,

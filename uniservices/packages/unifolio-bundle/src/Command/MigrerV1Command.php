@@ -2,6 +2,7 @@
 
 namespace UnifolioBundle\Command;
 
+use App\Utils\LooseValue;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Tools\DsnParser;
@@ -57,7 +58,7 @@ final class MigrerV1Command extends Command
             return Command::SUCCESS;
         }
 
-        $dsn = (string) ($input->getOption('dsn') ?: ($_ENV['UNIFOLIO_V1_DATABASE_URL'] ?? $_SERVER['UNIFOLIO_V1_DATABASE_URL'] ?? ''));
+        $dsn = LooseValue::castString($input->getOption('dsn') ?: ($_ENV['UNIFOLIO_V1_DATABASE_URL'] ?? $_SERVER['UNIFOLIO_V1_DATABASE_URL'] ?? ''));
         if ($dsn === '') {
             $io->error('Indiquez la base v1 avec --dsn ou la variable UNIFOLIO_V1_DATABASE_URL.');
 
@@ -93,7 +94,7 @@ final class MigrerV1Command extends Command
             return Command::SUCCESS;
         }
 
-        $dossier = (string) ($input->getOption('files-dir') ?: ($_ENV['UNIFOLIO_V1_FILES_DIR'] ?? $_SERVER['UNIFOLIO_V1_FILES_DIR'] ?? ''));
+        $dossier = LooseValue::castString($input->getOption('files-dir') ?: ($_ENV['UNIFOLIO_V1_FILES_DIR'] ?? $_SERVER['UNIFOLIO_V1_FILES_DIR'] ?? ''));
         if ($dossier === '' || !is_dir($dossier)) {
             $io->error('Dossier des fichiers v1 introuvable : indiquez --files-dir ou UNIFOLIO_V1_FILES_DIR.');
 
@@ -110,7 +111,7 @@ final class MigrerV1Command extends Command
         $essai = (bool) $input->getOption('dry-run');
         $io->title(sprintf('Migration UniFolio v1%s — étapes : %s', $essai ? ' (essai, rien n\'est conservé)' : '', implode(', ', $etapes)));
 
-        $limite = $input->getOption('limite') !== null ? max(1, (int) $input->getOption('limite')) : null;
+        $limite = $input->getOption('limite') !== null ? max(1, LooseValue::castInt($input->getOption('limite'))) : null;
         $this->migration->executer($lecteur, $dossier, $etapes, $rapport, $essai, $limite);
 
         $lignes = [];
@@ -122,7 +123,7 @@ final class MigrerV1Command extends Command
         $io->table(['Objet', 'Résultat', 'Nombre'], $lignes);
         $this->afficherEcarts($io, $rapport);
         if ($chemin = $input->getOption('rapport')) {
-            file_put_contents((string) $chemin, $rapport->csv());
+            file_put_contents(LooseValue::castString($chemin), $rapport->csv());
             $io->writeln(sprintf('Rapport d\'écarts écrit dans %s', $chemin));
         }
 

@@ -8,6 +8,7 @@ use App\Entity\Apc\ApcNiveau;
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use UnifolioBundle\Entity\Campagne;
@@ -122,7 +123,7 @@ class EvaluationManager
             $saisies = [];
             foreach (\is_array($d['reponses']) ? $d['reponses'] : [] as $r) {
                 if (\is_array($r) && isset($r['critere'])) {
-                    $saisies[(string) $r['critere']] = $r;
+                    $saisies[LooseValue::castString($r['critere'])] = $r;
                 }
             }
             $donnees['reponses'] = $saisies;

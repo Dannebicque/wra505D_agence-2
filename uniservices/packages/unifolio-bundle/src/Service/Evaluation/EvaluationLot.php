@@ -4,6 +4,7 @@ namespace UnifolioBundle\Service\Evaluation;
 
 use App\Entity\Etudiant\EtudiantScolarite;
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use UnifolioBundle\Entity\Evaluation;
 use UnifolioBundle\Entity\Trace;
@@ -295,7 +296,7 @@ class EvaluationLot
                     return true;
                 }
             }
-            if (trim((string) ($r['texte'] ?? '')) !== '') {
+            if (trim(LooseValue::castString($r['texte'] ?? '')) !== '') {
                 return true;
             }
         }

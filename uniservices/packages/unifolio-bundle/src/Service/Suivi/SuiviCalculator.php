@@ -3,6 +3,7 @@
 namespace UnifolioBundle\Service\Suivi;
 
 use App\Entity\Etudiant\EtudiantScolarite;
+use App\Utils\LooseValue;
 use UnifolioBundle\Service\Evaluation\AutoEvaluationManager;
 use UnifolioBundle\Service\Evaluation\BilanAnnee;
 use UnifolioBundle\Service\Trace\UnifolioValidationException;
@@ -45,7 +46,7 @@ class SuiviCalculator
         $ecartMax = null;
         foreach ($elements as $el) {
             $c = $el['competence'] ?? null;
-            $cle = (int) ($c['id'] ?? 0);
+            $cle = LooseValue::castInt($c['id'] ?? 0);
             $competences[$cle] ??= [
                 'id' => $c['id'] ?? null, 'nomCourt' => $c['nomCourt'] ?? 'Autre', 'libelle' => $c['libelle'] ?? null, 'couleur' => $c['couleur'] ?? null,
                 'total' => 0, 'couverts' => 0, 'nbTraces' => 0, '_eval' => [], '_auto' => [], 'elements' => [],
