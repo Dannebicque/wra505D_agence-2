@@ -20,6 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  */
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Route('/api/me/documents-favoris')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('independant', 'Favoris personnels de l’étudiant, sans année universitaire.')]
 final class FavoriteDocumentController extends AbstractController
 {
     public function __construct(

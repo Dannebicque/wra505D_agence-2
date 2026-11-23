@@ -23,6 +23,7 @@ use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use App\Entity\Structure\StructureAnneeUniversitaire;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -83,6 +84,12 @@ class Questionnaire implements TimestampableInterface
     #[ORM\Column(options: ['default' => false])]
     #[Groups(['questionnaire:read'])]
     private bool $estModele = false;
+
+    /** Année universitaire de la campagne (comparaison d'une année sur l'autre). */
+    #[ORM\ManyToOne(targetEntity: StructureAnneeUniversitaire::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    #[Groups(['questionnaire:read'])]
+    private ?StructureAnneeUniversitaire $anneeUniversitaire = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['questionnaire:read', 'invitation:read'])]
@@ -429,6 +436,18 @@ class Questionnaire implements TimestampableInterface
     public function setEstModele(bool $estModele): static
     {
         $this->estModele = $estModele;
+
+        return $this;
+    }
+
+    public function getAnneeUniversitaire(): ?StructureAnneeUniversitaire
+    {
+        return $this->anneeUniversitaire;
+    }
+
+    public function setAnneeUniversitaire(?StructureAnneeUniversitaire $annee): static
+    {
+        $this->anneeUniversitaire = $annee;
 
         return $this;
     }

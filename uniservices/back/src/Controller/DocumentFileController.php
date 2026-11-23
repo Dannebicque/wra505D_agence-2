@@ -20,6 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * peut pas lire répond 404, comme un document absent : la réponse ne révèle pas qu'il existe.
  */
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('ressource', 'Fichier d’un document explicitement identifié.')]
 final class DocumentFileController extends AbstractController
 {
     public function __construct(

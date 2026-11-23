@@ -20,6 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Pour tout autre, la réponse est 404, comme une pièce absente : elle ne révèle pas qu'elle existe.
  */
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('ressource', 'Fichier d’un justificatif explicitement identifié.')]
 final class JustificationFileController extends AbstractController
 {
     public function __construct(

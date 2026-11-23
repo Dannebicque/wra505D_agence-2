@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/intranet/commissions', name: 'api_intranet_commissions_')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('ressource', 'Semestre explicitement identifié.', \App\Entity\Structure\StructureSemestre::class, 'semestreId', 'id')]
 class CommissionController extends AbstractController
 {
     public function __construct(

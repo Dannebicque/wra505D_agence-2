@@ -73,6 +73,8 @@ final class PerimetreAnnuelRegistry
         'Message', 'MessageDestinataire', 'MessagePieceJointe',
         'Cv', 'CvFormation', 'CvExperience', 'Grille', 'GrilleVersion', 'GrilleCritere', 'GrilleEchelon', 'PortfolioModele',
         'ParametrageFormation', 'MigrationV1Lien', 'ReponseCritere',
+        // Données personnelles de l'étudiant, sans année universitaire.
+        'ReadNotification', 'SentMessage', 'FavoriteDocument',
     ];
 
     private const DTO_MODES = [
@@ -81,6 +83,10 @@ final class PerimetreAnnuelRegistry
         'InvitationIndexDto' => 'ressource', 'InvitationSectionResource' => 'ressource',
         'SaveAnswersResource' => 'ressource', 'SubmitResource' => 'ressource',
         'DuplicateOutputDto' => 'annuel', 'MesInvitationDto' => 'transversal',
+        // Vues de l'étudiant connecté : le serveur lit l'année de son inscription, pas la sélection de l'interface.
+        'StudentTimetable' => 'transversal', 'StudentWeeks' => 'transversal', 'Transcript' => 'transversal',
+        'NotificationFeed' => 'transversal', 'SearchResult' => 'transversal', 'CourseLog' => 'transversal',
+        'StudentInvitationDto' => 'transversal',
     ];
 
     public function mode(string $class): string

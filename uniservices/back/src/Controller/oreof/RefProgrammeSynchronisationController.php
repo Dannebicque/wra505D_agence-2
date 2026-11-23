@@ -13,6 +13,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route(path: '/api/oreof/ref-formation/synchronisation', name: 'oreof_programme_synchronisation', methods: ['POST'])]
 #[IsGranted(StructureVoter::CAN_EDIT_PN)]
+#[\App\AnneeUniversitaire\ContexteAnnuel('annuel', 'Travail sur la maquette ou les données de l’année demandée.')]
 class RefProgrammeSynchronisationController extends AbstractController
 {
     public function __invoke(

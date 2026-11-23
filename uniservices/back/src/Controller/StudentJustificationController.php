@@ -19,6 +19,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * obligatoires. Les erreurs sont rendues champ par champ, pour s'afficher sous chacun.
  */
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[\App\AnneeUniversitaire\ContexteAnnuel('transversal', 'Justificatif de l’étudiant connecté, rattaché à son inscription en cours.')]
 final class StudentJustificationController extends AbstractController
 {
     /** Un justificatif couvre au plus un mois : au-delà, ce n'est plus une absence ponctuelle. */
