@@ -52,8 +52,7 @@ final class SemesterMigrator extends AbstractMigrator
             }
 
             $sql = <<<'SQL'
-SELECT id, annee_id, libelle, ordre_annee, ordre_lmd, actif,
-       nb_groupes_cm, nb_groupes_td, nb_groupes_tp, code_element,
+SELECT id, annee_id, libelle, ordre_annee, ordre_lmd, code_element,
        opt_mail_releve, opt_mail_modification_note, opt_dest_mail_releve_id, opt_dest_mail_modif_note_id,
        opt_evaluation_visible, opt_evaluation_modifiable, opt_penalite_absence,
        opt_mail_absence_resp, opt_dest_mail_absence_resp_id, opt_mail_absence_etudiant,
@@ -79,10 +78,6 @@ SQL;
                         ->setLibelle(LooseValue::castString($row['libelle']))
                         ->setOrdreAnnee(LooseValue::castInt($row['ordre_annee']))
                         ->setOrdreLmd(LooseValue::castInt($row['ordre_lmd']))
-                        ->setActif((bool) $row['actif'])
-                        ->setNbGroupesCm(LooseValue::castInt($row['nb_groupes_cm']))
-                        ->setNbGroupesTd(LooseValue::castInt($row['nb_groupes_td']))
-                        ->setNbGroupesTp(LooseValue::castInt($row['nb_groupes_tp']))
                         ->setCodeElement(LooseValue::truthyString($row['code_element']))
                         ->setKeyEduSign(LooseValue::truthyString($row['id_edu_sign']))
                         ->setOpt([

@@ -180,9 +180,11 @@ SQL;
                     ])
                     : null;
 
-                if (null === $semestre) {
+                if (null === $scolariteSemestre) {
                     foreach ($scolarite->getScolariteSemestre() as $candidate) {
-                        if (self::legacySemesterOldId($candidate->getLegacyContext()) === LooseValue::castInt($row['semestre_id'])) {
+                        $candidateOldId = $candidate->getSemestre()?->getOldId()
+                            ?? self::legacySemesterOldId($candidate->getLegacyContext());
+                        if (null !== $candidateOldId && $candidateOldId === LooseValue::castInt($row['semestre_id'])) {
                             $scolariteSemestre = $candidate;
                             break;
                         }
@@ -191,13 +193,17 @@ SQL;
 
                 if (null === $scolariteSemestre) {
                     $scolariteSemestre = new EtudiantScolariteSemestre();
-                    $scolariteSemestre
-                        ->setScolarite($scolarite)
-                        ->setSemestre($semestre);
+                    $scolarite->addScolariteSemestre($scolariteSemestre);
                     $this->entityManager->persist($scolariteSemestre);
                 }
 
-                $scolariteSemestre->setLegacyContext(null === $semestre ? [
+                if (null !== $semestre) {
+                    $scolariteSemestre->setSemestre($semestre);
+                }
+
+                $legacy = $scolariteSemestre->getLegacyContext() ?? [];
+                unset($legacy['source'], $legacy['annee'], $legacy['semestre'], $legacy['diplome']);
+                $legacy = array_replace($legacy, null === $scolariteSemestre->getSemestre() ? [
                     'source' => 'intranet-v3',
                     'annee' => ['libelle' => LooseValue::truthyString($row['annee_libelle'])],
                     'semestre' => [
@@ -206,9 +212,9 @@ SQL;
                         'ordre' => null !== $row['semestre_ordre'] ? LooseValue::castInt($row['semestre_ordre']) : null,
                     ],
                     'diplome' => ['oldId' => LooseValue::castInt($row['diplome_id'])],
-                ] : null);
-
-                $scolariteSemestre->setMoyenne(null !== $row['moyenne'] ? LooseValue::castFloat($row['moyenne']) : null);
+                ] : []);
+                $legacy['moyenneV3'] = null !== $row['moyenne'] ? LooseValue::castFloat($row['moyenne']) : null;
+                $scolariteSemestre->setLegacyContext($legacy);
                 $scolariteSemestre->setNbAbsences(LooseValue::castInt($row['nb_absences'] ?? 0));
 
                 if (LooseValue::truthyString($row['commentaire']) !== null && in_array($scolarite->getCommentaire(), [null, ''], true)) {

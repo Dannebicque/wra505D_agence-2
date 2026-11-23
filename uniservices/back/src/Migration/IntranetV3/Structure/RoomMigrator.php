@@ -3,6 +3,7 @@
 namespace App\Migration\IntranetV3\Structure;
 
 use App\Entity\Salle;
+use App\Enum\TypeSalleEnum;
 use App\Migration\IntranetV3\AbstractMigrator;
 use App\Migration\IntranetV3\MigrationContext;
 use App\Migration\IntranetV3\MigrationResult;
@@ -32,7 +33,7 @@ final class RoomMigrator extends AbstractMigrator
                     ->setOldId(LooseValue::castInt($row['id']))
                     ->setLibelle(LooseValue::castString($row['libelle']))
                     ->setCapacite(null !== $row['capacite'] ? LooseValue::castInt($row['capacite']) : null)
-                    ->setType(LooseValue::truthyString($row['type']));
+                    ->setType(null === LooseValue::truthyString($row['type']) ? null : TypeSalleEnum::from(strtoupper(trim(LooseValue::castString($row['type'])))));
 
                 if ($isNew) {
                     $this->entityManager->persist($entity);

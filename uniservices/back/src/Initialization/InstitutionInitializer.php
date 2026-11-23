@@ -54,6 +54,28 @@ final readonly class InstitutionInitializer implements InitializerInterface
             ->setAdresse($address === null ? null : LooseValue::assoc($address));
         $institution->setIsMain(LooseValue::bool($this->configuration['is_main'] ?? true));
 
+        // Champs ajoutés après coup : renseignés seulement s'ils sont configurés, pour ne pas effacer une saisie faite dans l'écran.
+        $director = $this->nullableString('directeur');
+        if ($director !== null) {
+            $institution->setDirecteurNom($director);
+        }
+        $university = LooseValue::assoc($this->configuration['universite'] ?? []);
+        $universityEntity = $institution->getUniversite();
+        $text = static fn (string $key): string => trim(LooseValue::string($university[$key] ?? ''));
+        if ($text('libelle') !== '') {
+            $universityEntity->setLibelle($text('libelle'));
+        }
+        if ($text('telephone') !== '') {
+            $universityEntity->setTelephone($text('telephone'));
+        }
+        if ($text('president') !== '') {
+            $universityEntity->setPresident($text('president'));
+        }
+        $universityAddress = LooseValue::assoc($university['adresse'] ?? []);
+        if (trim(LooseValue::string($universityAddress['ville'] ?? '')) !== '' || trim(LooseValue::string($universityAddress['adresse'] ?? '')) !== '') {
+            $universityEntity->setAdresse($universityAddress);
+        }
+
         if ($isNew) {
             $this->entityManager->persist($institution);
         }

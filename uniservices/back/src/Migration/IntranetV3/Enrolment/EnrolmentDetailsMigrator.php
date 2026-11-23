@@ -2,7 +2,6 @@
 
 namespace App\Migration\IntranetV3\Enrolment;
 
-use App\Entity\Etudiant\EtudiantScolariteSemestre;
 use App\Entity\Structure\StructureAnneeUniversitaire;
 use App\Entity\Structure\StructureDiplome;
 use App\Entity\Structure\StructurePn;
@@ -61,7 +60,6 @@ SQL;
         $anneeUniversitaireRepository = $this->entityManager->getRepository(StructureAnneeUniversitaire::class);
         $diplomeRepository = $this->entityManager->getRepository(StructureDiplome::class);
         $pnRepository = $this->entityManager->getRepository(StructurePn::class);
-        $scolariteSemestreRepository = $this->entityManager->getRepository(EtudiantScolariteSemestre::class);
 
         foreach ($this->source->executeQuery($sql)->iterateAssociative() as $row) {
             try {
@@ -132,8 +130,14 @@ SQL;
                     continue;
                 }
 
-                $scolariteSemestre->setDecision($this->mapDecision($row['decision']));
-                $scolariteSemestre->setRang(null !== $row['rang'] ? LooseValue::castInt($row['rang']) : null);
+                // Ces résultats précèdent les révisions V4 et restent dans l’historique V3.
+                $legacyContext = $scolariteSemestre->getLegacyContext() ?? [];
+                $legacyContext['resultatsV3'] = [
+                    'decision' => $this->mapDecision($row['decision']),
+                    'codeDecision' => $row['decision'],
+                    'rang' => null !== $row['rang'] ? LooseValue::castInt($row['rang']) : null,
+                ];
+                $scolariteSemestre->setLegacyContext($legacyContext);
 
                 if (null !== $row['proposition'] && '' !== trim(LooseValue::castString($row['proposition']))) {
                     $proposition = null !== $pn ? ProposedSemesterResolver::resolve(LooseValue::castString($row['proposition']), $pn) : null;
