@@ -5,9 +5,10 @@ namespace QuestionnaireBundle\Email;
 use App\Service\Email\AbstractEmailDefinition;
 
 /**
- * Définition de l'email de rappel pour répondre à un questionnaire.
+ * Envoyé aux participants qui n'ont pas encore envoyé leurs réponses (relance manuelle de l'équipe ou relance automatique).
+ * Contexte fourni par QuestionnaireMailer (valeurs simples).
  */
-final class QuestionnaireReminderEmail extends AbstractEmailDefinition
+class QuestionnaireReminderEmail extends AbstractEmailDefinition
 {
     public function getKey(): string
     {

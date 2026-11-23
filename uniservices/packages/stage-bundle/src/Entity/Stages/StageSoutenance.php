@@ -2,12 +2,14 @@
 
 namespace StageBundle\Entity\Stages;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\QueryParameter;
 use App\Entity\Contracts\TimestampableInterface;
 use App\Entity\Traits\TimestampableTrait;
 use App\Entity\Users\Personnel;

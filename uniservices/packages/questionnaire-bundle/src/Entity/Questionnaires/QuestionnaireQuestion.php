@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\Post;
 use App\Entity\Traits\OptionTrait;
 use QuestionnaireBundle\Enum\QuestTypeQuestionEnum;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireQuestionRepository;
+use QuestionnaireBundle\State\QuestionnaireStructureProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -90,11 +91,33 @@ class QuestionnaireQuestion
     #[Groups(['questionnaire_section:read'])]
     private ?array $conditionalRules = null;
 
+    /** Question d'origine (UUID de la première version) : même question d'une campagne à l'autre, pour comparer. */
+    #[ORM\Column(length: 36, nullable: true)]
+    private ?string $origine = null;
+
     /**
      * @var Collection<int, QuestionnaireAnswer>
      */
     #[ORM\OneToMany(targetEntity: QuestionnaireAnswer::class, mappedBy: 'question')]
     private Collection $answers;
+
+    public function getOrigine(): ?string
+    {
+        return $this->origine;
+    }
+
+    public function setOrigine(?string $origine): static
+    {
+        $this->origine = $origine;
+
+        return $this;
+    }
+
+    /** Clé de comparaison : la question d'origine, ou celle-ci si elle n'a pas été dupliquée. */
+    public function cleComparaison(): string
+    {
+        return $this->origine ?? (string) $this->uuid;
+    }
 
     public function getUuidString(): string
     {

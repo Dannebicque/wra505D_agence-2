@@ -15,17 +15,21 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * Relance automatique des participants (questionnaires publiés et ouverts) qui n'ont pas répondu, au plus une fois
+ * tous les --days jours. Les liens des e-mails pointent vers URL_FRONTEND.
+ */
 #[AsCommand(
     name: 'app:questionnaire:send-reminders',
-    description: 'Envoie des emails de relance pour les questionnaires publiés et non complétés',
+    description: 'Relance les participants des questionnaires ouverts qui n\'ont pas encore répondu',
 )]
 class SendSurveyRemindersCommand extends Command
 {
     public function __construct(
-        private readonly EntityManagerInterface             $em,
-        private readonly EmailService                       $emailService,
-        private readonly QuestionnaireRepository            $questionnaireRepository,
-        private readonly QuestionnaireInvitationRepository  $invitationRepository
+        private readonly EntityManagerInterface $em,
+        private readonly QuestionnaireNotifier $notifier,
+        private readonly QuestionnaireRepository $questionnaireRepository,
+        private readonly QuestionnaireInvitationRepository $invitationRepository,
     ) {
         parent::__construct();
     }

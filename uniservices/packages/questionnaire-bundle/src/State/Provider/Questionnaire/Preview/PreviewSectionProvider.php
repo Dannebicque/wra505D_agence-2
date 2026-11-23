@@ -73,11 +73,11 @@ final readonly class PreviewSectionProvider implements ProviderInterface
     {
         // "tpl:12|matiere:45"
         $parts = explode('|', $key);
-        if (count($parts) !== 2) {
-            throw new \RuntimeException('Invalid key');
+        if (count($parts) !== 2 || !str_starts_with($parts[0], 'tpl:') || !str_contains($parts[1], ':')) {
+            throw new NotFoundHttpException('Section introuvable.');
         }
 
-        $tpl = (int) str_replace('tpl:', '', $parts[0]);
+        $tpl = (int) substr($parts[0], 4);
         [$t, $id] = explode(':', $parts[1], 2);
 
         return [$tpl, QuestTypeRepeatEnum::tryFrom($t), $id];

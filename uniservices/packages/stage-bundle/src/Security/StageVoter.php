@@ -5,6 +5,12 @@ namespace StageBundle\Security;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Security\UserEffectivePermissionService;
+use StageBundle\Entity\Stages\StageAvenant;
+use StageBundle\Entity\Stages\StageEtudiant;
+use StageBundle\Entity\Stages\StageSoutenance;
+use StageBundle\Entity\Stages\StagePeriode;
+use StageBundle\Entity\Stages\StagePeriodeInterruption;
+use StageBundle\Entity\Stages\StagePeriodeSoutenance;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -29,7 +35,18 @@ class StageVoter extends Voter
     public const CAN_DELETE_STAGE = 'CAN_DELETE_STAGE';
     public const CAN_VALIDATE_STAGE = 'CAN_VALIDATE_STAGE';
 
+    public const CAN_MANAGE_STAGE_PERIODE = 'CAN_MANAGE_STAGE_PERIODE';
+
+    // Permissions sur un dossier de stage précis (sujet : StageEtudiant), voir StageAccess
+    public const STAGE_ETUDIANT_VIEW = 'STAGE_ETUDIANT_VIEW';
+    /** Écriture selon CAN_EDIT_STAGE ; le processeur contrôle ensuite les champs et les transitions. */
+    public const STAGE_ETUDIANT_EDIT = 'STAGE_ETUDIANT_EDIT';
+    public const STAGE_ETUDIANT_MANAGE = 'STAGE_ETUDIANT_MANAGE';
+    /** Gestion d'une période (et de ses dossiers, créneaux, interruptions) : responsable des stages de SON département. */
+    public const STAGE_PERIODE_MANAGE = 'STAGE_PERIODE_MANAGE';
+
     private const SUPPORTED_ATTRIBUTES = [
+        self::CAN_MANAGE_STAGE_PERIODE,
         self::CAN_VIEW_STAGE_PERIODE,
         self::CAN_EDIT_STAGE_PERIODE,
         self::CAN_DELETE_STAGE_PERIODE,
@@ -57,11 +74,23 @@ class StageVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
-        $user = $token->getUser();
+        return $this->allows($attribute, $subject, $token->getUser());
+    }
+
+    /** Même décision pour les opérations API et les services métier. */
+    public function allows(string $attribute, mixed $subject, mixed $user): bool
+    {
+        $attribute = match ($attribute) {
+            self::STAGE_ETUDIANT_VIEW => self::CAN_VIEW_STAGE,
+            self::STAGE_ETUDIANT_EDIT => self::CAN_EDIT_STAGE,
+            self::STAGE_ETUDIANT_MANAGE => self::CAN_VALIDATE_STAGE,
+            self::STAGE_PERIODE_MANAGE => self::CAN_MANAGE_STAGE_PERIODE,
+            default => $attribute,
+        };
+
 
         // L'utilisateur doit être connecté
         if (!($user instanceof Etudiant || $user instanceof Personnel)) {
-            $vote?->addReason('L\'utilisateur n\'est pas connecté.');
             return false;
         }
 
@@ -71,6 +100,7 @@ class StageVoter extends Voter
         }
 
         return match($attribute) {
+            self::CAN_MANAGE_STAGE_PERIODE => $this->canManagePeriod($user, $subject),
             // StagePeriode
             self::CAN_VIEW_STAGE_PERIODE => $this->canViewStagePeriode($user),
             self::CAN_EDIT_STAGE_PERIODE => $this->canEditStagePeriode($user),
@@ -79,8 +109,8 @@ class StageVoter extends Voter
             // Stage
             self::CAN_VIEW_STAGE => $this->canViewStage($subject, $user),
             self::CAN_EDIT_STAGE => $this->canEditStage($subject, $user),
-            self::CAN_DELETE_STAGE => $this->canDeleteStage($user),
-            self::CAN_VALIDATE_STAGE => $this->canValidateStage($user),
+            self::CAN_DELETE_STAGE => $this->canManageStage($subject, $user),
+            self::CAN_VALIDATE_STAGE => $this->canManageStage($subject, $user),
 
             default => false,
         };
@@ -97,6 +127,29 @@ class StageVoter extends Voter
     private function hasAnyRole(Personnel $user, array $roles): bool
     {
         return $this->effectivePermissionService->hasAnyPermission($user, $roles);
+    }
+
+    private function canManagePeriod(Personnel|Etudiant $user, mixed $subject): bool
+    {
+        if (!$user instanceof Personnel) {
+            return false;
+        }
+
+        $department = match (true) {
+            $subject instanceof StagePeriode => $subject->getDepartement(),
+            $subject instanceof StagePeriodeInterruption,
+            $subject instanceof StagePeriodeSoutenance => $subject->getStagePeriode()?->getDepartement(),
+            default => null,
+        };
+
+        // À la création, une période locale peut utiliser l’affectation active.
+        if ($department === null && ($subject instanceof StagePeriode
+                || $subject instanceof StagePeriodeInterruption
+                || $subject instanceof StagePeriodeSoutenance) && $subject->getId() === null) {
+            $department = $this->effectivePermissionService->getActiveDepartementPersonnel($user)?->getDepartement();
+        }
+
+        return $this->effectivePermissionService->hasAnyPermissionInDepartment($user, ['ROLE_STAGE_MANAGER'], $department);
     }
 
     // ========== StagePeriode ==========

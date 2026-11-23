@@ -2,6 +2,8 @@
 
 namespace FinanceBundle\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -33,11 +35,13 @@ class FinanceFournisseur
     private ?int $id = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['fournisseur:read', 'fournisseur:write', 'finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['fournisseur:read', 'fournisseur:write', 'finance:read', 'finance:list'])]
     private ?string $numeroFournisseur = null; // Code SIFAC (ex: 1650, 1471)
 
     #[ORM\Column(length: 255)]
-    #[Groups(['fournisseur:read', 'fournisseur:write', 'finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['fournisseur:read', 'fournisseur:write', 'finance:read', 'finance:list'])]
+    #[Assert\NotBlank(message: 'La raison sociale est obligatoire.')]
+    #[Assert\Length(max: 255)]
     private ?string $nomFournisseur = null; // Raison sociale (ex: ELITE SECURITE, TOUSSAINT)
 
     /**
@@ -74,7 +78,7 @@ class FinanceFournisseur
 
     public function setNomFournisseur(string $nomFournisseur): static
     {
-        $this->nomFournisseur = $nomFournisseur;
+        $this->nomFournisseur = trim($nomFournisseur);
         return $this;
     }
 

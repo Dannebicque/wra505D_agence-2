@@ -2,17 +2,31 @@
 
 namespace QuestionnaireBundle\Services\Dashboard\Provider;
 
-use App\Domain\Dashboard\WidgetDataProviderInterface;
 use App\Domain\Dashboard\DashboardContext;
+use App\Domain\Dashboard\WidgetDataProviderInterface;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
-use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireRepository;
+use Doctrine\ORM\QueryBuilder;
+use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
+use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 use QuestionnaireBundle\Enum\QuestStatutEnum;
+use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireInvitationRepository;
+use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireRepository;
+use QuestionnaireBundle\Security\QuestionnaireAccess;
+use QuestionnaireBundle\State\Provider\Questionnaire\Runtime\MesInvitationsProvider;
 
+/**
+ * Données des widgets du portail, limitées à ce que la personne peut voir :
+ *  - questionnaire.pending : SES questionnaires à remplir (invitations ouvertes et non envoyées) ;
+ *  - questionnaire.stats : questionnaires qu'elle gère (départements gérés et questionnaires dont elle est l'auteur) ;
+ *  - questionnaire.last_answers : dernières réponses envoyées à ces questionnaires (date et titre, jamais l'identité).
+ */
 class QuestionnaireWidgetDataProvider implements WidgetDataProviderInterface
 {
     public function __construct(
-        private readonly QuestionnaireRepository $questionnaireRepository
+        private readonly QuestionnaireRepository $questionnaires,
+        private readonly QuestionnaireInvitationRepository $invitations,
+        private readonly QuestionnaireAccess $access,
     ) {
     }
 

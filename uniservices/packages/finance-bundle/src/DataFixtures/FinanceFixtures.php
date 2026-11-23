@@ -12,6 +12,7 @@ use Doctrine\Persistence\ObjectManager;
 use FinanceBundle\Entity\FinanceBonCommande;
 use FinanceBundle\Entity\FinanceFournisseur;
 use FinanceBundle\Entity\FinanceReception;
+use FinanceBundle\Entity\FinanceTauxTva;
 use FinanceBundle\Enum\AvisDirecteurEnum;
 use FinanceBundle\Enum\StatutCommandeEnum;
 use FinanceBundle\Enum\TypePrestationEnum;

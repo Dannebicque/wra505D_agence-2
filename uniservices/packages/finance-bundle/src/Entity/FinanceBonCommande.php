@@ -79,19 +79,23 @@ class FinanceBonCommande implements TimestampableInterface
     // ==========================================
 
     #[ORM\ManyToOne]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private ?Personnel $demandeur = null;
 
     #[ORM\ManyToOne]
     #[Groups(['finance:read', 'finance:list', 'finance:write'])]
     private ?Personnel $responsable = null;
 
+    /**
+     * Imputation : un département (MMI, GMP…) OU un service (Informatique, Patrimoine…), jamais les deux (cf. validerImputation).
+     * Fixée à la création. Une demande de service est validée et gérée par le service financier (cf. FinanceAccess).
+     */
     #[ORM\ManyToOne]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list', 'finance:create'])]
     private ?StructureDepartement $departement = null;
 
     #[ORM\ManyToOne]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list', 'finance:create'])]
     private ?StructureService $service = null;
 
     #[ORM\Column(length: 20, enumType: TypePrestationEnum::class)]
@@ -102,7 +106,8 @@ class FinanceBonCommande implements TimestampableInterface
     #[Groups(['finance:read', 'finance:list', 'finance:write'])]
     private ?string $objetDemande = null; // Libellé / Objet
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    /** Nullable en base pour accepter une saisie TTC + taux : la validation garantit qu'un HT est toujours calculé. */
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[Groups(['finance:read', 'finance:list', 'finance:write'])]
     private ?string $montantHt = null;
 
@@ -110,12 +115,24 @@ class FinanceBonCommande implements TimestampableInterface
     #[Groups(['finance:read', 'finance:list', 'finance:write'])]
     private ?string $montantTtc = null;
 
+    /** Taux de TVA appliqué (en %), recopié depuis le référentiel au moment de la saisie : l'historique ne bouge pas. */
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Assert\Range(notInRangeMessage: 'Le taux de TVA doit être compris entre 0 et 100 %.', min: 0, max: 100)]
+    private ?string $tauxTva = null;
+
+    /** Fournisseur proposé par le demandeur quand il ne figure pas au référentiel (le service financier le rattache). */
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Assert\Length(max: 255)]
+    private ?string $fournisseurPropose = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['finance:read', 'finance:detail', 'finance:write'])]
     private ?string $noteExplicative = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private ?\DateTimeInterface $dateDemande = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -128,15 +145,15 @@ class FinanceBonCommande implements TimestampableInterface
 
     // Avis Directeur
     #[ORM\Column(length: 30, enumType: AvisDirecteurEnum::class, nullable: true)]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private ?AvisDirecteurEnum $avisDirecteur = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['finance:read', 'finance:detail', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:detail'])]
     private ?string $avisDirecteurCommentaire = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private ?\DateTimeInterface $dateAvisDirecteur = null;
 
     #[ORM\ManyToOne]
@@ -152,10 +169,10 @@ class FinanceBonCommande implements TimestampableInterface
     private ?string $centreFinancier = null; // ex: ACFA9B5FGL
 
     #[ORM\ManyToOne]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private ?Personnel $gestionnaire = null;
 
-    #[ORM\ManyToOne(inversedBy: 'bonsCommande', cascade: ['persist'])]
+    #[ORM\ManyToOne(inversedBy: 'bonsCommande')]
     #[Groups(['finance:read', 'finance:list', 'finance:write'])]
     private ?FinanceFournisseur $fournisseur = null;
 
@@ -180,7 +197,7 @@ class FinanceBonCommande implements TimestampableInterface
     private bool $pjSurSifac = false;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private bool $bcTransmis = false;
 
     #[ORM\Column(length: 100, nullable: true)]
@@ -188,7 +205,7 @@ class FinanceBonCommande implements TimestampableInterface
     private ?string $colisAttendu = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private ?\DateTimeInterface $dateVerificationFinanciere = null;
 
     #[ORM\ManyToOne]
@@ -200,7 +217,7 @@ class FinanceBonCommande implements TimestampableInterface
     // ==========================================
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private ?\DateTimeInterface $dateVisaEngagement = null;
 
     #[ORM\ManyToOne]
@@ -215,11 +232,11 @@ class FinanceBonCommande implements TimestampableInterface
      * @var Collection<int, FinanceReception>
      */
     #[ORM\OneToMany(targetEntity: FinanceReception::class, mappedBy: 'bonCommande', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private Collection $receptions;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private ?\DateTimeInterface $dateCertificationServiceFait = null;
 
     #[ORM\ManyToOne]
@@ -235,7 +252,7 @@ class FinanceBonCommande implements TimestampableInterface
     private ?\DateTimeInterface $dateArriveeFacture = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private ?string $rejetFactureMotif = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -264,6 +281,96 @@ class FinanceBonCommande implements TimestampableInterface
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /** Montants : HT ou (TTC et taux) obligatoires ; le montant manquant est calculé par completerMontants(). */
+    #[Assert\Callback]
+    public function validerImputation(ExecutionContextInterface $context): void
+    {
+        if ($this->departement === null && $this->service === null) {
+            $context->buildViolation('Le département ou le service d\'imputation est obligatoire.')->atPath('departement')->addViolation();
+        } elseif ($this->departement !== null && $this->service !== null) {
+            $context->buildViolation('Une demande est imputée à un département ou à un service, pas aux deux.')->atPath('service')->addViolation();
+        }
+    }
+
+    /** Libellé de l'imputation (service ou département). */
+    #[Ignore]
+    public function getImputationLibelle(): ?string
+    {
+        return $this->service?->getLibelle() ?? $this->departement?->getLibelle();
+    }
+
+    #[Assert\Callback]
+    public function validerMontants(ExecutionContextInterface $context): void
+    {
+        if ($this->montantHt === null && ($this->montantTtc === null || $this->tauxTva === null)) {
+            $context->buildViolation('Indiquez le montant HT, ou le montant TTC et le taux de TVA.')->atPath('montantHt')->addViolation();
+        }
+        foreach (['montantHt' => $this->montantHt, 'montantTtc' => $this->montantTtc] as $champ => $valeur) {
+            if ($valeur !== null && (!is_numeric($valeur) || (float) $valeur < 0)) {
+                $context->buildViolation('Le montant doit être un nombre positif.')->atPath($champ)->addViolation();
+            }
+        }
+    }
+
+    /**
+     * Calcule le montant manquant à partir du taux de TVA, sans jamais écraser un montant saisi :
+     * HT + taux → TTC, TTC + taux → HT. Deux montants saisis sont conservés tels quels.
+     */
+    public function completerMontants(): void
+    {
+        if ($this->tauxTva === null) {
+            return;
+        }
+        $coefficient = 1 + ((float) $this->tauxTva) / 100;
+        if ($this->montantHt !== null && $this->montantTtc === null) {
+            $this->montantTtc = number_format(round((float) $this->montantHt * $coefficient, 2), 2, '.', '');
+        } elseif ($this->montantTtc !== null && $this->montantHt === null) {
+            $this->montantHt = number_format(round((float) $this->montantTtc / $coefficient, 2), 2, '.', '');
+        }
+    }
+
+    public function getTauxTva(): ?string
+    {
+        return $this->tauxTva;
+    }
+
+    public function setTauxTva(string|int|float|null $tauxTva): static
+    {
+        $this->tauxTva = $tauxTva === null || $tauxTva === '' ? null : (string) $tauxTva;
+        return $this;
+    }
+
+    public function getFournisseurPropose(): ?string
+    {
+        return $this->fournisseurPropose;
+    }
+
+    public function setFournisseurPropose(?string $fournisseurPropose): static
+    {
+        $fournisseurPropose = $fournisseurPropose !== null ? trim($fournisseurPropose) : null;
+        $this->fournisseurPropose = $fournisseurPropose === '' ? null : $fournisseurPropose;
+        return $this;
+    }
+
+    public function getMotifRejet(): ?string
+    {
+        return $this->motifRejet;
+    }
+
+    public function setMotifRejet(?string $motifRejet): static
+    {
+        $this->motifRejet = $motifRejet;
+        return $this;
+    }
+
+    /** Dernière réception enregistrée (constatation du service fait), ou null. */
+    public function getDerniereReception(): ?FinanceReception
+    {
+        $derniere = $this->receptions->last();
+
+        return $derniere instanceof FinanceReception ? $derniere : null;
     }
 
     public function getDemandeur(): ?Personnel
@@ -337,9 +444,9 @@ class FinanceBonCommande implements TimestampableInterface
         return $this->montantHt;
     }
 
-    public function setMontantHt(string $montantHt): static
+    public function setMontantHt(string|int|float|null $montantHt): static
     {
-        $this->montantHt = $montantHt;
+        $this->montantHt = $montantHt === null || $montantHt === '' ? null : (string) $montantHt;
         return $this;
     }
 
@@ -348,9 +455,9 @@ class FinanceBonCommande implements TimestampableInterface
         return $this->montantTtc;
     }
 
-    public function setMontantTtc(?string $montantTtc): static
+    public function setMontantTtc(string|int|float|null $montantTtc): static
     {
-        $this->montantTtc = $montantTtc;
+        $this->montantTtc = $montantTtc === null || $montantTtc === '' ? null : (string) $montantTtc;
         return $this;
     }
 
@@ -700,6 +807,15 @@ class FinanceBonCommande implements TimestampableInterface
         return $this;
     }
 
+    /** Un document signé a-t-il été déposé ? (seule information exposée sur le fichier) */
+    #[Groups(['finance:read', 'finance:list'])]
+    #[SerializedName('pdfSigne')]
+    public function hasPdfSigne(): bool
+    {
+        return $this->pdfFilePath !== null && $this->pdfFilePath !== '';
+    }
+
+    #[Ignore]
     public function getPdfFilePath(): ?string
     {
         return $this->pdfFilePath;

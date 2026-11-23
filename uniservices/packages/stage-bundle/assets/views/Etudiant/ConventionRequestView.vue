@@ -1,12 +1,13 @@
 <script setup>
+import { updateEtudiantService } from '@requests/user_services/etudiantService';
+import { messageErreurApi } from '@/utils/erreurApi';
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { getStagePeriodesService } from '../../requests/stage_service';
 import { getStageEtudiantsService, createStageEtudiantService, updateStageEtudiantService } from '../../requests/stage_etudiant';
 import { useUsersStore, useEtablissementStore } from '@stores';
-import api from '@helpers/axios';
-import { ValidatedInput, validationRules } from '@components';
+import { HeaderComponent, ValidatedInput, validationRules } from '@components';
 import { FormSection, ToggleCard } from '../../components/Form';
 import {
   UserIcon,
@@ -492,10 +493,7 @@ const submitRequest = async () => {
   isSubmitting.value = true;
   try {
     // 1. Mise à jour du profil étudiant
-    await api.patch(`/api/etudiants/${userStore.userId}`, {
-      tel1:      form.value.phone,
-      mailPerso: form.value.emailPerso,
-    }, { headers: { 'Content-Type': 'application/merge-patch+json' } });
+    await updateEtudiantService(userStore.userId, { tel1: form.value.phone, mailPerso: form.value.emailPerso }, '', false);
 
     // 2. Résolution du maître de stage
     const tuteur = form.value.tuteurSameAsSignatory
@@ -539,7 +537,6 @@ const submitRequest = async () => {
       gratificationPeriode:  'H',
       assuranceCompagnie:    form.value.insuranceCompany       || null,
       assuranceNumero:       form.value.insurancePolicyNumber  || null,
-      dateDepotFormulaire:   new Date().toISOString(),
       etatStage:             'ETAT_STAGE_DEPOSE',
       entreprise: {
         raisonSociale: form.value.companyName,

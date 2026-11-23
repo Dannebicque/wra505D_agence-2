@@ -24,7 +24,7 @@ withDefaults(defineProps<{
         </div>
         <div class="min-w-0">
           <h3 class="text-sm font-bold text-slate-900 dark:text-white">{{ title }}</h3>
-          <p v-if="subtitle" class="text-xs text-slate-500 dark:text-slate-400">{{ subtitle }}</p>
+          <p v-if="subtitle" class="text-sm text-slate-500 dark:text-slate-400">{{ subtitle }}</p>
         </div>
       </div>
       <div v-if="$slots.actions" class="shrink-0">

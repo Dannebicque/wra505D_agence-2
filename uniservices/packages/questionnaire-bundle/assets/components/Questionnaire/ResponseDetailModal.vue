@@ -1,3 +1,105 @@
+<script setup lang="ts">
+import { showDanger, showSuccess, showWarn } from '@helpers/toast.js';
+import { computed } from 'vue';
+import Dialog from 'primevue/dialog';
+import Button from 'primevue/button';
+import {
+  DocumentTextIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ChartBarIcon,
+  BellIcon
+} from '@heroicons/vue/24/outline';
+import DialogHeader from '@/components/Form/DialogHeader.vue';
+import type { Survey, Response } from '@/types/survey';
+import { useResponseStore } from '@/stores/responses';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+interface Props {
+  response: Response | null;
+  survey: Survey | null;
+}
+
+interface Emits {
+  (e: 'close'): void;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+const responseStore = useResponseStore();
+
+const participant = computed(() => {
+  if (!props.response?.participantId) return null;
+  return responseStore.participants.find(p => p.id === props.response?.participantId);
+});
+
+function getParticipantName(): string {
+  return participant.value?.name || participant.value?.email || 'Participant anonyme';
+}
+
+function getProgress(): number {
+  if (!props.response || !props.survey) return 0;
+  if (props.response.completed) return 100;
+
+  const totalQuestions = props.survey.sections.reduce((sum, section) =>
+    sum + section.questions.length, 0
+  );
+
+  const answeredQuestions = Object.keys(props.response.answers).length;
+
+  return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
+}
+
+function getTimeSpent(): string {
+  if (!props.response) return '0min';
+
+  const startTime = new Date(props.response.startedAt).getTime();
+  const endTime = props.response.submittedAt
+    ? new Date(props.response.submittedAt).getTime()
+    : new Date(props.response.lastActivity).getTime();
+  const duration = endTime - startTime;
+
+  const minutes = Math.round(duration / (1000 * 60));
+  if (minutes < 60) return `${minutes}min`;
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return `${hours}h${remainingMinutes > 0 ? ` ${remainingMinutes}min` : ''}`;
+}
+
+function formatDate(date?: Date | string): string {
+  if (!date) return '';
+  const parsed = typeof date === 'string' ? new Date(date) : date;
+  return format(parsed, 'dd/MM/yyyy à HH:mm', { locale: fr });
+}
+
+const remindersCount = computed(() => {
+  return props.response?.remindersCount ?? props.response?.remindersHistory?.length ?? 0;
+});
+
+const sortedReminders = computed(() => {
+  if (!props.response?.remindersHistory) return [];
+  return [...props.response.remindersHistory].sort((a, b) => {
+    return new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime();
+  });
+});
+
+async function sendReminder() {
+  if (!props.response?.id || !props.survey?.uuid) return;
+  try {
+    const res = await responseStore.sendReminders(props.survey.uuid, [props.response.id]);
+    if (res?.sentCount) {
+      showSuccess(`Un rappel a été envoyé à ${getParticipantName()}.`, 'Rappel envoyé');
+    } else {
+      showWarn('L\'e-mail de rappel n\'a pas pu être envoyé.', 'Rappel non envoyé');
+    }
+  } catch (e: any) {
+    showDanger(e?.response?.data?.error || 'Le rappel n\'a pas pu être envoyé.', 'Erreur');
+  }
+}
+</script>
 <template>
   <Dialog
     :visible="true"
@@ -120,18 +222,18 @@
           >
             <div>
               <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <span class="text-xs font-medium text-slate-400 dark:text-slate-500">{{ questionIndex + 1 }}.</span>
+                <span class="text-sm font-medium text-slate-400 dark:text-slate-500">{{ questionIndex + 1 }}.</span>
                 <span>{{ question.title }}</span>
                 <span v-if="question.required" class="text-red-500 font-bold">*</span>
               </h4>
-              <p v-if="question.description" class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p v-if="question.description" class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 {{ question.description }}
               </p>
             </div>
 
             <!-- Answer Display -->
             <div class="pt-1">
-              <div v-if="!response.answers[question.id]" class="text-xs text-slate-400 dark:text-slate-500 italic flex items-center gap-1.5">
+              <div v-if="!response.answers[question.id]" class="text-sm text-slate-400 dark:text-slate-500 italic flex items-center gap-1.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
                 Pas de réponse
               </div>
@@ -142,7 +244,7 @@
                   <span
                     v-for="answer in response.answers[question.id]"
                     :key="answer"
-                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300 border border-primary-200 dark:border-primary-800"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-semibold bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300 border border-primary-200 dark:border-primary-800"
                   >
                     <CheckCircleIcon class="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
                     {{ answer }}
@@ -150,7 +252,7 @@
                 </div>
                 <div v-else>
                   <span
-                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300 border border-primary-200 dark:border-primary-800"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-semibold bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300 border border-primary-200 dark:border-primary-800"
                   >
                     <CheckCircleIcon class="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
                     {{ response.answers[question.id] }}
@@ -171,7 +273,7 @@
                   <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
                     {{ response.answers[question.id] }}
                   </span>
-                  <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <span class="text-sm font-medium text-slate-500 dark:text-slate-400">
                     / {{ question.validation?.max || 10 }}
                   </span>
                 </div>
@@ -183,7 +285,7 @@
                   <div
                     v-for="(value, key) in response.answers[question.id]"
                     :key="key"
-                    class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs"
+                    class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm"
                   >
                     <span class="font-medium text-slate-800 dark:text-slate-200">{{ key }}</span>
                     <span class="font-semibold text-primary-600 dark:text-primary-400">{{ value }}</span>
@@ -197,9 +299,9 @@
                   <div
                     v-for="(item, index) in response.answers[question.id]"
                     :key="index"
-                    class="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs"
+                    class="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm"
                   >
-                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300 font-bold text-2xs">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300 font-bold text-sm">
                       {{ index + 1 }}
                     </span>
                     <span class="font-medium text-slate-800 dark:text-slate-200">{{ item }}</span>
@@ -230,114 +332,3 @@
     </template>
   </Dialog>
 </template>
-
-<script setup lang="ts">
-import { computed } from 'vue';
-import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
-import {
-  DocumentTextIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  ChartBarIcon,
-  BellIcon
-} from '@heroicons/vue/24/outline';
-import DialogHeader from '@/components/Form/DialogHeader.vue';
-import type { Survey, Response } from '@/types/survey';
-import { useResponseStore } from '@/stores/responses';
-import { useUIStore } from '@/stores/ui';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-
-interface Props {
-  response: Response | null;
-  survey: Survey | null;
-}
-
-interface Emits {
-  (e: 'close'): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
-
-const responseStore = useResponseStore();
-const uiStore = useUIStore();
-
-const participant = computed(() => {
-  if (!props.response?.participantId) return null;
-  return responseStore.participants.find(p => p.id === props.response?.participantId);
-});
-
-function getParticipantName(): string {
-  return participant.value?.name || participant.value?.email || 'Participant anonyme';
-}
-
-function getProgress(): number {
-  if (!props.response || !props.survey) return 0;
-  if (props.response.completed) return 100;
-
-  const totalQuestions = props.survey.sections.reduce((sum, section) =>
-    sum + section.questions.length, 0
-  );
-
-  const answeredQuestions = Object.keys(props.response.answers).length;
-
-  return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
-}
-
-function getTimeSpent(): string {
-  if (!props.response) return '0min';
-
-  const startTime = new Date(props.response.startedAt).getTime();
-  const endTime = props.response.submittedAt
-    ? new Date(props.response.submittedAt).getTime()
-    : new Date(props.response.lastActivity).getTime();
-  const duration = endTime - startTime;
-
-  const minutes = Math.round(duration / (1000 * 60));
-  if (minutes < 60) return `${minutes}min`;
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  return `${hours}h${remainingMinutes > 0 ? ` ${remainingMinutes}min` : ''}`;
-}
-
-function formatDate(date?: Date | string): string {
-  if (!date) return '';
-  const parsed = typeof date === 'string' ? new Date(date) : date;
-  return format(parsed, 'dd/MM/yyyy à HH:mm', { locale: fr });
-}
-
-const remindersCount = computed(() => {
-  return props.response?.remindersCount ?? props.response?.remindersHistory?.length ?? 0;
-});
-
-const sortedReminders = computed(() => {
-  if (!props.response?.remindersHistory) return [];
-  return [...props.response.remindersHistory].sort((a, b) => {
-    return new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime();
-  });
-});
-
-async function sendReminder() {
-  if (props.response?.id && props.survey?.uuid) {
-    await responseStore.sendReminders(
-      props.survey.uuid,
-      [props.response.id],
-      `Rappel : questionnaire "${props.survey.title || ''}"`
-    );
-  } else if (props.response?.id) {
-    responseStore.recordReminders([props.response.id], {
-      subject: `Rappel : questionnaire "${props.survey?.title || ''}"`,
-      type: 'manual',
-    });
-  }
-  uiStore.addNotification(
-    'success',
-    'Rappel envoyé',
-    `Un rappel a été envoyé à ${getParticipantName()}.`
-  );
-}
-</script>
-

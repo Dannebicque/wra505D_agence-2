@@ -92,6 +92,22 @@ class StagePdfController extends AbstractController
             ->setInline(true)
             ->setTitle('Convention de stage - ' . ($stage->getEtudiant()?->getDisplay() ?? 'Étudiant'));
 
+        // 1. Modèle en base (édité par le super administrateur), s'il existe et n'est pas vide.
+        $modele = $this->em->getRepository(StageConventionTemplate::class)->findOneBy(['code' => StageConventionTemplate::CODE_CONVENTION]);
+        if ($modele !== null && trim((string) $modele->getTexte()) !== '') {
+            try {
+                $html = $this->renderConventionHtml($this->replacePlaceholders((string) $modele->getTexte(), $stage), $stage);
+
+                return new Response($this->gotenbergService->convertHtmlToPdf($html), Response::HTTP_OK, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="'.$nomFichier.'"',
+                ]);
+            } catch (\Throwable $e) {
+                $this->logger->error('Convention : échec du rendu du modèle en base, repli sur le gabarit intégré.', ['stage' => $stage->getId(), 'erreur' => $e->getMessage()]);
+            }
+        }
+
+        // 2. Secours : gabarit Twig intégré au package.
         try {
             return $this->pdfExportService->generateStreamedResponse(
                 '@Stage/pdf/conventionStagePDF.html.twig',
@@ -401,15 +417,15 @@ class StagePdfController extends AbstractController
     <table style="width: 100%; margin-bottom: 20px;">
         <tr>
             <td>
-                <div class="logo">IUT de Troyes</div>
-                <div class="subheader">Université de Reims Champagne-Ardenne</div>
+                <div class="logo">{$nomEtab}</div>
+                <div class="subheader">{$nomUniv}</div>
             </td>
             <td style="text-align: right; vertical-align: top; font-size: 9pt; color: #999; font-family: monospace;">
                 Réf: CONV-STAGE-{$stage->getId()}
             </td>
         </tr>
     </table>
-    
+
     <div style="border-bottom: 2px solid #b3002d; margin-bottom: 30px;"></div>
 
     <div class="content">{$text}</div>
@@ -430,7 +446,7 @@ class StagePdfController extends AbstractController
             </td>
             <td>
                 <div class="sig-box">
-                    <strong>Pour l'IUT de Troyes</strong><br>
+                    <strong>Pour l'établissement : {$nomEtab}</strong><br>
                     <span style="font-size: 8pt; color: #888;">Le Directeur</span>
                 </div>
             </td>
@@ -443,6 +459,8 @@ HTML;
 
     private function renderAvenantHtml(string $text, StageEtudiant $stage, StageAvenant $avenant): string
     {
+        [$nomEtab] = $this->nomsEtablissement();
+
         return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -506,7 +524,7 @@ HTML;
     <table style="width: 100%; margin-bottom: 20px;">
         <tr>
             <td>
-                <div class="logo">IUT de Troyes</div>
+                <div class="logo">{$nomEtab}</div>
                 <div class="subheader">Avenant à la convention CONV-STAGE-{$stage->getId()}</div>
             </td>
             <td style="text-align: right; vertical-align: top; font-size: 9pt; color: #999; font-family: monospace;">
@@ -514,7 +532,7 @@ HTML;
             </td>
         </tr>
     </table>
-    
+
     <div style="border-bottom: 2px solid #3c8dbc; margin-bottom: 30px;"></div>
 
     <div class="content">{$text}</div>
@@ -535,7 +553,7 @@ HTML;
             </td>
             <td>
                 <div class="sig-box">
-                    <strong>Pour l'IUT de Troyes</strong><br>
+                    <strong>Pour l'établissement : {$nomEtab}</strong><br>
                     <span style="font-size: 8pt; color: #888;">Le Directeur</span>
                 </div>
             </td>

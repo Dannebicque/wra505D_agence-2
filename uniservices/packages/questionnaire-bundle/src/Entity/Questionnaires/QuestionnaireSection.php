@@ -12,6 +12,7 @@ use App\Utils\LooseValue;
 use QuestionnaireBundle\Enum\QuestTypeRepeatEnum;
 use QuestionnaireBundle\Enum\QuestTypeSectionEnum;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireSectionRepository;
+use QuestionnaireBundle\State\QuestionnaireStructureProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -98,13 +99,14 @@ class QuestionnaireSection
      * @var Collection<int, QuestionnaireQuestion>
      */
     #[ORM\OneToMany(targetEntity: QuestionnaireQuestion::class, mappedBy: 'section', cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['sortOrder' => 'ASC'])]
     #[Groups(['questionnaire_section:read'])]
     private Collection $questions;
 
     /**
      * @var Collection<int, QuestionnaireSectionInstance>
      */
-    #[ORM\OneToMany(targetEntity: QuestionnaireSectionInstance::class, mappedBy: 'section', cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(targetEntity: QuestionnaireSectionInstance::class, mappedBy: 'section')]
     private Collection $sectionInstances;
 
 

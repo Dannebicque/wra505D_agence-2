@@ -143,6 +143,12 @@ class StageSoutenanceController extends AbstractController
             }
         }
 
+        // Empreinte avant modification : on ne prévient que si l'affectation, l'horaire, la salle ou le jury changent.
+        $empreinte = static fn (StageSoutenance $s): string => implode('|', [
+            $s->getStageEtudiant()?->getId(), $s->getDateSoutenance()?->format('Y-m-d H:i'), $s->getSalle(), $s->getEnseignantJury()?->getId(),
+        ]);
+        $avant = $soutenance->getId() !== null ? $empreinte($soutenance) : null;
+
         $soutenance->setStagePeriode($stagePeriode)
             ->setStageEtudiant($stageEtudiant)
             ->setEnseignantJury($enseignantJury)
@@ -152,6 +158,11 @@ class StageSoutenanceController extends AbstractController
 
         $this->em->persist($soutenance);
         $this->em->flush();
+
+        if ($soutenance->getStageEtudiant() !== null && $avant !== $empreinte($soutenance)) {
+            $user = $this->getUser();
+            $this->notifier->soutenancePlanifiee($soutenance, $user instanceof Personnel ? $user : null);
+        }
 
         return new JsonResponse([
             'success' => true,

@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Entity\Questionnaires;
 
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Doctrine\Orm\Filter\ExistsFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
@@ -20,6 +21,7 @@ use App\Entity\Traits\OptionTrait;
 use QuestionnaireBundle\Enum\QuestStatutEnum;
 use QuestionnaireBundle\Enum\QuestInvitationStatusEnum;
 use QuestionnaireBundle\Repository\Questionnaires\QuestionnaireRepository;
+use QuestionnaireBundle\State\QuestionnaireProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -33,10 +35,12 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Entity(repositoryClass: QuestionnaireRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']]),
-        new GetCollection(normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']]),
-        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)"),
+        new Get(security: "is_granted('CAN_VIEW_QUESTIONNAIRE', object)", normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']]),
+        // Accès défini par les règles locales ; invitations filtrées par DepartmentCollectionAccessExtension.
+        new GetCollection(security: "is_granted('IS_AUTHENTICATED_FULLY')", normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']]),
+        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)", processor: QuestionnaireProcessor::class),
+        // Changer de département exige d'être gestionnaire du nouveau département.
+        new Patch(security: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)", securityPostDenormalize: "is_granted('CAN_EDIT_QUESTIONNAIRE', object)", processor: QuestionnaireProcessor::class),
         new Delete(security: "is_granted('CAN_DELETE_QUESTIONNAIRE', object)"),
     ],
     normalizationContext: ['groups' => ['questionnaire:read', 'timestamp:read']],
@@ -47,6 +51,7 @@ use Symfony\Component\Uid\Uuid;
     'title' => 'partial',
 ])]
 #[ApiFilter(ExistsFilter::class, properties: ['departement'])]
+#[ApiFilter(BooleanFilter::class, properties: ['estModele'])]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt', 'title', 'openingDate', 'closingDate'], arguments: ['orderParameterName' => 'order'])]
 class Questionnaire implements TimestampableInterface
 {
@@ -119,6 +124,7 @@ class Questionnaire implements TimestampableInterface
      * @var Collection<int, QuestionnaireSection>
      */
     #[ORM\OneToMany(targetEntity: QuestionnaireSection::class, mappedBy: 'questionnaire', cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['sortOrder' => 'ASC'])]
     private Collection $sections;
 
     #[ORM\Column(length: 50, nullable: false, enumType: QuestStatutEnum::class)]
@@ -167,6 +173,9 @@ class Questionnaire implements TimestampableInterface
             'allowBack' => true,
             'showProgress' => true,
             'requireCompletion' => false,
+            // Recopiés depuis les réglages du département à la création (QuestionnaireReglages) :
+            'modificationReponses' => true,   // modifier ses réponses envoyées tant que le questionnaire est ouvert
+            'seuilMinReponses' => 0,          // questionnaire anonyme : résultats masqués sous ce nombre de réponses (0 = aucun seuil)
         ]);
 
         $resolver->setAllowedTypes('anonymous', 'bool');
@@ -174,6 +183,8 @@ class Questionnaire implements TimestampableInterface
         $resolver->setAllowedTypes('allowBack', 'bool');
         $resolver->setAllowedTypes('showProgress', 'bool');
         $resolver->setAllowedTypes('requireCompletion', 'bool');
+        $resolver->setAllowedTypes('modificationReponses', 'bool');
+        $resolver->setAllowedTypes('seuilMinReponses', 'int');
     }
 
     public function getId(): ?int
@@ -369,6 +380,37 @@ class Questionnaire implements TimestampableInterface
     public function isPublished(): bool
     {
         return $this->getStatus() === QuestStatutEnum::PUBLISHED;
+    }
+
+    public function estBrouillon(): bool
+    {
+        return $this->status === null || $this->status === QuestStatutEnum::DRAFT;
+    }
+
+    public function estAnonyme(): bool
+    {
+        return (bool) ($this->getOpt()['anonymous'] ?? true);
+    }
+
+    public function autoriseModificationReponses(): bool
+    {
+        return (bool) ($this->getOpt()['modificationReponses'] ?? true);
+    }
+
+    /** Seuil d'anonymat : nombre minimal de réponses envoyées pour consulter les résultats (0 si sans objet). */
+    public function seuilResultats(): int
+    {
+        return $this->estAnonyme() ? max(0, (int) ($this->getOpt()['seuilMinReponses'] ?? 0)) : 0;
+    }
+
+    /** Ouvert aux réponses : publié, et dans la période d'ouverture si elle est fixée. */
+    public function estOuvert(?\DateTimeInterface $maintenant = null): bool
+    {
+        $maintenant ??= new \DateTime();
+
+        return $this->status === QuestStatutEnum::PUBLISHED
+            && ($this->openingDate === null || $this->openingDate <= $maintenant)
+            && ($this->closingDate === null || $this->closingDate >= $maintenant);
     }
 
     public function publishNow(): void

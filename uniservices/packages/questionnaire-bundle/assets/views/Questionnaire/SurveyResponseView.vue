@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useConfirmation } from '@composables/useConfirmation';
+import { cloturerQuestionnaireService } from '@/requests/questionnaire_service';
+import { showDanger, showInfo, showSuccess, showWarn } from '@helpers/toast.js';
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { FilterMatchMode } from '@primevue/core/api';
 import {
   ChartBarIcon,
@@ -15,27 +18,24 @@ import {
   Squares2X2Icon,
   BellIcon,
   XMarkIcon,
-  EnvelopeIcon,
-  UsersIcon,
 } from '@heroicons/vue/24/outline';
 import { useSurveyStore } from '@/stores/survey';
 import { useResponseStore } from '@/stores/responses';
-import { useUIStore } from '@/stores/ui';
 import InviteParticipantsModal from '@/components/Questionnaire/InviteParticipantsModal.vue';
 import ResponseDetailModal from '@/components/Questionnaire/ResponseDetailModal.vue';
+import ReminderSendModal from '@/components/Questionnaire/ReminderSendModal.vue';
+import ReminderHistoryModal from '@/components/Questionnaire/ReminderHistoryModal.vue';
 import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
 import Tag from 'primevue/tag';
 import type { Response } from '@/types/survey';
+import { initiales } from '@/utils/participants';
+import { exportCsv } from '@helpers/downloadCsv.js';
 import { formatRelativeTime, formatDuration, formatDateTime } from '@/utils/date';
-import { DialogHeader, FormField, FormSection } from '@/components/Form';
 import { HeaderComponent, Kpi, Card, EmptyState, ActionButtonVertical } from '@components';
 
 const route = useRoute();
-const router = useRouter();
 const surveyStore = useSurveyStore();
 const responseStore = useResponseStore();
-const uiStore = useUIStore();
 
 const surveyId = route.params.id as string;
 const survey = computed(() => {
@@ -49,7 +49,6 @@ const survey = computed(() => {
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   participantName: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  participantGroup: { value: null, matchMode: FilterMatchMode.EQUALS },
   statusLabel: { value: null, matchMode: FilterMatchMode.EQUALS },
   remindersStatus: { value: null, matchMode: FilterMatchMode.EQUALS },
 });
@@ -103,17 +102,9 @@ function selectAllPending() {
   selectedResponses.value = pendings;
 
   if (pendings.length > 0) {
-    uiStore.addNotification(
-      'info',
-      'Sélection mise à jour',
-      `${pendings.length} participant${pendings.length > 1 ? 's à relancer sélectionnés' : ' à relancer sélectionné'}.`
-    );
+    showInfo(`${pendings.length} participant${pendings.length > 1 ? 's à relancer sélectionnés' : ' à relancer sélectionné'}.`, 'Sélection mise à jour');
   } else {
-    uiStore.addNotification(
-      'info',
-      'Aucun relançable',
-      'Tous les participants affichés ont déjà répondu au questionnaire.'
-    );
+    showInfo('Tous les participants affichés ont déjà répondu au questionnaire.', 'Aucun relançable');
   }
 }
 
@@ -123,11 +114,10 @@ function clearSelection() {
 
 function exportSelectedCsv() {
   if (selectedResponses.value.length === 0) return;
-  const headers = ['Nom', 'Email', 'Groupe', 'Statut', 'Progression (%)', 'Relances (nb)', 'Dernière relance', 'Dernière activité'];
+  const headers = ['Nom', 'Email', 'Statut', 'Progression (%)', 'Relances (nb)', 'Dernière relance', 'Dernière activité'];
   const rows = selectedResponses.value.map(r => [
     r.participantName || '',
     r.participantEmail || '',
-    r.participantGroup || '',
     r.statusLabel || '',
     r.progress !== undefined ? String(r.progress) : '',
     r.remindersCount !== undefined ? String(r.remindersCount) : '0',
@@ -139,100 +129,59 @@ function exportSelectedCsv() {
     .map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(';'))
     .join('\r\n');
 
-  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `reponses_selection_${surveyId}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  // BOM : ouverture correcte des accents dans un tableur.
+  exportCsv({ content: '\uFEFF' + csvContent, fileName: `reponses_selection_${surveyId}.csv` });
 
-  uiStore.addNotification(
-    'success',
-    'Export CSV généré',
-    `${selectedResponses.value.length} ligne${selectedResponses.value.length > 1 ? 's exportées' : ' exportée'}.`
-  );
+  showSuccess(`${selectedResponses.value.length} ligne${selectedResponses.value.length > 1 ? 's exportées' : ' exportée'}.`, 'Export CSV généré');
 }
 
 // --- Reminder modal ---
 const showReminderModal = ref(false);
-const reminderTargets = ref<Response[]>([]);
-const isSendingReminders = ref(false);
-
-const DEFAULT_SUBJECT = computed(() =>
-  `Rappel : questionnaire "${survey.value?.title || ''}" en attente`
-);
-
-const DEFAULT_MESSAGE = computed(() =>
-  `Bonjour {prenom},
-
-Nous vous rappelons que le questionnaire "{questionnaire}" est toujours en attente de votre réponse.
-
-Merci de bien vouloir y répondre dès que possible en cliquant sur le lien ci-dessous :
-{lien}
-
-Cordialement,
-L'équipe IUT Troyes`
-);
-
-const reminderSubject = ref('');
-const reminderMessage = ref('');
-
-function resetReminderMessage() {
-  reminderSubject.value = DEFAULT_SUBJECT.value;
-  reminderMessage.value = DEFAULT_MESSAGE.value;
-}
-
+const reminderTargets = ref<any[]>([]);
 const pendingResponses = computed(() =>
   responses.value.filter(r => !r.completed)
 );
 
 function openReminderModal(targets: Response[]) {
   if (!targets || targets.length === 0) {
-    uiStore.addNotification('info', 'Aucun participant', 'Aucun participant à relancer dans cette sélection.');
+    showInfo('Aucun participant à relancer dans cette sélection.', 'Aucun participant');
     return;
   }
-  reminderTargets.value = targets;
-  reminderSubject.value = DEFAULT_SUBJECT.value;
-  reminderMessage.value = DEFAULT_MESSAGE.value;
+  // Les fenêtres reçoivent les lignes détaillées (nom, adresse, statut).
+  reminderTargets.value = targets.map(t => responsesWithDetails.value.find(r => r.id === t.id) ?? t);
   showReminderModal.value = true;
 }
 
-async function confirmSendReminders() {
-  isSendingReminders.value = true;
-
-  const targetIds = reminderTargets.value.map(r => r.id);
-  await responseStore.sendReminders(
-    surveyId,
-    targetIds,
-    reminderSubject.value,
-    reminderMessage.value
-  );
-
-  isSendingReminders.value = false;
+function onRemindersSent() {
   showReminderModal.value = false;
-
-  // Refresh active history modal participant if open
-  if (historyTargetResponse.value) {
-    const updated = responsesWithDetails.value.find(r => r.id === historyTargetResponse.value.id);
-    if (updated) {
-      historyTargetResponse.value = updated;
-    }
-  }
-
-  const names = reminderTargets.value
-    .map(r => getParticipantName(r.participantId))
-    .join(', ');
-
-  uiStore.addNotification(
-    'success',
-    'Rappels envoyés',
-    `${reminderTargets.value.length} rappel${reminderTargets.value.length > 1 ? 's envoyés' : ' envoyé'} à : ${names.length > 60 ? names.slice(0, 60) + '…' : names}.`
-  );
-
   clearSelection();
+  // Rafraîchir l'historique affiché
+  if (historyTargetResponse.value) {
+    historyTargetResponse.value = responsesWithDetails.value.find(r => r.id === historyTargetResponse.value.id) ?? historyTargetResponse.value;
+  }
+}
+
+// --- Clôture manuelle ---
+const { confirmer } = useConfirmation();
+const cloture = ref(false);
+
+async function cloturer() {
+  const ok = await confirmer({
+    titre: 'Clôturer le questionnaire',
+    message: 'Plus aucune réponse ne sera acceptée et le bilan sera envoyé à l\'auteur et au référent qualité. Continuer ?',
+    libelle: 'Clôturer',
+    danger: true,
+  });
+  if (!ok) return;
+  cloture.value = true;
+  try {
+    await cloturerQuestionnaireService(surveyId, true);
+    if (surveyStore.currentSurvey) surveyStore.currentSurvey.status = 'closed';
+  } catch (e) {
+    // apiCall a affiché l'erreur du serveur.
+  } finally {
+    cloture.value = false;
+  }
 }
 
 function openHistoryModal(response: any) {
@@ -240,20 +189,9 @@ function openHistoryModal(response: any) {
   showHistoryModal.value = true;
 }
 
-const sortedReminderHistory = computed(() => {
-  if (!historyTargetResponse.value?.remindersHistory) return [];
-  return [...historyTargetResponse.value.remindersHistory].sort((a, b) => {
-    const da = new Date(a.sentAt).getTime();
-    const db = new Date(b.sentAt).getTime();
-    return db - da;
-  });
-});
-
-function triggerDirectReminderFromHistory() {
-  if (!historyTargetResponse.value) return;
-  const target = historyTargetResponse.value;
+function relancerDepuisHistorique(response: any) {
   showHistoryModal.value = false;
-  openReminderModal([target]);
+  openReminderModal([response]);
 }
 
 // --- Store data ---
@@ -269,14 +207,6 @@ const participants = computed(() =>
   )
 );
 
-const availableGroups = computed(() => {
-  const groups = new Set<string>();
-  participants.value.forEach(p => {
-    if (p.group) groups.add(p.group);
-  });
-  return Array.from(groups).sort();
-});
-
 const responsesWithDetails = computed(() => {
   return responses.value.map(response => {
     const participant = participants.value.find(p => p.id === response.participantId);
@@ -288,8 +218,8 @@ const responsesWithDetails = computed(() => {
       ...response,
       participantName: participant?.name || participant?.email || 'Participant anonyme',
       participantEmail: participant?.email || '',
-      participantGroup: participant?.group || '',
       statusLabel: getStatusLabel(response),
+      statusSeverity: getStatusSeverity(response),
       progress: getProgress(response),
       remindersCount: count,
       remindedAt: lastReminder ? new Date(lastReminder) : null,
@@ -313,41 +243,19 @@ watch(responsesWithDetails, (newVal) => {
   }
 }, { immediate: true });
 
-function getParticipantName(participantId?: string): string {
-  const participant = participants.value.find(p => p.id === participantId);
-  return participant?.name || participant?.email || 'Participant anonyme';
-}
-
-function getParticipantEmail(participantId?: string): string {
-  const participant = participants.value.find(p => p.id === participantId);
-  return participant?.email || '';
-}
-
-function getParticipantInitials(participantId?: string): string {
-  const name = getParticipantName(participantId);
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+/** Statut d'après le serveur (les réponses d'un questionnaire anonyme ne sont pas transmises). */
+function estCommence(response: Response): boolean {
+  return !!response.metadata?.started || (response.answers && Object.keys(response.answers).length > 0);
 }
 
 function getStatusLabel(response: Response): string {
   if (response.completed) return 'Terminé';
-  if (Object.keys(response.answers).length > 0) return 'En cours';
-  return 'Non commencé';
+  return estCommence(response) ? 'En cours' : 'Non commencé';
 }
 
 function getStatusSeverity(response: Response): 'success' | 'warn' | 'secondary' {
   if (response.completed) return 'success';
-  if (response.answers && Object.keys(response.answers).length > 0) return 'warn';
-  return 'secondary';
-}
-
-function getStatusColor(response: Response): string {
-  if (response.completed) {
-    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-  }
-  if (response.answers && Object.keys(response.answers).length > 0) {
-    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-  }
-  return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+  return estCommence(response) ? 'warn' : 'secondary';
 }
 
 function getProgress(response: Response): number {
@@ -363,64 +271,23 @@ function getProgress(response: Response): number {
   return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
 }
 
-function getSurveyUrl(response: Response): string {
-  const href = router.resolve({ name: 'questionnaire_take-survey', params: { token: response.id } }).href;
-  return new URL(href, window.location.origin).toString();
-}
-
-async function copySurveyUrl(response: Response) {
-  const url = getSurveyUrl(response);
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(url);
-    } else {
-      const ta = document.createElement('textarea');
-      ta.value = url;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-    }
-    uiStore.addNotification('success', 'Lien copié', 'L\'URL du questionnaire a été copiée dans le presse-papiers.');
-  } catch (e) {
-    uiStore.addNotification('danger', 'Erreur', `Impossible de copier le lien : ${url}`);
-  }
-}
-
 function viewResponse(response: Response) {
   selectedResponse.value = response;
   showResponseDetail.value = true;
 }
 
-async function handleParticipantsInvited() {
+// La fenêtre a déjà informé du résultat et le store a rechargé la liste.
+function handleParticipantsInvited() {
   showInviteModal.value = false;
-  uiStore.addNotification(
-    'success',
-    'Invitations envoyées',
-    'Les invitations ont été envoyées avec succès.'
-  );
-  await responseStore.fetchSurveyResponses(surveyId);
 }
 
 async function exportResponses() {
   try {
-    uiStore.addNotification(
-      'info',
-      'Export en cours',
-      'Génération du fichier Excel en cours...'
-    );
+    showInfo('Génération du fichier Excel en cours...', 'Export en cours');
     await responseStore.triggerExcelExport(surveyId);
-    uiStore.addNotification(
-      'success',
-      'Export terminé',
-      'Le fichier Excel a été téléchargé avec succès.'
-    );
+    showSuccess('Le fichier Excel a été téléchargé avec succès.', 'Export terminé');
   } catch (error) {
-    uiStore.addNotification(
-      'danger',
-      'Erreur d\'export',
-      'Impossible d\'exporter les réponses.'
-    );
+    showDanger('Impossible d\'exporter les réponses.', 'Erreur d\'export');
   }
 }
 
@@ -466,6 +333,21 @@ onMounted(async () => {
             severity="secondary"
             :disabled="responses.length === 0"
             @click="exportResponses"
+          />
+          <ActionButtonVertical
+            v-if="survey && survey.status !== 'draft'"
+            :to="{ name: 'questionnaire_diffusion', params: { id: surveyId } }"
+            icon="pi pi-share-alt"
+            label="Diffusion"
+            severity="help"
+          />
+          <ActionButtonVertical
+            v-if="survey?.status === 'published'"
+            icon="pi pi-lock"
+            label="Clôturer"
+            severity="danger"
+            :disabled="cloture"
+            @click="cloturer"
           />
         </div>
       </template>
@@ -560,7 +442,7 @@ onMounted(async () => {
               size="small"
               icon="pi pi-bell"
               :label="`Relancer (${selectedPendingResponses.length})`"
-              class="text-xs !py-1.5 !px-3 shadow-xs"
+              class="text-sm !py-1.5 !px-3 shadow-xs"
               @click="openReminderModal(selectedPendingResponses)"
             />
             <Button
@@ -570,7 +452,7 @@ onMounted(async () => {
               size="small"
               icon="pi pi-download"
               :label="`Exporter la sélection (${selectedResponses.length})`"
-              class="text-xs !py-1.5 !px-3"
+              class="text-sm !py-1.5 !px-3"
               @click="exportSelectedCsv"
             />
             <Button
@@ -580,7 +462,7 @@ onMounted(async () => {
               size="small"
               icon="pi pi-times"
               label="Désélectionner"
-              class="text-xs !py-1.5 !px-2.5"
+              class="text-sm !py-1.5 !px-2.5"
               @click="clearSelection"
             />
           </div>
@@ -613,7 +495,7 @@ onMounted(async () => {
                 outlined
                 :icon="isAllSelected ? 'pi pi-check-square' : 'pi pi-square'"
                 :label="isAllSelected ? 'Tout décocher' : 'Tout cocher'"
-                class="text-xs !py-1 !px-2.5"
+                class="text-sm !py-1 !px-2.5"
                 @click="isAllSelected ? clearSelection() : selectAllRows()"
               />
               <Button
@@ -624,7 +506,7 @@ onMounted(async () => {
                 icon="pi pi-bell"
                 :label="`Cocher ceux à relancer (${filteredPendingCount})`"
                 :disabled="filteredPendingCount === 0"
-                class="text-xs !py-1 !px-2.5"
+                class="text-sm !py-1 !px-2.5"
                 @click="selectAllPending()"
               />
             </div>
@@ -649,7 +531,7 @@ onMounted(async () => {
             <div class="flex items-center">
               <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ getParticipantInitials(data.participantId) }}
+                  {{ initiales(data.participantName) }}
                 </span>
               </div>
               <div class="ml-3">
@@ -664,18 +546,7 @@ onMounted(async () => {
           </template>
           <template #filter="{ filterModel, filterCallback }">
             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" placeholder="Filtrer par nom"
-              class="w-full text-xs border border-gray-300 dark:border-gray-700 rounded p-1 px-2 focus:ring-1 focus:ring-primary-500" />
-          </template>
-        </Column>
-
-        <Column field="participantGroup" header="Groupe" sortable style="min-width: 10rem" :showFilterMenu="false">
-          <template #body="{ data }">
-            <span class="text-sm text-gray-650 dark:text-gray-400">
-              {{ data.participantGroup || '-' }}
-            </span>
-          </template>
-          <template #filter="{ filterModel, filterCallback }">
-            <Select v-model="filterModel.value" @change="filterCallback()" :options="availableGroups" placeholder="Tous" :showClear="true" class="w-full text-xs border border-gray-300 dark:border-gray-700 rounded focus:ring-1 focus:ring-primary-500" />
+              class="w-full text-sm border border-gray-300 dark:border-gray-700 rounded p-1 px-2 focus:ring-1 focus:ring-primary-500" />
           </template>
         </Column>
 
@@ -684,11 +555,11 @@ onMounted(async () => {
             <Tag
               :value="data.statusLabel"
               :severity="getStatusSeverity(data)"
-              class="text-xs font-semibold font-sans"
+              class="text-sm font-semibold font-sans"
             />
           </template>
           <template #filter="{ filterModel, filterCallback }">
-            <Select v-model="filterModel.value" @change="filterCallback()" :options="['Terminé', 'En cours', 'Non commencé']" placeholder="Tous" :showClear="true" class="w-full text-xs border border-gray-300 dark:border-gray-700 rounded focus:ring-1 focus:ring-primary-500" />
+            <Select v-model="filterModel.value" @change="filterCallback()" :options="['Terminé', 'En cours', 'Non commencé']" placeholder="Tous" :showClear="true" class="w-full text-sm border border-gray-300 dark:border-gray-700 rounded focus:ring-1 focus:ring-primary-500" />
           </template>
         </Column>
 
@@ -757,19 +628,8 @@ onMounted(async () => {
                 text
                 size="small"
                 severity="info"
-                class="text-xs !py-1 !px-2"
+                class="text-sm !py-1 !px-2"
                 @click="viewResponse(data)"
-              />
-              <Button
-                type="button"
-                icon="pi pi-link"
-                label="Lien"
-                text
-                size="small"
-                severity="secondary"
-                title="Copier l'URL du questionnaire de ce participant"
-                class="text-xs !py-1 !px-2"
-                @click="copySurveyUrl(data)"
               />
               <Button
                 type="button"
@@ -779,7 +639,7 @@ onMounted(async () => {
                 size="small"
                 :severity="data.remindersCount > 0 ? 'warn' : 'secondary'"
                 title="Consulter l'historique des relances"
-                class="text-xs !py-1 !px-2"
+                class="text-sm !py-1 !px-2"
                 @click="openHistoryModal(data)"
               />
               <Button
@@ -790,7 +650,7 @@ onMounted(async () => {
                 text
                 size="small"
                 severity="warn"
-                class="text-xs !py-1 !px-2"
+                class="text-sm !py-1 !px-2"
                 @click="openReminderModal([data])"
               />
             </div>

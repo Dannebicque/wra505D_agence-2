@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useConfirmation } from '@composables/useConfirmation';
+import { showDanger, showSuccess } from '@helpers/toast.js';
+import { useEtablissement } from '@/composables/useEtablissement';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
@@ -10,11 +13,8 @@ import {
   ChatBubbleLeftRightIcon,
   RocketLaunchIcon,
   DocumentDuplicateIcon,
-  HeartIcon,
   BuildingOfficeIcon,
-  UserGroupIcon,
   ShoppingBagIcon,
-  AcademicCapIcon,
   ChartBarIcon,
   PencilIcon,
   TrashIcon,
@@ -22,28 +22,25 @@ import {
   CheckCircleIcon
 } from '@heroicons/vue/24/outline';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
-import Dialog from 'primevue/dialog';
 import Select from 'primevue/select';
 import Tag from 'primevue/tag';
 import Button from 'primevue/button';
 import { useSurveyStore } from '@/stores/survey';
 import { useResponseStore } from '@/stores/responses';
-import { useUIStore } from '@/stores/ui';
 import { useUsersStore } from '@stores';
 import { hasPermission } from '@utils/permissions';
 import { formatDate, formatRelativeTime } from '@/utils/date';
-import { Kpi, QuickActionCard, EmptyState, Card } from '@components';
+import { Card, EmptyState, Kpi, QuickActionCard } from '@components';
 import DuplicateSurveyModal from '@/components/Questionnaire/DuplicateSurveyModal.vue';
 import { getAllDepartementsService } from '@requests';
 import type { Survey } from '@types';
+const { libelle: libelleEtablissement, libelleGlobal } = useEtablissement();
 
 const router = useRouter();
 const surveyStore = useSurveyStore();
 const responseStore = useResponseStore();
-const uiStore = useUIStore();
 const userStore = useUsersStore();
 
-const showTemplates = ref(false);
 const showDuplicateModal = ref(false);
 const selectedSurveyToDuplicate = ref<Survey | null>(null);
 
@@ -78,8 +75,8 @@ const departementOptions = computed(() => {
     ? allDepartements.value
     : (Array.isArray(userStore?.departements) ? userStore.departements : []);
   const options = [
-    { label: 'Tous les départements (Vue Globale IUT)', value: 'all' },
-    { label: 'Uniquement IUT (Global)', value: 'global' }
+    { label: `Tous les départements (${libelleEtablissement.value})`, value: 'all' },
+    { label: `Uniquement ${libelleGlobal.value}`, value: 'global' }
   ];
   list.forEach(dept => {
     if (dept && (dept.id || dept.libelle)) {
@@ -106,43 +103,6 @@ onMounted(async () => {
   }
 });
 
-const templates = [
-  {
-    id: 'satisfaction',
-    title: 'Satisfaction globale',
-    description: 'Évaluez la satisfaction globale des étudiants et usagers sur la formation.',
-    questions: 8,
-    icon: HeartIcon
-  },
-  {
-    id: 'employee',
-    title: 'Enquête collaborateurs',
-    description: 'Recueillez les avis et feedbacks de vos équipes pédagogiques et administratives.',
-    questions: 12,
-    icon: BuildingOfficeIcon
-  },
-  {
-    id: 'event',
-    title: 'Feedback événement',
-    description: 'Évaluez le déroulement et l\'organisation d\'un projet, stage ou événement.',
-    questions: 10,
-    icon: UserGroupIcon
-  },
-  {
-    id: 'education',
-    title: 'Évaluation des enseignements',
-    description: 'Évaluez l\'efficacité pédagogique, le contenu et l\'organisation des cours.',
-    questions: 9,
-    icon: AcademicCapIcon
-  },
-  {
-    id: 'market',
-    title: 'Besoins & Débouchés',
-    description: 'Analysez l\'insertion professionnelle et les opportunités d\'évolution.',
-    questions: 18,
-    icon: ChartBarIcon
-  }
-];
 
 // Scoped Surveys
 const scopedSurveys = computed<Survey[]>(() => {
@@ -291,31 +251,32 @@ async function confirmDuplicateSurvey(payload: { newTitle: string }) {
     showDuplicateModal.value = false;
     selectedSurveyToDuplicate.value = null;
     if (duplicate) {
-      uiStore.addNotification('success', 'Questionnaire dupliqué', `"${duplicate.title}" et ses paramètres ont été dupliqués.`);
+      showSuccess(`"${duplicate.title}" et ses paramètres ont été dupliqués.`, 'Questionnaire dupliqué');
     }
   } catch (error) {
     console.error('Failed to duplicate survey:', error);
-    uiStore.addNotification('danger', 'Erreur', 'Une erreur est survenue lors de la duplication.');
+    showDanger('Une erreur est survenue lors de la duplication.', 'Erreur');
   }
 }
 
-function deleteSurvey(survey: Survey) {
-  if (confirm(`Êtes-vous sûr de vouloir supprimer définitivement "${survey.title}" ?`)) {
-    surveyStore.deleteSurvey(survey.uuid);
-    uiStore.addNotification('success', 'Questionnaire supprimé', 'Le questionnaire a été supprimé.');
+const { confirmer } = useConfirmation();
+
+async function deleteSurvey(survey: Survey) {
+  const ok = await confirmer({
+    titre: 'Supprimer le questionnaire',
+    message: `Supprimer définitivement « ${survey.title} » et toutes ses réponses ?`,
+    libelle: 'Supprimer',
+    danger: true,
+  });
+  if (!ok) return;
+  try {
+    await surveyStore.deleteSurvey(survey.uuid);
+    showSuccess('Le questionnaire a été supprimé.', 'Questionnaire supprimé');
+  } catch (e) {
+    // apiCall a déjà affiché l'erreur du serveur.
   }
 }
 
-async function createFromTemplate(template: any) {
-  const survey = await surveyStore.createSurvey(template.title, template.description);
-  showTemplates.value = false;
-  uiStore.addNotification(
-    'success',
-    'Questionnaire créé',
-    `L'enquête "${template.title}" a été créée à partir du modèle.`
-  );
-  router.push({ name: 'questionnaire_builder', params: { id: survey.uuid } });
-}
 
 function getSurveyStats(surveyUuid: string) {
   const survey = surveyStore.surveys?.find(s => s.uuid === surveyUuid);
@@ -393,12 +354,12 @@ function getSurveyStats(surveyUuid: string) {
       />
 
       <QuickActionCard
-        title="Modèles pré-définis"
-        description="Créer depuis un modèle qualité prêt à l'emploi"
+        title="Modèles"
+        description="Créer un questionnaire depuis la bibliothèque de modèles"
         :icon="DocumentDuplicateIcon"
         color="green"
         button-label="Parcourir les modèles"
-        @action="showTemplates = true"
+        @action="router.push({ name: 'questionnaire_modeles' })"
       />
 
       <QuickActionCard
@@ -605,24 +566,22 @@ function getSurveyStats(surveyUuid: string) {
             Configurez les synthèses de résultats publiées et visibles par les étudiants.
           </p>
           <div v-if="lastPublishedSurvey" class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-center space-y-1">
-            <p class="text-xs text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wider">Dernière publication</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wider">Dernière publication</p>
             <p class="font-bold text-gray-900 dark:text-white text-sm">{{ lastPublishedSurvey.title }}</p>
-            <p class="text-xs text-gray-600 dark:text-gray-300">
+            <p class="text-sm text-gray-600 dark:text-gray-300">
               Publié le {{ formatDate(lastPublishedSurvey.publishedAt || lastPublishedSurvey.updatedAt) }}
             </p>
             <div class="pt-2">
               <router-link 
                 :to="{ name: 'questionnaire_analytics', params: { id: lastPublishedSurvey.uuid } }" 
-                class="inline-flex items-center gap-1.5 text-xs bg-primary-100 dark:bg-primary-950 text-primary-800 dark:text-primary-200 hover:bg-primary-200 dark:hover:bg-primary-900 border border-primary-300 dark:border-primary-800 px-3 py-1.5 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="inline-flex items-center gap-1.5 text-sm bg-primary-100 dark:bg-primary-950 text-primary-800 dark:text-primary-200 hover:bg-primary-200 dark:hover:bg-primary-900 border border-primary-300 dark:border-primary-800 px-3 py-1.5 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <ChartBarIcon class="w-3.5 h-3.5" aria-hidden="true" />
                 Voir les résultats
               </router-link>
             </div>
           </div>
-          <div v-else class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 text-center">
-            <p class="text-sm text-gray-600 dark:text-gray-400">Aucun questionnaire publié pour le moment.</p>
-          </div>
+          <EmptyState v-else compact icon="pi pi-send" title="Aucun questionnaire publié pour le moment" />
         </Card>
 
         <!-- Recent Activity Card -->
@@ -640,7 +599,7 @@ function getSurveyStats(surveyUuid: string) {
             >
               <div 
                 :class="[
-                  'w-8 h-8 rounded-full flex items-center justify-center text-white text-xs shrink-0 shadow-sm',
+                  'w-8 h-8 rounded-full flex items-center justify-center text-white text-sm shrink-0 shadow-sm',
                   getActivityColor(activity.type)
                 ]"
                 aria-hidden="true"
@@ -651,7 +610,7 @@ function getSurveyStats(surveyUuid: string) {
                 <p class="text-sm text-gray-900 dark:text-white font-medium leading-snug">
                   {{ activity.message }}
                 </p>
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5 font-medium">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5 font-medium">
                   {{ formatRelativeTime(activity.timestamp) }}
                 </p>
               </div>
@@ -668,43 +627,6 @@ function getSurveyStats(surveyUuid: string) {
       </aside>
     </div>
 
-    <!-- Templates Modal via PrimeVue Dialog for full A11Y -->
-    <Dialog 
-      v-model:visible="showTemplates" 
-      modal 
-      header="Modèles de questionnaires pré-définis" 
-      class="w-full max-w-4xl"
-      :dismissableMask="true"
-    >
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-        <button 
-          v-for="template in templates" 
-          :key="template.id"
-          type="button"
-          :aria-label="`Créer un questionnaire basé sur le modèle ${template.title}`"
-          class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-primary-500 hover:shadow-md transition-all duration-200 text-left flex flex-col justify-between bg-white dark:bg-gray-800 hover:bg-primary-50/20 dark:hover:bg-primary-950/20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
-          @click="createFromTemplate(template)"
-        >
-          <div>
-            <div class="flex items-center space-x-3 mb-3">
-              <component :is="template.icon" class="w-6 h-6 text-primary-600 dark:text-primary-400 shrink-0" aria-hidden="true" />
-              <h3 class="font-bold text-gray-900 dark:text-white text-base">{{ template.title }}</h3>
-            </div>
-            <p class="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-normal">
-              {{ template.description }}
-            </p>
-          </div>
-          <div class="flex items-center justify-between border-t border-gray-150 dark:border-gray-700 pt-3 mt-2">
-            <span class="text-xs text-gray-700 dark:text-gray-300 font-semibold bg-gray-100 dark:bg-gray-750 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600">
-              {{ template.questions }} questions
-            </span>
-            <span class="text-primary-700 dark:text-primary-400 text-xs font-bold flex items-center gap-1 group-hover:underline">
-              Utiliser ce modèle →
-            </span>
-          </div>
-        </button>
-      </div>
-    </Dialog>
 
     <!-- Duplicate Survey Modal -->
     <DuplicateSurveyModal
