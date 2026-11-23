@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\AnneeUniversitaire;
 
 use ApiPlatform\Metadata\CollectionOperationInterface;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\{ControllerEvent, ResponseEvent};
@@ -40,7 +41,7 @@ final readonly class AnnualRequestSubscriber implements EventSubscriberInterface
             }
             $operation = $request->attributes->get('_api_operation');
             if ($operation === null && $this->metadataFactory !== null) {
-                $operation = $this->metadataFactory->create($class)->getOperation($request->attributes->get('_api_operation_name'));
+                $operation = $this->metadataFactory->create($class)->getOperation(LooseValue::nullableString($request->attributes->get('_api_operation_name')));
                 $request->attributes->set('_api_operation', $operation);
             }
             $hasIdentifier = false;
@@ -146,7 +147,7 @@ final readonly class AnnualRequestSubscriber implements EventSubscriberInterface
         $response->headers->set(AnneeUniversitaireContext::MODE_HEADER, $request->attributes->get('_politique_annuelle'));
         $response->setVary([AnneeUniversitaireContext::HEADER, AnneeUniversitaireContext::MODE_HEADER], false);
         if ($request->attributes->has('_annee_universitaire_id')) {
-            $response->headers->set(AnneeUniversitaireContext::HEADER, (string) $request->attributes->get('_annee_universitaire_id'));
+            $response->headers->set(AnneeUniversitaireContext::HEADER, LooseValue::castString($request->attributes->get('_annee_universitaire_id')));
         }
     }
 }

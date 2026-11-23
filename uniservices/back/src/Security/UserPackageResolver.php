@@ -5,6 +5,7 @@ namespace App\Security;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Repository\Structure\StructureDepartementPersonnelRepository;
+use App\Utils\LooseValue;
 
 /**
  * Packages (applications) dont dispose une personne : source unique, utilisée par le contexte de sécurité du front
@@ -70,6 +71,6 @@ class UserPackageResolver
      */
     private function normaliser(array $noms): array
     {
-        return array_values(array_unique(array_map(fn ($n) => self::canonique((string) $n), $noms)));
+        return array_values(array_unique(array_map(fn ($n) => self::canonique(LooseValue::castString($n)), $noms)));
     }
 }

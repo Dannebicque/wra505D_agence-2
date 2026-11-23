@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\AnneeUniversitaire\{ContexteAnnuel, PerimetreAnnuelRegistry};
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -49,7 +50,7 @@ final class AuditContexteAnnuelCommand extends Command
             }
             if ($class = $route->getDefault('_api_resource_class')) {
                 try {
-                    $this->registry->path($class);
+                    $this->registry->path(LooseValue::string($class));
                     ++$operations;
                 } catch (\Throwable $e) {
                     $errors[] = $e->getMessage();

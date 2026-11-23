@@ -14,6 +14,7 @@ use App\Repository\Structure\StructureDepartementRepository;
 use App\Service\Email\AbstractEmailDefinition;
 use App\Service\Email\EmailRegistry;
 use App\Service\Email\EmailService;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -126,16 +127,16 @@ class EmailTemplateController extends AbstractController
     public function saveTemplate(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
-        $key = (string) ($data['emailKey'] ?? '');
-        $subject = trim((string) ($data['subject'] ?? ''));
-        $bodyHtml = (string) ($data['bodyHtml'] ?? '');
+        $key = LooseValue::castString($data['emailKey'] ?? '');
+        $subject = trim(LooseValue::castString($data['subject'] ?? ''));
+        $bodyHtml = LooseValue::castString($data['bodyHtml'] ?? '');
         if ($key === '' || $subject === '' || trim($bodyHtml) === '') {
             return $this->json(['error' => 'L\'objet et le corps du message sont obligatoires.'], Response::HTTP_BAD_REQUEST);
         }
         $definition = $this->registry->get($key) ?? throw $this->createNotFoundException('Clé d\'email inconnue : '.$key);
         $departement = null;
         if (!empty($data['departement'])) {
-            $departement = $this->departement((int) $data['departement']) ?? throw $this->createNotFoundException('Département introuvable.');
+            $departement = $this->departement(LooseValue::castInt($data['departement'])) ?? throw $this->createNotFoundException('Département introuvable.');
         }
 
         $erreur = $this->verifier($definition, $subject, $bodyHtml);
@@ -299,7 +300,7 @@ class EmailTemplateController extends AbstractController
      */
     private function reglagesHabillage(array $donnees): array
     {
-        $texte = static fn (string $cle, int $max) => mb_substr(trim((string) ($donnees[$cle] ?? '')), 0, $max);
+        $texte = static fn (string $cle, int $max) => mb_substr(trim(LooseValue::castString($donnees[$cle] ?? '')), 0, $max);
         $reglages = [
             'couleur' => $texte('couleur', 7) ?: '#1a3a5c',
             'expediteur_nom' => $texte('expediteur_nom', 100) ?: null,
@@ -381,9 +382,9 @@ class EmailTemplateController extends AbstractController
     private function saisie(Request $request): array
     {
         $data = json_decode($request->getContent(), true) ?? [];
-        $definition = $this->registry->get((string) ($data['emailKey'] ?? '')) ?? throw $this->createNotFoundException('Clé d\'email inconnue.');
+        $definition = $this->registry->get(LooseValue::castString($data['emailKey'] ?? '')) ?? throw $this->createNotFoundException('Clé d\'email inconnue.');
 
-        return [$definition, (string) ($data['subject'] ?? ''), (string) ($data['bodyHtml'] ?? '')];
+        return [$definition, LooseValue::castString($data['subject'] ?? ''), LooseValue::castString($data['bodyHtml'] ?? '')];
     }
 
     /** Message d'erreur si le modèle ne se rend pas avec les variables déclarées, null s'il est valide. */

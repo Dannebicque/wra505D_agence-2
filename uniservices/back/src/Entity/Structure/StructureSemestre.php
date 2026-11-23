@@ -77,7 +77,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
         'departement' => new QueryParameter(filter: SemestreFilter::class),
         'diplome' => new QueryParameter(filter: SemestreFilter::class),
         'annee' => new QueryParameter(filter: SemestreFilter::class),
-        'actif' => new QueryParameter(filter: SemestreFilter::class),
         'anneeUniversitaire' => new QueryParameter(filter: SemestreFilter::class),
     ],
 )]

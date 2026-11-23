@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Enum\FrequenceResumeEnum;
 use App\Notification\NotificationDigest;
+use App\Utils\LooseValue;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,7 +33,7 @@ final class NotificationDigestCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $frequence = FrequenceResumeEnum::tryFrom((string) $input->getOption('frequence'));
+        $frequence = FrequenceResumeEnum::tryFrom(LooseValue::castString($input->getOption('frequence')));
         if ($frequence === null) {
             $io->error('Fréquence inconnue : quotidien ou hebdomadaire.');
 

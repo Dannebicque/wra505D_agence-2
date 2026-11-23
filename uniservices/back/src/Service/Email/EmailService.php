@@ -4,6 +4,7 @@ namespace App\Service\Email;
 
 use App\Entity\Structure\StructureDepartement;
 use App\Repository\EtablissementRepository;
+use App\Utils\LooseValue;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\Mailer\MailerInterface;
@@ -160,8 +161,8 @@ final class EmailService
             'expediteur' => $reglages['expediteur_nom'] ?: $etablissement,
             'expediteur_nom' => $reglages['expediteur_nom'] ?? '',
             'reply_to' => $reglages['reply_to'] ?? '',
-            'signature' => (string) $reglages['signature'],
-            'mentions_legales' => (string) $reglages['mentions_legales'],
+            'signature' => LooseValue::castString($reglages['signature']),
+            'mentions_legales' => LooseValue::castString($reglages['mentions_legales']),
             'contact_rgpd' => $reglages['contact_rgpd'] ?? '',
             'lien_preferences' => $categorie === AbstractEmailDefinition::CATEGORIE_NOTIFICATION ? '/app/auth/notifications' : '',
         ];

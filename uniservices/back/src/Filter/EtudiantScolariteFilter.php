@@ -53,7 +53,7 @@ class EtudiantScolariteFilter implements FilterInterface
 
         if ('search' === $property) {
             $etudiantAlias = $this->getOrCreateJoin($queryBuilder, $queryNameGenerator, $alias, 'etudiant');
-            $terms = array_values(array_filter(explode(' ', trim((string) $value))));
+            $terms = array_values(array_filter(explode(' ', trim(LooseValue::castString($value)))));
             if (!empty($terms)) {
                 $termIndex = 0;
                 foreach ($terms as $term) {
@@ -93,7 +93,7 @@ class EtudiantScolariteFilter implements FilterInterface
             $nomParam = $queryNameGenerator->generateParameterName('nom');
             $queryBuilder
                 ->andWhere(sprintf('LOWER(%s.nom) LIKE LOWER(:%s)', $etudiantAlias, $nomParam))
-                ->setParameter($nomParam, trim((string) $value) . '%');
+                ->setParameter($nomParam, trim(LooseValue::castString($value)) . '%');
         }
 
         if ('prenom' === $property) {
@@ -101,7 +101,7 @@ class EtudiantScolariteFilter implements FilterInterface
             $prenomParam = $queryNameGenerator->generateParameterName('prenom');
             $queryBuilder
                 ->andWhere(sprintf('LOWER(%s.prenom) LIKE LOWER(:%s)', $etudiantAlias, $prenomParam))
-                ->setParameter($prenomParam, trim((string) $value) . '%');
+                ->setParameter($prenomParam, trim(LooseValue::castString($value)) . '%');
         }
 
         if ('mailUniv' === $property) {
@@ -109,7 +109,7 @@ class EtudiantScolariteFilter implements FilterInterface
             $mailParam = $queryNameGenerator->generateParameterName('mailUniv');
             $queryBuilder
                 ->andWhere(sprintf('LOWER(%s.mailUniv) LIKE LOWER(:%s)', $etudiantAlias, $mailParam))
-                ->setParameter($mailParam, trim((string) $value) . '%');
+                ->setParameter($mailParam, trim(LooseValue::castString($value)) . '%');
         }
 
         if ('annee' === $property) {

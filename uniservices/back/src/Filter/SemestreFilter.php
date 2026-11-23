@@ -27,7 +27,7 @@ class SemestreFilter implements FilterInterface
             return;
         }
         foreach ($context['filters'] ?? [] as $property => $value) {
-            $this->filterProperty((string) $property, $value, $queryBuilder, $queryNameGenerator);
+            $this->filterProperty(LooseValue::castString($property), $value, $queryBuilder, $queryNameGenerator);
         }
     }
 
@@ -47,8 +47,8 @@ class SemestreFilter implements FilterInterface
                 $au = $this->join($qb, $names, $pn, 'anneeUniversitaire');
                 if ($value === 'courante') {
                     $qb->andWhere("$au.actif = true");
-                } elseif (ctype_digit((string) $value) && (int) $value > 0) {
-                    $qb->andWhere("$au.id = :$parameter")->setParameter($parameter, (int) $value);
+                } elseif (ctype_digit(LooseValue::castString($value)) && LooseValue::castInt($value) > 0) {
+                    $qb->andWhere("$au.id = :$parameter")->setParameter($parameter, LooseValue::castInt($value));
                 } else {
                     throw new BadRequestHttpException('Année universitaire attendue : identifiant positif ou « courante ».');
                 }
