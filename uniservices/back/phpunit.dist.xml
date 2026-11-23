@@ -21,6 +21,7 @@
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
             <directory>../packages/message-bundle/tests</directory>
+            <directory>../packages/unifolio-bundle/tests</directory>
         </testsuite>
     </testsuites>
 
