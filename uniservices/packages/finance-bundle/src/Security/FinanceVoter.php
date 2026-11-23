@@ -30,6 +30,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  *
  * Attributs d'opération : CAN_VIEW_FINANCE, CAN_CREATE_FINANCE, CAN_EDIT_FINANCE, CAN_MANAGE_FINANCE (sujet : demande ou
  * réception) ; FINANCE_BC_* en sont les alias historiques ; FINANCE_ACCES / FINANCE_REFERENTIEL_GERER sont sans sujet.
+ *
+ * @extends Voter<string, mixed>
  */
 final class FinanceVoter extends Voter
 {

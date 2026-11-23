@@ -3,6 +3,7 @@
 namespace FinanceBundle\Controller;
 
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use FinanceBundle\Entity\FinanceBonCommande;
 use FinanceBundle\Enum\ActionWorkflowEnum;
@@ -77,7 +78,7 @@ class FinanceTransitionController extends AbstractController
         }
 
         try {
-            $this->workflow->appliquer($user, $commande, $etape, $donnees, $documents);
+            $this->workflow->appliquer($user, $commande, $etape, LooseValue::assoc($donnees), $documents);
             $this->em->flush();
         } catch (ActionRefuseeException $e) {
             $this->oublier($documents);

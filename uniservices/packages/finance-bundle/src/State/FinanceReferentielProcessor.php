@@ -5,6 +5,7 @@ namespace FinanceBundle\State;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use FinanceBundle\Entity\FinanceBonCommande;
 use FinanceBundle\Entity\FinanceFournisseur;
@@ -23,6 +24,10 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 final class FinanceReferentielProcessor implements ProcessorInterface
 {
+    /**
+     * @param ProcessorInterface<mixed, mixed> $persist
+     * @param ProcessorInterface<mixed, mixed> $remove
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private readonly ProcessorInterface $persist,
@@ -65,12 +70,15 @@ final class FinanceReferentielProcessor implements ProcessorInterface
         if ($fournisseur->getNumeroFournisseur() !== null && trim($fournisseur->getNumeroFournisseur()) !== '') {
             $qb->orWhere('f.numeroFournisseur = :numero')->setParameter('numero', trim($fournisseur->getNumeroFournisseur()));
         }
-        foreach ($qb->getQuery()->getArrayResult() as $existant) {
-            if ($existant['id'] !== $fournisseur->getId()) {
+        foreach (LooseValue::rows($qb->getQuery()->getArrayResult()) as $existant) {
+            $idExistant = LooseValue::nullableInt($existant['id'] ?? null);
+            if ($idExistant !== $fournisseur->getId()) {
+                $numero = LooseValue::nullableString($existant['numeroFournisseur'] ?? null);
+                $nom = LooseValue::nullableString($existant['nomFournisseur'] ?? null);
                 throw new UnprocessableEntityHttpException(sprintf(
                     'Ce fournisseur existe déjà au référentiel : %s%s.',
-                    $existant['numeroFournisseur'] ? $existant['numeroFournisseur'].' - ' : '',
-                    $existant['nomFournisseur']
+                    $numero !== null && $numero !== '' ? $numero.' - ' : '',
+                    $nom ?? ''
                 ));
             }
         }

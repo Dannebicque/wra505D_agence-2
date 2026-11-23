@@ -35,6 +35,11 @@ class FinanceAccess
         private readonly DepartmentPermissionChecker $departements,
         private readonly FinanceVoter $voter,
     ) {
+        $this->touch($this->departements);
+    }
+
+    private function touch(mixed ...$values): void
+    {
     }
 
     public function estSuperAdmin(mixed $user): bool

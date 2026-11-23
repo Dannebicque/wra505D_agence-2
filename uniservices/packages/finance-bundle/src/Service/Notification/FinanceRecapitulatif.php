@@ -92,7 +92,11 @@ class FinanceRecapitulatif
     private function ajouter(array &$parStatut, iterable $commandes): void
     {
         foreach ($commandes as $c) {
-            $parStatut[$c->getStatut()->value][$c->getId()] = $c;
+            $id = $c->getId();
+            if ($id === null) {
+                continue;
+            }
+            $parStatut[$c->getStatut()->value][$id] = $c;
         }
     }
 
@@ -100,15 +104,15 @@ class FinanceRecapitulatif
     private function ligne(FinanceBonCommande $c, \DateTimeImmutable $maintenant): array
     {
         $depuis = $c->getUpdatedAt() ?? $c->getDateDemande();
-        $jours = $depuis !== null ? (int) $maintenant->diff(\DateTimeImmutable::createFromInterface($depuis))->days : 0;
+        $jours = $depuis !== null ? $maintenant->diff(\DateTimeImmutable::createFromInterface($depuis))->days : 0;
         $montant = $c->getMontantTtc() ?? $c->getMontantHt();
 
         return [
             'objet' => mb_strimwidth((string) $c->getObjetDemande(), 0, 90, '…'),
-            'departement' => (string) ($c->getImputationLibelle() ?? '—'),
-            'demandeur' => (string) ($c->getDemandeur()?->getDisplay() ?? '—'),
+            'departement' => $c->getImputationLibelle() ?? '—',
+            'demandeur' => $c->getDemandeur()?->getDisplay() ?? '—',
             'montant' => $montant === null ? '—' : number_format((float) $montant, 2, ',', ' ').' €',
-            'numero' => (string) ($c->getNumeroBonCommande() ?? ''),
+            'numero' => $c->getNumeroBonCommande() ?? '',
             'depuis' => $jours === 0 ? 'aujourd\'hui' : sprintf('depuis %d jour%s', $jours, $jours > 1 ? 's' : ''),
             'lien' => FinanceNotifier::url($c),
         ];

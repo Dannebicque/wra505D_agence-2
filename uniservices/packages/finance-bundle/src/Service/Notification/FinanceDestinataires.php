@@ -63,16 +63,19 @@ class FinanceDestinataires
             ->join('dp.departement', 'd')->addSelect('d')
             ->getQuery()->toIterable();
         foreach ($affectations as $affectation) {
-            \assert($affectation instanceof StructureDepartementPersonnel);
             $resolus = $this->resolver->resolveForDepartment($affectation);
+            $personnel = $affectation->getPersonnel();
+            $departement = $affectation->getDepartement();
+            if (!$personnel instanceof Personnel || $personnel->getId() === null || !$departement instanceof StructureDepartement || $departement->getId() === null) {
+                continue;
+            }
+            $id = $personnel->getId();
             foreach ($roles as $role) {
                 if (!\in_array($role, $resolus, true)) {
                     continue;
                 }
-                $personnel = $affectation->getPersonnel();
-                $id = (int) $personnel->getId();
                 $resultat[$id] ??= ['personnel' => $personnel, 'roles' => []];
-                $resultat[$id]['roles'][$role][] = (int) $affectation->getDepartement()->getId();
+                $resultat[$id]['roles'][$role][] = $departement->getId();
             }
         }
 

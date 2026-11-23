@@ -3,6 +3,7 @@
 namespace FinanceBundle\Controller;
 
 use App\Entity\Users\Personnel;
+use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
 use FinanceBundle\Entity\FinanceReception;
 use FinanceBundle\Entity\FinanceReceptionDocument;
@@ -112,6 +113,7 @@ class FinanceReceptionController extends AbstractController
     {
         $reception = $this->reception($id);
         $commande = $reception->getBonCommande();
+        \assert($commande instanceof \FinanceBundle\Entity\FinanceBonCommande);
         $this->denyAccessUnlessGranted(FinanceVoter::BC_VOIR, $commande);
         $user = $this->getUser();
         \assert($user instanceof Personnel);
@@ -121,7 +123,11 @@ class FinanceReceptionController extends AbstractController
             return new JsonResponse(['error' => 'Corps JSON invalide : { "numerosMigo": ["…"] } attendu.'], Response::HTTP_BAD_REQUEST);
         }
         try {
-            $certifie = $this->workflow->viserReception($user, $reception, \array_key_exists('numerosMigo', $donnees) ? array_values($donnees['numerosMigo']) : null);
+            $numerosMigo = null;
+            if (\array_key_exists('numerosMigo', $donnees)) {
+                $numerosMigo = array_values(array_map(static fn (mixed $v): string => \is_scalar($v) ? (string) $v : '', LooseValue::row($donnees['numerosMigo'])));
+            }
+            $certifie = $this->workflow->viserReception($user, $reception, $numerosMigo);
         } catch (ActionRefuseeException $e) {
             return new JsonResponse(['error' => $e->getMessage()], $e->porteSurLesDroits() ? Response::HTTP_FORBIDDEN : Response::HTTP_CONFLICT);
         } catch (\DomainException $e) {

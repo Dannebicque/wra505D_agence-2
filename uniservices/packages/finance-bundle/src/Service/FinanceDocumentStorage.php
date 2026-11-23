@@ -96,7 +96,7 @@ class FinanceDocumentStorage
             foreach ($enregistres as $document) {
                 $this->supprimer($document['chemin']);
             }
-            throw new \InvalidArgumentException(sprintf('%s (%s)', $e->getMessage(), $nom ?? 'fichier'), 0, $e);
+            throw new \InvalidArgumentException(sprintf('%s (%s)', $e->getMessage(), $nom), 0, $e);
         }
 
         return $enregistres;
@@ -118,7 +118,7 @@ class FinanceDocumentStorage
         }
         if (str_starts_with($chemin, self::ANCIEN_PREFIXE)) {
             $nom = substr($chemin, \strlen(self::ANCIEN_PREFIXE));
-            if (!preg_match('/^[A-Za-z0-9._-]+\.pdf$/', $nom) || str_contains($nom, '..')) {
+            if (preg_match('/^[A-Za-z0-9._-]+\.pdf$/', $nom) !== 1 || str_contains($nom, '..')) {
                 return null;
             }
             $absolu = $this->ancienneRacine.'/'.$nom;
@@ -137,7 +137,7 @@ class FinanceDocumentStorage
 
     private function cheminAbsolu(string $chemin): string
     {
-        if (!preg_match('#^\d{4}/[0-9a-f-]{36}\.pdf$#', $chemin)) {
+        if (preg_match('#^\d{4}/[0-9a-f-]{36}\.pdf$#', $chemin) !== 1) {
             throw new \InvalidArgumentException('Chemin de document invalide.');
         }
 

@@ -97,7 +97,7 @@ class FinanceNotifier
             Type::RECAPITULATIF->cle(),
             sprintf('%d demande(s) d\'achat en attente : %s.', $recapitulatif['total'], $recapitulatif['resume']),
             '/app/finance',
-            $adresse ? function () use ($destinataire, $adresse, $recapitulatif): bool {
+            $adresse !== null && $adresse !== '' ? function () use ($destinataire, $adresse, $recapitulatif): bool {
                 try {
                     $this->emails->send(Type::RECAPITULATIF->cle(), $adresse, [
                         'destinataire_nom' => $destinataire->getDisplay(),

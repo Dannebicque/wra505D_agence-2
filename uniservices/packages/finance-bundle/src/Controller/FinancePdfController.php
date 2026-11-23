@@ -4,6 +4,7 @@ namespace FinanceBundle\Controller;
 
 use App\Repository\EtablissementRepository;
 use App\Service\Pdf\PdfExportOptions;
+use App\Utils\LooseValue;
 use App\Service\Pdf\PdfExportService;
 use Doctrine\ORM\EntityManagerInterface;
 use FinanceBundle\Entity\FinanceBonCommande;
@@ -52,7 +53,7 @@ class FinancePdfController extends AbstractController
             $step = 5; // Document complet par défaut
         }
 
-        $num = $commande->getNumeroBonCommande() ?: ('demande_'.$commande->getId());
+        $num = LooseValue::truthyString($commande->getNumeroBonCommande()) ?? ('demande_'.$commande->getId());
         $filename = sprintf('demande_achat_%s_%s_etape_%d', preg_replace('/[^A-Za-z0-9_-]/', '', $num), date('Ymd'), $step);
 
         $options = PdfExportOptions::create()
@@ -147,7 +148,11 @@ class FinancePdfController extends AbstractController
         return $reponse;
     }
 
-    /** En-tête du formulaire : données de l'établissement principal (aucun nom en dur dans le gabarit). */
+    /**
+     * En-tête du formulaire : données de l'établissement principal (aucun nom en dur dans le gabarit).
+     *
+     * @return array{libelle: string, universite: string}
+     */
     private function etablissement(): array
     {
         $etab = $this->etablissements->findPrincipal();

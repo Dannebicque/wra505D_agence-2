@@ -33,7 +33,7 @@ class FinanceExportController extends AbstractController
     {
         // Chaque demande exportée est autorisée par le voter local sur son département.
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        $payload = json_decode((string) $request->getContent(), true);
+        $payload = json_decode($request->getContent(), true);
         $ids = \is_array($payload) && \is_array($payload['ids'] ?? null) ? $payload['ids'] : null;
         if ($ids === null) {
             return new JsonResponse(['error' => 'Liste d\'identifiants attendue : {"ids": [1, 2, …]}.'], Response::HTTP_BAD_REQUEST);

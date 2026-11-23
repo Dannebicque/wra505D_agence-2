@@ -70,6 +70,7 @@ class FinanceReception
     private ?string $detailsReceptionPartielle = null;
 
     // Numéros MIGO (SIFAC)
+    /** @var list<string>|null */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     #[Groups(['reception:read', 'reception:write', 'finance:read', 'finance:list'])]
     private ?array $numerosMigo = [];
@@ -100,6 +101,7 @@ class FinanceReception
     private ?\DateTimeInterface $dateSignatureServiceFait = null;
 
     /** Bons de livraison (PDF) déposés à la constatation, ou ajoutés tant que la réception n'est pas visée. */
+    /** @var Collection<int, FinanceReceptionDocument> */
     #[ORM\OneToMany(targetEntity: FinanceReceptionDocument::class, mappedBy: 'reception', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['id' => 'ASC'])]
     #[Groups(['reception:read', 'finance:read'])]
@@ -238,11 +240,13 @@ class FinanceReception
         return $this;
     }
 
+    /** @return list<string>|null */
     public function getNumerosMigo(): ?array
     {
         return $this->numerosMigo;
     }
 
+    /** @param list<string>|null $numerosMigo */
     public function setNumerosMigo(?array $numerosMigo): static
     {
         $this->numerosMigo = $numerosMigo;

@@ -349,7 +349,7 @@ class FinanceWorkflow
             if ($numero === '') {
                 continue;
             }
-            if (!preg_match('/^[A-Za-z0-9-]{1,30}$/', $numero)) {
+            if (preg_match('/^[A-Za-z0-9-]{1,30}$/', $numero) !== 1) {
                 throw new \DomainException(sprintf('Numéro MIGO invalide : « %s » (lettres, chiffres et tirets, 30 caractères au plus).', mb_strimwidth($numero, 0, 40, '…')));
             }
             $numeros[$numero] = $numero;
@@ -358,7 +358,11 @@ class FinanceWorkflow
         return array_values($numeros);
     }
 
-    /** Champs autorisés à la création (la demande naît en brouillon). */
+    /**
+     * Champs autorisés à la création (la demande naît en brouillon).
+     *
+     * @return list<string>
+     */
     public static function champsCreation(): array
     {
         return [...self::CHAMPS_DEMANDE, 'departement', 'service'];

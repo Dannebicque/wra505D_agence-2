@@ -29,6 +29,9 @@ final class FinanceBonCommandeProcessor implements ProcessorInterface
     /** Clés JSON-LD sans effet, tolérées dans le corps. */
     private const CLES_NEUTRES = ['@context', '@id', '@type', 'id'];
 
+    /**
+     * @param ProcessorInterface<mixed, mixed> $persist
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private readonly ProcessorInterface $persist,
@@ -49,9 +52,10 @@ final class FinanceBonCommandeProcessor implements ProcessorInterface
         }
 
         $creation = $operation instanceof Post;
+        $precedente = $context['previous_data'] ?? $data;
         $permis = $creation
             ? FinanceWorkflow::champsCreation()
-            : $this->workflow->champsModifiables($user, $context['previous_data'] ?? $data);
+            : $this->workflow->champsModifiables($user, $precedente instanceof FinanceBonCommande ? $precedente : $data);
         $interdits = array_values(array_diff($this->clesEnvoyees($context), $permis, self::CLES_NEUTRES));
         if ($interdits !== []) {
             throw new AccessDeniedHttpException(sprintf(
@@ -70,7 +74,11 @@ final class FinanceBonCommandeProcessor implements ProcessorInterface
         return $this->persist->process($data, $operation, $uriVariables, $context);
     }
 
-    /** @return list<string> */
+    /**
+     * @param array<string, mixed> $context
+     *
+     * @return list<string>
+     */
     private function clesEnvoyees(array $context): array
     {
         $requete = $context['request'] ?? $this->requests->getCurrentRequest();
