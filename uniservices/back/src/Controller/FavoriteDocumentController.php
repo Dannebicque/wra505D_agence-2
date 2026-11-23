@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use DocumentBundle\Entity\Document;
@@ -18,6 +19,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Favoris de documents de l'utilisateur connecté. Les adresses ne portent aucun identifiant
  * d'utilisateur : chacun ne lit et ne modifie que les siens.
  */
+#[ContexteAnnuel(ContexteAnnuel::INDEPENDANT, 'Document partagé, sans année universitaire.')]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Route('/api/me/documents-favoris')]
 final class FavoriteDocumentController extends AbstractController

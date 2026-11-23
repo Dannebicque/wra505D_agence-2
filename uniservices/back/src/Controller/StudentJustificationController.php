@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Users\Etudiant;
 use IntranetBundle\Service\Absence\JustificationFiles;
 use IntranetBundle\Service\Absence\StudentJustificationSubmitter;
@@ -18,6 +19,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Dépôt d'un justificatif d'absence par l'étudiant connecté : période, motif et pièce, tous
  * obligatoires. Les erreurs sont rendues champ par champ, pour s'afficher sous chacun.
  */
+#[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'Année de l’inscription active de l’étudiant connecté.')]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class StudentJustificationController extends AbstractController
 {

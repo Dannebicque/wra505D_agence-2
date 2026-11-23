@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use App\Security\DocumentReadAccess;
@@ -19,6 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Contenu d'un document, pour l'aperçu et le téléchargement. Un document que l'utilisateur ne
  * peut pas lire répond 404, comme un document absent : la réponse ne révèle pas qu'il existe.
  */
+#[ContexteAnnuel(ContexteAnnuel::INDEPENDANT, 'Document partagé, sans année universitaire.')]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class DocumentFileController extends AbstractController
 {

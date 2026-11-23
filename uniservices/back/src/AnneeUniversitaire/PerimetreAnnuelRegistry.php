@@ -81,6 +81,11 @@ final class PerimetreAnnuelRegistry
         'InvitationIndexDto' => 'ressource', 'InvitationSectionResource' => 'ressource',
         'SaveAnswersResource' => 'ressource', 'SubmitResource' => 'ressource',
         'DuplicateOutputDto' => 'annuel', 'MesInvitationDto' => 'transversal',
+        // Ressources de l'espace étudiant : leur provider choisit l'année, jamais la sélection.
+        'StudentInvitationDto' => 'transversal',
+        'NotificationFeed' => 'independant', 'MarkAsRead' => 'independant',
+        'Transcript' => 'transversal', 'SearchResult' => 'transversal',
+        'StudentTimetable' => 'ressource', 'StudentWeeks' => 'ressource', 'CourseLog' => 'ressource',
     ];
 
     public function mode(string $class): string

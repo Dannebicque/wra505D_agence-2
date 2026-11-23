@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Users\Etudiant;
 use App\Security\PostVoter;
 use IntranetBundle\Entity\Etudiant\EtudiantAbsenceJustificatif;
@@ -19,6 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Pièce d'un justificatif, pour son auteur et pour le personnel qui traite les justificatifs.
  * Pour tout autre, la réponse est 404, comme une pièce absente : elle ne révèle pas qu'elle existe.
  */
+#[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'Justificatif explicitement identifié.', EtudiantAbsenceJustificatif::class)]
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class JustificationFileController extends AbstractController
 {
