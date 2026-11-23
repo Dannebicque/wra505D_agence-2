@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Users\Etudiant;
 use IntranetBundle\Service\Absence\JustificationFiles;
 use IntranetBundle\Service\Absence\StudentJustificationSubmitter;
@@ -19,6 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * obligatoires. Les erreurs sont rendues champ par champ, pour s'afficher sous chacun.
  */
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[ContexteAnnuel(ContexteAnnuel::TRANSVERSAL, 'Le serveur rattache le justificatif au semestre des absences de l’étudiant connecté.')]
 final class StudentJustificationController extends AbstractController
 {
     /** Un justificatif couvre au plus un mois : au-delà, ce n'est plus une absence ponctuelle. */

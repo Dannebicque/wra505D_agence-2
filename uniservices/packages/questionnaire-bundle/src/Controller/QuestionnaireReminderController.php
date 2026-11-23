@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Security\UserTypeVoter;
 use App\Service\Email\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +21,7 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Relance manuelle des participants d'un questionnaire, avec historique sur chaque invitation.
  */
+#[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'Le questionnaire fixe l’année de l’opération.', Questionnaire::class, 'uuid', 'uuid')]
 class QuestionnaireReminderController extends AbstractController
 {
     public function __construct(

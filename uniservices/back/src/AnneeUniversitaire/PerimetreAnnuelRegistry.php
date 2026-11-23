@@ -81,6 +81,12 @@ final class PerimetreAnnuelRegistry
         'InvitationIndexDto' => 'ressource', 'InvitationSectionResource' => 'ressource',
         'SaveAnswersResource' => 'ressource', 'SubmitResource' => 'ressource',
         'DuplicateOutputDto' => 'annuel', 'MesInvitationDto' => 'transversal',
+        // Ancien nom de MesInvitationDto, encore en place chez nous.
+        'StudentInvitationDto' => 'transversal',
+        // Routes /api/me : le fournisseur choisit lui-même l'année d'après les scolarités de l'étudiant.
+        'Transcript' => 'transversal', 'CourseLog' => 'transversal',
+        'StudentTimetable' => 'transversal', 'StudentWeeks' => 'transversal',
+        'NotificationFeed' => 'independant', 'MarkAsRead' => 'independant', 'SearchResult' => 'independant',
     ];
 
     public function mode(string $class): string

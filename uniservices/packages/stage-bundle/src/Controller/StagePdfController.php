@@ -2,6 +2,7 @@
 
 namespace StageBundle\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Etablissement;
 use App\Entity\Structure\StructureAnnee;
 use App\Entity\Structure\StructureAnneeUniversitaire;
@@ -37,6 +38,8 @@ class StagePdfController extends AbstractController
         private readonly PdfExportService $pdfExportService,
     ) {
     }
+
+    #[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'Le stage fixe l’année de l’opération.', StageEtudiant::class)]
 
     #[Route('/api/stage_etudiants/{id}/pdf', name: 'api_stage_etudiants_pdf', methods: ['GET'])]
     public function getStagePdf(int $id): Response
@@ -119,6 +122,8 @@ class StagePdfController extends AbstractController
         }
     }
 
+    #[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'L’avenant fixe l’année de l’opération.', StageAvenant::class)]
+
     #[Route('/api/stage_avenants/{id}/pdf', name: 'api_stage_avenants_pdf', methods: ['GET'])]
     public function getAvenantPdf(int $id): Response
     {
@@ -155,6 +160,8 @@ class StagePdfController extends AbstractController
             'Content-Disposition' => 'inline; filename="avenant_stage_' . ($stage->getEtudiant()?->getNom() ?? 'etudiant') . '.pdf"',
         ]);
     }
+
+    #[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'L’avenant fixe l’année de l’opération.', StageAvenant::class)]
 
     #[Route('/api/stage_avenants/{id}/validate', name: 'api_stage_avenants_validate', methods: ['POST'])]
     public function validateAvenant(int $id): Response

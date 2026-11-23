@@ -2,6 +2,7 @@
 
 namespace FinanceBundle\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Service\Pdf\PdfExportOptions;
 use App\Service\Pdf\PdfExportService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,6 +24,7 @@ use Twig\Environment;
  * Formulaire de demande d'achat en PDF ou en HTML, dépôt et lecture du PDF signé. `^/api` est
  * public : chaque route vérifie d'abord le rôle finance, puis le département de la demande.
  */
+#[ContexteAnnuel(ContexteAnnuel::INDEPENDANT, 'Un bon de commande ne dépend pas d’une année.')]
 class FinancePdfController extends AbstractController
 {
     public function __construct(

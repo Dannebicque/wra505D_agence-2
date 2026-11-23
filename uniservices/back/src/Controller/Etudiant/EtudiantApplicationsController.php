@@ -2,6 +2,7 @@
 
 namespace App\Controller\Etudiant;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Structure\StructureDepartement;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
@@ -29,6 +30,7 @@ class EtudiantApplicationsController extends AbstractController
      * Grants or removes applications for students of the staff member's active department only,
      * whatever department the payload names.
      */
+    #[ContexteAnnuel(ContexteAnnuel::INDEPENDANT, 'Les applications d’un étudiant ne dépendent pas d’une année.')]
     #[Route('/api/etudiants/bulk-applications', name: 'app_etudiants_bulk_applications', methods: ['POST'])]
     #[IsGranted(PostVoter::CAN_EDIT_ETUDIANT_SCOLARITE)]
     public function updateBulkApplications(Request $request): JsonResponse

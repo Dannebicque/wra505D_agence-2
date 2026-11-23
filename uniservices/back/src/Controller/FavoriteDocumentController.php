@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Users\Etudiant;
 use App\Entity\Users\Personnel;
 use DocumentBundle\Entity\Document;
@@ -20,6 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  */
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Route('/api/me/documents-favoris')]
+#[ContexteAnnuel(ContexteAnnuel::INDEPENDANT, 'Un document et ses favoris ne dépendent pas d’une année.')]
 final class FavoriteDocumentController extends AbstractController
 {
     public function __construct(

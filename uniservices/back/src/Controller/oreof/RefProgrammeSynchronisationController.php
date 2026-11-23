@@ -2,6 +2,7 @@
 
 namespace App\Controller\oreof;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Security\StructureVoter;
 use App\Service\OReOF\SynchroRefFormation;
 use App\Utils\JsonResponse;
@@ -13,6 +14,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route(path: '/api/oreof/ref-formation/synchronisation', name: 'oreof_programme_synchronisation', methods: ['POST'])]
 #[IsGranted(StructureVoter::CAN_EDIT_PN)]
+#[ContexteAnnuel(ContexteAnnuel::ANNUEL, 'L’année universitaire est transmise dans le corps de la requête.')]
 class RefProgrammeSynchronisationController extends AbstractController
 {
     public function __invoke(

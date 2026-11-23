@@ -2,6 +2,7 @@
 
 namespace StageBundle\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Users\Personnel;
 use App\Utils\LooseValue;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'La soutenance écrite fixe l’année de l’opération.')]
 class StageSoutenanceController extends AbstractController
 {
     private EntityManagerInterface $em;

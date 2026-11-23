@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Entity\Users\Etudiant;
 use App\Security\PostVoter;
 use IntranetBundle\Entity\Etudiant\EtudiantAbsenceJustificatif;
@@ -20,6 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Pour tout autre, la réponse est 404, comme une pièce absente : elle ne révèle pas qu'elle existe.
  */
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'Le justificatif fixe l’année de la lecture.', EtudiantAbsenceJustificatif::class)]
 final class JustificationFileController extends AbstractController
 {
     public function __construct(

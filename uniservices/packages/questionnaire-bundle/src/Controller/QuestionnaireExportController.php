@@ -2,6 +2,7 @@
 
 namespace QuestionnaireBundle\Controller;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Security\UserTypeVoter;
 use App\Service\Pdf\PdfExportOptions;
 use App\Service\Pdf\PdfExportService;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[ContexteAnnuel(ContexteAnnuel::RESSOURCE, 'Le questionnaire fixe l’année de l’opération.', Questionnaire::class, 'uuid', 'uuid')]
 class QuestionnaireExportController extends AbstractController
 {
     public function __construct(

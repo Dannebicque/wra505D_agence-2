@@ -2,6 +2,7 @@
 
 namespace App\Controller\oreof;
 
+use App\AnneeUniversitaire\ContexteAnnuel;
 use App\Security\ApcVoter;
 use App\Service\OReOF\SynchroRefCompetences;
 use App\Utils\JsonResponse;
@@ -13,6 +14,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route(path: '/api/oreof/ref-competences/synchronisation', name: 'oreof_competences_synchronisation', methods: ['POST'])]
 #[IsGranted(ApcVoter::CAN_EDIT_APC_REFERENTIEL)]
+#[ContexteAnnuel(ContexteAnnuel::INDEPENDANT, 'Les référentiels de compétences ne dépendent pas d’une année.')]
 class RefCompetencesSynchronisationController extends AbstractController
 {
     public function __invoke(
