@@ -572,7 +572,7 @@ généré.
 | E26.13 · en revue | messagerie : bundle, widget, purge, tests ; pièces jointes hors de `public/`, cibles limitées au département ; les messages reçus rejoignent le fil de notifications de l'étudiant | `b2d2c639d`, `1d31012d9`, `ab39d0de6`, `d2beffc79`, `39c2fb9f6` |
 | E26.14 · en revue | tableau de bord enseignant : suivi d'avancement des enseignements (écran, dialogues), entrée « Pédagogie » ; l'API d'avancement est déjà reprise par la routine du 04/11 | front de `c46cebced`, `aa48a33a6`, `284c9204a`, `ae705e047`, `a1af79380` |
 | E27.1 · en revue | socle de `f5bb12d5a..e53f30040` (0.9.0 à 0.11.0) : révision des accès, contexte d'année universitaire, calendrier calculé, notifications enregistrées et préférences, université de rattachement, LDAP, prévisionnel, sous-commission restaurable, configuration des services ; hors bundles des lots 2 et 3 | `73489f21f`, `930148fad`, `646715552`, `e86c5c96a`, `bb221212e`, `5bea07ab0`, `fd540709b`, `a00067b88`, `a7ba8c6f5`, `4b6efd1de`, `ccc0d4910`, `b27c9d88e`, `1c010f86f`, `dd967f8f0`, `479007fc6`, `2437d0e84`, `e2f0c21cd`, `a47f43087` |
-| E27.2 | Unifolio v2 : portfolio de compétences de l'étudiant | `d917e09ad` (partie `unifolio-bundle`), `6a6f8bce0` |
+| E27.2 · en revue | Unifolio v2 : portfolio de compétences de l'étudiant | `d917e09ad` (partie `unifolio-bundle`), `6a6f8bce0` |
 | E27.3 | questionnaire, stage, finance et parc auto | parties de `d917e09ad`, `155284c60`, `21023c01a`, `64854ef60`, `213d680d0`, `28d4de6f1`, `e53f30040`, `372970e9b`, `a8e7f2b1c` |
 
 **Décisions de reprise**
@@ -721,6 +721,16 @@ généré.
     primaire en clair, les clients de messagerie ignorant les variables CSS ;
   - dépendance ajoutée avec accord : `symfony/ldap` 8.1 ;
   - Cypress (`acces-socle-e27.cy.js`) non rejoué en local : base locale arrêtée.
+- Unifolio v2 (E27.2) : le bundle du client est repris en entier (portfolio, traces, campagnes,
+  évaluations, publications, CV), formaté à nos normes et typé pour PHPStan 10. Relu côté accès :
+  chaque route par identifiant passe par un voter (un étudiant ne touche qu'à ses portfolios et
+  traces), les preuves sont stockées hors de `public/` avec un type détecté sur le contenu, les pages
+  publiées sont servies sans script (CSP stricte, `nosniff`, `sandbox` pour les fichiers déposés),
+  le lien secret porte un jeton de 192 bits, le Markdown échappe tout HTML avant mise en forme.
+  L'étudiant à qui le personnel ouvre Unifolio trouve « Mon portfolio » dans son menu Scolarité.
+  Couleurs d'interface passées aux jetons ; la palette de thème que l'étudiant choisit pour son
+  portfolio reste une donnée. `Kpi` gagne la tuile compacte des écrans du client.
+  Cypress `acces-unifolio.cy.js` laissé à la CI.
 
 ---
 

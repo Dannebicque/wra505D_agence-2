@@ -1,4 +1,5 @@
 <script setup>
+import { EmptyState } from '@components';
 import { computed, defineProps } from 'vue';
 
 const props = defineProps({
@@ -14,9 +15,9 @@ const items = computed(() => props.data?.items || []);
 <template>
     <ul v-if="items.length" class="list-none p-0 m-0 space-y-2">
         <li v-for="(item, index) in items" :key="`${item}-${index}`" class="text-sm flex items-center gap-2">
-            <i class="pi pi-exclamation-triangle text-orange-500" />
+            <i class="pi pi-exclamation-triangle text-primary" />
             {{ item }}
         </li>
     </ul>
-    <div v-else class="text-sm text-color-secondary">Aucune alerte portfolio.</div>
+    <EmptyState v-else compact title="Aucune alerte portfolio." />
 </template>

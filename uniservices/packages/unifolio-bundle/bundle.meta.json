@@ -1,5 +1,13 @@
 {
   "name": "UniFolio",
   "description": "Outil de création et de gestion de portfolios universitaires.",
-  "urlSlug": "unifolio"
+  "urlSlug": "unifolio",
+  "url": "/app/unifolio",
+  "shortLabel": "UniFolio",
+  "primaryColor": "emerald",
+  "icon": "pi pi-book",
+  "aliases": [
+    "portfolio",
+    "portfolios"
+  ]
 }

@@ -1,4 +1,5 @@
 <script setup>
+import { EmptyState } from '@components';
 import { computed, defineProps } from 'vue';
 
 const props = defineProps({
@@ -13,9 +14,9 @@ const items = computed(() => props.data?.items || []);
 
 <template>
     <ul v-if="items.length" class="list-none p-0 m-0 space-y-2">
-        <li v-for="(item, index) in items" :key="`${item}-${index}`" class="text-sm">
+        <li v-for="(item, index) in items" :key="`${item}-${index}`" class="text-sm" :class="item.startsWith('•') ? 'pl-3 text-color-secondary' : 'font-medium'">
             {{ item }}
         </li>
     </ul>
-    <div v-else class="text-sm text-color-secondary">Aucun élément à corriger.</div>
+    <EmptyState v-else compact title="Aucun élément à corriger." />
 </template>

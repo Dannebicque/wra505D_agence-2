@@ -72,7 +72,8 @@
     "autoload-dev": {
         "psr-4": {
             "App\\Tests\\": "tests/",
-            "MessageBundle\\Tests\\": "../packages/message-bundle/tests/"
+            "MessageBundle\\Tests\\": "../packages/message-bundle/tests/",
+            "UnifolioBundle\\Tests\\": "../packages/unifolio-bundle/tests/"
         }
     },
     "replace": {
