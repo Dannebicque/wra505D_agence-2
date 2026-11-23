@@ -4,12 +4,8 @@ const connexion = (login) => {
     cy.request('POST', '/api/login', { username: login, password: 'test' });
 };
 
-const appel = (method, url, headers = {}) => cy.request({ method, url, headers, failOnStatusCode: false });
+const appel = (method, url) => cy.request({ method, url, failOnStatusCode: false });
 
-// Comme le front, l'appel porte l'année universitaire sélectionnée.
-const avecAnneeActive = (envoi) => cy.request('/api/structure_annee_universitaires?actif=true')
-    .its('body.member.0.id')
-    .then((id) => envoi({ 'X-Contexte-Annuel': 'selection', 'X-Annee-Universitaire': String(id) }));
 
 describe('Accès à Unifolio', () => {
     it('exige une connexion', () => {
@@ -19,15 +15,13 @@ describe('Accès à Unifolio', () => {
 
     it('refuse l\'espace portfolio à un étudiant sans le paquet Unifolio', () => {
         connexion('etudiant');
-        avecAnneeActive((headers) => {
-            appel('GET', '/api/unifolio/portfolios', headers).its('status').should('eq', 403);
-            appel('GET', '/api/unifolio/cv', headers).its('status').should('eq', 403);
-        });
+        appel('GET', '/api/unifolio/portfolios').its('status').should('eq', 403);
+        appel('GET', '/api/unifolio/cv').its('status').should('eq', 403);
     });
 
     it('refuse l\'administration à un étudiant', () => {
         connexion('etudiant');
-        avecAnneeActive((headers) => appel('GET', '/api/unifolio/admin/campagnes', headers).its('status').should('eq', 403));
+        appel('GET', '/api/unifolio/admin/campagnes').its('status').should('eq', 403);
     });
 
     it('ne sert sans connexion aucune publication inexistante', () => {
