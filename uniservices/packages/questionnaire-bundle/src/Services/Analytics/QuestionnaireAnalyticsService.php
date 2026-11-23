@@ -47,7 +47,7 @@ class QuestionnaireAnalyticsService
         $responsesByDate = [];
 
         foreach ($invitations as $inv) {
-            $status = $inv->getStatus() instanceof QuestInvitationStatusEnum ? $inv->getStatus()->value : 'pending';
+            $status = $inv->getStatus() ? $inv->getStatus()->value : 'pending';
             $statusCounts[$status]++;
 
             if ($status === 'submitted') {
@@ -318,10 +318,17 @@ class QuestionnaireAnalyticsService
                 sectionTitle: $instance->getTitleSnapshot() ?? '',
                 sectionType: $sectionTemplate->getTypeSection() instanceof QuestTypeSectionEnum ? $sectionTemplate->getTypeSection()->value : 'normal',
                 repeatItemType: $instance->getRepeatSectionItemType(),
-                repeatItemId: !in_array($instance->getRepeatSectionItemId(), [null, 0], true) ? (string)$instance->getRepeatSectionItemId() : null,
-                questions: $questionsStats
+                repeatItemId: $instance->getRepeatSectionItemId(),
+                questions: $masquee ? [] : $questionsStats,
+                reponses: $nbRepondants,
+                masquee: $masquee,
+                enseignement: $instance->getEnseignement()?->getLibelle(),
+                intervenant: $instance->getPersonnelCible()?->getDisplay(),
             );
         }
+
+        // Seuil d'anonymat : sous ce nombre de réponses, le détail permettrait d'identifier les répondants.
+        $seuilAtteint = $totalResponses >= $seuil;
 
         return new QuestionnaireAnalyticsDto(
             surveyId: $q->getUuidString(),

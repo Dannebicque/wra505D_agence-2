@@ -2,6 +2,7 @@
 
 namespace StageBundle\Entity\Stages;
 
+use ApiPlatform\Metadata\QueryParameter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -23,30 +24,27 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use ApiPlatform\Metadata\QueryParameter;
-use App\Filter\StageEtudiantFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use StageBundle\Filter\StageEtudiantFilter;
 
 #[ORM\Entity(repositoryClass: StageEtudiantRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(
-            normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']],
-            security: "is_granted('CAN_VIEW_STAGE', object)"
-        ),
-        new GetCollection(
-            normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']],
-            security: "is_granted('CAN_VIEW_STAGE') or is_granted('ROLE_ETUDIANT')"
-        ),
+        new Get(security: "is_granted('CAN_VIEW_STAGE', object)", normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']]),
+        // Liste restreinte aux dossiers visibles par l'utilisateur : DepartmentCollectionAccessExtension
+        new GetCollection(normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']]),
         new Post(
+            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object) and (is_granted('CAN_VALIDATE_STAGE', object) or (object.getEtatStage().value == 'ETAT_STAGE_AUTORISE' and object.getDateValidation() == null))",
             normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']],
             denormalizationContext: ['groups' => ['stage_etudiant:write']],
-            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object)"
+            processor: StageEtudiantProcessor::class
         ),
         new Patch(
+            security: "is_granted('CAN_EDIT_STAGE', object)",
+            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object) and (is_granted('CAN_VALIDATE_STAGE', object) or (object.getStagePeriode() == previous_object.getStagePeriode() and object.getEtatStage() == previous_object.getEtatStage() and object.getDateValidation() == previous_object.getDateValidation()))",
             normalizationContext: ['groups' => ['stage_etudiant:read', 'etudiant:light', 'stage_periode:read']],
             denormalizationContext: ['groups' => ['stage_etudiant:write']],
-            security: "is_granted('CAN_EDIT_STAGE', object)",
-            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object)"
+            processor: StageEtudiantProcessor::class
         ),
         new Delete(security: "is_granted('CAN_DELETE_STAGE', object)")
     ],
@@ -188,11 +186,13 @@ class StageEtudiant implements TimestampableInterface
     private ?string $assuranceNumero = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['stage_etudiant:read', 'stage_etudiant:write'])]
+    // Posé par le serveur (StageEtudiantProcessor / StageRapportController), jamais par le client.
+    #[Groups(['stage_etudiant:read'])]
     private ?\DateTimeInterface $dateAutorise = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['stage_etudiant:read', 'stage_etudiant:write'])]
+    // Posé par le serveur (StageEtudiantProcessor / StageRapportController), jamais par le client.
+    #[Groups(['stage_etudiant:read'])]
     private ?\DateTimeInterface $dateImprime = null;
 
     /** @var array{adresse: string, complement1: string, complement2: string, ville: string, codePostal: string, pays: string}|null */

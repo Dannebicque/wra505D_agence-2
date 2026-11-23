@@ -4,59 +4,45 @@ namespace QuestionnaireBundle\State\Provider\Questionnaire\Runtime;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Utils\LooseValue;
-use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireInvitation;
-use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSectionInstance;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\InvitationIndexDto;
 use QuestionnaireBundle\ApiDto\Questionnaire\Runtime\SectionIndexDto;
+use QuestionnaireBundle\Domain\Questionnaire\Runtime\InvitationRuntime;
+use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireSectionInstance;
 
-/** @implements ProviderInterface<InvitationIndexDto> */
+/**
+ * Sommaire d'un questionnaire pour le répondant (par le jeton de l'invitation).
+ *
+ * @implements ProviderInterface<InvitationIndexDto>
+ */
 final class InvitationIndexProvider implements ProviderInterface
 {
-    public function __construct(private EntityManagerInterface $em)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly InvitationRuntime $runtime,
+    ) {
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): InvitationIndexDto
     {
-        $token = LooseValue::castString($uriVariables['token']);
+        $invitation = $this->runtime->invitation($uriVariables['token'] ?? '');
+        $questionnaire = $invitation->getQuestionnaire();
 
-        $inv = $this->em->getRepository(QuestionnaireInvitation::class)->findOneBy(['token' => $token]);
-        if (!$inv instanceof QuestionnaireInvitation) {
-            throw new \RuntimeException('Invitation not found');
+        // Ouvrir le questionnaire ne compte comme « commencé » que s'il est ouvert aux réponses.
+        if ($questionnaire->estOuvert() && !$invitation->isSubmitted() && $invitation->getStartedAt() === null) {
+            $invitation->markStarted();
+            $this->em->flush();
         }
 
-        $inv->markStarted();
-        $this->em->flush();
-
-        $q = $inv->getQuestionnaire();
-        $status = $inv->getStatus();
-        if ($q === null || $status === null) {
-            throw new \LogicException('Invitation fields are required');
-        }
-
-        $sections = $this->em->getRepository(QuestionnaireSectionInstance::class)->findBy(
-            ['questionnaire' => $q],
-            ['sortOrder' => 'ASC']
-        );
-
-        $out = [];
-        foreach ($sections as $s) {
-            $section = $s->getSection();
-            $title = $s->getTitleSnapshot();
-            $order = $s->getSortOrder();
-            if ($section === null || $title === null || $order === null) {
-                throw new \LogicException('Section instance fields are required');
-            }
-            $qtCount = $section->getQuestions()->count();
-            $out[] = new SectionIndexDto(
+        $sections = [];
+        foreach ($this->em->getRepository(QuestionnaireSectionInstance::class)->findBy(['questionnaire' => $questionnaire], ['sortOrder' => 'ASC']) as $s) {
+            $sections[] = new SectionIndexDto(
                 publishedSectionInstanceId: (int) $s->getId(),
-                title: $title,
-                questionCount: $qtCount,
-                order: $order,
+                title: (string) $s->getTitleSnapshot(),
+                questionCount: $s->getSection()?->getQuestions()->count() ?? 0,
+                order: (int) $s->getSortOrder(),
                 repeatItemType: $s->getRepeatSectionItemType(),
-                repeatItemId: !in_array($s->getRepeatSectionItemId(), [null, 0], true) ? (string) $s->getRepeatSectionItemId() : null
+                repeatItemId: $s->getRepeatSectionItemId(),
             );
         }
 
@@ -66,11 +52,16 @@ final class InvitationIndexProvider implements ProviderInterface
         }
 
         return new InvitationIndexDto(
-            questionnaireTitle: $questionnaireTitle,
-            invitationStatus: $status->value,
-            startedAt: $inv->getStartedAt(),
-            submittedAt: $inv->getSubmittedAt(),
-            sections: $out
+            questionnaireTitle: (string) $questionnaire->getTitle(),
+            invitationStatus: $invitation->getStatus()->value,
+            startedAt: $invitation->getStartedAt(),
+            modifiable: $this->runtime->estModifiable($invitation),
+            submittedAt: $invitation->getSubmittedAt(),
+            sections: $sections,
+            description: $questionnaire->getDescription(),
+            estimatedTime: $questionnaire->getEstimatedTime(),
+            startText: $questionnaire->getStartText(),
+            endText: $questionnaire->getEndText(),
         );
     }
 }

@@ -11,7 +11,6 @@ withDefaults(defineProps<{
   tone: 'primary'
 });
 </script>
-
 <template>
   <div class="flex items-center gap-3">
     <div :class="['w-10 h-10 rounded-xl border flex items-center justify-center shrink-0', toneClasses[tone]]">
@@ -19,7 +18,7 @@ withDefaults(defineProps<{
     </div>
     <div class="min-w-0">
       <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">{{ title }}</h2>
-      <p v-if="subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ subtitle }}</p>
+      <p v-if="subtitle" class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ subtitle }}</p>
     </div>
   </div>
 </template>

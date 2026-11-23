@@ -14,6 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: StageConventionTemplateRepository::class)]
+// Modèles communs à tous les départements : modification réservée au super administrateur.
 #[ApiResource(
     operations: [
         new Get(
@@ -25,20 +26,24 @@ use Symfony\Component\Serializer\Attribute\Groups;
             security: "is_granted('CAN_VIEW_STAGE')"
         ),
         new Post(
+            securityPostDenormalize: "is_granted('IS_SUPER_ADMIN')",
             normalizationContext: ['groups' => ['stage_template:read']],
-            denormalizationContext: ['groups' => ['stage_template:write']],
-            securityPostDenormalize: "is_granted('ROLE_STAGE')"
+            denormalizationContext: ['groups' => ['stage_template:write']]
         ),
         new Patch(
+            securityPostDenormalize: "is_granted('IS_SUPER_ADMIN')",
             normalizationContext: ['groups' => ['stage_template:read']],
-            denormalizationContext: ['groups' => ['stage_template:write']],
-            securityPostDenormalize: "is_granted('ROLE_STAGE')"
+            denormalizationContext: ['groups' => ['stage_template:write']]
         ),
-        new Delete(security: "is_granted('ROLE_STAGE')"),
+        new Delete(security: "is_granted('IS_SUPER_ADMIN')"),
     ]
 )]
 class StageConventionTemplate
 {
+    /** Code du modèle de convention (un seul modèle actif) ; sans modèle en base, le gabarit Twig intégré est utilisé. */
+    public const CODE_CONVENTION = 'default_convention';
+    public const CODE_AVENANT = 'default_avenant';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

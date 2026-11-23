@@ -23,22 +23,21 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: QuestionnaireQuestionRepository::class)]
 #[ApiResource(
+    uriTemplate: '/questionnaire_sections/{questionnaireSectionId}/questionnaire_questions',
     operations: [
-        new GetCollection(
-            uriTemplate: '/questionnaire_sections/{questionnaireSectionId}/questionnaire_questions',
-            uriVariables: [
-                'questionnaireSectionId' => new Link(toProperty: 'section', fromClass: QuestionnaireSection::class),
-            ],
-        ),
-        new Post(
-            uriTemplate: '/questionnaire_sections/{questionnaireSectionId}/questionnaire_questions',
-            uriVariables: [
-                'questionnaireSectionId' => new Link(toProperty: 'section', fromClass: QuestionnaireSection::class),
-            ],
-            read: false,
-        ),
-        new Patch(),
-        new Delete(),
+        // Accès défini par les règles locales ; invitations filtrées par DepartmentCollectionAccessExtension.
+        new GetCollection(),
+        // La section parente (URL) et le droit de gérer le questionnaire sont contrôlés par le processeur.
+        new Post(security: "is_granted('IS_PERSONNEL')", read: false, processor: QuestionnaireStructureProcessor::class),
+    ],
+    uriVariables: [
+        'questionnaireSectionId' => new Link(toProperty: 'section', fromClass: QuestionnaireSection::class),
+    ]
+)]
+#[ApiResource(
+    operations: [
+        new Patch(security: "is_granted('CAN_EDIT_QUESTION', object)", securityPostDenormalize: "is_granted('CAN_EDIT_QUESTION', object)", processor: QuestionnaireStructureProcessor::class),
+        new Delete(security: "is_granted('CAN_DELETE_QUESTION', object)", processor: QuestionnaireStructureProcessor::class),
     ]
 )]
 #[ORM\Index(name: 'idx_question_section_ordre', columns: ['section_id', 'sort_order'])]

@@ -14,7 +14,6 @@ use StageBundle\Entity\Stages\StagePeriodeSoutenance;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use StageBundle\Entity\Stages\StageEtudiant;
 use StageBundle\Enum\EtatStageEnum;
 
 /**
@@ -64,9 +63,14 @@ class StageVoter extends Voter
     /**
      * @inheritDoc
      */
+    public function supportsAttribute(string $attribute): bool
+    {
+        return in_array($attribute, [...self::SUPPORTED_ATTRIBUTES, self::STAGE_ETUDIANT_VIEW, self::STAGE_ETUDIANT_EDIT, self::STAGE_ETUDIANT_MANAGE, self::STAGE_PERIODE_MANAGE], true);
+    }
+
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, self::SUPPORTED_ATTRIBUTES, true);
+        return $this->supportsAttribute($attribute);
     }
 
     /**
@@ -184,70 +188,68 @@ class StageVoter extends Voter
 
     private function canViewStage(mixed $subject, Personnel|Etudiant $user): bool
     {
-        if ($user instanceof Personnel) {
-            return $this->hasAnyRole($user, [
-                'SUPER_ADMIN',
-                'ROLE_ADMIN',
-                'ROLE_CHEF_DEPT',
-                'ROLE_STAGE_MANAGER',
-                'ROLE_STAGE_VIEW',
-                'ROLE_SCOLARITE',
-                'ROLE_PERMANENT'
-            ]) || $this->isTutor($subject, $user);
+        $stage = $this->resolveStage($subject);
+
+        if ($user instanceof Etudiant) {
+            return $stage?->getEtudiant() === $user;
         }
 
-        // Un étudiant peut voir ses propres stages
-        return $subject instanceof StageEtudiant && $subject->getEtudiant() === $user;
+        $department = $this->resolvePeriod($subject)?->getDepartement();
+
+        return $this->effectivePermissionService->hasAnyPermissionInDepartment(
+            $user,
+            ['ROLE_STAGE_VIEW', 'ROLE_ADMIN', 'ROLE_CHEF_DEPT', 'ROLE_SCOLARITE'],
+            $department,
+        );
     }
 
     private function canEditStage(mixed $subject, Personnel|Etudiant $user): bool
     {
-        if ($user instanceof Personnel) {
-            return $this->hasAnyRole($user, [
-                'SUPER_ADMIN',
-                'ROLE_ADMIN',
-                'ROLE_CHEF_DEPT',
-                'ROLE_STAGE_MANAGER',
-                'ROLE_SCOLARITE'
-            ]) || $this->isTutor($subject, $user);
+        if ($user instanceof Etudiant) {
+            // Les soutenances et la validation restent des opérations de gestion.
+            return ($subject instanceof StageEtudiant || $subject instanceof StageAvenant)
+                && $this->resolveStage($subject)?->getEtudiant() === $user;
         }
 
-        // Un étudiant peut modifier son propre stage, tant qu'il n'est ni validé ni évalué
-        return $subject instanceof StageEtudiant
-            && $subject->getEtudiant() === $user
-            && in_array($subject->getEtatStage(), [EtatStageEnum::AUTORISE, EtatStageEnum::DEPOSE, EtatStageEnum::INCOMPLET], true)
-            && null === $subject->getDateValidation()
-            && null === $subject->getEvaluationNote();
+        return $this->canManageStage($subject, $user);
     }
 
-    /**
-     * Le tuteur universitaire suit le stage. Seul un stage enregistré compte : un enseignant ne
-     * se crée pas un stage en s'y désignant tuteur.
-     */
-    private function isTutor(mixed $subject, Personnel $user): bool
+    private function canManageStage(mixed $subject, Personnel|Etudiant $user): bool
     {
-        return $subject instanceof StageEtudiant
-            && null !== $subject->getId()
-            && $subject->getTuteurUniversitaire() === $user;
+        if (!$user instanceof Personnel) {
+            return false;
+        }
+
+        $roles = ['ROLE_STAGE_MANAGER', 'ROLE_ADMIN', 'ROLE_CHEF_DEPT'];
+        $department = $this->resolvePeriod($subject)?->getDepartement();
+        if (!$this->effectivePermissionService->hasAnyPermissionInDepartment($user, $roles, $department)) {
+            return false;
+        }
+
+        // Une soutenance peut aussi référencer un dossier rattaché à une autre période.
+        $studentStage = $subject instanceof StageSoutenance ? $subject->getStageEtudiant() : null;
+
+        return $studentStage === null || $this->effectivePermissionService->hasAnyPermissionInDepartment(
+            $user,
+            $roles,
+            $studentStage->getStagePeriode()?->getDepartement(),
+        );
     }
 
-    private function canDeleteStage(Personnel|Etudiant $user): bool
+    private function resolveStage(mixed $subject): ?StageEtudiant
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
-            'SUPER_ADMIN',
-            'ROLE_ADMIN',
-            'ROLE_STAGE_MANAGER'
-        ]);
+        return match (true) {
+            $subject instanceof StageEtudiant => $subject,
+            $subject instanceof StageAvenant,
+            $subject instanceof StageSoutenance => $subject->getStageEtudiant(),
+            default => null,
+        };
     }
 
-    private function canValidateStage(Personnel|Etudiant $user): bool
+    private function resolvePeriod(mixed $subject): ?StagePeriode
     {
-        return $user instanceof Personnel && $this->hasAnyRole($user, [
-            'SUPER_ADMIN',
-            'ROLE_ADMIN',
-            'ROLE_CHEF_DEPT',
-            'ROLE_STAGE_MANAGER',
-            'ROLE_DIRECTEUR_ETUDES'
-        ]);
+        return $subject instanceof StageSoutenance
+            ? $subject->getStagePeriode()
+            : $this->resolveStage($subject)?->getStagePeriode();
     }
 }

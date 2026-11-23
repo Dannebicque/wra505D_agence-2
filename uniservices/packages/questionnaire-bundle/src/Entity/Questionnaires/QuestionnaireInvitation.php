@@ -15,25 +15,20 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\SerializedName;
 
 #[ORM\Entity(repositoryClass: QuestionnaireInvitationRepository::class)]
 #[ORM\Index(name: 'idx_invitation_token', columns: ['token'])]
 #[ORM\Index(name: 'idx_invitation_questionnaire', columns: ['questionnaire_id'])]
 #[ApiResource(
     operations: [
-        new Get(
-            normalizationContext: ['groups' => ['invitation:read']],
-            security: "is_granted('CAN_EXPORT_QUESTIONNAIRE', object.getQuestionnaire())",
-        ),
-        new GetCollection(
-            normalizationContext: ['groups' => ['invitation:read']],
-            security: "is_granted('IS_PERSONNEL')",
-            provider: QuestionnaireInvitationCollectionProvider::class,
-        ),
+        new Get(security: "is_granted('CAN_EDIT_QUESTIONNAIRE', object.getQuestionnaire())", normalizationContext: ['groups' => ['invitation:read']]),
+        // Accès défini par les règles locales ; invitations filtrées par DepartmentCollectionAccessExtension.
+        new GetCollection(normalizationContext: ['groups' => ['invitation:read']]),
     ],
     normalizationContext: ['groups' => ['invitation:read']],
 )]
-#[ApiFilter(SearchFilter::class, properties: ['questionnaire' => 'exact', 'questionnaire.uuid' => 'exact'])]
+#[ApiFilter(SearchFilter::class, properties: ['questionnaire' => 'exact', 'questionnaire.uuid' => 'exact', 'status' => 'exact'])]
 class QuestionnaireInvitation implements TimestampableInterface
 {
     #[ORM\Id]

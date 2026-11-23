@@ -11,7 +11,6 @@ withDefaults(defineProps<{
   tone: 'primary'
 });
 </script>
-
 <template>
   <section class="q-section">
     <header class="flex items-center justify-between gap-3">

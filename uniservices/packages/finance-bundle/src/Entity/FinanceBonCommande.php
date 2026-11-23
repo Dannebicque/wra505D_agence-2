@@ -25,31 +25,38 @@ use FinanceBundle\Enum\AvisDirecteurEnum;
 use FinanceBundle\Enum\StatutCommandeEnum;
 use FinanceBundle\Enum\TypePrestationEnum;
 use FinanceBundle\Repository\FinanceBonCommandeRepository;
+use FinanceBundle\State\FinanceBonCommandeProcessor;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Serializer\Attribute\SerializedName;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: FinanceBonCommandeRepository::class)]
 #[ApiResource(
     operations: [
+        // Liste restreinte par FinanceVisibiliteExtension ; paginée (le client peut demander jusqu'à 100 éléments).
         new GetCollection(
             normalizationContext: ['groups' => ['finance:read', 'finance:list']],
-            paginationEnabled: false,
-            security: "is_granted('FINANCE_VIEW')"
+            paginationClientItemsPerPage: true,
+            paginationMaximumItemsPerPage: 100
         ),
-        new Get(
-            normalizationContext: ['groups' => ['finance:read', 'finance:detail']],
-            security: "is_granted('FINANCE_VIEW', object)"
-        ),
+        new Get(security: "is_granted('CAN_VIEW_FINANCE', object)", normalizationContext: ['groups' => ['finance:read', 'finance:detail']]),
+        // Demandeur, statut et date de demande sont fixés par le serveur (FinanceBonCommandeProcessor).
         new Post(
-            denormalizationContext: ['groups' => ['finance:write']],
-            security: "is_granted('FINANCE_EDIT')",
-            securityPostDenormalize: "is_granted('FINANCE_EDIT', object)"
+            securityPostDenormalize: "is_granted('FINANCE_BC_CREER', object) and object.getStatut().value == 'BROUILLON' and object.getDateSignatureResponsable() == null",
+            denormalizationContext: ['groups' => ['finance:write', 'finance:create']],
+            processor: FinanceBonCommandeProcessor::class
         ),
+        // Le département et le demandeur ne changent plus après la création.
         new Patch(
-            denormalizationContext: ['groups' => ['finance:write', 'finance:update_step']],
-            security: "is_granted('FINANCE_EDIT', object)",
-            securityPostDenormalize: "is_granted('FINANCE_EDIT', object)"
+            security: "is_granted('CAN_EDIT_FINANCE', object)",
+            securityPostDenormalize: "is_granted('CAN_MANAGE_FINANCE', object) or (is_granted('CAN_EDIT_FINANCE', object) and object.getDepartement() == previous_object.getDepartement() and object.getStatut() == previous_object.getStatut() and object.getDateSignatureResponsable() == previous_object.getDateSignatureResponsable())",
+            denormalizationContext: ['groups' => ['finance:write']],
+            processor: FinanceBonCommandeProcessor::class
         ),
-        new Delete(security: "is_granted('FINANCE_DELETE', object)")
+        // Le demandeur supprime son brouillon ; au-delà, seul le service financier (cf. FinanceAccess::peutSupprimer).
+        new Delete(security: "is_granted('FINANCE_BC_SUPPRIMER', object)"),
     ]
 )]
 #[ApiFilter(SearchFilter::class, properties: [
@@ -263,13 +270,18 @@ class FinanceBonCommande implements TimestampableInterface
     #[Groups(['finance:read', 'finance:list', 'finance:write'])]
     private bool $factureFinale = false;
 
+    /** Motif du rejet de la demande (avis défavorable ou rejet par le service financier). */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['finance:read', 'finance:list'])]
+    private ?string $motifRejet = null;
+
     #[ORM\Column(length: 30, enumType: StatutCommandeEnum::class)]
-    #[Groups(['finance:read', 'finance:list', 'finance:write'])]
+    #[Groups(['finance:read', 'finance:list'])]
     private StatutCommandeEnum $statut = StatutCommandeEnum::BROUILLON;
 
-    // Lecture seule : le chemin est fixé au dépôt du PDF, jamais par le client de l'API.
+    /** Chemin relatif au dossier des documents (FinanceDocumentStorage) : jamais exposé ni modifiable par l'API. */
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['finance:read', 'finance:detail', 'finance:list'])]
+    #[Ignore]
     private ?string $pdfFilePath = null;
 
     public function __construct()

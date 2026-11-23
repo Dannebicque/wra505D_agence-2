@@ -405,7 +405,7 @@ onMounted(async () => {
           <InputText
             v-model="filters['global'].value"
             placeholder="Recherche rapide..."
-            class="py-1 px-3 text-xs rounded-lg border border-surface bg-surface-0 dark:bg-surface-900"
+            class="py-1 px-3 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
           />
         </IconField>
       </template>
@@ -417,19 +417,19 @@ onMounted(async () => {
           class="flex flex-wrap items-center justify-between gap-3 p-3 mb-4 bg-primary-50/90 dark:bg-surface-900 border border-primary-200 dark:border-primary-800/60 rounded-2xl shadow-xs"
         >
           <div class="flex items-center gap-2.5">
-            <span class="inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-full bg-primary text-primary-contrast text-xs font-bold">
+            <span class="inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-full bg-primary-600 text-white text-sm font-bold">
               {{ selectedResponses.length }}
             </span>
-            <span class="text-xs sm:text-sm font-semibold text-color">
+            <span class="text-sm sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
               {{ selectedResponses.length }} ligne{{ selectedResponses.length > 1 ? 's' : '' }} sélectionnée{{ selectedResponses.length > 1 ? 's' : '' }}
             </span>
             <Tag
               v-if="selectedPendingResponses.length > 0"
               :value="`${selectedPendingResponses.length} à relancer`"
               severity="warn"
-              class="text-xs font-sans"
+              class="text-sm font-sans"
             />
-            <span v-else class="text-xs text-muted-color">
+            <span v-else class="text-sm text-slate-500 dark:text-slate-400">
               (toutes terminées)
             </span>
           </div>
@@ -583,18 +583,18 @@ onMounted(async () => {
                 <button
                   v-if="data.remindersCount > 0"
                   type="button"
-                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-800 dark:bg-primary-950/50 dark:text-primary-300 border border-primary-200 dark:border-primary-800/60 hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors cursor-pointer"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-semibold bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors cursor-pointer"
                   title="Cliquer pour consulter l'historique des relances"
                   @click="openHistoryModal(data)"
                 >
-                  <i class="pi pi-bell text-[10px]" aria-hidden="true" />
+                  <i class="pi pi-bell text-sm" />
                   <span>{{ data.remindersCount }} relance{{ data.remindersCount > 1 ? 's' : '' }}</span>
                 </button>
-                <span v-else class="text-xs text-muted-color italic">
+                <span v-else class="text-sm text-slate-400 dark:text-slate-500 italic">
                   Aucune relance
                 </span>
               </div>
-              <span v-if="data.remindedAt" class="text-[11px] text-muted-color">
+              <span v-if="data.remindedAt" class="text-sm text-slate-500 dark:text-slate-400">
                 Dernière : {{ formatRelativeTime(data.remindedAt) }}
               </span>
             </div>
@@ -606,7 +606,7 @@ onMounted(async () => {
               :options="['Relancé', 'Non relancé']"
               placeholder="Tous"
               :showClear="true"
-              class="w-full text-xs border border-surface rounded focus:ring-1 focus:ring-primary-500"
+              class="w-full text-sm border border-gray-300 dark:border-gray-700 rounded focus:ring-1 focus:ring-primary-500"
               @change="filterCallback()"
             />
           </template>
@@ -679,265 +679,23 @@ onMounted(async () => {
     <ResponseDetailModal v-if="showResponseDetail" :response="selectedResponse" :survey="survey"
       @close="showResponseDetail = false" />
 
-    <!-- Reminder Modal -->
-    <!-- Reminder Modal -->
-    <Dialog
-      :style="{ width: '92vw', maxWidth: '680px' }"
+    <!-- Relance -->
+    <ReminderSendModal
       :visible="showReminderModal"
-      :modal="true"
-      :closable="true"
-      :draggable="false"
-      @update:visible="showReminderModal = $event"
-    >
-      <template #header>
-        <DialogHeader
-          :icon="BellIcon"
-          tone="amber"
-          title="Envoyer un rappel"
-          :subtitle="`${reminderTargets.length} participant${reminderTargets.length > 1 ? 's' : ''} ciblé${reminderTargets.length > 1 ? 's' : ''}`"
-        />
-      </template>
+      :survey-id="surveyId"
+      :survey-title="survey?.title || ''"
+      :targets="reminderTargets"
+      @close="showReminderModal = false"
+      @sent="onRemindersSent"
+    />
 
-      <div class="q-form">
-        <!-- Recipients list -->
-        <FormSection :icon="UsersIcon" tone="slate" title="Destinataires">
-          <div class="max-h-36 overflow-y-auto space-y-1.5 pr-1">
-            <div
-              v-for="response in reminderTargets"
-              :key="response.id"
-              class="flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2"
-            >
-              <div class="flex items-center gap-2.5">
-                <div class="w-7 h-7 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {{ getParticipantInitials(response.participantId) }}
-                </div>
-                <div>
-                  <p class="text-xs font-medium text-slate-900 dark:text-white">{{ getParticipantName(response.participantId) }}</p>
-                  <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ getParticipantEmail(response.participantId) }}</p>
-                </div>
-              </div>
-              <Tag
-                :value="getStatusLabel(response)"
-                :severity="getStatusSeverity(response)"
-                class="text-xs font-sans"
-              />
-            </div>
-          </div>
-        </FormSection>
-
-        <!-- Message preview / editor -->
-        <FormSection :icon="EnvelopeIcon" tone="amber" title="Message de rappel">
-          <template #actions>
-            <button
-              type="button"
-              class="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline border-0 bg-transparent cursor-pointer"
-              @click="resetReminderMessage"
-            >
-              Réinitialiser
-            </button>
-          </template>
-
-          <FormField label="Objet du message" for="reminder-subject">
-            <input
-              id="reminder-subject"
-              v-model="reminderSubject"
-              type="text"
-              class="q-input"
-              placeholder="Objet de l'email..."
-            />
-          </FormField>
-
-          <FormField label="Corps du message" for="reminder-message">
-            <textarea
-              id="reminder-message"
-              v-model="reminderMessage"
-              rows="7"
-              class="q-input font-mono text-xs leading-relaxed"
-              placeholder="Corps du message..."
-            />
-          </FormField>
-
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">
-            Les variables <code class="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-mono">{{ '{prenom}' }}</code>,
-            <code class="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-mono">{{ '{lien}' }}</code> et
-            <code class="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded font-mono">{{ '{questionnaire}' }}</code>
-            seront remplacées automatiquement.
-          </p>
-        </FormSection>
-
-        <!-- Actions -->
-        <div class="q-actions">
-          <Button
-            label="Annuler"
-            severity="secondary"
-            outlined
-            @click="showReminderModal = false"
-          />
-          <Button
-            :label="`Envoyer ${reminderTargets.length > 1 ? 'les ' + reminderTargets.length + ' rappels' : 'le rappel'}`"
-            severity="warn"
-            :loading="isSendingReminders"
-            :icon="isSendingReminders ? undefined : 'pi pi-bell'"
-            @click="confirmSendReminders"
-          />
-        </div>
-      </div>
-    </Dialog>
-
-    <!-- Reminder History Modal -->
-    <Dialog
-      :style="{ width: '92vw', maxWidth: '720px' }"
+    <!-- Historique des relances -->
+    <ReminderHistoryModal
       :visible="showHistoryModal"
-      :modal="true"
-      :closable="true"
-      :draggable="false"
-      @update:visible="showHistoryModal = $event"
-    >
-      <template #header>
-        <DialogHeader
-          :icon="ClockIcon"
-          tone="amber"
-          title="Historique des relances"
-          :subtitle="`${historyTargetResponse?.participantName || 'Participant'} (${historyTargetResponse?.participantEmail || ''})`"
-          @close="showHistoryModal = false"
-        />
-      </template>
-
-      <div v-if="historyTargetResponse" class="space-y-5 pt-1">
-        <!-- Participant Summary Banner -->
-        <div class="p-3.5 rounded-2xl border border-surface bg-emphasis dark:bg-surface-900 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary-100 dark:bg-primary-950/70 text-primary-800 dark:text-primary-300 rounded-full flex items-center justify-center font-bold text-sm border border-primary-200 dark:border-primary-800/60 shadow-xs">
-              {{ getParticipantInitials(historyTargetResponse.participantId) }}
-            </div>
-            <div>
-              <p class="text-sm font-semibold text-color">
-                {{ historyTargetResponse.participantName }}
-              </p>
-              <p class="text-xs text-muted-color">
-                {{ historyTargetResponse.participantEmail }} • Groupe : {{ historyTargetResponse.participantGroup || 'Non assigné' }}
-              </p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <Tag
-              :value="historyTargetResponse.statusLabel"
-              :severity="getStatusSeverity(historyTargetResponse)"
-              class="text-xs font-sans"
-            />
-            <Tag
-              :value="`${historyTargetResponse.remindersCount || 0} relance${(historyTargetResponse.remindersCount || 0) > 1 ? 's' : ''}`"
-              :severity="(historyTargetResponse.remindersCount || 0) > 0 ? 'warn' : 'secondary'"
-              class="text-xs font-sans"
-            />
-          </div>
-        </div>
-
-        <!-- History List / Timeline -->
-        <div v-if="historyTargetResponse.remindersHistory && historyTargetResponse.remindersHistory.length > 0" class="space-y-3">
-          <div class="flex items-center justify-between pb-1">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-muted-color flex items-center gap-1.5">
-              <i class="pi pi-history text-xs" aria-hidden="true" />
-              <span>Détail chronologique des envois ({{ historyTargetResponse.remindersHistory.length }})</span>
-            </h4>
-            <span class="text-[11px] text-muted-color">
-              Classé du plus récent au plus ancien
-            </span>
-          </div>
-
-          <div class="relative pl-6 space-y-4 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-200 dark:before:bg-surface-700">
-            <div
-              v-for="(item, idx) in sortedReminderHistory"
-              :key="item.id || idx"
-              class="relative group"
-            >
-              <!-- Timeline node dot -->
-              <div class="absolute -left-6 top-2 w-5 h-5 rounded-full bg-primary-500 border-2 border-surface-0 dark:border-surface-900 flex items-center justify-center text-primary-contrast shadow-xs">
-                <i class="pi pi-bell text-[9px]" aria-hidden="true" />
-              </div>
-
-              <!-- Card Content -->
-              <div class="p-3.5 bg-surface-0 dark:bg-surface-900 border border-surface rounded-xl shadow-xs transition hover:border-primary-300 dark:hover:border-primary-700">
-                <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold text-color">
-                      Relance #{{ historyTargetResponse.remindersHistory.length - idx }}
-                    </span>
-                    <Tag
-                      :value="item.type === 'bulk' ? 'Relance groupée' : (item.type === 'automatic' ? 'Automatique' : 'Relance individuelle')"
-                      :severity="item.type === 'bulk' ? 'info' : (item.type === 'automatic' ? 'help' : 'warn')"
-                      class="text-[10px] font-sans !py-0.5 !px-2"
-                    />
-                  </div>
-                  <div class="text-right">
-                    <span class="text-xs font-medium text-color">
-                      {{ formatDateTime(item.sentAt) }}
-                    </span>
-                    <span class="text-[11px] text-muted-color block">
-                      ({{ formatRelativeTime(item.sentAt) }})
-                    </span>
-                  </div>
-                </div>
-
-                <div v-if="item.subject" class="text-xs font-medium text-color mb-1">
-                  <span class="text-muted-color font-normal">Objet :</span> {{ item.subject }}
-                </div>
-
-                <div v-if="item.message" class="mt-2 p-2.5 bg-emphasis dark:bg-surface-900 rounded-lg border border-surface text-xs text-muted-color whitespace-pre-line font-mono text-[11px] leading-relaxed">
-                  {{ item.message }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty History State -->
-        <div v-else class="py-8 text-center bg-emphasis dark:bg-surface-900 border border-dashed border-surface rounded-2xl">
-          <div class="w-12 h-12 mx-auto rounded-full bg-emphasis dark:bg-surface-900 flex items-center justify-center text-muted-color mb-3">
-            <i class="pi pi-bell-slash text-xl" aria-hidden="true" />
-          </div>
-          <h4 class="text-sm font-semibold text-color">
-            Aucune relance effectuée
-          </h4>
-          <p class="text-xs text-muted-color max-w-sm mx-auto mt-1 mb-4">
-            Ce participant n'a encore reçu aucun rappel ou email de relance pour ce questionnaire.
-          </p>
-          <Button
-            v-if="!historyTargetResponse.completed"
-            type="button"
-            icon="pi pi-bell"
-            label="Envoyer une première relance"
-            severity="warn"
-            size="small"
-            class="text-xs shadow-xs"
-            @click="triggerDirectReminderFromHistory"
-          />
-        </div>
-
-        <!-- Modal Actions Footer -->
-        <div class="flex items-center justify-between pt-3 border-t border-surface">
-          <Button
-            type="button"
-            label="Fermer"
-            severity="secondary"
-            outlined
-            size="small"
-            class="text-xs !py-1.5 !px-3"
-            @click="showHistoryModal = false"
-          />
-          <Button
-            v-if="!historyTargetResponse.completed"
-            type="button"
-            icon="pi pi-bell"
-            label="Nouvelle relance"
-            severity="warn"
-            size="small"
-            class="text-xs !py-1.5 !px-3 shadow-xs"
-            @click="triggerDirectReminderFromHistory"
-          />
-        </div>
-      </div>
-    </Dialog>
+      :response="historyTargetResponse"
+      @close="showHistoryModal = false"
+      @relancer="relancerDepuisHistorique"
+    />
   </div>
 </template>
 

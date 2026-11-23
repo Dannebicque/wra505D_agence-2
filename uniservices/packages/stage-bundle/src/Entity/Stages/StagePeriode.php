@@ -2,6 +2,7 @@
 
 namespace StageBundle\Entity\Stages;
 
+use App\Entity\Users\Personnel;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -24,17 +25,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: StagePeriodeRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(
-            normalizationContext: ['groups' => ['stage_periode:read']],
-            security: "is_granted('CAN_VIEW_STAGE_PERIODE')"
-        ),
-        new GetCollection(
-            normalizationContext: ['groups' => ['stage_periode:read']],
-            security: "is_granted('CAN_VIEW_STAGE_PERIODE')"
-        ),
-        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_STAGE_PERIODE')"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_STAGE_PERIODE')"),
-        new Delete(security: "is_granted('CAN_DELETE_STAGE_PERIODE')"),
+        new Get(normalizationContext: ['groups' => ['stage_periode:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['stage_periode:read']]),
+        // Gestion réservée au responsable des stages du département de la période (StageAccess::estGestionnaire)
+        new Post(securityPostDenormalize: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)"),
+        new Patch(security: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)", securityPostDenormalize: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)"),
+        new Delete(security: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)"),
     ],
     parameters: [
         'departement' => new QueryParameter(filter: StagePeriodeFilter::class),

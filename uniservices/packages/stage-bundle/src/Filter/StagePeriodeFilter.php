@@ -1,81 +1,113 @@
 <?php
 
-declare(strict_types=1);
-
-namespace App\Filter;
+namespace StageBundle\Filter;
 
 use ApiPlatform\Doctrine\Orm\Filter\FilterInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\BackwardCompatibleFilterDescriptionTrait;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\Metadata\Parameter;
-use App\Utils\LooseValue;
+use App\Entity\Users\Personnel;
 use Doctrine\ORM\QueryBuilder;
+use StageBundle\Doctrine\JointuresStageTrait;
+use StageBundle\Util\Iri;
+use StageBundle\Security\StageAccess;
+use Symfony\Bundle\SecurityBundle\Security;
 
-/**
- * Périodes de stage par département, année universitaire, année active, année du diplôme ou semestre.
- */
 class StagePeriodeFilter implements FilterInterface
 {
     use BackwardCompatibleFilterDescriptionTrait;
+    use JointuresStageTrait;
 
-    /**
-     * Appelé une fois par paramètre déclaré sur la ressource (QueryParameter), ou une fois pour
-     * tous les filtres de la requête quand le filtre est déclaré par #[ApiFilter].
-     */
+    public function __construct(
+        private readonly Security $security,
+        private readonly StageAccess $access,
+    ) {
+    }
+
     public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
-        $parameter = $context['parameter'] ?? null;
-        if ($parameter instanceof Parameter) {
-            $property = $parameter->getProperty() ?? $parameter->getKey() ?? '';
-            $this->filterProperty($property, $parameter->getValue(), $queryBuilder, $queryNameGenerator);
+        if (isset($context['parameter'])) {
+            $parameter = $context['parameter'];
+            $property = $parameter->getProperty() ?? $parameter->getKey();
+            $this->filterProperty($property, $parameter->getValue(), $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
 
             return;
         }
 
-        foreach (LooseValue::row($context['filters'] ?? []) as $property => $value) {
-            $this->filterProperty((string) $property, $value, $queryBuilder, $queryNameGenerator);
+        foreach ($context['filters'] ?? [] as $property => $value) {
+            $this->filterProperty((string) $property, $value, $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
         }
     }
 
-    private function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
-        if (!is_scalar($value) || $value === '') {
+        if (null === $value || '' === $value) {
             return;
         }
 
         $alias = $queryBuilder->getRootAliases()[0];
-        $parametre = $queryNameGenerator->generateParameterName($property);
-        $id = StageEtudiantFilter::entityId($value);
 
-        if ('departement' === $property && $id !== null) {
-            $semestre = StageEtudiantFilter::join($queryBuilder, $queryNameGenerator, $alias, 'semestreProgramme');
-            $diplome = StageEtudiantFilter::diplomeOf($queryBuilder, $queryNameGenerator, $semestre);
-            $queryBuilder->andWhere(sprintf('IDENTITY(%s.departement) = :%s', $diplome, $parametre))->setParameter($parametre, $id);
+        if ('departement' === $property) {
+            $deptId = (int) Iri::id($value);
+            $spDiplome = $this->jointureDiplome($queryBuilder, $queryNameGenerator, $alias);
+            $queryBuilder
+                ->andWhere(sprintf('%s.departement = :stageDept', $spDiplome))
+                ->setParameter('stageDept', $deptId);
         }
 
-        if ('anneeUniversitaire' === $property && $id !== null) {
-            $anneeUniv = StageEtudiantFilter::join($queryBuilder, $queryNameGenerator, $alias, 'anneeUniversitaire');
+        // geres=1 : périodes que l'utilisateur gère (départements où il est responsable des stages, ou périodes dont
+        // il est responsable / co-responsable). Sans effet pour le super administrateur, qui gère tout.
+        if ('geres' === $property && filter_var($value, FILTER_VALIDATE_BOOLEAN)) {
+            $user = $this->security->getUser();
+            if ($this->access->estSuperAdmin($user)) {
+                return;
+            }
+            if (!$user instanceof Personnel) {
+                $queryBuilder->andWhere('1 = 0');
+
+                return;
+            }
+            $conditions = [];
+            $departements = $this->access->departementsGeres($user);
+            if ($departements !== []) {
+                $spDiplome = $this->jointureDiplome($queryBuilder, $queryNameGenerator, $alias);
+                $deptParam = $queryNameGenerator->generateParameterName('stageDepartementsGeres');
+                $conditions[] = sprintf('IDENTITY(%s.departement) IN (:%s)', $spDiplome, $deptParam);
+                $queryBuilder->setParameter($deptParam, $departements);
+            }
+            $queryBuilder->andWhere($conditions === [] ? '1 = 0' : '('.implode(' OR ', $conditions).')');
+        }
+
+        if ('anneeUniversitaire' === $property) {
+            $univId = (int) Iri::id($value);
+            $spAu = $this->jointure($queryBuilder, $queryNameGenerator, $alias, 'anneeUniversitaire');
             $queryBuilder
-                ->andWhere(sprintf('(%1$s.id = :%2$s OR %1$s.annee = :%2$s)', $anneeUniv, $parametre))
-                ->setParameter($parametre, $id);
+                ->andWhere(sprintf('(%s.id = :stageAnneeUniv OR %s.annee = :stageAnneeUniv)', $spAu, $spAu))
+                ->setParameter('stageAnneeUniv', $univId);
         }
 
         if ('actif' === $property) {
-            $anneeUniv = StageEtudiantFilter::join($queryBuilder, $queryNameGenerator, $alias, 'anneeUniversitaire');
+            $spAu = $this->jointure($queryBuilder, $queryNameGenerator, $alias, 'anneeUniversitaire');
             $queryBuilder
-                ->andWhere(sprintf('%s.actif = :%s', $anneeUniv, $parametre))
-                ->setParameter($parametre, filter_var($value, FILTER_VALIDATE_BOOLEAN));
+                ->andWhere(sprintf('%s.actif = :stageAuActif', $spAu))
+                ->setParameter('stageAuActif', filter_var($value, FILTER_VALIDATE_BOOLEAN));
         }
 
-        if (in_array($property, ['annee', 'ordre', 'ordreAnnee'], true) && is_numeric($value)) {
-            $semestre = StageEtudiantFilter::join($queryBuilder, $queryNameGenerator, $alias, 'semestreProgramme');
-            $annee = StageEtudiantFilter::join($queryBuilder, $queryNameGenerator, $semestre, 'annee');
-            $queryBuilder->andWhere(sprintf('%s.ordre = :%s', $annee, $parametre))->setParameter($parametre, (int) $value);
+        if ('annee' === $property || 'ordre' === $property || 'ordreAnnee' === $property) {
+            $spSem = $this->jointure($queryBuilder, $queryNameGenerator, $alias, 'semestreProgramme');
+            $spAnnee = $this->jointure($queryBuilder, $queryNameGenerator, $spSem, 'annee');
+            if (is_numeric($value)) {
+                $queryBuilder
+                    ->andWhere(sprintf('%s.ordre = :stageAnneeOrdre', $spAnnee))
+                    ->setParameter('stageAnneeOrdre', (int) $value);
+            }
         }
 
-        if ('semestre' === $property && $id !== null) {
-            $queryBuilder->andWhere(sprintf('IDENTITY(%s.semestreProgramme) = :%s', $alias, $parametre))->setParameter($parametre, $id);
+        if ('semestre' === $property) {
+            $semId = (int) Iri::id($value);
+            $queryBuilder
+                ->andWhere(sprintf('%s.semestreProgramme = :stageSemestre', $alias))
+                ->setParameter('stageSemestre', $semId);
         }
     }
 }

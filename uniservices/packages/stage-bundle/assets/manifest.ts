@@ -18,11 +18,14 @@ const stageMenu = {
 
 export default {
   name: 'stages',
-  studentMenu: [
-    { label: 'Mon stage', icon: 'pi pi-fw pi-briefcase', to: '/stage/etudiant', groupe: 'demarches', ordre: 10 },
-    { label: 'Demande de convention', icon: 'pi pi-fw pi-file-edit', to: '/stage/demande', groupe: 'demarches', ordre: 20 },
-  ],
   routes: [
+    // Formulaire d'évaluation du tuteur en entreprise : public (lien à usage unique reçu par e-mail, sans compte)
+    {
+      path: '/stage-evaluation/:jeton',
+      name: 'StageEvaluationEntreprise',
+      component: () => import('./views/Public/EvaluationEntrepriseView.vue'),
+      meta: { public: true, title: 'Évaluation du stagiaire' }
+    },
     {
       path: '/stage',
       component: LayoutComponent,

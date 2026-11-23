@@ -21,8 +21,8 @@ final class QuestionRuntimeMapper
         $choices = null;
         if (in_array($q->getTypeQuestion(), [QuestTypeQuestionEnum::MultipleChoice, QuestTypeQuestionEnum::SingleChoice], true)) {
             $choices = [];
-            foreach (LooseValue::rows($config ?? []) as $c) {
-                $choices[] = new ChoiceDto(LooseValue::castString($c['id']), LooseValue::castString($c['text']), LooseValue::castString($c['value'] ?? $c['text']));
+            foreach ($config ?? [] as $c) {
+                $choices[] = new ChoiceDto((string) $c['id'], (string) $c['text'], (string) ($c['value'] ?? $c['text']));
             }
         }
 
@@ -55,7 +55,7 @@ final class QuestionRuntimeMapper
         $targetedRule = null;
         foreach ($searchQuestions as $sq) {
             $rules = $sq->getConditionalRules();
-            if ($rules === null || $rules === []) {
+            if (empty($rules)) {
                 continue;
             }
 

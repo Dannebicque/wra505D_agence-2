@@ -75,6 +75,8 @@ final class PerimetreAnnuelRegistry
         'ParametrageFormation', 'MigrationV1Lien', 'ReponseCritere',
         // Données personnelles de l'étudiant, sans année universitaire.
         'ReadNotification', 'SentMessage', 'FavoriteDocument',
+        // Parc automobile : véhicules et réservations sans année universitaire.
+        'Vehicule', 'Reservation', 'JournalVehicule', 'EcheanceEntretien', 'Equipement',
     ];
 
     private const DTO_MODES = [

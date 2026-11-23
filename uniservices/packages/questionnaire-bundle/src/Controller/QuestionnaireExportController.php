@@ -6,22 +6,26 @@ use App\Security\UserTypeVoter;
 use App\Service\Pdf\PdfExportOptions;
 use App\Service\Pdf\PdfExportService;
 use Davidannebicque\HtmlToSpreadsheetBundle\Spreadsheet\SpreadsheetRenderer;
-use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
-use QuestionnaireBundle\Security\QuestionnaireFollowUpVoter;
+use QuestionnaireBundle\ApiDto\Questionnaire\Analytics\QuestionnaireAnalyticsDto;
+use QuestionnaireBundle\Security\QuestionnaireAccess;
+use QuestionnaireBundle\Security\QuestionnaireResolver;
+use QuestionnaireBundle\Security\QuestionnaireVoter;
 use QuestionnaireBundle\Services\Analytics\QuestionnaireAnalyticsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[\Symfony\Component\Security\Http\Attribute\IsGranted('IS_AUTHENTICATED_FULLY')]
 #[\App\AnneeUniversitaire\ContexteAnnuel('ressource', 'Questionnaire explicitement identifié.', \QuestionnaireBundle\Entity\Questionnaires\Questionnaire::class, 'uuid', 'uuid')]
 class QuestionnaireExportController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
+        private readonly QuestionnaireResolver $questionnaires,
         private readonly QuestionnaireAnalyticsService $analyticsService,
+        private readonly QuestionnaireAccess $access,
         private readonly SpreadsheetRenderer $spreadsheetRenderer,
         private readonly PdfExportService $pdfExportService,
     ) {
@@ -67,31 +71,38 @@ class QuestionnaireExportController extends AbstractController
         $options = PdfExportOptions::create()
             ->setWithHeader(false)
             ->setWithFooter(true)
-            ->setTitle('Statistiques - ' . $q->getTitle())
+            ->setTitle('Statistiques - '.$q->getTitle())
             ->setMargins(1.0, 1.2, 0.8, 0.8);
 
         return $this->pdfExportService->generateStreamedResponse(
             '@Questionnaire/export/analytics.html.twig',
-            [
-                'questionnaire' => $q,
-                'analytics' => $this->analyticsService->getAnalytics($q),
-                'charts' => $charts,
-            ],
-            'Statistiques_' . $this->safeName($q),
+            ['questionnaire' => $q, 'analytics' => $analytics, 'charts' => $charts],
+            'Statistiques_'.$this->safeName($q),
             $options
         );
     }
 
-    private function findQuestionnaire(string $uuid): Questionnaire
+    /**
+     * Les exports livrent les résultats : même droit que les statistiques (404 / 403), seuil d'anonymat atteint (409),
+     * sections limitées à celles que la personne peut voir.
+     *
+     * @return array{0: Questionnaire, 1: QuestionnaireAnalyticsDto}
+     */
+    private function resultats(string $uuid, Request $request): array
     {
-        $this->denyAccessUnlessGranted(UserTypeVoter::IS_PERSONNEL);
-        $q = $this->em->getRepository(Questionnaire::class)->findOneBy(['uuid' => $uuid]);
-        if (!$q instanceof Questionnaire) {
-            throw new NotFoundHttpException('Questionnaire not found');
+        $q = $this->questionnaires->charger($uuid, QuestionnaireVoter::SYNTHESE);
+        $sections = $this->access->sectionsVisibles($this->getUser(), $q);
+        $demandees = array_values(array_filter(array_map('intval', explode(',', (string) $request->query->get('sections', '')))));
+        if ($demandees !== []) {
+            $sections = $sections === null ? $demandees : array_values(array_intersect($sections, $demandees));
+        }
+        $analytics = $this->analyticsService->getAnalytics($q, $sections);
+        if (!$analytics->seuilAtteint) {
+            throw new ConflictHttpException(sprintf('Questionnaire anonyme : les résultats sont disponibles à partir de %d réponses envoyées.', $q->seuilResultats()));
         }
         $this->denyAccessUnlessGranted(QuestionnaireFollowUpVoter::CAN_EXPORT_QUESTIONNAIRE, $q);
 
-        return $q;
+        return [$q, $analytics];
     }
 
     private function safeName(Questionnaire $q): string

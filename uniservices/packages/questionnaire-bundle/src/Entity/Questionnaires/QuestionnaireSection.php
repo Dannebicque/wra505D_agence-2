@@ -26,36 +26,34 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Entity(repositoryClass: QuestionnaireSectionRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(
-            uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections',
-            uriVariables: [
-                'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
-            ],
-            normalizationContext: ['groups' => ['questionnaire_section:read']],
-        ),
+        // Accès défini par les règles locales ; invitations filtrées par DepartmentCollectionAccessExtension.
+        new GetCollection(normalizationContext: ['groups' => ['questionnaire_section:read']]),
+        // Le questionnaire parent (URL) et le droit de le gérer sont contrôlés par le processeur.
         new Post(
-            uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections',
-            uriVariables: [
-                'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
-            ],
+            security: "is_granted('IS_PERSONNEL')",
             read: false,
             normalizationContext: ['groups' => ['questionnaire_section:read']],
+            processor: QuestionnaireStructureProcessor::class
         ),
+    ],
+    uriVariables: [
+        'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
+    ]
+)]
+#[ApiResource(
+    uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections/{uuid}',
+    operations: [
         new Patch(
-            uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections/{uuid}',
-            uriVariables: [
-                'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
-                'uuid' => new Link(fromClass: QuestionnaireSection::class),
-            ],
+            security: "is_granted('CAN_EDIT_QUESTION_SECTION', object)",
+            securityPostDenormalize: "is_granted('CAN_EDIT_QUESTION_SECTION', object)",
             normalizationContext: ['groups' => ['questionnaire_section:read']],
+            processor: QuestionnaireStructureProcessor::class
         ),
-        new Delete(
-            uriTemplate: '/questionnaires/{questionnaireId}/questionnaire_sections/{uuid}',
-            uriVariables: [
-                'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
-                'uuid' => new Link(fromClass: QuestionnaireSection::class),
-            ],
-        ),
+        new Delete(security: "is_granted('CAN_DELETE_QUESTION_SECTION', object)", processor: QuestionnaireStructureProcessor::class),
+    ],
+    uriVariables: [
+        'questionnaireId' => new Link(toProperty: 'questionnaire', fromClass: Questionnaire::class),
+        'uuid' => new Link(fromClass: QuestionnaireSection::class),
     ]
 )]
 #[ORM\Index(name: 'idx_section_questionnaire_ordre', columns: ['questionnaire_id', 'sort_order'])]

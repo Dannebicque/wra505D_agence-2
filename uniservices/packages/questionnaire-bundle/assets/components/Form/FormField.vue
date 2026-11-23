@@ -11,7 +11,6 @@ withDefaults(defineProps<{
   required: false
 });
 </script>
-
 <template>
   <div>
     <label v-if="label" :for="for" :class="['q-label', { 'q-label-required': required }]">{{ label }}</label>

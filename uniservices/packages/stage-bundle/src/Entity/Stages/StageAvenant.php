@@ -11,32 +11,33 @@ use ApiPlatform\Metadata\Post;
 use App\Entity\Contracts\TimestampableInterface;
 use App\Entity\Traits\TimestampableTrait;
 use StageBundle\Repository\Stages\StageAvenantRepository;
+use StageBundle\State\StageAvenantProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StageAvenantRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(
-            normalizationContext: ['groups' => ['stage_avenant:read']],
-            security: "is_granted('CAN_VIEW_STAGE', object.getStageEtudiant())"
-        ),
-        new GetCollection(
-            normalizationContext: ['groups' => ['stage_avenant:read']],
-            security: "is_granted('CAN_VIEW_STAGE')"
-        ),
+        new Get(security: "is_granted('CAN_VIEW_STAGE', object)", normalizationContext: ['groups' => ['stage_avenant:read']]),
+        // Les avenants d'un dossier sont exposés dans le dossier lui-même (stage_etudiant:read) ;
+        // la liste brute, tous départements confondus, est réservée au super administrateur.
+        new GetCollection(normalizationContext: ['groups' => ['stage_avenant:read']]),
+        // Demande d'avenant : l'étudiant pour son dossier, ou le service des stages
         new Post(
+            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object) and (is_granted('CAN_VALIDATE_STAGE', object) or (not object.isValide() and object.getDateValidation() == null))",
             normalizationContext: ['groups' => ['stage_avenant:read']],
             denormalizationContext: ['groups' => ['stage_avenant:write']],
-            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE')"
+            processor: StageAvenantProcessor::class
         ),
         new Patch(
+            security: "is_granted('CAN_EDIT_STAGE', object)",
+            securityPostDenormalize: "(is_granted('CAN_EDIT_STAGE', object) and (is_granted('CAN_VALIDATE_STAGE', object) or (object.getStageEtudiant() == previous_object.getStageEtudiant() and object.isValide() == previous_object.isValide() and object.getDateValidation() == previous_object.getDateValidation())))",
             normalizationContext: ['groups' => ['stage_avenant:read']],
             denormalizationContext: ['groups' => ['stage_avenant:write']],
-            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE')"
         ),
-        new Delete(security: "is_granted('CAN_DELETE_STAGE')")
+        new Delete(security: "is_granted('CAN_DELETE_STAGE', object)")
     ]
 )]
 class StageAvenant implements TimestampableInterface

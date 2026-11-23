@@ -2,7 +2,9 @@
 
 namespace QuestionnaireBundle\Domain\Questionnaire\Duplicate;
 
-use App\Utils\LooseValue;
+use App\Entity\Structure\StructureAnneeUniversitaire;
+use App\Entity\Structure\StructureDepartement;
+use App\Entity\Users\Personnel;
 use Doctrine\ORM\EntityManagerInterface;
 use QuestionnaireBundle\Entity\Questionnaires\Questionnaire;
 use QuestionnaireBundle\Entity\Questionnaires\QuestionnaireQuestion;
@@ -13,12 +15,21 @@ use Symfony\Component\Uid\Uuid;
 final class DuplicateQuestionnaireService
 {
     public function __construct(
-        private readonly EntityManagerInterface $em
+        private readonly EntityManagerInterface $em,
+        private readonly \App\AnneeUniversitaire\AnneeUniversitaireContext $anneeContext
     ) {
     }
 
-    /** @return array{questionnaire: Questionnaire, sectionsCount: int, questionsCount: int} */
-    public function duplicate(Questionnaire $source, ?string $newTitle = null): array
+    /**
+     * Copie complète (sections, questions, règles conditionnelles réécrites). La copie est un brouillon de l'année
+     * universitaire du contexte cible ; chaque question garde la trace de sa question d'origine (comparaison entre campagnes).
+     *
+     * Options : 'departement' (département de la copie, sinon celui de la source), 'modele' (la copie est un modèle),
+     * 'modeleOrigine' (modèle dont la copie est une campagne), 'anneeUniversitaireId' (cible explicite hors HTTP).
+     *
+     * @param array{departement?: ?StructureDepartement, modele?: bool, modeleOrigine?: ?Questionnaire} $options
+     */
+    public function duplicate(Questionnaire $source, ?string $newTitle = null, ?Personnel $auteur = null, array $options = []): array
     {
         $this->em->beginTransaction();
         try {
@@ -30,7 +41,14 @@ final class DuplicateQuestionnaireService
             $duplicate->setOpeningDate(null);
             $duplicate->setClosingDate(null);
             $duplicate->setOpt($source->getOpt());
-            $duplicate->setDepartement($source->getDepartement());
+            $duplicate->setDepartement(\array_key_exists('departement', $options) ? $options['departement'] : $source->getDepartement());
+            $duplicate->setEstModele($options['modele'] ?? false);
+            $duplicate->setModeleOrigine($options['modeleOrigine'] ?? ($source->isEstModele() ? null : $source->getModeleOrigine()));
+            $duplicate->setAnneeUniversitaire($duplicate->isEstModele() ? null : $this->em->getReference(StructureAnneeUniversitaire::class, $options['anneeUniversitaireId'] ?? $this->anneeContext->requireId()));
+            // La copie appartient à la personne qui la crée.
+            $duplicate->setAuthor($auteur ?? $source->getAuthor());
+            $duplicate->setCompletionNotified(false);
+            $duplicate->setCompletionNotifiedAt(null);
 
             $this->em->persist($duplicate);
 
@@ -82,7 +100,8 @@ final class DuplicateQuestionnaireService
                     $newQ->setHelp($q->getHelp());
                     $newQ->setChoices($q->getChoices());
                     $newQ->setConditionalRules($q->getConditionalRules());
-                    $newQ->setSortOrder($sortOrder);
+                    $newQ->setSortOrder($q->getSortOrder());
+                    $newQ->setOrigine($q->cleComparaison());
                     $newQ->setOpt($q->getOpt());
                     $newQ->setSection($newSection);
 
@@ -99,7 +118,7 @@ final class DuplicateQuestionnaireService
             // 2. Re-map conditional rules across all cloned questions
             foreach ($allClonedQuestions as $newQ) {
                 $rules = $newQ->getConditionalRules();
-                if ($rules !== null && $rules !== []) {
+                if (!empty($rules)) {
                     $remappedRules = [];
                     $ruleList = isset($rules[0]) && is_array($rules[0]) ? $rules : [$rules];
 

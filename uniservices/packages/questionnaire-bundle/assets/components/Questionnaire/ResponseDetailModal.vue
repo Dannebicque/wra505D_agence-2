@@ -132,8 +132,8 @@ async function sendReminder() {
             <component :is="response.completed ? CheckCircleIcon : ClockIcon" class="w-5 h-5" />
           </div>
           <div class="min-w-0">
-            <span class="text-xs font-medium text-slate-500 dark:text-slate-400 block">Statut</span>
-            <span class="text-sm font-semibold text-color">
+            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Statut</span>
+            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">
               {{ response.completed ? 'Terminé' : 'En cours' }}
             </span>
           </div>
@@ -144,8 +144,8 @@ async function sendReminder() {
             <ChartBarIcon class="w-5 h-5" />
           </div>
           <div class="min-w-0">
-            <span class="text-xs font-medium text-slate-500 dark:text-slate-400 block">Progression</span>
-            <span class="text-sm font-semibold text-color">{{ getProgress() }}%</span>
+            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Progression</span>
+            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ getProgress() }}%</span>
           </div>
         </div>
 
@@ -154,8 +154,8 @@ async function sendReminder() {
             <ClockIcon class="w-5 h-5" />
           </div>
           <div class="min-w-0">
-            <span class="text-xs font-medium text-slate-500 dark:text-slate-400 block">Temps passé</span>
-            <span class="text-sm font-semibold text-color">{{ getTimeSpent() }}</span>
+            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Temps passé</span>
+            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ getTimeSpent() }}</span>
           </div>
         </div>
 
@@ -164,8 +164,8 @@ async function sendReminder() {
             <BellIcon aria-hidden="true" class="w-5 h-5" />
           </div>
           <div class="min-w-0">
-            <span class="text-xs font-medium text-muted-color block">Relances</span>
-            <span class="text-sm font-semibold text-color">
+            <span class="text-sm font-medium text-slate-500 dark:text-slate-400 block">Relances</span>
+            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">
               {{ remindersCount }} envoyé{{ remindersCount > 1 ? 's' : '' }}
             </span>
           </div>
@@ -175,11 +175,11 @@ async function sendReminder() {
       <!-- Reminder History Section -->
       <div v-if="response.remindersHistory && response.remindersHistory.length > 0" class="space-y-3 p-4 rounded-xl border border-primary-200 dark:border-primary-900/50 bg-primary-50/40 dark:bg-primary-950/20">
         <div class="flex items-center justify-between pb-1">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-primary-900 dark:text-primary-300 flex items-center gap-1.5">
-            <BellIcon aria-hidden="true" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
+          <h3 class="text-sm font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+            <BellIcon class="w-4 h-4 text-amber-600 dark:text-amber-400" />
             <span>Historique des relances ({{ response.remindersHistory.length }})</span>
           </h3>
-          <span class="text-[11px] text-primary-700/80 dark:text-primary-400/80">
+          <span class="text-sm text-amber-700/80 dark:text-amber-400/80">
             Dernière : {{ formatDate(response.remindedAt) }}
           </span>
         </div>
@@ -188,17 +188,17 @@ async function sendReminder() {
           <div
             v-for="(rem, index) in sortedReminders"
             :key="rem.id || index"
-            class="p-3 rounded-lg bg-surface-0 dark:bg-surface-900 border border-primary-200/60 dark:border-primary-900/40 flex flex-col gap-1 text-xs"
+            class="p-3 rounded-lg bg-white dark:bg-slate-900/80 border border-amber-200/60 dark:border-amber-900/40 flex flex-col gap-1 text-sm"
           >
             <div class="flex items-center justify-between gap-2">
               <span class="font-semibold text-color">
                 Relance #{{ response.remindersHistory.length - index }} - {{ rem.subject || 'Rappel' }}
               </span>
-              <span class="text-[11px] text-muted-color">
+              <span class="text-sm text-slate-500 dark:text-slate-400">
                 {{ formatDate(rem.sentAt) }}
               </span>
             </div>
-            <p v-if="rem.message" class="text-[11px] text-muted-color whitespace-pre-line font-mono bg-emphasis dark:bg-surface-900 p-2 rounded">
+            <p v-if="rem.message" class="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line font-mono bg-slate-50 dark:bg-slate-800/50 p-2 rounded">
               {{ rem.message }}
             </p>
           </div>

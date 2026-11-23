@@ -16,17 +16,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: StagePeriodeSoutenanceRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(
-            normalizationContext: ['groups' => ['stage_periode:read']],
-            security: "is_granted('CAN_VIEW_STAGE_PERIODE')"
-        ),
-        new GetCollection(
-            normalizationContext: ['groups' => ['stage_periode:read']],
-            security: "is_granted('CAN_VIEW_STAGE_PERIODE')"
-        ),
-        new Post(securityPostDenormalize: "is_granted('CAN_EDIT_STAGE_PERIODE')"),
-        new Patch(securityPostDenormalize: "is_granted('CAN_EDIT_STAGE_PERIODE')"),
-        new Delete(security: "is_granted('CAN_DELETE_STAGE_PERIODE')"),
+        new Get(normalizationContext: ['groups' => ['stage_periode:read']]),
+        new GetCollection(normalizationContext: ['groups' => ['stage_periode:read']]),
+        new Post(securityPostDenormalize: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)"),
+        new Patch(security: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)", securityPostDenormalize: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)"),
+        new Delete(security: "is_granted('CAN_MANAGE_STAGE_PERIODE', object)"),
     ]
 )]
 class StagePeriodeSoutenance

@@ -115,6 +115,31 @@ export default [
     meta: {
       breadcrumb: [
         { label: 'Dashboard', route: '/' },
+        { label: 'Liste des questionnaires', route: '/questionnaire/qualite/enquetes/liste' },
+        { label: 'Diffusion des résultats', route: null }
+      ]
+    }
+  },
+  {
+    // Restitution web des résultats (destinataires : leurs sections ; équipe : toutes)
+    path: 'qualite/enquetes/resultats/:id',
+    name: 'questionnaire_mes_resultats',
+    component: () => import('@/views/Questionnaire/MesResultatsView.vue'),
+    meta: {
+      permission: ['ROLE_QUESTIONNAIRE_MANAGER', 'isQualite', 'SUPER_ADMIN'],
+      breadcrumb: [
+        { label: 'Dashboard', route: '/' },
+        { label: 'Mes résultats', route: null }
+      ]
+    }
+  },
+  {
+    path: 'qualite/enquetes/take/:token',
+    name: 'questionnaire_take-survey',
+    component: SurveyTakeView,
+    meta: {
+      breadcrumb: [
+        { label: 'Dashboard', route: '/' },
         { label: 'Répondre au questionnaire', route: null }
       ]
     }

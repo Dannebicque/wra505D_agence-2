@@ -1,125 +1,91 @@
 <?php
 
-declare(strict_types=1);
-
-namespace App\Filter;
+namespace StageBundle\Filter;
 
 use ApiPlatform\Doctrine\Orm\Filter\FilterInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\BackwardCompatibleFilterDescriptionTrait;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\Metadata\Parameter;
-use App\Utils\LooseValue;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
+use StageBundle\Doctrine\JointuresStageTrait;
+use StageBundle\Util\Iri;
 
-/**
- * Stages d'étudiants par période, tuteur universitaire, étudiant, année universitaire ou département.
- */
 class StageEtudiantFilter implements FilterInterface
 {
     use BackwardCompatibleFilterDescriptionTrait;
+    use JointuresStageTrait;
 
-    /**
-     * Appelé une fois par paramètre déclaré sur la ressource (QueryParameter), ou une fois pour
-     * tous les filtres de la requête quand le filtre est déclaré par #[ApiFilter].
-     */
     public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
-        $parameter = $context['parameter'] ?? null;
-        if ($parameter instanceof Parameter) {
-            $property = $parameter->getProperty() ?? $parameter->getKey() ?? '';
-            $this->filterProperty($property, $parameter->getValue(), $queryBuilder, $queryNameGenerator);
+        if (isset($context['parameter'])) {
+            $parameter = $context['parameter'];
+            $property = $parameter->getProperty() ?? $parameter->getKey();
+            $this->filterProperty($property, $parameter->getValue(), $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
 
             return;
         }
 
-        foreach (LooseValue::row($context['filters'] ?? []) as $property => $value) {
-            $this->filterProperty((string) $property, $value, $queryBuilder, $queryNameGenerator);
+        foreach ($context['filters'] ?? [] as $property => $value) {
+            $this->filterProperty((string) $property, $value, $queryBuilder, $queryNameGenerator, $resourceClass, $operation, $context);
         }
     }
 
-    private function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator): void
+    protected function filterProperty(string $property, mixed $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
-        $id = self::entityId($value);
-        if ($id === null) {
+        if (null === $value || '' === $value) {
             return;
         }
 
         $alias = $queryBuilder->getRootAliases()[0];
-        $parametre = $queryNameGenerator->generateParameterName($property);
 
         if ('tuteurUniversitaire' === $property) {
-            $queryBuilder->andWhere(sprintf('IDENTITY(%s.tuteurUniversitaire) = :%s', $alias, $parametre))->setParameter($parametre, $id);
-        }
-
-        if ('stagePeriode' === $property) {
-            $queryBuilder->andWhere(sprintf('IDENTITY(%s.stagePeriode) = :%s', $alias, $parametre))->setParameter($parametre, $id);
-        }
-
-        if ('etudiant' === $property) {
-            $queryBuilder->andWhere(sprintf('IDENTITY(%s.etudiant) = :%s', $alias, $parametre))->setParameter($parametre, $id);
-        }
-
-        if ('anneeUniversitaire' === $property) {
-            $periode = self::join($queryBuilder, $queryNameGenerator, $alias, 'stagePeriode');
-            $anneeUniv = self::join($queryBuilder, $queryNameGenerator, $periode, 'anneeUniversitaire');
-            $queryBuilder
-                ->andWhere(sprintf('(%1$s.id = :%2$s OR %1$s.annee = :%2$s)', $anneeUniv, $parametre))
-                ->setParameter($parametre, $id);
-        }
-
-        if ('departement' === $property) {
-            $periode = self::join($queryBuilder, $queryNameGenerator, $alias, 'stagePeriode');
-            $diplome = self::diplomeOf($queryBuilder, $queryNameGenerator, self::join($queryBuilder, $queryNameGenerator, $periode, 'semestreProgramme'));
-            $queryBuilder->andWhere(sprintf('IDENTITY(%s.departement) = :%s', $diplome, $parametre))->setParameter($parametre, $id);
-        }
-    }
-
-    /**
-     * Identifiant passé en nombre ou en IRI (`/api/…/12`).
-     */
-    public static function entityId(mixed $value): ?int
-    {
-        if (is_int($value)) {
-            return $value > 0 ? $value : null;
-        }
-        if (!is_string($value) || $value === '') {
-            return null;
-        }
-        $last = basename($value);
-
-        return ctype_digit($last) && (int) $last > 0 ? (int) $last : null;
-    }
-
-    /**
-     * Diplôme d'un semestre, par son année et son programme national.
-     */
-    public static function diplomeOf(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $semestre): string
-    {
-        $annee = self::join($queryBuilder, $queryNameGenerator, $semestre, 'annee');
-        $pn = self::join($queryBuilder, $queryNameGenerator, $annee, 'pn');
-
-        return self::join($queryBuilder, $queryNameGenerator, $pn, 'diplome');
-    }
-
-    /**
-     * Réutilise la jointure si un autre paramètre l'a déjà posée.
-     */
-    public static function join(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $from, string $association): string
-    {
-        $parts = $queryBuilder->getDQLPart('join');
-        foreach (is_array($parts) ? $parts : [] as $joins) {
-            foreach (is_array($joins) ? $joins : [] as $join) {
-                if ($join instanceof Join && $join->getJoin() === $from . '.' . $association && $join->getAlias() !== null) {
-                    return $join->getAlias();
-                }
+            $tutId = Iri::id($value);
+            if ($tutId !== null) {
+                $tutAlias = $this->jointure($queryBuilder, $queryNameGenerator, $alias, 'tuteurUniversitaire');
+                $queryBuilder
+                    ->andWhere(sprintf('%s.id = :stageTuteurUnivId', $tutAlias))
+                    ->setParameter('stageTuteurUnivId', $tutId);
             }
         }
 
-        $alias = $queryNameGenerator->generateJoinAlias($association);
-        $queryBuilder->leftJoin($from . '.' . $association, $alias);
+        if ('stagePeriode' === $property) {
+            $periodeId = Iri::id($value);
+            if ($periodeId !== null) {
+                $queryBuilder
+                    ->andWhere(sprintf('%s.stagePeriode = :stagePeriodeId', $alias))
+                    ->setParameter('stagePeriodeId', $periodeId);
+            }
+        }
 
-        return $alias;
+        if ('etudiant' === $property) {
+            $etudiantId = Iri::id($value);
+            if ($etudiantId !== null) {
+                $queryBuilder
+                    ->andWhere(sprintf('%s.etudiant = :stageEtudiantId', $alias))
+                    ->setParameter('stageEtudiantId', $etudiantId);
+            }
+        }
+
+        if ('anneeUniversitaire' === $property) {
+            $univId = Iri::id($value);
+            if ($univId !== null) {
+                $spAlias = $this->jointure($queryBuilder, $queryNameGenerator, $alias, 'stagePeriode');
+                $auAlias = $this->jointure($queryBuilder, $queryNameGenerator, $spAlias, 'anneeUniversitaire');
+                $queryBuilder
+                    ->andWhere(sprintf('(%s.id = :stageEtudiantAnneeUniv OR %s.annee = :stageEtudiantAnneeUniv)', $auAlias, $auAlias))
+                    ->setParameter('stageEtudiantAnneeUniv', $univId);
+            }
+        }
+
+        if ('departement' === $property) {
+            $deptId = Iri::id($value);
+            if ($deptId !== null) {
+                $spAlias = $this->jointure($queryBuilder, $queryNameGenerator, $alias, 'stagePeriode');
+                $spDiplome = $this->jointureDiplome($queryBuilder, $queryNameGenerator, $spAlias);
+                $queryBuilder
+                    ->andWhere(sprintf('%s.departement = :stageEtudiantDept', $spDiplome))
+                    ->setParameter('stageEtudiantDept', $deptId);
+            }
+        }
     }
 }

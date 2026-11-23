@@ -14,18 +14,28 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use FinanceBundle\Repository\FinanceFournisseurRepository;
+use FinanceBundle\State\FinanceReferentielProcessor;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: FinanceFournisseurRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(normalizationContext: ['groups' => ['fournisseur:read']], security: "is_granted('FINANCE_VIEW')"),
-        new Get(normalizationContext: ['groups' => ['fournisseur:read']], security: "is_granted('FINANCE_VIEW')"),
-        new Post(denormalizationContext: ['groups' => ['fournisseur:write']], security: "is_granted('FINANCE_EDIT')"),
-        new Patch(denormalizationContext: ['groups' => ['fournisseur:write']], security: "is_granted('FINANCE_EDIT')"),
-        new Delete(security: "is_granted('FINANCE_DELETE')")
+        // Référentiel partagé : consultable par toute personne ayant accès au package, géré par le service financier.
+        new GetCollection(
+            security: "is_granted('ROLE_FINANCE_VIEW')",
+            normalizationContext: ['groups' => ['fournisseur:read']],
+            order: ['nomFournisseur' => 'ASC'],
+            paginationClientItemsPerPage: true,
+            paginationMaximumItemsPerPage: 100
+        ),
+        new Get(security: "is_granted('ROLE_FINANCE_VIEW')", normalizationContext: ['groups' => ['fournisseur:read']]),
+        new Post(securityPostDenormalize: "is_granted('ROLE_FINANCE_MANAGER')", denormalizationContext: ['groups' => ['fournisseur:write']], processor: FinanceReferentielProcessor::class),
+        new Patch(security: "is_granted('ROLE_FINANCE_MANAGER')", securityPostDenormalize: "is_granted('ROLE_FINANCE_MANAGER')", denormalizationContext: ['groups' => ['fournisseur:write']], processor: FinanceReferentielProcessor::class),
+        new Delete(security: "is_granted('ROLE_FINANCE_MANAGER')", processor: FinanceReferentielProcessor::class),
     ]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['nomFournisseur' => 'ipartial', 'numeroFournisseur' => 'start'])]
 class FinanceFournisseur
 {
     #[ORM\Id]

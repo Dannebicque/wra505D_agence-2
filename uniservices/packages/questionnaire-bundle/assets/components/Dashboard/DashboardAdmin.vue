@@ -300,16 +300,16 @@ function getSurveyStats(surveyUuid: string) {
           <BuildingOfficeIcon aria-hidden="true" class="w-6 h-6" />
         </div>
         <div>
-          <div class="text-xs font-semibold text-muted-color uppercase tracking-wider">
+          <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             Périmètre de pilotage qualité
           </div>
-          <div class="text-base font-bold text-color flex items-center gap-2 mt-0.5">
-            <span v-if="isGlobalQuality">Démarche Qualité — Vue Globale IUT</span>
+          <div class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mt-0.5">
+            <span v-if="isGlobalQuality">Démarche qualité — {{ libelleEtablissement }}</span>
             <span v-else>Département {{ currentDepartmentName }}</span>
             <Tag 
               :value="isGlobalQuality ? 'Tous départements' : 'Département'" 
               :severity="isGlobalQuality ? 'info' : 'secondary'"
-              class="text-xs font-semibold"
+              class="text-sm font-semibold"
             />
           </div>
         </div>
@@ -317,7 +317,7 @@ function getSurveyStats(surveyUuid: string) {
 
       <!-- Scope Selector for Global Quality Managers -->
       <div v-if="isGlobalQuality && departementOptions.length > 1" class="flex items-center gap-2.5">
-        <label for="dept-scope-select" class="text-xs font-semibold text-muted-color whitespace-nowrap">
+        <label for="dept-scope-select" class="text-sm font-semibold text-gray-600 dark:text-gray-300 whitespace-nowrap">
           Filtrer par département :
         </label>
         <Select 
@@ -329,7 +329,7 @@ function getSurveyStats(surveyUuid: string) {
           class="w-72 text-sm" 
         />
       </div>
-      <div v-else class="text-xs text-muted-color italic">
+      <div v-else class="text-sm text-gray-500 dark:text-gray-400 italic">
         Vue restreinte aux enquêtes et formations de votre département
       </div>
     </div>
@@ -385,17 +385,17 @@ function getSurveyStats(surveyUuid: string) {
           <template #header-actions>
             <router-link 
               :to="{ name: 'questionnaire_enquetes-liste' }" 
-              class="text-xs font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1.5 py-0.5"
+              class="text-sm font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1.5 py-0.5"
             >
               <span>Voir toute la liste</span>
-              <i class="pi pi-arrow-right text-[10px]" aria-hidden="true"></i>
+              <i class="pi pi-arrow-right text-sm" aria-hidden="true"></i>
             </router-link>
           </template>
 
           <div v-if="scopedSurveys.length > 0" class="overflow-x-auto -mx-5 -mb-5">
             <table class="w-full text-left text-sm border-collapse">
               <thead>
-                <tr class="border-b border-surface text-xs font-bold text-muted-color uppercase tracking-wider bg-emphasis dark:bg-surface-900">
+                <tr class="border-b border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50/70 dark:bg-gray-800/40">
                   <th scope="col" class="py-3 px-5">Enquête / Campagne</th>
                   <th scope="col" class="py-3 px-4">Portée</th>
                   <th scope="col" class="py-3 px-4">Statut</th>
@@ -411,36 +411,41 @@ function getSurveyStats(surveyUuid: string) {
                   class="hover:bg-emphasis dark:hover:bg-emphasis transition-colors"
                 >
                   <td class="py-3.5 px-5">
-                    <div class="font-bold text-color">{{ survey.title }}</div>
-                    <div v-if="survey.description" class="text-xs text-muted-color truncate max-w-xs mt-0.5">
+                    <div class="font-bold text-gray-900 dark:text-white">{{ survey.title }}</div>
+                    <div v-if="survey.description" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs mt-0.5">
                       {{ survey.description }}
                     </div>
                   </td>
                   <td class="py-3.5 px-4 whitespace-nowrap">
                     <span
                       v-if="survey.departement"
-                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border shadow-2xs bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-200 border-primary-200 dark:border-primary-800"
+                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-sm font-semibold border shadow-2xs"
+                      :style="{
+                        backgroundColor: survey.departement.couleur ? `${survey.departement.couleur}15` : '#f0fdf4',
+                        color: survey.departement.couleur || '#16a34a',
+                        borderColor: survey.departement.couleur ? `${survey.departement.couleur}40` : '#bbf7d0'
+                      }"
                     >
                       <span class="w-1.5 h-1.5 rounded-full shrink-0 bg-primary-500" aria-hidden="true"></span>
                       <span>{{ survey.departement.libelle || `Dpt ${survey.departement.id}` }}</span>
                     </span>
                     <span
                       v-else
-                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-muted-color bg-emphasis dark:bg-surface-900 border border-surface"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                     >
-                      <span>IUT (Global)</span>
+                      <span>{{ libelleGlobal }}</span>
                     </span>
                   </td>
                   <td class="py-3.5 px-4 whitespace-nowrap">
                     <Tag 
                       :value="survey.status === 'published' ? 'Publiée' : survey.status === 'closed' ? 'Clôturée' : 'Brouillon'"
                       :severity="survey.status === 'published' ? 'success' : survey.status === 'closed' ? 'secondary' : 'warn'"
-                      class="text-xs font-semibold"
+                      class="text-sm font-semibold"
                     />
                   </td>
                   <td class="py-3.5 px-4 min-w-[170px]">
-                    <div class="flex items-center justify-between text-xs mb-1">
-                      <span class="text-muted-color font-medium">
+                    <div class="flex items-center justify-between text-sm mb-1">
+                      <span class="text-gray-600 dark:text-gray-300 font-medium">
                         {{ getSurveyStats(survey.uuid).responded }} / {{ getSurveyStats(survey.uuid).invited }}
                       </span>
                       <span class="font-bold text-color">
@@ -464,7 +469,7 @@ function getSurveyStats(surveyUuid: string) {
                       ></div>
                     </div>
                   </td>
-                  <td class="py-3.5 px-4 text-xs text-muted-color whitespace-nowrap">
+                  <td class="py-3.5 px-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
                     <span v-if="survey.closingDate">Jusqu'au {{ formatDate(survey.closingDate) }}</span>
                     <span v-else-if="survey.publishedAt">Publiée le {{ formatDate(survey.publishedAt) }}</span>
                     <span v-else>Créée le {{ formatDate(survey.createdAt) }}</span>
@@ -476,10 +481,9 @@ function getSurveyStats(surveyUuid: string) {
                         v-if="survey.status === 'published'"
                         :to="{ name: 'questionnaire_responses', params: { id: survey.uuid } }"
                         v-tooltip.top="'Suivi des répondants & Relances'"
-                        aria-label="Suivi &amp; Relances"
-                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/40 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-300 dark:border-primary-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-semibold rounded-lg text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-800 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
-                        <i class="pi pi-users text-xs" aria-hidden="true"></i>
+                        <i class="pi pi-users text-sm" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Suivi & Relances</span>
                       </router-link>
 
@@ -488,10 +492,9 @@ function getSurveyStats(surveyUuid: string) {
                         v-if="survey.status === 'published'"
                         :to="{ name: 'questionnaire_analytics', params: { id: survey.uuid } }"
                         v-tooltip.top="'Synthèse des résultats'"
-                        aria-label="Résultats"
-                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-950/40 hover:bg-primary-100 dark:hover:bg-primary-900/60 border border-primary-300 dark:border-primary-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        class="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-semibold rounded-lg text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 border border-purple-300 dark:border-purple-800 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
                       >
-                        <i class="pi pi-chart-pie text-xs" aria-hidden="true"></i>
+                        <i class="pi pi-chart-pie text-sm" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Résultats</span>
                       </router-link>
 

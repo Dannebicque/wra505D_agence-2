@@ -268,9 +268,7 @@ const exportSurvey = async (survey: any) => {
         </template>
 
         <template #loading>
-          <div class="text-center py-8 text-muted-color">
-            Chargement des données... Veuillez patienter.
-          </div>
+          <ListSkeleton />
         </template>
 
         <!-- Titre -->
@@ -278,7 +276,7 @@ const exportSurvey = async (survey: any) => {
           <template #body="{ data }">
             <span class="font-bold text-color block">{{ data.title }}</span>
             <span v-if="data.description"
-              class="text-xs text-muted-color mt-0.5 line-clamp-1 max-w-xs">{{ data.description
+              class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1 max-w-xs">{{ data.description
               }}</span>
           </template>
           <template #filter="{ filterModel, filterCallback }">
@@ -313,17 +311,22 @@ const exportSurvey = async (survey: any) => {
           <template #body="{ data }">
             <span
               v-if="data.departement"
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shadow-2xs border bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-200 border-primary-200 dark:border-primary-800"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-semibold shadow-2xs border"
+              :style="{
+                backgroundColor: data.departement.couleur ? `${data.departement.couleur}15` : '#f0fdf4',
+                color: data.departement.couleur || '#16a34a',
+                borderColor: data.departement.couleur ? `${data.departement.couleur}40` : '#bbf7d0'
+              }"
             >
               <span class="w-2 h-2 rounded-full shrink-0 bg-primary-500" aria-hidden="true"></span>
               <span class="truncate max-w-[130px]">{{ data.departement.libelle || `Dpt ${data.departement.id}` }}</span>
             </span>
             <span
               v-else
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-color bg-emphasis dark:bg-surface-900 border border-surface shadow-2xs"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs"
             >
-              <span class="w-2 h-2 rounded-full bg-surface-400 shrink-0"></span>
-              <span>IUT (Global)</span>
+              <span class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
+              <span>{{ libelleGlobal }}</span>
             </span>
           </template>
           <template #filter="{ filterModel, filterCallback }">
@@ -336,13 +339,13 @@ const exportSurvey = async (survey: any) => {
               placeholder="Tous"
               style="min-width: 11rem"
               :showClear="true"
-              class="border border-surface text-xs"
+              class="border border-gray-300 dark:border-gray-700 text-sm"
             >
               <template #value="slotProps">
-                <span v-if="slotProps.value" class="text-xs font-semibold">
-                  {{ slotProps.value === 'global' ? 'IUT (Global)' : (departements.find(d => d.id === slotProps.value)?.libelle || slotProps.value) }}
+                <span v-if="slotProps.value" class="text-sm font-semibold">
+                  {{ slotProps.value === 'global' ? libelleGlobal : (departements.find(d => d.id === slotProps.value)?.libelle || slotProps.value) }}
                 </span>
-                <span v-else class="text-muted-color text-xs">Tous</span>
+                <span v-else class="text-gray-500 text-sm">Tous</span>
               </template>
             </Select>
           </template>
@@ -362,8 +365,8 @@ const exportSurvey = async (survey: any) => {
         <Column header="Participation" style="min-width: 14rem">
           <template #body="{ data }">
             <div v-if="data.status === 'published' || data.published" class="space-y-1">
-              <div class="flex justify-between text-xs font-semibold">
-                <span class="text-muted-color">
+              <div class="flex justify-between text-sm font-semibold">
+                <span class="text-gray-500 dark:text-gray-400">
                   {{ getSurveyStats(data.uuid).responded }} / {{ getSurveyStats(data.uuid).invited }}
                 </span>
                 <span class="text-color">{{ getSurveyStats(data.uuid).rate }}%</span>
@@ -374,7 +377,7 @@ const exportSurvey = async (survey: any) => {
                   :style="{ width: `${getSurveyStats(data.uuid).rate}%` }"></div>
               </div>
             </div>
-            <span v-else class="text-xs text-muted-color italic">
+            <span v-else class="text-sm text-gray-500 dark:text-gray-400 italic">
               Non publié (Brouillon)
             </span>
           </template>

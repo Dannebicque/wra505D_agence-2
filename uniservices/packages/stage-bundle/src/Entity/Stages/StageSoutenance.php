@@ -21,25 +21,25 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: StageSoutenanceRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(
-            normalizationContext: ['groups' => ['stage_soutenance:read']],
-            security: "is_granted('CAN_VIEW_STAGE', object.getStageEtudiant())"
-        ),
-        new GetCollection(
-            normalizationContext: ['groups' => ['stage_soutenance:read']],
-            security: "is_granted('CAN_VIEW_STAGE')"
-        ),
+        new Get(security: "is_granted('CAN_VIEW_STAGE', object)", normalizationContext: ['groups' => ['stage_soutenance:read']]),
+        // Liste restreinte aux départements gérés : DepartmentCollectionAccessExtension
+        new GetCollection(normalizationContext: ['groups' => ['stage_soutenance:read']]),
+        // La planification passe par StageSoutenanceController (contrôle des conflits + notifications).
         new Post(
+            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object)",
             normalizationContext: ['groups' => ['stage_soutenance:read']],
             denormalizationContext: ['groups' => ['stage_soutenance:write']],
-            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE')"
         ),
         new Patch(
+            security: "is_granted('CAN_EDIT_STAGE', object)",
+            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE', object)",
             normalizationContext: ['groups' => ['stage_soutenance:read']],
             denormalizationContext: ['groups' => ['stage_soutenance:write']],
-            securityPostDenormalize: "is_granted('CAN_EDIT_STAGE')"
         ),
-        new Delete(security: "is_granted('CAN_DELETE_STAGE')")
+        new Delete(security: "is_granted('CAN_DELETE_STAGE', object)")
+    ],
+    parameters: [
+        'stagePeriode' => new QueryParameter(filter: SearchFilter::class),
     ]
 )]
 class StageSoutenance implements TimestampableInterface

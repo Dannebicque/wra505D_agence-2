@@ -54,7 +54,7 @@ const departements = ref<{ id: number; libelle: string }[]>([]);
 const surveyDepartementId = ref<number | null>(null);
 
 const departementOptions = computed(() => [
-  { label: 'IUT (Global)', value: null },
+  { label: libelleGlobal.value, value: null, couleur: '#64748b' },
   ...departements.value.map(d => ({
     label: d.libelle || `Département ${d.id}`,
     value: d.id
@@ -62,7 +62,7 @@ const departementOptions = computed(() => [
 ]);
 
 function getDeptLabel(deptId: number | null) {
-  if (!deptId) return 'IUT (Global)';
+  if (!deptId) return libelleGlobal.value;
   const found = departements.value.find(d => d.id === deptId);
   return found?.libelle || `Département ${deptId}`;
 }
@@ -401,16 +401,19 @@ onMounted(async () => {
             >
               <template #value="slotProps">
                 <div v-if="slotProps.value !== null && slotProps.value !== undefined" class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full shrink-0 bg-primary-500" aria-hidden="true"></span>
-                  <span class="truncate text-xs font-semibold">{{ getDeptLabel(slotProps.value) }}</span>
+                  <span
+                    class="w-2.5 h-2.5 rounded-full shrink-0"
+                    :style="{ backgroundColor: getDeptColor(slotProps.value) }"
+                  ></span>
+                  <span class="truncate text-sm font-semibold">{{ getDeptLabel(slotProps.value) }}</span>
                 </div>
-                <div v-else class="flex items-center gap-2 text-xs font-semibold text-color">
-                  <span class="w-2.5 h-2.5 rounded-full bg-surface-400 shrink-0" aria-hidden="true"></span>
-                  <span>IUT (Global)</span>
+                <div v-else class="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  <span class="w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0"></span>
+                  <span>{{ libelleGlobal }}</span>
                 </div>
               </template>
               <template #option="slotProps">
-                <div class="flex items-center gap-2 text-xs py-0.5">
+                <div class="flex items-center gap-2 text-sm py-0.5">
                   <span
                     class="w-2.5 h-2.5 rounded-full shrink-0"
                     :class="slotProps.option.value === null ? 'bg-surface-400' : 'bg-primary-500'"

@@ -268,31 +268,36 @@ const prevSection = async () => {
         <!-- Survey Header -->
         <div class="text-center py-2 border-b border-slate-200 dark:border-slate-700/80">
           <div class="flex items-center justify-center gap-2 mb-1">
-            <h1 class="text-xl font-bold text-color">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">
               {{ survey.title }}
-            </h1>
+            </h2>
             <span
               v-if="survey.departement"
-              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border shadow-2xs bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-200 border-primary-200 dark:border-primary-800"
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-semibold border shadow-2xs"
+              :style="{
+                backgroundColor: survey.departement.couleur ? `${survey.departement.couleur}15` : '#f0fdf4',
+                color: survey.departement.couleur || '#16a34a',
+                borderColor: survey.departement.couleur ? `${survey.departement.couleur}40` : '#bbf7d0'
+              }"
             >
               <span class="w-1.5 h-1.5 rounded-full shrink-0 bg-primary-500" aria-hidden="true"></span>
               <span>{{ survey.departement.libelle || `Dpt ${survey.departement.id}` }}</span>
             </span>
             <span
               v-else
-              class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium text-muted-color bg-emphasis dark:bg-surface-900 border border-surface"
+              class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
             >
-              <span>IUT (Global)</span>
+              <span>{{ libelleGlobal }}</span>
             </span>
           </div>
-          <p v-if="survey.description" class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl mx-auto">
+          <p v-if="survey.description" class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl mx-auto">
             {{ survey.description }}
           </p>
         </div>
 
         <!-- Progress Bar -->
         <div v-if="survey.opt?.showProgress" class="space-y-1.5">
-          <div class="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400">
+          <div class="flex items-center justify-between text-sm font-semibold text-slate-600 dark:text-slate-400">
             <span>Progression</span>
             <span>{{ Math.round((currentSectionIndex + 1) / survey.sections.length * 100) }}%</span>
           </div>

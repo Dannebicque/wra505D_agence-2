@@ -37,3 +37,9 @@ message_controllers:
         path: '../../packages/message-bundle/src/Controller/'
         namespace: MessageBundle\Controller
     type: attribute
+
+parcauto_controllers:
+    resource:
+        path: '../../packages/parcauto-bundle/src/Controller/'
+        namespace: ParcautoBundle\Controller
+    type: attribute
